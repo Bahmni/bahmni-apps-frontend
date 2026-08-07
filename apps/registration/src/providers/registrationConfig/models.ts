@@ -1,4 +1,5 @@
 import { Extension } from '@bahmni/services';
+import type { PrintOption } from '@bahmni/widgets';
 
 export interface PatientPhotoConfig {
   widthPx?: number;
@@ -84,6 +85,7 @@ export interface RegistrationConfig {
   patientInformation?: PatientInformationConfig;
   fieldValidation?: FieldValidationConfig;
   registrationForm?: RegistrationFormConfig;
+  printOptions?: PrintOption[];
   extensions?: Extension[];
 }
 

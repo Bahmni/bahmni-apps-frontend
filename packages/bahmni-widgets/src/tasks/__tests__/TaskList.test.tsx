@@ -34,6 +34,10 @@ jest.mock('../../userPrivileges/useUserPrivilege', () => ({
   })),
 }));
 
+jest.mock('../../notification', () => ({
+  useNotification: jest.fn(() => ({ addNotification: jest.fn() })),
+}));
+
 const mockGetTasks = getTasks as jest.MockedFunction<typeof getTasks>;
 const mockShouldEnableEncounterFilter =
   shouldEnableEncounterFilter as jest.MockedFunction<

@@ -15,6 +15,8 @@ import {
   mockResultFieldsWithAction,
   mockResultFieldsWithTransform,
   mockResultFieldsWithUnknownTransform,
+  mockResultFieldsWithAgeTransform,
+  mockResultFieldsWithDateTransform,
   mockResults,
   mockResultWithoutId,
 } from '../__mocks__/resultsTableMocks';
@@ -210,6 +212,59 @@ describe('ResultsTable', () => {
       await waitFor(() => {
         expect(screen.getByText('-')).toBeInTheDocument();
       });
+    });
+
+    it('sorts formatAge columns by the raw birthDate while displaying the formatted age', async () => {
+      mockJsonata.mockImplementation((expression: string) => ({
+        evaluate: async (item: Record<string, unknown>) => item[expression],
+      }));
+
+      renderTable({
+        resultFields: mockResultFieldsWithAgeTransform,
+        results: [
+          { id: '1', birthDate: '2010-01-01' },
+          { id: '2', birthDate: '1980-01-01' },
+        ],
+      });
+
+      await waitFor(() => {
+        expect(screen.getAllByTestId(/^table-row-/)).toHaveLength(2);
+      });
+
+      const rows = screen.getAllByTestId(/^table-row-/);
+      expect(rows[0]).toHaveTextContent('YEARS');
+      expect(rows[1]).toHaveTextContent('YEARS');
+      expect(screen.queryByText('1980-01-01')).not.toBeInTheDocument();
+      expect(screen.queryByText('2010-01-01')).not.toBeInTheDocument();
+      expect(rows[0].textContent).toMatch(/^\d+YEARS/);
+      expect(rows[1].textContent).toMatch(/^\d+YEARS/);
+      const [olderAge] = rows[0].textContent!.match(/^\d+/)!;
+      const [youngerAge] = rows[1].textContent!.match(/^\d+/)!;
+      expect(Number(olderAge)).toBeGreaterThan(Number(youngerAge));
+    });
+
+    it('sorts formatDate columns by the raw date while displaying the formatted date', async () => {
+      mockJsonata.mockImplementation((expression: string) => ({
+        evaluate: async (item: Record<string, unknown>) => item[expression],
+      }));
+
+      renderTable({
+        resultFields: mockResultFieldsWithDateTransform,
+        results: [
+          { id: '1', registrationDate: '2024-03-28' },
+          { id: '2', registrationDate: '2020-01-15' },
+        ],
+      });
+
+      await waitFor(() => {
+        expect(screen.getAllByTestId(/^table-row-/)).toHaveLength(2);
+      });
+
+      const rows = screen.getAllByTestId(/^table-row-/);
+      expect(rows[0]).toHaveTextContent('2020');
+      expect(rows[1]).toHaveTextContent('2024');
+      expect(screen.queryByText('2024-03-28')).not.toBeInTheDocument();
+      expect(screen.queryByText('2020-01-15')).not.toBeInTheDocument();
     });
   });
 

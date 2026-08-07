@@ -23,6 +23,7 @@ export interface BoundValue {
 
 export interface ScalarValue {
   value: string;
+  label?: string;
 }
 
 export interface RangeValue {
@@ -62,6 +63,13 @@ export interface LookupInput {
   lookup: LookupConfig;
 }
 
+export interface LookupOption {
+  uuid: string;
+  label: string;
+}
+
+export type LookupLoader = () => Promise<LookupOption[]>;
+
 export type InputConfig =
   | TextInput
   | NumericInput
@@ -75,6 +83,7 @@ export interface CriterionConfig {
   translationKey: string;
   default?: boolean;
   input: InputConfig;
+  additionalCriteria?: string[];
 }
 
 export type ResultFieldFilterType = 'text' | 'select' | 'dateRange' | 'numeric';
@@ -107,7 +116,7 @@ export interface SearchContextConfig {
   context: 'patient' | 'appointment' | 'patientProgram';
   translationKey: string;
   requiredPrivileges: string[];
-  locationAware: 'loggedInLocation' | 'allowedLocation';
+  locationAware?: 'loggedInLocation' | 'allowedLocation';
   url: string;
   pageSize: number;
   criteria: CriterionConfig[];

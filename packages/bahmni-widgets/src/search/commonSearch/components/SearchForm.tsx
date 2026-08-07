@@ -8,6 +8,7 @@ import {
   criteriaAvailableToAdd,
   initialRows,
   makeRow,
+  reconcileAdditionalCriteriaErrors,
   updateRow,
 } from '../utils';
 import CriterionRowComponent from './CriterionRow';
@@ -48,34 +49,41 @@ const SearchForm = ({
     setRows(initialRows(selectedItem!));
   };
 
+  const reconcile = (nextRows: CriterionRow[]) =>
+    reconcileAdditionalCriteriaErrors(nextRows, activeContext.criteria);
+
   const handleCriterionChange = (rowId: string, criterionKey: string) => {
     setRows((prev) =>
-      updateRow(prev, rowId, () => ({
-        criterionKey,
-        value: null,
-        validationError: null,
-        rangeOrderError: null,
-      })),
+      reconcile(
+        updateRow(prev, rowId, () => ({
+          criterionKey,
+          value: null,
+          validationError: null,
+          rangeOrderError: null,
+        })),
+      ),
     );
   };
 
   const handleValueChange = (rowId: string, value: CriterionValue | null) => {
     setRows((prev) =>
-      updateRow(prev, rowId, (r) => {
-        const filled =
-          value != null &&
-          ('value' in value ? value.value != null : value.from.value != null);
-        return {
-          value,
-          validationError: filled ? null : r.validationError,
-          rangeOrderError: null,
-        };
-      }),
+      reconcile(
+        updateRow(prev, rowId, (r) => {
+          const filled =
+            value != null &&
+            ('value' in value ? value.value != null : value.from.value != null);
+          return {
+            value,
+            validationError: filled ? null : r.validationError,
+            rangeOrderError: null,
+          };
+        }),
+      ),
     );
   };
 
   const handleRemove = (rowId: string) => {
-    setRows((prev) => prev.filter((r) => r.rowId !== rowId));
+    setRows((prev) => reconcile(prev.filter((r) => r.rowId !== rowId)));
   };
 
   const availableCriteria = criteriaAvailableToAdd(
@@ -90,7 +98,7 @@ const SearchForm = ({
     const preselect = availableCriteria.some((c) => c.id === defaultKey)
       ? defaultKey
       : null;
-    setRows((prev) => [...prev, makeRow(preselect)]);
+    setRows((prev) => reconcile([...prev, makeRow(preselect)]));
   };
 
   return (
@@ -113,21 +121,23 @@ const SearchForm = ({
           onChange={handleContextChange}
         />
       </div>
-      <div className={styles.dropdownCol}>
-        <Dropdown
-          id="location-selector"
-          data-testid="location-selector-test-id"
-          titleText={t('COMMON_SEARCH_SELECT_LOCATION_LABEL')}
-          label=""
-          items={[location]}
-          selectedItem={location}
-          itemToString={(item: UserLocation | null) =>
-            item?.display ?? item?.name ?? ''
-          }
-          disabled
-          onChange={() => {}}
-        />
-      </div>
+      {activeContext.locationAware && (
+        <div className={styles.dropdownCol}>
+          <Dropdown
+            id="location-selector"
+            data-testid="location-selector-test-id"
+            titleText={t('COMMON_SEARCH_SELECT_LOCATION_LABEL')}
+            label=""
+            items={[location]}
+            selectedItem={location}
+            itemToString={(item: UserLocation | null) =>
+              item?.display ?? item?.name ?? ''
+            }
+            disabled
+            onChange={() => {}}
+          />
+        </div>
+      )}
       {rows.map((row) => (
         <div key={row.rowId} className={styles.fullWidthCol}>
           <CriterionRowComponent

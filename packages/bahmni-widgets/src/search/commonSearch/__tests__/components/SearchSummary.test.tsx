@@ -6,6 +6,7 @@ import {
   mockDateRangeRow,
   mockDateScalarRow,
   mockLookupRow,
+  mockLookupRowWithLabel,
   mockNumericFromOnlyRow,
   mockNumericRangeRow,
   mockNumericScalarRow,
@@ -45,9 +46,14 @@ describe('SearchSummary', () => {
       expected: 'APPOINTMENT_SERVICE: US Health',
     },
     {
-      label: 'lookup criterion',
+      label: 'lookup criterion with no resolved label (fallback to raw value)',
       row: mockLookupRow,
       expected: 'PATIENT_ID: P001',
+    },
+    {
+      label: 'lookup criterion with a resolved label',
+      row: mockLookupRowWithLabel,
+      expected: 'PATIENT_ID: John Doe',
     },
     {
       label: 'numeric scalar criterion',

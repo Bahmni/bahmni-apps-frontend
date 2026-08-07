@@ -2,16 +2,7 @@ import { ObservationForm } from '@bahmni/services';
 import { useQuery } from '@tanstack/react-query';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { useClinicalAppData } from '../../../../hooks/useClinicalAppData';
-import ObservationFormsContainer, {
-  detectFormChanges,
-  extractVersionFromFormFieldPath,
-  injectMissingDeleteObs,
-  mergeObservationStatuses,
-  replaceInterpretationRemovedObs,
-  replaceNoteRemovedObs,
-  restoreComplexValues,
-  valueFingerprint,
-} from '../ObservationFormsContainer';
+import ObservationFormsContainer from '../ObservationFormsContainer';
 import {
   mockMinimalPatientData,
   mockEnrichedPatientData,
@@ -125,6 +116,7 @@ jest.mock('@bahmni/design-system', () => ({
     ({
       className,
       title,
+      headerActions,
       primaryButtonText,
       onPrimaryButtonClick,
       isPrimaryButtonDisabled,
@@ -133,9 +125,14 @@ jest.mock('@bahmni/design-system', () => ({
       tertiaryButtonText,
       onTertiaryButtonClick,
       content,
+      isExpanded,
+      onToggleExpand,
+      expandAriaLabel,
+      collapseAriaLabel,
     }) => (
       <div data-testid="action-area" className={className}>
         <div data-testid="action-area-title">{title}</div>
+        <div data-testid="action-area-header-actions">{headerActions}</div>
         <div data-testid="action-area-content">{content}</div>
         <div data-testid="action-area-buttons">
           <button
@@ -155,6 +152,15 @@ jest.mock('@bahmni/design-system', () => ({
             {tertiaryButtonText}
           </button>
         </div>
+        {onToggleExpand && (
+          <button
+            data-testid="expand-toggle-button"
+            aria-label={isExpanded ? collapseAriaLabel : expandAriaLabel}
+            onClick={onToggleExpand}
+          >
+            {isExpanded ? 'Collapse' : 'Expand'}
+          </button>
+        )}
       </div>
     ),
   ),
@@ -199,7 +205,6 @@ jest.mock('../styles/ObservationFormsContainer.module.scss', () => ({
   formView: 'formView',
   formContent: 'formContent',
   formViewActionArea: 'formViewActionArea',
-  formTitleContainer: 'formTitleContainer',
   pinIconContainer: 'pinIconContainer',
   pinned: 'pinned',
   unpinned: 'unpinned',
@@ -297,6 +302,49 @@ describe('ObservationFormsContainer', () => {
         <ObservationFormsContainer {...defaultProps} viewingForm={null} />,
       );
       expect(container).toMatchSnapshot();
+    });
+
+    it('should not render the expand toggle when onToggleActionAreaExpand is not provided', () => {
+      render(
+        <ObservationFormsContainer {...defaultProps} viewingForm={mockForm} />,
+      );
+
+      expect(
+        screen.queryByTestId('expand-toggle-button'),
+      ).not.toBeInTheDocument();
+    });
+
+    it('should render the expand toggle and forward isActionAreaExpanded/onToggleActionAreaExpand to ActionArea', () => {
+      const mockOnToggleActionAreaExpand = jest.fn();
+      render(
+        <ObservationFormsContainer
+          {...defaultProps}
+          viewingForm={mockForm}
+          isActionAreaExpanded={false}
+          onToggleActionAreaExpand={mockOnToggleActionAreaExpand}
+        />,
+      );
+
+      const toggleButton = screen.getByTestId('expand-toggle-button');
+      expect(toggleButton).toHaveTextContent('Expand');
+
+      fireEvent.click(toggleButton);
+      expect(mockOnToggleActionAreaExpand).toHaveBeenCalledTimes(1);
+    });
+
+    it('should show the collapse label on the toggle when isActionAreaExpanded is true', () => {
+      render(
+        <ObservationFormsContainer
+          {...defaultProps}
+          viewingForm={mockForm}
+          isActionAreaExpanded
+          onToggleActionAreaExpand={jest.fn()}
+        />,
+      );
+
+      expect(screen.getByTestId('expand-toggle-button')).toHaveTextContent(
+        'Collapse',
+      );
     });
   });
 
@@ -417,10 +465,7 @@ describe('ObservationFormsContainer', () => {
       expect(mockOnViewingFormChange).toHaveBeenCalledWith(null);
     });
 
-    it('should DELETE+POST when interpretation is cleared on a standalone obs (partial-PUT workaround)', () => {
-      // OpenMRS FHIR2 partial PUT leaves interpretation unchanged when the field
-      // is absent. replaceInterpretationRemovedObs detects this and replaces the
-      // obs with a DELETE+POST pair so the interpretation is actually cleared.
+    it('should PUT with interpretation omitted when interpretation is cleared on a standalone obs', () => {
       const mockOnFormObservationsChange = jest.fn();
       const mockOnViewingFormChange = jest.fn();
 
@@ -450,8 +495,7 @@ describe('ObservationFormsContainer', () => {
         <ObservationFormsContainer
           {...defaultProps}
           viewingForm={mockForm}
-          // Seed existingObservations with ABNORMAL interpretation so
-          // statusSourceRef is populated with the original abnormal obs.
+          // Seed with ABNORMAL interpretation to populate statusSourceRef.
           existingObservations={[
             {
               concept: { uuid: 'c1' },
@@ -472,25 +516,19 @@ describe('ObservationFormsContainer', () => {
       expect(mockOnFormObservationsChange).toHaveBeenCalledWith(
         mockForm.uuid,
         expect.arrayContaining([
-          // DELETE entry for old obs with interpretation
-          expect.objectContaining({ uuid: 'obs-uuid-1', voided: true }),
-          // POST entry for new obs without interpretation
-          expect.objectContaining({
-            uuid: undefined,
-            interpretation: undefined,
-            value: 60,
-          }),
+          // Single PUT entry — backend's unsetMissingFields clears interpretation when omitted
+          expect.objectContaining({ uuid: 'obs-uuid-1', value: 60 }),
         ]),
         null,
         undefined,
       );
+      const savedObservations = mockOnFormObservationsChange.mock.calls[0][1];
+      expect(savedObservations).toHaveLength(1);
+      expect(savedObservations[0].interpretation).toBeUndefined();
     });
 
-    it('should DELETE+POST when interpretation is cleared on an obsGroup member (partial-PUT workaround)', () => {
-      // Blood Pressure obsGroup: Systolic and Diastolic are group members.
-      // Each is processed as an individual leaf Observation in the bundle,
-      // so the same partial-update issue applies — omitting interpretation
-      // from the PUT does not clear it. Verify that group members are handled.
+    it('should PUT with interpretation omitted when interpretation is cleared on an obsGroup member', () => {
+      // Group members are processed as individual leaf Observations, so the same partial-PUT issue applies.
       const mockOnFormObservationsChange = jest.fn();
       const mockOnViewingFormChange = jest.fn();
 
@@ -558,23 +596,18 @@ describe('ObservationFormsContainer', () => {
           expect.objectContaining({
             uuid: 'group-uuid',
             groupMembers: expect.arrayContaining([
-              // DELETE entry for the group member that had interpretation
-              expect.objectContaining({
-                uuid: 'systolic-uuid',
-                voided: true,
-              }),
-              // POST entry for new group member without interpretation
-              expect.objectContaining({
-                uuid: undefined,
-                interpretation: undefined,
-                value: 106,
-              }),
+              // Single PUT entry — backend's unsetMissingFields clears interpretation when omitted
+              expect.objectContaining({ uuid: 'systolic-uuid', value: 106 }),
             ]),
           }),
         ]),
         null,
         undefined,
       );
+      const savedGroupMembers =
+        mockOnFormObservationsChange.mock.calls[0][1][0].groupMembers;
+      expect(savedGroupMembers).toHaveLength(1);
+      expect(savedGroupMembers[0].interpretation).toBeUndefined();
     });
   });
 
@@ -799,6 +832,26 @@ describe('ObservationFormsContainer', () => {
 
       expect(pinContainer).toHaveClass('pinned');
       expect(pinContainer).toHaveAttribute('title', 'Unpin form');
+    });
+
+    it('should render the pin icon alongside the maximize/minimize toggle, not inside the title', () => {
+      render(
+        <ObservationFormsContainer
+          {...defaultProps}
+          viewingForm={nonDefaultForm}
+          isActionAreaExpanded={false}
+          onToggleActionAreaExpand={jest.fn()}
+        />,
+      );
+
+      const titleContainer = screen.getByTestId('action-area-title');
+      const headerActionsContainer = screen.getByTestId(
+        'action-area-header-actions',
+      );
+      const pinIcon = screen.getByTestId('icon-pin-icon');
+
+      expect(titleContainer).not.toContainElement(pinIcon);
+      expect(headerActionsContainer).toContainElement(pinIcon);
     });
 
     it('should show unpinned state when form is not in pinnedForms array', () => {
@@ -1829,361 +1882,5 @@ describe('Edit mode - hasFormChanges / change detection', () => {
 
     const primaryButton = screen.getByTestId('primary-button');
     expect(primaryButton).not.toBeDisabled();
-  });
-});
-
-describe('extractVersionFromFormFieldPath', () => {
-  it('extracts version from a standard formFieldPath', () => {
-    expect(extractVersionFromFormFieldPath('Vitals.18/14-0')).toBe('18');
-  });
-
-  it('extracts version from a formFieldPath with a single-digit version', () => {
-    expect(extractVersionFromFormFieldPath('Vitals.1/14-0')).toBe('1');
-  });
-
-  it('extracts version from a formFieldPath with a multi-word form name', () => {
-    expect(
-      extractVersionFromFormFieldPath('History and Examination.2/3-0'),
-    ).toBe('2');
-  });
-
-  it('returns null when formFieldPath is undefined', () => {
-    expect(extractVersionFromFormFieldPath(undefined)).toBeNull();
-  });
-
-  it('returns null when formFieldPath has no slash', () => {
-    expect(extractVersionFromFormFieldPath('Vitals.1')).toBeNull();
-  });
-
-  it('returns null when formFieldPath has no dot before the slash', () => {
-    expect(extractVersionFromFormFieldPath('Vitals/14-0')).toBeNull();
-  });
-
-  it('returns null when the version segment is empty', () => {
-    expect(extractVersionFromFormFieldPath('Vitals./14-0')).toBeNull();
-  });
-});
-
-describe('valueFingerprint', () => {
-  it('returns empty string for null', () => {
-    expect(valueFingerprint(null)).toBe('');
-  });
-
-  it('returns empty string for undefined', () => {
-    expect(valueFingerprint(undefined)).toBe('');
-  });
-
-  it('returns date: prefix for a Date object', () => {
-    const d = new Date('2024-03-15');
-    expect(valueFingerprint(d)).toBe('date:2024-03-15');
-  });
-
-  it('returns date: prefix for an ISO date string', () => {
-    expect(valueFingerprint('2024-03-15T10:00:00Z')).toBe('date:2024-03-15');
-  });
-
-  it('does not treat plain numeric string as date', () => {
-    expect(valueFingerprint('2024')).toBe('2024');
-  });
-
-  it('returns uuid: prefix for object with uuid', () => {
-    expect(valueFingerprint({ uuid: 'abc-123', display: 'Foo' })).toBe(
-      'uuid:abc-123',
-    );
-  });
-
-  it('returns url string for Complex object with url', () => {
-    expect(
-      valueFingerprint({ url: '/images/photo.jpg', fileName: 'photo.jpg' }),
-    ).toBe('/images/photo.jpg');
-  });
-
-  it('returns plain string as-is', () => {
-    expect(valueFingerprint('hello world')).toBe('hello world');
-  });
-
-  it('returns JSON.stringify for unknown object', () => {
-    expect(valueFingerprint({ foo: 'bar' })).toBe('{"foo":"bar"}');
-  });
-});
-
-describe('detectFormChanges', () => {
-  const obs = (formFieldPath: string, value: unknown, comment?: string) => ({
-    concept: { uuid: 'c1' },
-    value: value as string,
-    obsDatetime: '2024-01-01',
-    formNamespace: 'Bahmni',
-    formFieldPath,
-    comment,
-  });
-
-  it('returns false when current and original are identical', () => {
-    const current = [obs('Form.1/1-0', 'hello')];
-    const original = [obs('Form.1/1-0', 'hello')];
-    expect(detectFormChanges(current, original)).toBe(false);
-  });
-
-  it('returns true when a field is added', () => {
-    const current = [obs('Form.1/1-0', 'a'), obs('Form.1/2-0', 'b')];
-    const original = [obs('Form.1/1-0', 'a')];
-    expect(detectFormChanges(current, original)).toBe(true);
-  });
-
-  it('returns true when a field is removed', () => {
-    const current = [obs('Form.1/1-0', 'a')];
-    const original = [obs('Form.1/1-0', 'a'), obs('Form.1/2-0', 'b')];
-    expect(detectFormChanges(current, original)).toBe(true);
-  });
-
-  it('returns true when a value changes', () => {
-    const current = [obs('Form.1/1-0', 'new value')];
-    const original = [obs('Form.1/1-0', 'old value')];
-    expect(detectFormChanges(current, original)).toBe(true);
-  });
-
-  it('returns true when a comment changes', () => {
-    const current = [obs('Form.1/1-0', 'val', 'new note')];
-    const original = [obs('Form.1/1-0', 'val', 'old note')];
-    expect(detectFormChanges(current, original)).toBe(true);
-  });
-
-  it('returns false for multiselect with same set in different order', () => {
-    const current = [obs('Form.1/1-0', 'b'), obs('Form.1/1-0', 'a')];
-    const original = [obs('Form.1/1-0', 'a'), obs('Form.1/1-0', 'b')];
-    expect(detectFormChanges(current, original)).toBe(false);
-  });
-
-  it('deduplicates duplicate observations at the same path', () => {
-    const current = [obs('Form.1/1-0', 'x'), obs('Form.1/1-0', 'x')];
-    const original = [obs('Form.1/1-0', 'x')];
-    expect(detectFormChanges(current, original)).toBe(false);
-  });
-
-  it('recurses into groupMembers', () => {
-    const current = [
-      {
-        ...obs('Form.1/1-0', null),
-        groupMembers: [obs('Form.1/2-0', 'changed')],
-      },
-    ];
-    const original = [
-      {
-        ...obs('Form.1/1-0', null),
-        groupMembers: [obs('Form.1/2-0', 'original')],
-      },
-    ];
-    expect(detectFormChanges(current, original)).toBe(true);
-  });
-});
-
-describe('replaceNoteRemovedObs', () => {
-  const obs = (uuid: string, comment?: string) => ({
-    concept: { uuid: 'c1' },
-    value: 'val',
-    obsDatetime: '2024-01-01',
-    formNamespace: 'Bahmni',
-    uuid,
-    comment,
-  });
-
-  it('replaces obs where comment was cleared with DELETE+POST pair', () => {
-    const transformed = [obs('obs-1')]; // no comment now
-    const original = [obs('obs-1', 'old note')];
-    replaceNoteRemovedObs(transformed, original);
-    expect(transformed).toHaveLength(2);
-    expect(transformed[0].voided).toBe(true);
-    expect(transformed[0].uuid).toBe('obs-1');
-    expect(transformed[1].uuid).toBeUndefined();
-    expect(transformed[1].comment).toBeUndefined();
-  });
-
-  it('does not replace obs that still has a comment', () => {
-    const transformed = [obs('obs-1', 'still here')];
-    const original = [obs('obs-1', 'old note')];
-    replaceNoteRemovedObs(transformed, original);
-    expect(transformed).toHaveLength(1);
-  });
-
-  it('does not replace obs that had no comment originally', () => {
-    const transformed = [obs('obs-1')];
-    const original = [obs('obs-1')];
-    replaceNoteRemovedObs(transformed, original);
-    expect(transformed).toHaveLength(1);
-  });
-
-  it('recurses into group members', () => {
-    const child = obs('child-1');
-    const originalChild = obs('child-1', 'old note');
-    const transformed = [{ ...obs('grp-1'), groupMembers: [child] }];
-    const original = [{ ...obs('grp-1'), groupMembers: [originalChild] }];
-    replaceNoteRemovedObs(transformed, original);
-    const groupMembers = transformed[0].groupMembers as (typeof child)[];
-    expect(groupMembers).toHaveLength(2);
-    expect(groupMembers[0].voided).toBe(true);
-    expect(groupMembers[0].uuid).toBe('child-1');
-    expect(groupMembers[1].uuid).toBeUndefined();
-    expect(groupMembers[1].comment).toBeUndefined();
-  });
-});
-
-describe('replaceInterpretationRemovedObs', () => {
-  const obs = (uuid: string, interpretation?: string) => ({
-    concept: { uuid: 'c1' },
-    value: 80,
-    obsDatetime: '2024-01-01',
-    formNamespace: 'Bahmni',
-    uuid,
-    interpretation,
-  });
-
-  it('replaces obs where interpretation was cleared', () => {
-    const transformed = [obs('obs-1')];
-    const original = [obs('obs-1', 'ABNORMAL')];
-    replaceInterpretationRemovedObs(transformed, original);
-    expect(transformed).toHaveLength(2);
-    expect(transformed[0].voided).toBe(true);
-    expect(transformed[1].uuid).toBeUndefined();
-    expect(transformed[1].interpretation).toBeUndefined();
-  });
-
-  it('recurses into group members', () => {
-    const child = obs('child-1');
-    const originalChild = obs('child-1', 'HIGH');
-    const transformed = [{ ...obs('grp-1'), groupMembers: [child] }];
-    const original = [{ ...obs('grp-1'), groupMembers: [originalChild] }];
-    replaceInterpretationRemovedObs(transformed, original);
-    const groupMembers = transformed[0].groupMembers as (typeof child)[];
-    expect(groupMembers).toHaveLength(2);
-    expect(groupMembers[0].voided).toBe(true);
-  });
-
-  it('leaves obs unchanged when interpretation is still present', () => {
-    const transformed = [obs('obs-1', 'NORMAL')];
-    const original = [obs('obs-1', 'NORMAL')];
-    replaceInterpretationRemovedObs(transformed, original);
-    expect(transformed).toHaveLength(1);
-  });
-});
-
-describe('injectMissingDeleteObs', () => {
-  const obs = (uuid: string, value: string | null = 'val') => ({
-    concept: { uuid: 'c1' },
-    value,
-    obsDatetime: '2024-01-01',
-    formNamespace: 'Bahmni',
-    uuid,
-  });
-
-  it('injects voided entry for obs present in original but absent from transformed', () => {
-    const transformed = [obs('obs-1')];
-    const original = [obs('obs-1'), obs('obs-2')];
-    injectMissingDeleteObs(transformed, original);
-    expect(transformed).toHaveLength(2);
-    const injected = transformed.find((o) => o.uuid === 'obs-2');
-    expect(injected?.voided).toBe(true);
-    expect(injected?.value).toBeNull();
-  });
-
-  it('does not inject when all original obs are present in transformed', () => {
-    const transformed = [obs('obs-1'), obs('obs-2')];
-    const original = [obs('obs-1'), obs('obs-2')];
-    injectMissingDeleteObs(transformed, original);
-    expect(transformed).toHaveLength(2);
-  });
-});
-
-describe('restoreComplexValues', () => {
-  it('restores ComplexValue object from source when transformed has plain URL string', () => {
-    const complexVal = { url: '/images/photo.jpg', fileName: 'photo.jpg' };
-    const transformed = [
-      {
-        concept: { uuid: 'c1' },
-        value: '/images/photo.jpg',
-        obsDatetime: '2024-01-01',
-        formNamespace: 'Bahmni',
-      },
-    ];
-    const source = [
-      {
-        concept: { uuid: 'c1' },
-        value: complexVal,
-        obsDatetime: '2024-01-01',
-        formNamespace: 'Bahmni',
-      },
-    ];
-    restoreComplexValues(transformed, source);
-    expect(transformed[0].value).toEqual(complexVal);
-  });
-
-  it('leaves value unchanged when no matching URL in source', () => {
-    const transformed = [
-      {
-        concept: { uuid: 'c1' },
-        value: '/other/path.jpg',
-        obsDatetime: '2024-01-01',
-        formNamespace: 'Bahmni',
-      },
-    ];
-    const source = [
-      {
-        concept: { uuid: 'c1' },
-        value: { url: '/images/photo.jpg', fileName: 'photo.jpg' },
-        obsDatetime: '2024-01-01',
-        formNamespace: 'Bahmni',
-      },
-    ];
-    restoreComplexValues(transformed, source);
-    expect(transformed[0].value).toBe('/other/path.jpg');
-  });
-});
-
-describe('mergeObservationStatuses', () => {
-  const obs = (uuid: string, status?: string) => ({
-    concept: { uuid: 'c1' },
-    value: 'val',
-    obsDatetime: '2024-01-01',
-    formNamespace: 'Bahmni',
-    uuid,
-    status,
-  });
-
-  it('copies status from existing to transformed when uuids match', () => {
-    const transformed = [obs('obs-1')];
-    const existing = [obs('obs-1', 'final')];
-    mergeObservationStatuses(transformed, existing);
-    expect(transformed[0].status).toBe('final');
-  });
-
-  it('does not overwrite status when existing has none', () => {
-    const transformed = [obs('obs-1', 'amended')];
-    const existing = [obs('obs-1')];
-    mergeObservationStatuses(transformed, existing);
-    expect(transformed[0].status).toBe('amended');
-  });
-
-  it('skips obs without uuid', () => {
-    const transformed = [
-      {
-        concept: { uuid: 'c1' },
-        value: 'v',
-        obsDatetime: '2024-01-01',
-        formNamespace: 'Bahmni',
-      },
-    ];
-    const existing = [obs('obs-1', 'final')];
-    mergeObservationStatuses(transformed, existing);
-    expect((transformed[0] as { status?: string }).status).toBeUndefined();
-  });
-
-  it('recurses into group members', () => {
-    const child = obs('child-1');
-    const existingChild = obs('child-1', 'amended');
-    const transformed = [{ ...obs('grp-1'), groupMembers: [child] }];
-    const existing = [
-      { ...obs('grp-1', 'final'), groupMembers: [existingChild] },
-    ];
-    mergeObservationStatuses(transformed, existing);
-    expect(transformed[0].status).toBe('final');
-    expect(child.status).toBe('amended');
   });
 });

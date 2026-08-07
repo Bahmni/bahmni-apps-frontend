@@ -29,6 +29,7 @@ import { CDSS_SERVER_CONFIG_URL } from '../../constants/app';
 import { ERROR_TITLES } from '../../constants/errors';
 import { MEDICATIONS_INPUT_CONTROL_KEY } from '../../constants/medications';
 import type { EncounterSessionStartContext } from '../../events/startConsultation';
+import { useActionAreaExpandProps } from '../../hooks/useActionAreaExpandProps';
 import { useClinicalAppData } from '../../hooks/useClinicalAppData';
 import { useEncounterConcepts } from '../../hooks/useEncounterConcepts';
 import { useClinicalConfig } from '../../providers/clinicalConfig';
@@ -52,11 +53,15 @@ import {
 interface ConsultationPadProps {
   encounterSessionStartContext: EncounterSessionStartContext;
   onClose: () => void;
+  isActionAreaExpanded?: boolean;
+  onToggleActionAreaExpand?: () => void;
 }
 
 const ConsultationPad: React.FC<ConsultationPadProps> = ({
   encounterSessionStartContext,
   onClose,
+  isActionAreaExpanded,
+  onToggleActionAreaExpand,
 }) => {
   const preloadedAllergies = encounterSessionStartContext.preloadedAllergies;
   const encounterType = encounterSessionStartContext.encounterType;
@@ -225,7 +230,7 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
     }
   }, [sessionEncounter, sessionEncounterStatus]);
 
-  const encounterForSubmission = sessionEncounter;
+  const encounterForSubmission = activeEncounter;
 
   const episodeOfCareUuids = episodeOfCare.map((eoc) => eoc.uuid);
   const statDurationInMilliseconds =
@@ -238,6 +243,12 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
     getFormData,
     removeForm,
   } = useObservationFormsStore();
+
+  const actionAreaExpandProps = useActionAreaExpandProps({
+    isExpanded: isActionAreaExpanded,
+    onToggleExpand: onToggleActionAreaExpand,
+    disabled: !!viewingForm,
+  });
 
   // Seed medication store with FHIR resources for edit mode
   useEffect(() => {
@@ -425,8 +436,8 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
     try {
       setIsSubmitting(true);
 
-      // If any active entry has a direct submit handler (e.g., $stop operation),
-      // call it directly and skip the consultation bundle flow.
+      // If any active entry has a direct submit handler, call it directly
+      // and skip the consultation bundle flow.
       const directSubmitEntries = activeEntries.filter(
         (entry) => entry.hasData() && entry.onDirectSubmit,
       );
@@ -569,6 +580,7 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
         secondaryButtonText={t('CONSULTATION_PAD_CANCEL_BUTTON')}
         onSecondaryButtonClick={handleCancel}
         content={renderPadContent}
+        {...actionAreaExpandProps}
       />
       {viewingForm && (
         <ObservationFormsContainer
@@ -582,6 +594,8 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
           onDirectModeSubmit={directFormMode ? handleSubmit : undefined}
           onDirectModeCancel={directFormMode ? handleCancel : undefined}
           encounterSessionStartContext={encounterSessionStartContext}
+          isActionAreaExpanded={isActionAreaExpanded}
+          onToggleActionAreaExpand={onToggleActionAreaExpand}
         />
       )}
     </>

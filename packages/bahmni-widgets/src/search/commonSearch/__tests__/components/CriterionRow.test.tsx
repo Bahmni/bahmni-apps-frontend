@@ -11,6 +11,14 @@ import {
 } from '../__mocks__/criterionRowMocks';
 import { mockPatientContext } from '../__mocks__/searchFormMocks';
 
+jest.mock('@tanstack/react-query', () => ({
+  useQuery: jest.fn(() => ({
+    data: undefined,
+    isLoading: false,
+    isError: false,
+  })),
+}));
+
 const makeRow = (
   overrides?: Partial<CriterionRowState>,
 ): CriterionRowState => ({

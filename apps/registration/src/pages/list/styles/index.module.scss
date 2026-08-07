@@ -29,10 +29,7 @@
 }
 
 .headerButton {
-  position: fixed !important;
-  top: $spacing-02;
-  right: $spacing-09;
-  z-index: 9999;
+  align-self: center;
   background-color: $support-success;
 
   &:hover {

@@ -1,4 +1,5 @@
 import {
+  getEpisodeOfCare,
   getPatientProgramsPage,
   ProgramEnrollment,
   PatientProgramsResponse,
@@ -6,7 +7,7 @@ import {
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { usePatientUUID } from '../../hooks/usePatientUUID';
+import { EpisodeOfCare } from 'fhir/r4';
 import { useNotification } from '../../notification';
 import PatientProgramsTable from '../PatientProgramsTable';
 
@@ -14,6 +15,7 @@ jest.mock('../../notification');
 jest.mock('@bahmni/services', () => ({
   ...jest.requireActual('@bahmni/services'),
   getPatientProgramsPage: jest.fn(),
+  getEpisodeOfCare: jest.fn(),
 }));
 jest.mock('../../hooks/usePatientUUID', () => ({
   usePatientUUID: jest.fn(() => 'test-patient-uuid'),
@@ -21,6 +23,9 @@ jest.mock('../../hooks/usePatientUUID', () => ({
 
 const mockedGetPatientProgramsPage =
   getPatientProgramsPage as jest.MockedFunction<typeof getPatientProgramsPage>;
+const mockedGetEpisodeOfCare = getEpisodeOfCare as jest.MockedFunction<
+  typeof getEpisodeOfCare
+>;
 
 const wrapPage = (programs: ProgramEnrollment[], total?: number) => ({
   programs,
@@ -119,6 +124,9 @@ const mockPatientProgramsResponse: PatientProgramsResponse = {
             links: [],
             resourceVersion: '1.0',
           },
+          auditInfo: {
+            dateCreated: '',
+          },
         },
       ],
       attributes: [],
@@ -135,6 +143,7 @@ const mockPatientProgramsResponse: PatientProgramsResponse = {
       },
       links: [],
       resourceVersion: '1.0',
+      allowedStates: [],
     },
     {
       uuid: 'enrollment-uuid-2',
@@ -249,6 +258,9 @@ const mockPatientProgramsResponse: PatientProgramsResponse = {
             links: [],
             resourceVersion: '1.0',
           },
+          auditInfo: {
+            dateCreated: '',
+          },
         },
       ],
       attributes: [],
@@ -265,6 +277,7 @@ const mockPatientProgramsResponse: PatientProgramsResponse = {
       },
       links: [],
       resourceVersion: '1.0',
+      allowedStates: [],
     },
   ],
 };
@@ -359,6 +372,9 @@ const mockPatientProgramsWithAttributes: PatientProgramsResponse = {
             links: [],
             resourceVersion: '1.0',
           },
+          auditInfo: {
+            dateCreated: '',
+          },
         },
       ],
       attributes: [
@@ -421,6 +437,7 @@ const mockPatientProgramsWithAttributes: PatientProgramsResponse = {
       },
       links: [],
       resourceVersion: '1.0',
+      allowedStates: [],
     },
   ],
 };
@@ -443,6 +460,7 @@ describe('PatientProgramsTable Integration', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+    mockedGetEpisodeOfCare.mockResolvedValue({} as EpisodeOfCare);
     (useNotification as jest.Mock).mockReturnValue({
       addNotification: mockAddNotification,
     });
@@ -508,6 +526,32 @@ describe('PatientProgramsTable Integration', () => {
       5,
       1,
     );
+  });
+
+  it('should not fetch episode of care when no episode of care field is configured, even if episodeUuid is present', async () => {
+    mockedGetPatientProgramsPage.mockResolvedValue(
+      wrapPage(mockPatientProgramsResponse.results),
+    );
+
+    render(
+      <QueryClientProvider client={queryClient}>
+        <PatientProgramsTable
+          config={{
+            fields: [
+              { name: 'programName' },
+              { name: 'startDate' },
+              { name: 'state' },
+            ],
+          }}
+        />
+      </QueryClientProvider>,
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText('HIV Program')).toBeInTheDocument();
+    });
+
+    expect(mockedGetEpisodeOfCare).not.toHaveBeenCalled();
   });
 
   it('should show error state when an error occurs', async () => {
