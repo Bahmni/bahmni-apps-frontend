@@ -131,7 +131,7 @@ describe('ObservationFormsPanel', () => {
     expect(receivedProps.isPinnedFormsLoading).toBe(false);
   });
 
-  it('passes episodeOfCare UUIDs to useObservationFormsSearch', () => {
+  it('passes episodeOfCare UUIDs to useObservationFormsSearch in normal mode', () => {
     render(<ObservationFormsPanel />);
 
     expect(jest.mocked(useObservationFormsSearch)).toHaveBeenCalledWith('', [
@@ -217,6 +217,22 @@ describe('ObservationFormsPanel', () => {
 
   describe('DirectMode Form Handling', () => {
     const mockReset = jest.fn();
+
+    it('calls useObservationFormsSearch without episodeUuids when in task direct mode', () => {
+      render(
+        <ObservationFormsPanel
+          encounterSessionStartContext={{
+            taskFormName: 'Vitals',
+            directFormMode: true,
+          }}
+        />,
+      );
+
+      expect(jest.mocked(useObservationFormsSearch)).toHaveBeenCalledWith(
+        '',
+        undefined,
+      );
+    });
 
     beforeEach(() => {
       (

@@ -28,11 +28,22 @@ const ObservationFormsPanel: React.FC<ObservationFormsPanelProps> = ({
   const { episodeOfCare } = useClinicalAppData();
   const episodeOfCareUuids = episodeOfCare.map((eoc) => eoc.uuid);
 
+  const taskFormName = encounterSessionStartContext?.taskFormName as
+    | string
+    | undefined;
+  const directFormMode = encounterSessionStartContext?.directFormMode as
+    | boolean
+    | undefined;
+  const isTaskDirectMode = !!(taskFormName && directFormMode);
+
   const {
     forms: allForms,
     isLoading: isAllFormsLoading,
     error: observationFormsError,
-  } = useObservationFormsSearch('', episodeOfCareUuids);
+  } = useObservationFormsSearch(
+    '',
+    isTaskDirectMode ? undefined : episodeOfCareUuids,
+  );
 
   const {
     pinnedForms,
@@ -56,13 +67,6 @@ const ObservationFormsPanel: React.FC<ObservationFormsPanelProps> = ({
     }
     prevViewingFormRef.current = viewingForm;
   }, [viewingForm, refetchPinnedForms]);
-
-  const taskFormName = encounterSessionStartContext?.taskFormName as
-    | string
-    | undefined;
-  const directFormMode = encounterSessionStartContext?.directFormMode as
-    | boolean
-    | undefined;
 
   useEffect(() => {
     if (taskFormName && directFormMode && !isAllFormsLoading) {
