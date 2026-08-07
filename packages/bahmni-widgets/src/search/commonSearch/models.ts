@@ -23,6 +23,7 @@ export interface BoundValue {
 
 export interface ScalarValue {
   value: string;
+  label?: string;
 }
 
 export interface RangeValue {
