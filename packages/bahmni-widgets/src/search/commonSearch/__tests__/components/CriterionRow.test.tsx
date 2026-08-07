@@ -1,12 +1,15 @@
 import { render, screen, fireEvent } from '@testing-library/react';
-import CriterionRow from '../CriterionRow';
-import { CriterionConfig, CriterionRow as CriterionRowState } from '../models';
+import CriterionRow from '../../components/CriterionRow';
+import {
+  CriterionConfig,
+  CriterionRow as CriterionRowState,
+} from '../../models';
 import {
   mockDateCriterion,
   mockLookupCriterion,
   mockRangeNumericCriterion,
-} from './__mocks__/criterionRowMocks';
-import { mockPatientContext } from './__mocks__/searchFormMocks';
+} from '../__mocks__/criterionRowMocks';
+import { mockPatientContext } from '../__mocks__/searchFormMocks';
 
 const makeRow = (
   overrides?: Partial<CriterionRowState>,

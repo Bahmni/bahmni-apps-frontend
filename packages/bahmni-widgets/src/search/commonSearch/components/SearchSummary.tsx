@@ -5,8 +5,8 @@ import {
   CriterionConfig,
   CriterionValue,
   InputConfig,
-} from './models';
-import styles from './styles/CommonSearchWidget.module.scss';
+} from '../models';
+import styles from '../styles/CommonSearchWidget.module.scss';
 
 interface SearchSummaryProps {
   currentSearchState: CurrentSearchState;

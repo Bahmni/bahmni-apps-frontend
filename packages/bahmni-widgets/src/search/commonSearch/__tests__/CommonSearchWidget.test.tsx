@@ -50,7 +50,7 @@ let capturedOnSearch:
   | null = null;
 let capturedConfig: SearchContextConfig[] | null = null;
 
-jest.mock('../SearchForm', () => ({
+jest.mock('../components/SearchForm', () => ({
   __esModule: true,
   default: ({ onSearch, config }: any) => {
     capturedOnSearch = onSearch;
@@ -59,12 +59,12 @@ jest.mock('../SearchForm', () => ({
   },
 }));
 
-jest.mock('../SearchSummary', () => ({
+jest.mock('../components/SearchSummary', () => ({
   __esModule: true,
   default: () => <div data-testid="search-summary" />,
 }));
 
-jest.mock('../ResultsTable', () => ({
+jest.mock('../components/ResultsTable', () => ({
   __esModule: true,
   default: () => <div data-testid="results-table" />,
 }));

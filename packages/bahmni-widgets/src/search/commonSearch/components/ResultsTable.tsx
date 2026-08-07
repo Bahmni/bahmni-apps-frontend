@@ -9,10 +9,10 @@ import {
   useMemo,
   useState,
 } from 'react';
-import { useUserPrivilege } from '../../userPrivileges/useUserPrivilege';
-import { ActionConfig, ResultFieldConfig } from './models';
-import styles from './styles/CommonSearchWidget.module.scss';
-import { resolveNavigationURL, resultTransforms } from './utils';
+import { useUserPrivilege } from '../../../userPrivileges/useUserPrivilege';
+import { ActionConfig, ResultFieldConfig } from '../models';
+import styles from '../styles/CommonSearchWidget.module.scss';
+import { resolveNavigationURL, resultTransforms } from '../utils';
 
 interface ResultsTableProps {
   resultFields: ResultFieldConfig[];

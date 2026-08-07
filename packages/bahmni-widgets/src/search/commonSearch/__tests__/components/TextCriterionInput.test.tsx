@@ -1,10 +1,10 @@
 import { render, screen, fireEvent } from '@testing-library/react';
-import TextCriterionInput from '../inputs/TextCriterionInput';
-import { ScalarValue } from '../models';
+import TextCriterionInput from '../../components/TextCriterionInput';
+import { ScalarValue } from '../../models';
 import {
   mockTextInput,
   mockTextScalarValue,
-} from './__mocks__/textCriterionInputMocks';
+} from '../__mocks__/textCriterionInputMocks';
 
 const mockOnChange = jest.fn();
 

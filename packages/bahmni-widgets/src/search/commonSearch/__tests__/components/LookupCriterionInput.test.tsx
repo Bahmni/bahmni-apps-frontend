@@ -1,10 +1,10 @@
 import { render, screen } from '@testing-library/react';
-import LookupCriterionInput from '../inputs/LookupCriterionInput';
-import { ScalarValue } from '../models';
+import LookupCriterionInput from '../../components/LookupCriterionInput';
+import { ScalarValue } from '../../models';
 import {
   mockLookupInput,
   mockLookupScalarValue,
-} from './__mocks__/lookupCriterionInputMocks';
+} from '../__mocks__/lookupCriterionInputMocks';
 
 const mockOnChange = jest.fn();
 
