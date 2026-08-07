@@ -64,12 +64,17 @@ export const formatObservationValue = (
     const knownDatatype = observation.conceptId
       ? conceptDatatypeMap?.[observation.conceptId]
       : undefined;
-    const hasTimeComponent =
-      knownDatatype != null
-        ? knownDatatype === 'Datetime'
-        : /T\d{2}:\d{2}:\d{2}/.test(String(value)) &&
-          !/T00:00:00/.test(String(value));
-    return formatDateTime(String(value), t, hasTimeComponent).formattedResult;
+    const formatOne = (raw: string) => {
+      const hasTimeComponent =
+        knownDatatype != null
+          ? knownDatatype === 'Datetime'
+          : /T\d{2}:\d{2}:\d{2}/.test(raw) && !/T00:00:00/.test(raw);
+      return formatDateTime(raw, t, hasTimeComponent).formattedResult;
+    };
+    // After add-more/multi-select grouping, repeated dateTime obs are concatenated into a
+    // single string (e.g. "2024-01-01T.., 2024-02-01T.."). Format each date separately —
+    // passing the whole merged string to formatDateTime fails to parse and returns blank.
+    return String(value).split(', ').map(formatOne).join(', ');
   }
 
   if (type === 'boolean') {
