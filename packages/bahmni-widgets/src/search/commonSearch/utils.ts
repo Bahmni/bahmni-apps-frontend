@@ -48,20 +48,42 @@ export const formatSearchResult = (
   return t(`COMMON_SEARCH_RESULT_${camelToScreamingSnakeCase(raw)}`);
 };
 
+const TRANSFORM_KEYS = {
+  formatDate: 'formatDate',
+  formatTime: 'formatTime',
+  formatDateTime: 'formatDateTime',
+  formatAge: 'formatAge',
+  formatGender: 'formatGender',
+  formatCountry: 'formatCountry',
+  formatSearchResult: 'formatSearchResult',
+} as const;
+
 export const resultTransforms: Record<string, ResultTransform> = {
-  formatDate: (value: unknown, t: (key: string) => string) =>
+  [TRANSFORM_KEYS.formatDate]: (value: unknown, t: (key: string) => string) =>
     formatDateTime(value as DateTimeValue, t).formattedResult,
-  formatTime: (value: unknown, t: (key: string) => string) =>
+  [TRANSFORM_KEYS.formatTime]: (value: unknown, t: (key: string) => string) =>
     formatDateTime(value as DateTimeValue, t, false, DEFAULT_TIME_FORMAT)
       .formattedResult,
-  formatDateTime: (value: unknown, t: (key: string) => string) =>
-    formatDateTime(value as DateTimeValue, t, true).formattedResult,
-  formatAge: (value: unknown, t: (key: string) => string) =>
+  [TRANSFORM_KEYS.formatDateTime]: (
+    value: unknown,
+    t: (key: string) => string,
+  ) => formatDateTime(value as DateTimeValue, t, true).formattedResult,
+  [TRANSFORM_KEYS.formatAge]: (value: unknown, t: (key: string) => string) =>
     getFormattedAge(value as string | number, t),
-  formatGender,
-  formatCountry,
-  formatSearchResult,
+  [TRANSFORM_KEYS.formatGender]: formatGender,
+  [TRANSFORM_KEYS.formatCountry]: formatCountry,
+  [TRANSFORM_KEYS.formatSearchResult]: formatSearchResult,
 };
+
+const DISPLAY_KEY_TRANSFORMS: string[] = [
+  TRANSFORM_KEYS.formatDate,
+  TRANSFORM_KEYS.formatTime,
+  TRANSFORM_KEYS.formatDateTime,
+  TRANSFORM_KEYS.formatAge,
+];
+
+export const needsDisplayKey = (transform?: string): boolean =>
+  !!transform && DISPLAY_KEY_TRANSFORMS.includes(transform);
 
 export const toSearchAuditEventType = (
   context: SearchContextConfig['context'],

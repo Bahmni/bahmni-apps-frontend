@@ -12,7 +12,11 @@ import {
 import { useUserPrivilege } from '../../userPrivileges/useUserPrivilege';
 import { ActionConfig, ResultFieldConfig } from './models';
 import styles from './styles/CommonSearchWidget.module.scss';
-import { resolveNavigationURL, resultTransforms } from './utils';
+import {
+  needsDisplayKey,
+  resolveNavigationURL,
+  resultTransforms,
+} from './utils';
 
 interface ResultsTableProps {
   resultFields: ResultFieldConfig[];
@@ -45,8 +49,8 @@ const evaluateRows = async (
             ? String((item as Record<string, unknown>).id)
             : generateUUID(),
       };
-      for (const { key, expr, field } of compiled) {
-        row[key] = await expr.evaluate(item as Record<string, unknown>);
+      for (const { key, expr, field, transform } of compiled) {
+        const value = await expr.evaluate(item as Record<string, unknown>);
 
         if (field.action && actions) {
           const action = actions.find((a) => a.key === field.action);
@@ -55,15 +59,19 @@ const evaluateRows = async (
             row[`${key}_href`] = href;
           }
         }
-      }
 
-      for (const { key, expr, transform } of compiled) {
-        const value = await expr.evaluate(item as Record<string, unknown>);
         if (!value) {
           row[key] = '-';
           continue;
         }
-        row[key] = transform ? transform(String(value), t) : value;
+        if (needsDisplayKey(field.transform)) {
+          row[key] = value;
+          row[`${key}_display`] = transform
+            ? transform(String(value), t)
+            : String(value);
+        } else {
+          row[key] = transform ? transform(String(value), t) : value;
+        }
       }
       return row as ResultRow;
     }),
@@ -137,7 +145,7 @@ const ResultsTable = ({
 
   const renderCell = useCallback(
     (row: ResultRow, columnId: string): ReactNode => {
-      const cellValue = row[columnId] as string;
+      const cellValue = (row[`${columnId}_display`] ?? row[columnId]) as string;
       const href = row[`${columnId}_href`] as string | null | undefined;
 
       const field = resolvedFields.find((rf) => rf.id === columnId)?.field;

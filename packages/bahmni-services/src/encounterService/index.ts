@@ -1,5 +1,6 @@
 export {
   getActiveVisit,
+  getActiveVisitAtLoginLocation,
   getPatientVisits,
   getVisits,
   getPatientEncounters,

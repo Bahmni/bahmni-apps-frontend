@@ -70,6 +70,8 @@ export {
   checkIfActiveVisitExists,
   createVisitForPatient,
   getActiveVisitByPatient,
+  getVisitLocationUUID,
+  createVisitWithFhirR4,
   type VisitType,
   type VisitTypes,
   type VisitData,
@@ -268,6 +270,7 @@ export {
 
 export {
   getActiveVisit,
+  getActiveVisitAtLoginLocation,
   getEncounterByUuid,
   getVisits,
   getPatientEncounters,
