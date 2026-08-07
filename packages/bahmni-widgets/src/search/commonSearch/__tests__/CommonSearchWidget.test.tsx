@@ -1,7 +1,9 @@
 import {
+  dispatchAuditEvent,
   getConfig,
   getCurrentUserPrivileges,
   getUserLoginLocation,
+  post,
 } from '@bahmni/services';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import {
@@ -12,13 +14,8 @@ import {
   waitFor,
 } from '@testing-library/react';
 import React from 'react';
-import { post } from '../api';
 import CommonSearchWidget from '../CommonSearchWidget';
-import {
-  CurrentSearchState,
-  CriterionRow,
-  SearchContextConfig,
-} from '../models';
+import { CriterionRow, SearchContextConfig } from '../models';
 import {
   mockCommonSearchWidgetConfig,
   mockCommonSearchWidgetConfigWithRange,
@@ -31,10 +28,8 @@ import {
   mockWidgetLocation,
 } from './__mocks__/commonSearchWidgetMocks';
 
-jest.mock('../api', () => ({
-  post: jest.fn(),
-}));
 const mockPost = post as jest.Mock;
+const mockDispatchAuditEvent = dispatchAuditEvent as jest.Mock;
 
 const mockAddNotification = jest.fn();
 jest.mock('../../../notification', () => ({
@@ -46,6 +41,8 @@ jest.mock('@bahmni/services', () => ({
   getConfig: jest.fn(),
   getCurrentUserPrivileges: jest.fn(),
   getUserLoginLocation: jest.fn(),
+  post: jest.fn(),
+  dispatchAuditEvent: jest.fn(),
 }));
 
 let capturedOnSearch:
@@ -64,16 +61,7 @@ jest.mock('../SearchForm', () => ({
 
 jest.mock('../SearchSummary', () => ({
   __esModule: true,
-  default: ({
-    onModifySearch,
-  }: {
-    currentSearchState: CurrentSearchState;
-    onModifySearch: () => void;
-  }) => (
-    <div data-testid="search-summary">
-      <button onClick={onModifySearch}>Modify Search</button>
-    </div>
-  ),
+  default: () => <div data-testid="search-summary" />,
 }));
 
 jest.mock('../ResultsTable', () => ({
@@ -352,7 +340,7 @@ describe('CommonSearchWidget', () => {
       expect(screen.getByTestId('search-form')).toBeInTheDocument();
     });
 
-    it('hides loading overlay and shows error toast when search API fails', async () => {
+    it('hides loading overlay, shows error toast and returns to search form when search API fails', async () => {
       mockPost.mockRejectedValue(new Error('Network error'));
       await renderAndWait();
       await act(async () => {
@@ -364,6 +352,9 @@ describe('CommonSearchWidget', () => {
       expect(
         screen.queryByTestId('common-search-loading-overlay-test-id'),
       ).not.toBeInTheDocument();
+      expect(screen.getByTestId('search-form')).toBeInTheDocument();
+      expect(screen.queryByTestId('search-summary')).not.toBeInTheDocument();
+      expect(screen.queryByTestId('results-table')).not.toBeInTheDocument();
       expect(mockAddNotification).toHaveBeenCalledWith({
         title: 'ERROR_DEFAULT_TITLE',
         message: 'COMMON_SEARCH_API_ERROR_MESSAGE',
@@ -371,10 +362,118 @@ describe('CommonSearchWidget', () => {
         timeout: 5000,
       });
     });
+
+    it.each([
+      { context: 'patient' as const, expectedEventType: 'SEARCHED_PATIENT' },
+      {
+        context: 'appointment' as const,
+        expectedEventType: 'SEARCHED_APPOINTMENT',
+      },
+      {
+        context: 'patientProgram' as const,
+        expectedEventType: 'SEARCHED_PATIENT_PROGRAM',
+      },
+    ])(
+      'dispatches $expectedEventType audit event on successful $context search',
+      async ({ context, expectedEventType }) => {
+        const contextConfig = { ...mockCommonSearchWidgetConfig[0], context };
+        (getConfig as jest.Mock).mockResolvedValueOnce([contextConfig]);
+        render(
+          <CommonSearchWidget extensionParams={{ configUrl: '/api/config' }} />,
+          { wrapper },
+        );
+        await screen.findByTestId('search-form');
+        await act(async () => {
+          capturedOnSearch!([mockRowWithValidValue], contextConfig);
+        });
+        expect(mockDispatchAuditEvent).toHaveBeenCalledWith({
+          eventType: expectedEventType,
+        });
+      },
+    );
+
+    it('does not dispatch audit event when validation fails', async () => {
+      await renderAndWait();
+      capturedOnSearch!(
+        [mockRowWithEmptyValue],
+        mockCommonSearchWidgetConfig[0],
+      );
+      expect(mockDispatchAuditEvent).not.toHaveBeenCalled();
+    });
+
+    it('does not dispatch audit event when search API fails', async () => {
+      mockPost.mockRejectedValue(new Error('Network error'));
+      await renderAndWait();
+      await act(async () => {
+        capturedOnSearch!(
+          [mockRowWithValidValue],
+          mockCommonSearchWidgetConfig[0],
+        );
+      });
+      expect(mockDispatchAuditEvent).not.toHaveBeenCalled();
+    });
   });
 
-  describe('handleModifySearch', () => {
-    it('returns to search form and hides results when Modify Search is clicked', async () => {
+  describe('accordion panel behavior', () => {
+    const renderAndSearch = async (results: unknown[] = [{ id: '1' }]) => {
+      mockPost.mockResolvedValue({ results });
+      (getConfig as jest.Mock).mockResolvedValueOnce(
+        mockCommonSearchWidgetConfig,
+      );
+      render(
+        <CommonSearchWidget extensionParams={{ configUrl: '/api/config' }} />,
+        { wrapper },
+      );
+      await screen.findByTestId('search-form');
+      await act(async () => {
+        capturedOnSearch!(
+          [mockRowWithValidValue],
+          mockCommonSearchWidgetConfig[0],
+        );
+      });
+    };
+
+    it('collapses accordion and show results table below accordion after successful search with results', async () => {
+      await renderAndSearch([{ id: '1' }]);
+      expect(
+        screen.getByRole('button', {
+          name: 'COMMON_SEARCH_MODIFY_SEARCH_BUTTON',
+        }),
+      ).toHaveAttribute('aria-expanded', 'false');
+      expect(screen.getByTestId('search-summary')).toBeInTheDocument();
+      expect(screen.getByTestId('results-table')).toBeInTheDocument();
+    });
+
+    it('keeps accordion open after search returns empty results', async () => {
+      await renderAndSearch([]);
+      expect(
+        screen.getByRole('button', {
+          name: 'COMMON_SEARCH_MODIFY_SEARCH_BUTTON',
+        }),
+      ).toHaveAttribute('aria-expanded', 'true');
+    });
+
+    it('results table remains visible when accordion is toggled open', async () => {
+      await renderAndSearch([{ id: '1' }]);
+      fireEvent.click(
+        screen.getByRole('button', {
+          name: 'COMMON_SEARCH_MODIFY_SEARCH_BUTTON',
+        }),
+      );
+      expect(screen.getByTestId('search-summary')).toBeInTheDocument();
+      expect(screen.getByTestId('results-table')).toBeInTheDocument();
+    });
+
+    it('accordion title changes to modify search after first successful search', async () => {
+      await renderAndSearch([{ id: '1' }]);
+      expect(
+        screen.getByRole('button', {
+          name: 'COMMON_SEARCH_MODIFY_SEARCH_BUTTON',
+        }),
+      ).toBeInTheDocument();
+    });
+
+    it('accordion title shows select criteria before any search', async () => {
       (getConfig as jest.Mock).mockResolvedValueOnce(
         mockCommonSearchWidgetConfig,
       );
@@ -385,19 +484,11 @@ describe('CommonSearchWidget', () => {
       await waitFor(() =>
         expect(screen.getByTestId('search-form')).toBeInTheDocument(),
       );
-      await act(async () => {
-        capturedOnSearch!(
-          [mockRowWithValidValue],
-          mockCommonSearchWidgetConfig[0],
-        );
-      });
-      expect(screen.getByTestId('search-summary')).toBeInTheDocument();
-      fireEvent.click(screen.getByRole('button', { name: 'Modify Search' }));
-      await waitFor(() =>
-        expect(screen.getByTestId('search-form')).toBeInTheDocument(),
-      );
-      expect(screen.queryByTestId('search-summary')).not.toBeInTheDocument();
-      expect(screen.queryByTestId('results-table')).not.toBeInTheDocument();
+      expect(
+        screen.getByRole('button', {
+          name: 'COMMON_SEARCH_SELECT_SEARCH_CRITERIA',
+        }),
+      ).toBeInTheDocument();
     });
   });
 });

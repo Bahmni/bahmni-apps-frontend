@@ -850,6 +850,70 @@ describe('Observations Utils', () => {
       expect(result).toHaveLength(0);
     });
 
+    it('should extract attachment URL from matching extension as a string observationValue', () => {
+      const observations: Observation[] = [
+        {
+          resourceType: 'Observation',
+          id: 'obs-attachment',
+          status: 'final',
+          code: {
+            text: 'Image',
+            coding: [{ code: 'image-concept' }],
+          },
+          extension: [
+            {
+              url: 'http://fhir.bahmni.org/ext/observation/obs-value-attachment',
+              valueAttachment: {
+                url: '/document_images/patient-image.jpg',
+                title: 'patient-image.jpg',
+              },
+            },
+          ],
+        },
+      ];
+
+      const result = transformObservations(observations);
+
+      expect(result).toHaveLength(1);
+      expect(result[0].observationValue).toEqual({
+        value: '/document_images/patient-image.jpg',
+        type: 'string',
+        isAbnormal: false,
+      });
+    });
+
+    it('should ignore extension with a different URL and fall through to valueString', () => {
+      const observations: Observation[] = [
+        {
+          resourceType: 'Observation',
+          id: 'obs-other-ext',
+          status: 'final',
+          code: {
+            text: 'Notes',
+            coding: [{ code: 'notes-concept' }],
+          },
+          valueString: 'Some text note',
+          extension: [
+            {
+              url: 'http://fhir.bahmni.org/ext/observation/some-other-extension',
+              valueAttachment: {
+                url: '/should-not-be-used.jpg',
+              },
+            },
+          ],
+        },
+      ];
+
+      const result = transformObservations(observations);
+
+      expect(result).toHaveLength(1);
+      expect(result[0].observationValue).toEqual({
+        value: 'Some text note',
+        type: 'string',
+        isAbnormal: false,
+      });
+    });
+
     it('should use coding display if text is not available', () => {
       const observations: Observation[] = [
         {

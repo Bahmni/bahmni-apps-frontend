@@ -18,6 +18,7 @@ export const mockAppointmentContext: SearchContextConfig = {
   resultFields: mockResultFields,
   criteria: [
     {
+      id: 'appointmentNumber',
       field: { key: 'appointmentNumber' },
       translationKey: 'APPOINTMENT_NUMBER',
       input: {
@@ -26,6 +27,7 @@ export const mockAppointmentContext: SearchContextConfig = {
       },
     },
     {
+      id: 'service',
       field: { key: 'service' },
       translationKey: 'APPOINTMENT_SERVICE',
       input: {
@@ -35,6 +37,7 @@ export const mockAppointmentContext: SearchContextConfig = {
       },
     },
     {
+      id: 'patientId',
       field: { key: 'patientId' },
       translationKey: 'PATIENT_ID',
       input: {
@@ -44,6 +47,7 @@ export const mockAppointmentContext: SearchContextConfig = {
       },
     },
     {
+      id: 'age',
       field: { key: 'age' },
       translationKey: 'PATIENT_AGE',
       input: {
@@ -53,6 +57,7 @@ export const mockAppointmentContext: SearchContextConfig = {
       },
     },
     {
+      id: 'appointmentDate',
       field: { key: 'appointmentDate' },
       translationKey: 'APPOINTMENT_DATE',
       input: {
@@ -62,6 +67,7 @@ export const mockAppointmentContext: SearchContextConfig = {
       },
     },
     {
+      id: 'dateRange',
       field: { key: 'dateRange' },
       translationKey: 'DATE_RANGE',
       input: {
@@ -71,11 +77,25 @@ export const mockAppointmentContext: SearchContextConfig = {
       },
     },
     {
+      id: 'ageScalar',
       field: { key: 'ageScalar' },
       translationKey: 'AGE_SCALAR',
       input: {
         kind: 'numeric',
         placeholderTranslationKey: 'AGE_SCALAR_PLACEHOLDER',
+      },
+    },
+    {
+      id: 'gender',
+      field: { key: 'gender' },
+      translationKey: 'PATIENT_GENDER',
+      input: {
+        kind: 'options',
+        placeholderTranslationKey: 'GENDER_PLACEHOLDER',
+        options: [
+          { translationKey: 'GENDER_MALE', value: 'MALE' },
+          { translationKey: 'GENDER_FEMALE', value: 'FEMALE' },
+        ],
       },
     },
   ],
@@ -147,6 +167,14 @@ export const mockDateRangeRow: CriterionRow = {
     from: { value: '2025-10-24T00:00:00.000Z', comparator: null },
     to: { value: '2026-06-03T00:00:00.000Z', comparator: null },
   },
+  validationError: null,
+  rangeOrderError: null,
+};
+
+export const mockOptionsWithTranslationRow: CriterionRow = {
+  rowId: 'row-options-translation',
+  criterionKey: 'gender',
+  value: { value: 'MALE' },
   validationError: null,
   rangeOrderError: null,
 };

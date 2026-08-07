@@ -1,21 +1,23 @@
 import {
+  Accordion,
+  AccordionItem,
   CodeSnippetSkeleton,
   InlineNotification,
   Loading,
 } from '@bahmni/design-system';
 import {
+  dispatchAuditEvent,
   getCurrentUserPrivileges,
   getConfig,
   getUserLoginLocation,
-  hasPrivilege,
+  post,
   useTranslation,
   UserLocation,
 } from '@bahmni/services';
 import { useQuery } from '@tanstack/react-query';
-import { useRef, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import { useNotification } from '../../notification';
 import { SearchWidgetProps } from '../models';
-import { post } from './api';
 import {
   CurrentSearchState,
   CommonSearchWidgetConfig,
@@ -27,7 +29,14 @@ import schema from './schema.json';
 import SearchForm from './SearchForm';
 import SearchSummary from './SearchSummary';
 import styles from './styles/CommonSearchWidget.module.scss';
-import { buildPayload, resolveRows, validateRows } from './utils';
+import {
+  buildPayload,
+  processContextConfigs,
+  resolveRows,
+  toSearchAuditEventType,
+  validateConfigForActions,
+  validateRows,
+} from './utils';
 
 const CommonSearchWidget = ({ extensionParams }: SearchWidgetProps) => {
   const { t } = useTranslation();
@@ -43,6 +52,7 @@ const CommonSearchWidget = ({ extensionParams }: SearchWidgetProps) => {
   });
   const [currentSearchState, setCurrentSearchState] =
     useState<CurrentSearchState | null>(null);
+  const [isSearchPanelOpen, setIsSearchPanelOpen] = useState(true);
   const lastSearchRef = useRef<{
     rows: CriterionRow[];
     contextKey: SearchContextConfig['context'];
@@ -68,8 +78,13 @@ const CommonSearchWidget = ({ extensionParams }: SearchWidgetProps) => {
     enabled: !!config,
   });
 
+  const configValidationError = useMemo(
+    () => (config ? validateConfigForActions(config) : null),
+    [config],
+  );
+
   const isLoading = isConfigLoading || isPrivilegesLoading;
-  const error = configError ?? privilegesError;
+  const error = configError ?? privilegesError ?? configValidationError;
 
   const handleSearch = (
     rows: CriterionRow[],
@@ -94,28 +109,28 @@ const CommonSearchWidget = ({ extensionParams }: SearchWidgetProps) => {
       setIsSearchResultsLoading(true);
       post(
         context.url,
-        buildPayload(resolveRows(validated, context.criteria), context.context),
+        buildPayload(
+          resolveRows(validated, context.criteria),
+          context.context,
+          location.uuid,
+        ),
       )
         .then((data) => {
+          const results = (data as { results: unknown[] }).results;
           setCurrentSearchState((prev: CurrentSearchState | null) =>
-            prev
-              ? {
-                  ...prev,
-                  results: (data as { results: unknown[] }).results,
-                }
-              : null,
+            prev ? { ...prev, results } : null,
           );
+          dispatchAuditEvent({
+            eventType: toSearchAuditEventType(context.context),
+          });
           setIsSearchResultsLoading(false);
+          if (results.length > 0) {
+            setIsSearchPanelOpen(false);
+          }
         })
         .catch(() => {
-          setCurrentSearchState((prev: CurrentSearchState | null) =>
-            prev
-              ? {
-                  ...prev,
-                }
-              : null,
-          );
           setIsSearchResultsLoading(false);
+          setCurrentSearchState(null);
           addNotification({
             title: t('ERROR_DEFAULT_TITLE'),
             message: t('COMMON_SEARCH_API_ERROR_MESSAGE'),
@@ -125,10 +140,6 @@ const CommonSearchWidget = ({ extensionParams }: SearchWidgetProps) => {
         });
     }
     return validated;
-  };
-
-  const handleModifySearch = () => {
-    setCurrentSearchState(null);
   };
 
   if (isLoading)
@@ -149,6 +160,7 @@ const CommonSearchWidget = ({ extensionParams }: SearchWidgetProps) => {
         kind="error"
         lowContrast
         title={t('COMMON_SEARCH_CONFIG_ERROR')}
+        subtitle={configValidationError ? t(configValidationError) : ''}
         className={styles.fullWidth}
       />
     );
@@ -165,8 +177,9 @@ const CommonSearchWidget = ({ extensionParams }: SearchWidgetProps) => {
       />
     );
 
-  const privilegedContexts = config.filter((c) =>
-    hasPrivilege(userPrivileges ?? null, c.requiredPrivileges),
+  const privilegedContexts = processContextConfigs(
+    config,
+    userPrivileges ?? null,
   );
 
   if (privilegedContexts.length === 0)
@@ -187,25 +200,41 @@ const CommonSearchWidget = ({ extensionParams }: SearchWidgetProps) => {
       data-testid="common-search-widget-test-id"
       aria-label="Common Search"
     >
-      {!isSearchResultsLoading && currentSearchState ? (
-        <>
-          <SearchSummary
-            currentSearchState={currentSearchState}
-            onModifySearch={handleModifySearch}
+      <Accordion
+        testId="common-search-criteria-accordion"
+        aria-label="Common Search Criteria Accordion"
+        className={styles.searchCriteriaAccordion}
+        align="start"
+      >
+        <AccordionItem
+          title={
+            currentSearchState
+              ? t('COMMON_SEARCH_MODIFY_SEARCH_BUTTON')
+              : t('COMMON_SEARCH_SELECT_SEARCH_CRITERIA')
+          }
+          open={isSearchPanelOpen}
+          onHeadingClick={() => setIsSearchPanelOpen((prev) => !prev)}
+          testId="common-search-criteria-accordion-test-id"
+          className={styles.searchCriteriaAccordionItem}
+        >
+          <SearchForm
+            config={privilegedContexts}
+            location={location}
+            onSearch={handleSearch}
+            savedRows={lastSearchRef.current?.rows}
+            savedContextKey={lastSearchRef.current?.contextKey}
           />
+        </AccordionItem>
+      </Accordion>
+      {!isSearchResultsLoading && currentSearchState && (
+        <>
+          <SearchSummary currentSearchState={currentSearchState} />
           <ResultsTable
             resultFields={currentSearchState.resultFields}
             results={currentSearchState.results}
+            actions={currentSearchState.context.actions}
           />
         </>
-      ) : (
-        <SearchForm
-          config={privilegedContexts}
-          location={location}
-          onSearch={handleSearch}
-          savedRows={lastSearchRef.current?.rows}
-          savedContextKey={lastSearchRef.current?.contextKey}
-        />
       )}
       {isSearchResultsLoading && (
         <div

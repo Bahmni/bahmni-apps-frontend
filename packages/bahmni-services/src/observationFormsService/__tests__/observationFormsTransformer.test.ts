@@ -5,7 +5,6 @@ import {
   transformContainerObservationsToForm2Observations,
   convertImmutableToPlainObject,
   extractNotesFromFormData,
-  hasMissingMandatoryVisibleField,
   FormData,
   ConceptValue,
   Form2Observation,
@@ -1028,226 +1027,100 @@ describe('observationFormsTransformer', () => {
       expect(result).toHaveLength(1);
       expect(result[0].concept.uuid).toBe('text-concept-uuid');
     });
-  });
-});
 
-describe('hasMissingMandatoryVisibleField', () => {
-  const mandatoryControl = { properties: { mandatory: true } };
-  const optionalControl = { properties: { mandatory: false } };
-
-  it('returns true when a visible mandatory field has no value', () => {
-    const data = {
-      control: mandatoryControl,
-      hidden: false,
-      voided: false,
-      value: { value: undefined },
-    };
-    expect(hasMissingMandatoryVisibleField(data)).toBe(true);
-  });
-
-  it('returns false when a visible mandatory field has a text value', () => {
-    const data = {
-      control: mandatoryControl,
-      hidden: false,
-      voided: false,
-      value: { value: 'Dr. Smith' },
-    };
-    expect(hasMissingMandatoryVisibleField(data)).toBe(false);
-  });
-
-  it('returns false when a mandatory coded field has a concept answer', () => {
-    const data = {
-      control: mandatoryControl,
-      hidden: false,
-      voided: false,
-      value: { value: null, concept: { uuid: 'abc-123', name: 'True' } },
-    };
-    expect(hasMissingMandatoryVisibleField(data)).toBe(false);
-  });
-
-  it('returns true when a mandatory coded field has no concept answer', () => {
-    const data = {
-      control: mandatoryControl,
-      hidden: false,
-      voided: false,
-      value: { value: null, concept: null },
-    };
-    expect(hasMissingMandatoryVisibleField(data)).toBe(true);
-  });
-
-  it('returns false when a mandatory multi-select field has selected items', () => {
-    const data = {
-      control: mandatoryControl,
-      hidden: false,
-      voided: false,
-      value: {
-        value: null,
-        concept: [{ uuid: 'abc-123', name: 'Option A' }],
-      },
-    };
-    expect(hasMissingMandatoryVisibleField(data)).toBe(false);
-  });
-
-  it('returns true when a mandatory multi-select field has no selected items', () => {
-    const data = {
-      control: mandatoryControl,
-      hidden: false,
-      voided: false,
-      value: { value: null, concept: [] },
-    };
-    expect(hasMissingMandatoryVisibleField(data)).toBe(true);
-  });
-
-  it('returns false when a mandatory field is hidden', () => {
-    const data = {
-      control: mandatoryControl,
-      hidden: true,
-      voided: false,
-      value: { value: undefined },
-    };
-    expect(hasMissingMandatoryVisibleField(data)).toBe(false);
-  });
-
-  it('returns false when a mandatory field is voided', () => {
-    const data = {
-      control: mandatoryControl,
-      hidden: false,
-      voided: true,
-      value: { value: undefined },
-    };
-    expect(hasMissingMandatoryVisibleField(data)).toBe(false);
-  });
-
-  it('returns false for a visible optional field with no value', () => {
-    const data = {
-      control: optionalControl,
-      hidden: false,
-      voided: false,
-      value: { value: undefined },
-    };
-    expect(hasMissingMandatoryVisibleField(data)).toBe(false);
-  });
-
-  it('returns true when a nested mandatory field has no value', () => {
-    const data = {
-      control: {},
-      hidden: false,
-      children: [
+    it('should preserve uuid when present on an observation', () => {
+      const containerObservations = [
         {
-          control: mandatoryControl,
-          hidden: false,
-          voided: false,
-          value: { value: null },
+          concept: { uuid: 'text-concept-uuid', datatype: 'Text' },
+          value: 'Some text',
+          uuid: 'obs-uuid-abc',
+          formFieldPath: 'History and Examination.1/6-0',
         },
-      ],
-    };
-    expect(hasMissingMandatoryVisibleField(data)).toBe(true);
-  });
+      ];
 
-  it('returns false when nested mandatory field is hidden', () => {
-    const data = {
-      control: {},
-      hidden: false,
-      children: [
+      const result = transformContainerObservationsToForm2Observations(
+        containerObservations,
+      );
+
+      expect(result).toHaveLength(1);
+      expect(result[0].uuid).toBe('obs-uuid-abc');
+    });
+
+    it('should preserve voided: true when present on an observation with uuid', () => {
+      const containerObservations = [
         {
-          control: mandatoryControl,
-          hidden: true,
-          voided: false,
-          value: { value: null },
+          concept: { uuid: 'text-concept-uuid', datatype: 'Text' },
+          value: 'Some text',
+          uuid: 'obs-uuid-voided',
+          voided: true,
+          formFieldPath: 'History and Examination.1/6-0',
         },
-      ],
-    };
-    expect(hasMissingMandatoryVisibleField(data)).toBe(false);
-  });
+      ];
 
-  it('returns false for a hidden group node containing a visible mandatory empty child', () => {
-    const data = {
-      control: mandatoryControl,
-      hidden: true,
-      voided: false,
-      value: null,
-      children: [
+      const result = transformContainerObservationsToForm2Observations(
+        containerObservations,
+      );
+
+      expect(result).toHaveLength(1);
+      expect(result[0].voided).toBe(true);
+    });
+
+    it('should preserve status when present on an observation', () => {
+      const containerObservations = [
         {
-          control: mandatoryControl,
-          hidden: false,
-          voided: false,
-          value: { value: null },
+          concept: { uuid: 'text-concept-uuid', datatype: 'Text' },
+          value: 'Some text',
+          uuid: 'obs-uuid-status',
+          status: 'amended',
+          formFieldPath: 'History and Examination.1/6-0',
         },
-      ],
-    };
-    expect(hasMissingMandatoryVisibleField(data)).toBe(false);
-  });
+      ];
 
-  it('returns false for a voided group node containing a visible mandatory empty child', () => {
-    const data = {
-      control: mandatoryControl,
-      hidden: false,
-      voided: true,
-      value: null,
-      children: [
+      const result = transformContainerObservationsToForm2Observations(
+        containerObservations,
+      );
+
+      expect(result).toHaveLength(1);
+      expect(result[0].status).toBe('amended');
+    });
+
+    it('should include all group members including voided ones with uuid', () => {
+      const containerObservations = [
         {
-          control: mandatoryControl,
-          hidden: false,
-          voided: false,
-          value: { value: null },
+          concept: { uuid: 'group-concept-uuid', datatype: 'N/A' },
+          value: null,
+          formFieldPath: 'History and Examination.1/3-0',
+          groupMembers: [
+            {
+              concept: { uuid: 'child-concept-uuid', datatype: 'Text' },
+              value: 'Child value',
+              uuid: 'child-obs-uuid',
+              formFieldPath: 'History and Examination.1/4-0',
+            },
+            {
+              concept: { uuid: 'voided-child-concept-uuid', datatype: 'Text' },
+              value: null,
+              uuid: 'voided-child-obs-uuid',
+              voided: true,
+              formFieldPath: 'History and Examination.1/5-0',
+            },
+          ],
         },
-      ],
-    };
-    expect(hasMissingMandatoryVisibleField(data)).toBe(false);
-  });
+      ];
 
-  it('returns false for a mandatory group node whose children are all filled', () => {
-    const data = {
-      control: mandatoryControl,
-      hidden: false,
-      voided: false,
-      value: null,
-      children: [
-        {
-          control: mandatoryControl,
-          hidden: false,
-          voided: false,
-          value: { value: 'filled' },
-        },
-      ],
-    };
-    expect(hasMissingMandatoryVisibleField(data)).toBe(false);
-  });
+      const result = transformContainerObservationsToForm2Observations(
+        containerObservations,
+      );
 
-  it('returns true for a mandatory group node with an empty mandatory child', () => {
-    const data = {
-      control: mandatoryControl,
-      hidden: false,
-      voided: false,
-      value: null,
-      children: [
-        {
-          control: mandatoryControl,
-          hidden: false,
-          voided: false,
-          value: { value: null },
-        },
-      ],
-    };
-    expect(hasMissingMandatoryVisibleField(data)).toBe(true);
-  });
-
-  it('returns false for undefined or null input', () => {
-    expect(hasMissingMandatoryVisibleField(undefined)).toBe(false);
-    expect(
-      hasMissingMandatoryVisibleField(
-        null as unknown as Record<string, unknown>,
-      ),
-    ).toBe(false);
-  });
-
-  it('returns true when value is an empty string', () => {
-    const data = {
-      control: mandatoryControl,
-      hidden: false,
-      voided: false,
-      value: { value: '' },
-    };
-    expect(hasMissingMandatoryVisibleField(data)).toBe(true);
+      expect(result).toHaveLength(1);
+      expect(result[0].groupMembers).toHaveLength(2);
+      expect(result[0].groupMembers![0].concept.uuid).toBe(
+        'child-concept-uuid',
+      );
+      expect(result[0].groupMembers![1].concept.uuid).toBe(
+        'voided-child-concept-uuid',
+      );
+      expect(result[0].groupMembers![1].voided).toBe(true);
+    });
   });
 });

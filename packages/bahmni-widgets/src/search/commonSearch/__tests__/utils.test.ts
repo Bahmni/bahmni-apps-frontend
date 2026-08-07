@@ -1,14 +1,22 @@
+import { formatCountry, formatGender } from '@bahmni/services';
 import { TextInput } from '../models';
 import {
+  formatSearchResult,
   initialRows,
   availableCriteriaForRow,
   criteriaAvailableToAdd,
+  processContextConfigs,
   validateTextInput,
   getRangeOrderError,
   updateRow,
   validateRows,
   resolveRows,
   buildPayload,
+  resultTransforms,
+  validateConfigForActions,
+  resolveNavigationURL,
+  toSearchAuditEventType,
+  needsDisplayKey,
 } from '../utils';
 import {
   mockContextMultipleDefaults,
@@ -20,6 +28,8 @@ import {
 import {
   mockRowGenderNoValue,
   mockRowGenderWithValue,
+  mockRowImeIdentifier,
+  multiKeyTypeCriteria,
   mockRowNoCriterion,
   mockRowRangeNoBounds,
   mockRowRangePartial,
@@ -30,11 +40,60 @@ import {
   mockRowTextNoValue,
   mockRowTextPassingRegex,
   mockRowTextWithValue,
+  mockRowUmiIdentifier,
   mockRowWithKeyTypeValue,
   mockResolvedScalarRow,
   mockResolvedKeyTypeRow,
   mockResolvedRangeRow,
+  mockContextWithValidActions,
+  mockContextWithUnknownActionKey,
+  mockContextWithMissingActionsArray,
+  mockActionsWithDuplicateKeys,
+  mockRowDateScalar,
+  mockRowDateRange,
+  mockRowDateRangeFromOnly,
+  mockUserPrivileges,
+  makeMockContextWithCriteria,
+  mockSimpleFieldCriterion,
+  mockKeyTypeFieldCriterion,
 } from './__mocks__/utilsMocks';
+
+const IST_OFFSET_MS = 5.5 * 60 * 60 * 1000;
+jest.mock('date-fns', () => ({
+  format: (_date: Date) => {
+    const shifted = new Date(_date.getTime() + IST_OFFSET_MS);
+    return shifted.toISOString().slice(0, -1) + '+0530';
+  },
+}));
+
+describe('processContextConfigs', () => {
+  it.each([
+    {
+      label: 'field without keyType gets id equal to key',
+      criterion: mockSimpleFieldCriterion,
+      expectedId: 'patient.name.given',
+    },
+    {
+      label: 'field with keyType gets composite key:keyType id',
+      criterion: mockKeyTypeFieldCriterion,
+      expectedId: 'patient.identifiers:PASSPORT',
+    },
+  ])('$label', ({ criterion, expectedId }) => {
+    const [result] = processContextConfigs(
+      [makeMockContextWithCriteria([criterion])],
+      mockUserPrivileges,
+    );
+    expect(result.criteria[0].id).toBe(expectedId);
+  });
+
+  it('two criteria sharing field.key but different keyType get distinct ids', () => {
+    const [result] = processContextConfigs(
+      [makeMockContextWithCriteria(multiKeyTypeCriteria)],
+      mockUserPrivileges,
+    );
+    expect(result.criteria[0].id).not.toBe(result.criteria[1].id);
+  });
+});
 
 describe('initialRows', () => {
   it('returns one row per criterion marked as default', () => {
@@ -48,7 +107,7 @@ describe('initialRows', () => {
   it('falls back to first criterion when no default is set', () => {
     const rows = initialRows(mockContextNoDefaults);
     expect(rows).toHaveLength(1);
-    expect(rows[0].criterionKey).toBe('episode.identifier');
+    expect(rows[0].criterionKey).toBe('patientProgram.identifier');
   });
 
   it('returns one row per criterion when multiple defaults are set', () => {
@@ -102,6 +161,16 @@ describe('availableCriteriaForRow', () => {
       mockRowTextNoValue.rowId,
     );
     expect(result).toHaveLength(mockPatientContext.criteria.length);
+  });
+
+  it('treats criteria with same field.key but different keyType as distinct', () => {
+    const result = availableCriteriaForRow(
+      multiKeyTypeCriteria,
+      [mockRowUmiIdentifier],
+      mockRowImeIdentifier.rowId,
+    );
+    expect(result).toHaveLength(1);
+    expect(result[0].field.keyType).toBe('IME-UUID');
   });
 });
 
@@ -416,9 +485,16 @@ describe('resolveRows', () => {
   const criteria = [
     ...mockPatientContext.criteria,
     {
+      id: 'patient.identifiers:PASSPORT',
       field: { key: 'patient.identifiers', keyType: 'PASSPORT' },
       translationKey: 'PATIENT_PASSPORT',
       input: { kind: 'text' as const, placeholderTranslationKey: 'PH' },
+    },
+    {
+      id: 'patient.birthdate',
+      field: { key: 'patient.birthdate' },
+      translationKey: 'PATIENT_BIRTHDATE',
+      input: { kind: 'date' as const, placeholderTranslationKey: 'DATE_PH' },
     },
   ];
 
@@ -450,11 +526,54 @@ describe('resolveRows', () => {
     });
   });
 
+  it('resolves distinct fields when two rows share field.key but have different keyType', () => {
+    const result = resolveRows(
+      [mockRowUmiIdentifier, mockRowImeIdentifier],
+      multiKeyTypeCriteria,
+    );
+    expect(result).toHaveLength(2);
+    expect(result[0].field.keyType).toBe('UMI-UUID');
+    expect(result[1].field.keyType).toBe('IME-UUID');
+  });
+
   it('preserves the row value', () => {
     const result = resolveRows([mockRowTextWithValue], criteria);
     expect(result[0].value).toEqual(mockRowTextWithValue.value);
   });
+
+  it.each([
+    {
+      label: 'scalar date value',
+      row: mockRowDateScalar,
+      expected: { value: '2026-07-23T16:00:00.000+0530' },
+    },
+    {
+      label: 'range date with from and to',
+      row: mockRowDateRange,
+      expected: {
+        from: { value: '2026-01-15T05:30:00.000+0530', comparator: null },
+        to: { value: '2026-07-24T05:29:59.000+0530', comparator: null },
+      },
+    },
+    {
+      label: 'range date with from only',
+      row: mockRowDateRangeFromOnly,
+      expected: {
+        from: { value: '2026-01-15T05:30:00.000+0530', comparator: null },
+      },
+    },
+  ])('converts $label to local timezone ISO format', ({ row, expected }) => {
+    const result = resolveRows([row], criteria);
+    expect(result[0].value).toEqual(expected);
+  });
 });
+
+const mockLocationUuid = 'test-location-uuid';
+const locationCondition = {
+  field: 'location.uuid',
+  comparator: 'eq',
+  value: mockLocationUuid,
+};
 
 describe('buildPayload', () => {
   it.each([
@@ -468,6 +587,7 @@ describe('buildPayload', () => {
           operator: 'AND',
           conditions: [
             { field: 'patient.givenName', comparator: 'eq', value: 'John' },
+            locationCondition,
           ],
         },
       },
@@ -496,6 +616,7 @@ describe('buildPayload', () => {
                 },
               ],
             },
+            locationCondition,
           ],
         },
       },
@@ -516,29 +637,45 @@ describe('buildPayload', () => {
                 { field: 'patient.age', comparator: 'lt', value: '50' },
               ],
             },
+            locationCondition,
           ],
         },
       },
     },
   ])('$label', ({ resolvedRows, entity, expected }) => {
-    expect(buildPayload(resolvedRows, entity)).toEqual(expected);
+    expect(buildPayload(resolvedRows, entity, mockLocationUuid)).toEqual(
+      expected,
+    );
   });
 
-  it('multiple rows → multiple top-level conditions', () => {
+  it('multiple rows → conditions include all rows plus location', () => {
     const result = buildPayload(
       [mockResolvedScalarRow, mockResolvedKeyTypeRow, mockResolvedRangeRow],
       'patient',
+      mockLocationUuid,
     );
-    expect(result.criteria.conditions).toHaveLength(3);
+    expect(result.criteria.conditions).toHaveLength(4);
+  });
+
+  it('location condition always appears as last condition', () => {
+    const result = buildPayload(
+      [mockResolvedScalarRow],
+      'patient',
+      mockLocationUuid,
+    );
+    const last = result.criteria.conditions.at(-1);
+    expect(last).toEqual(locationCondition);
   });
 
   it('entity maps to different context values', () => {
-    expect(buildPayload([mockResolvedScalarRow], 'appointment').entity).toBe(
-      'appointment',
-    );
-    expect(buildPayload([mockResolvedScalarRow], 'episodeOfCare').entity).toBe(
-      'episodeOfCare',
-    );
+    expect(
+      buildPayload([mockResolvedScalarRow], 'appointment', mockLocationUuid)
+        .entity,
+    ).toBe('appointment');
+    expect(
+      buildPayload([mockResolvedScalarRow], 'patientProgram', mockLocationUuid)
+        .entity,
+    ).toBe('patientProgram');
   });
 });
 
@@ -558,11 +695,215 @@ describe('criteriaAvailableToAdd', () => {
   it('returns empty array when all criteria are active', () => {
     const rows = mockPatientContext.criteria.map((c, i) => ({
       rowId: `row-${i}`,
-      criterionKey: c.field.key,
+      criterionKey: c.id!,
       value: null,
       validationError: null,
+      rangeOrderError: null,
     }));
     const result = criteriaAvailableToAdd(mockPatientContext.criteria, rows);
     expect(result).toHaveLength(0);
+  });
+
+  it('treats criteria with same field.key but different keyType as distinct', () => {
+    const result = criteriaAvailableToAdd(multiKeyTypeCriteria, [
+      mockRowUmiIdentifier,
+    ]);
+    expect(result).toHaveLength(1);
+    expect(result[0].field.keyType).toBe('IME-UUID');
+  });
+});
+
+describe('toSearchAuditEventType', () => {
+  it.each([
+    { context: 'patient' as const, expected: 'SEARCHED_PATIENT' },
+    { context: 'appointment' as const, expected: 'SEARCHED_APPOINTMENT' },
+    {
+      context: 'patientProgram' as const,
+      expected: 'SEARCHED_PATIENT_PROGRAM',
+    },
+  ])('returns $expected for context $context', ({ context, expected }) => {
+    expect(toSearchAuditEventType(context)).toBe(expected);
+  });
+});
+
+describe('resultTransforms', () => {
+  const identityT = (key: string) => key;
+
+  it('registers all supported transform keys', () => {
+    expect(Object.keys(resultTransforms).sort()).toEqual(
+      [
+        'formatAge',
+        'formatCountry',
+        'formatDate',
+        'formatDateTime',
+        'formatGender',
+        'formatSearchResult',
+        'formatTime',
+      ].sort(),
+    );
+  });
+
+  it.each([
+    { key: 'formatGender', fn: formatGender },
+    { key: 'formatCountry', fn: formatCountry },
+  ])('wires $key into the map', ({ key, fn }) => {
+    expect(resultTransforms[key]).toBe(fn);
+  });
+
+  it.each([
+    { key: 'formatDate', value: '2024-03-28', contains: '2024' },
+    { key: 'formatTime', value: '2024-03-28T14:30:00', contains: '2:30 PM' },
+    { key: 'formatDateTime', value: '2024-03-28T14:30:00', contains: '2024' },
+    { key: 'formatAge', value: '1990-01-01', contains: 'YEARS' },
+  ])(
+    '$key transform produces the expected output',
+    ({ key, value, contains }) => {
+      expect(resultTransforms[key](value, identityT)).toContain(contains);
+    },
+  );
+});
+
+describe('needsDisplayKey', () => {
+  it.each(['formatDate', 'formatTime', 'formatDateTime', 'formatAge'])(
+    'returns true for %s',
+    (transform) => {
+      expect(needsDisplayKey(transform)).toBe(true);
+    },
+  );
+
+  it.each([
+    undefined,
+    'formatGender',
+    'formatCountry',
+    'formatSearchResult',
+    'nonExistentTransform',
+  ])('returns false for %s', (transform) => {
+    expect(needsDisplayKey(transform)).toBe(false);
+  });
+});
+
+describe('formatSearchResult', () => {
+  const translations: Record<string, string> = {
+    COMMON_SEARCH_RESULT_SCHEDULED: 'Scheduled',
+    COMMON_SEARCH_RESULT_IN_PROGRESS: 'In Progress',
+  };
+  const t = (key: string) => translations[key] ?? key;
+
+  it.each([
+    {
+      label: 'translates a simple value using its i18n key',
+      value: 'Scheduled',
+      expected: 'Scheduled',
+    },
+    {
+      label: 'translates a camelCase value to its i18n key',
+      value: 'inProgress',
+      expected: 'In Progress',
+    },
+    {
+      label: 'returns the i18n key when no translation is available',
+      value: 'unknown',
+      expected: 'COMMON_SEARCH_RESULT_UNKNOWN',
+    },
+    { label: 'returns null for empty string', value: '', expected: null },
+    {
+      label: 'returns null for whitespace-only string',
+      value: '   ',
+      expected: null,
+    },
+  ])('$label', ({ value, expected }) => {
+    expect(formatSearchResult(value, t)).toBe(expected);
+  });
+
+  it('builds the translation key from the value', () => {
+    const spy = jest.fn().mockReturnValue('Scheduled');
+    formatSearchResult('Scheduled', spy);
+    expect(spy).toHaveBeenCalledWith('COMMON_SEARCH_RESULT_SCHEDULED');
+  });
+});
+
+describe('validateConfigForActions', () => {
+  it('returns null when no actions are referenced', () => {
+    const contexts = [
+      {
+        ...mockContextWithValidActions,
+        resultFields: [{ translationKey: 'NAME', expression: 'name' }],
+        actions: undefined,
+      },
+    ];
+    expect(validateConfigForActions(contexts)).toBeNull();
+  });
+
+  it('returns null when actions are valid and properly referenced', () => {
+    expect(validateConfigForActions([mockContextWithValidActions])).toBeNull();
+  });
+
+  it('returns error key when resultFields reference actions but no actions array is defined', () => {
+    const result = validateConfigForActions([
+      mockContextWithMissingActionsArray,
+    ]);
+    expect(result).toBe('COMMON_SEARCH_CONFIG_VALIDATION_UNKNOWN_ACTION');
+  });
+
+  it('returns error key when action key is duplicated', () => {
+    const contexts = [
+      {
+        ...mockContextWithValidActions,
+        actions: mockActionsWithDuplicateKeys,
+      },
+    ];
+    const result = validateConfigForActions(contexts);
+    expect(result).toBe('COMMON_SEARCH_CONFIG_VALIDATION_DUPLICATE_ACTION');
+  });
+
+  it('returns error key when resultField references unknown action key', () => {
+    const result = validateConfigForActions([mockContextWithUnknownActionKey]);
+    expect(result).toBe('COMMON_SEARCH_CONFIG_VALIDATION_UNKNOWN_ACTION');
+  });
+});
+
+describe('resolveNavigationURL', () => {
+  it('resolves placeholders with JSONata expressions', async () => {
+    const result = await resolveNavigationURL('/patient/{name}', {
+      name: 'John Doe',
+    });
+    expect(result).toBe('/patient/John%20Doe');
+  });
+
+  it('resolves multiple placeholders', async () => {
+    const result = await resolveNavigationURL('/patient/{name}/visit/{id}', {
+      name: 'John Doe',
+      id: '123',
+    });
+    expect(result).toBe('/patient/John%20Doe/visit/123');
+  });
+
+  it('converts resolved value to string', async () => {
+    const result = await resolveNavigationURL('/patient/{age}', { age: 30 });
+    expect(result).toBe('/patient/30');
+  });
+
+  it('encodes special characters in resolved values', async () => {
+    const result = await resolveNavigationURL('/patient/{name}', {
+      name: 'John/Doe & Smith',
+    });
+    expect(result).toBe('/patient/John%2FDoe%20%26%20Smith');
+  });
+
+  it.each([
+    ['expression evaluates to null', '/patient/{uuid}', { name: 'John Doe' }],
+    [
+      'expression evaluates to undefined',
+      '/patient/{missing}',
+      { name: 'John Doe' },
+    ],
+    [
+      'JSONata expression throws error',
+      '/patient/{$invalid}',
+      { name: 'John Doe' },
+    ],
+  ])('returns null when %s', async (_description, template, rowData) => {
+    const result = await resolveNavigationURL(template, rowData);
+    expect(result).toBeNull();
   });
 });

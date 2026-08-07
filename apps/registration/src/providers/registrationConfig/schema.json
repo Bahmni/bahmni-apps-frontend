@@ -16,189 +16,6 @@
         "type": "string"
       }
     },
-    "patientSearch": {
-      "type": "object",
-      "description": "Patient search configuration",
-      "additionalProperties": false,
-      "properties": {
-        "customAttributes": {
-          "type": "array",
-          "description": "Array of available search fields",
-          "items": {
-            "type": "object",
-            "additionalProperties": false,
-            "properties": {
-              "translationKey": {
-                "type": "string",
-                "description": "Translation key for the dropdown label"
-              },
-              "fields": {
-                "type": "array",
-                "description": "Array of field names to search against",
-                "items": {
-                  "type": "string"
-                }
-              },
-              "expectedFields": {
-                "type": "array",
-                "description": "Array of fields configurations with translation keys to display on table headers",
-                "items": {
-                  "type": "object",
-                  "additionalProperties": false,
-                  "properties": {
-                    "field": {
-                      "type": "string",
-                      "description": "field corresponding to table header"
-                    },
-                    "translationKey": {
-                      "type": "string",
-                      "description": "Translation key for the table header"
-                    }
-                  }
-                }
-              },
-              "type": {
-                "type": "string",
-                "enum": ["person", "address", "program", "appointment"],
-                "description": "Type of the search field (person, address, program, appointment)"
-              }
-            }
-          }
-        },
-        "appointment": {
-          "type": "array",
-          "description": "Array of available search fields for appointments",
-          "items": {
-            "type": "object",
-            "additionalProperties": true,
-            "required": ["translationKey", "fields"],
-            "properties": {
-              "translationKey": {
-                "type": "string",
-                "description": "Translation key for the field label"
-              },
-              "fields": {
-                "type": "array",
-                "description": "Array of field names to search against",
-                "items": {
-                  "type": "string"
-                }
-              },
-              "expectedFields": {
-                "type": "array",
-                "description": "Array of expected fields with optional types",
-                "items": {
-                  "type": "object",
-                  "required": ["field", "translationKey"],
-                  "properties": {
-                    "field": {
-                      "type": "string",
-                      "description": "The field name (e.g., apptNumber, apptDate)"
-                    },
-                    "translationKey": {
-                      "type": "string",
-                      "description": "Translation key for the field's display label"
-                    },
-                    "type": {
-                      "type": "string",
-                      "description": "Optional field type (e.g., date, string)"
-                    }
-                  }
-                }
-              },
-              "type": {
-                "type": "string",
-                "enum": ["appointment"],
-                "description": "Type of the search field (appointment)"
-              },
-              "actions": {
-                "type": "array",
-                "description": "Array of actions allowed on this search field",
-                "items": {
-                  "type": "object",
-                  "required": [
-                    "translationKey",
-                    "type",
-                    "enabledRule",
-                    "onAction"
-                  ],
-                  "properties": {
-                    "translationKey": {
-                      "type": "string",
-                      "description": "Translation key for the action button label"
-                    },
-                    "type": {
-                      "type": "string",
-                      "enum": ["changeStatus", "navigate", "checkInAndStartVisit"],
-                      "description": "Type of action to perform"
-                    },
-                    "enabledRule": {
-                      "type": "array",
-                      "description": "Conditions to enable this action (rules)",
-                      "items": {
-                        "type": "object",
-                        "properties": {
-                          "type": {
-                            "type": "string",
-                            "enum": [
-                              "privilegeCheck",
-                              "statusCheck",
-                              "appDateCheck",
-                              "appointmentService"
-                            ],
-                            "description": "Type of rule to evaluate"
-                          },
-                          "values": {
-                            "type": "array",
-                            "items": { "type": "string" },
-                            "description": "Values to match for the rule. For appointmentService: UUIDs of services — action is enabled only when the appointment service UUID is in this list."
-                          },
-                          "excludeValues": {
-                            "type": "array",
-                            "items": { "type": "string" },
-                            "description": "Values to exclude for the rule. Only valid for appointmentService type: UUIDs of services — action is enabled when the appointment service UUID is NOT in this list."
-                          }
-                        }
-                      }
-                    },
-                    "onAction": {
-                      "type": "object",
-                      "description": "What happens when action is triggered",
-                      "additionalProperties": true,
-                      "properties": {
-                        "status": {
-                          "type": "string",
-                          "description": "Status to set (for changeStatus type)"
-                        },
-                        "navigation": {
-                          "type": "string",
-                          "description": "URL path to navigate to (for navigate type)"
-                        },
-                        "submit": {
-                          "type": "string",
-                          "description": "API endpoint URL to submit to (for checkInAndStartVisit type)"
-                        }
-                      }
-                    },
-                    "onSuccess": {
-                      "type": "object",
-                      "description": "Notification or other success response",
-                      "additionalProperties": true,
-                      "properties": {
-                        "notification": {
-                          "type": "string",
-                          "description": "Translation key for success notification message"
-                        }
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    },
     "defaultVisitType": {
       "type": "string",
       "description": "Default visit type for patient registration"
@@ -216,28 +33,54 @@
           "type": "string",
           "description": "Default prefix for patient identifiers"
         },
-        "showEnterManually": { "type": "boolean" },
-        "showMiddleName": { "type": "boolean" },
-        "showLastName": { "type": "boolean" },
-        "isFirstNameMandatory": { "type": "boolean" },
-        "isMiddleNameMandatory": { "type": "boolean" },
-        "isGenderMandatory": { "type": "boolean" },
-        "isDateOfBirthMandatory": { "type": "boolean" },
-        "isLastNameMandatory": { "type": "boolean" },
+        "showEnterManually": {
+          "type": "boolean"
+        },
+        "showMiddleName": {
+          "type": "boolean"
+        },
+        "showLastName": {
+          "type": "boolean"
+        },
+        "isFirstNameMandatory": {
+          "type": "boolean"
+        },
+        "isMiddleNameMandatory": {
+          "type": "boolean"
+        },
+        "isGenderMandatory": {
+          "type": "boolean"
+        },
+        "isDateOfBirthMandatory": {
+          "type": "boolean"
+        },
+        "isLastNameMandatory": {
+          "type": "boolean"
+        },
         "patientNameDisplayOrder": {
           "type": "array",
           "description": "Order in which patient name fields should be displayed",
-          "items": { "type": "string" }
+          "items": {
+            "type": "string"
+          }
         },
-        "showBirthTime": { "type": "boolean" },
-        "showDOBEstimated": { "type": "boolean" },
+        "showBirthTime": {
+          "type": "boolean"
+        },
+        "showDOBEstimated": {
+          "type": "boolean"
+        },
         "addressHierarchy": {
           "type": "object",
           "description": "Address hierarchy levels to be displayed",
           "additionalProperties": false,
           "properties": {
-            "showAddressFieldsTopDown": { "type": "boolean" },
-            "strictAutocompleteFromLevel": { "type": "string" },
+            "showAddressFieldsTopDown": {
+              "type": "boolean"
+            },
+            "strictAutocompleteFromLevel": {
+              "type": "string"
+            },
             "expectedFields": {
               "type": "array",
               "description": "Array of expected fields with translation keys",
@@ -259,7 +102,7 @@
         },
         "patientPhoto": {
           "type": "object",
-          "description": "Patient photo capture constraints. Two mutually exclusive modes: (A) fixed dimensions with quality compression — provide widthPx + heightPx; (B) variable dimensions at full quality — provide all four of minWidthPx, maxWidthPx, minHeightPx, maxHeightPx. maxFileSizeKb is optional in both modes (defaults to 500). Partial Mode B configs are rejected at validation time.",
+          "description": "Patient photo capture constraints. Two mutually exclusive modes: (A) fixed dimensions with quality compression \u2014 provide widthPx + heightPx; (B) variable dimensions at full quality \u2014 provide all four of minWidthPx, maxWidthPx, minHeightPx, maxHeightPx. maxFileSizeKb is optional in both modes (defaults to 500). Partial Mode B configs are rejected at validation time.",
           "additionalProperties": false,
           "properties": {
             "widthPx": {
@@ -292,10 +135,26 @@
             }
           },
           "dependencies": {
-            "minWidthPx":  ["maxWidthPx", "minHeightPx", "maxHeightPx"],
-            "maxWidthPx":  ["minWidthPx", "minHeightPx", "maxHeightPx"],
-            "minHeightPx": ["minWidthPx", "maxWidthPx", "maxHeightPx"],
-            "maxHeightPx": ["minWidthPx", "maxWidthPx", "minHeightPx"]
+            "minWidthPx": [
+              "maxWidthPx",
+              "minHeightPx",
+              "maxHeightPx"
+            ],
+            "maxWidthPx": [
+              "minWidthPx",
+              "minHeightPx",
+              "maxHeightPx"
+            ],
+            "minHeightPx": [
+              "minWidthPx",
+              "maxWidthPx",
+              "maxHeightPx"
+            ],
+            "maxHeightPx": [
+              "minWidthPx",
+              "maxWidthPx",
+              "minHeightPx"
+            ]
           }
         },
         "additionalPatientInformation": {
@@ -312,7 +171,10 @@
               "description": "Array of attribute fields with translation keys",
               "items": {
                 "type": "object",
-                "required": ["field", "translationKey"],
+                "required": [
+                  "field",
+                  "translationKey"
+                ],
                 "properties": {
                   "field": {
                     "type": "string",
@@ -340,7 +202,10 @@
               "description": "Array of attribute fields with translation keys",
               "items": {
                 "type": "object",
-                "required": ["field", "translationKey"],
+                "required": [
+                  "field",
+                  "translationKey"
+                ],
                 "properties": {
                   "field": {
                     "type": "string",
@@ -388,7 +253,10 @@
           "uniqueItems": true,
           "items": {
             "type": "object",
-            "required": ["name", "controls"],
+            "required": [
+              "name",
+              "controls"
+            ],
             "additionalProperties": false,
             "properties": {
               "name": {
@@ -408,7 +276,9 @@
                 "description": "Array of form controls in this section",
                 "items": {
                   "type": "object",
-                  "required": ["type"],
+                  "required": [
+                    "type"
+                  ],
                   "additionalProperties": false,
                   "properties": {
                     "type": {
@@ -439,7 +309,9 @@
       "description": "Array of extension point definitions that extensions can attach to",
       "items": {
         "type": "object",
-        "required": ["id"],
+        "required": [
+          "id"
+        ],
         "additionalProperties": false,
         "properties": {
           "id": {
@@ -453,6 +325,51 @@
         }
       }
     },
+    "extensions": {
+      "type": "array",
+      "description": "List of app-specific extension configurations",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "extensionPointId",
+          "translationKey"
+        ],
+        "additionalProperties": true,
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "extensionPointId": {
+            "type": "string"
+          },
+          "translationKey": {
+            "type": "string"
+          },
+          "icon": {
+            "type": "string"
+          },
+          "requiredPrivileges": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "extensionParams": {
+            "type": "object",
+            "additionalProperties": true,
+            "properties": {
+              "searchHandler": {
+                "type": "string"
+              },
+              "configUrl": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    },
     "registrationAppExtensions": {
       "type": "array",
       "description": "Array of app extension configurations for registration",
@@ -460,7 +377,12 @@
         "type": "object",
         "description": "Extension configuration",
         "additionalProperties": false,
-        "required": ["id", "extensionPointId", "type", "requiredPrivilege"],
+        "required": [
+          "id",
+          "extensionPointId",
+          "type",
+          "requiredPrivilege"
+        ],
         "properties": {
           "id": {
             "type": "string",
@@ -472,7 +394,10 @@
           },
           "type": {
             "type": "string",
-            "enum": ["link", "startVisit"],
+            "enum": [
+              "link",
+              "startVisit"
+            ],
             "description": "Type of extension (e.g., 'link', 'startVisit')"
           },
           "translationKey": {
@@ -497,7 +422,13 @@
           },
           "kind": {
             "type": "string",
-            "enum": ["primary", "secondary", "tertiary", "ghost", "danger"],
+            "enum": [
+              "primary",
+              "secondary",
+              "tertiary",
+              "ghost",
+              "danger"
+            ],
             "description": "Button kind/variant (defaults to 'primary' if not specified)"
           },
           "requiredPrivilege": {

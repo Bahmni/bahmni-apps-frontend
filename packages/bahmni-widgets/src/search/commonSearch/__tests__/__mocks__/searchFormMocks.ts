@@ -34,6 +34,7 @@ export const mockPatientContext: SearchContextConfig = {
   resultFields: mockResultFields,
   criteria: [
     {
+      id: 'patient.name.given',
       field: { key: 'patient.name.given' },
       translationKey: 'PATIENT_GIVEN_NAME',
       default: true,
@@ -43,6 +44,7 @@ export const mockPatientContext: SearchContextConfig = {
       },
     },
     {
+      id: 'patient.gender',
       field: { key: 'patient.gender' },
       translationKey: 'PATIENT_GENDER',
       input: {
@@ -55,6 +57,7 @@ export const mockPatientContext: SearchContextConfig = {
       },
     },
     {
+      id: 'patient.age',
       field: { key: 'patient.age' },
       translationKey: 'PATIENT_AGE',
       input: {
@@ -75,6 +78,7 @@ export const mockAppointmentContext: SearchContextConfig = {
   resultFields: mockResultFields,
   criteria: [
     {
+      id: 'appointment.number',
       field: { key: 'appointment.number' },
       translationKey: 'APPOINTMENT_NUMBER',
       default: true,
@@ -84,6 +88,7 @@ export const mockAppointmentContext: SearchContextConfig = {
       },
     },
     {
+      id: 'appointment.service',
       field: { key: 'appointment.service' },
       translationKey: 'APPOINTMENT_SERVICE',
       input: {
@@ -96,28 +101,30 @@ export const mockAppointmentContext: SearchContextConfig = {
 };
 
 export const mockContextNoDefaults: SearchContextConfig = {
-  context: 'episodeOfCare',
-  translationKey: 'EPISODE_SEARCH',
+  context: 'patientProgram',
+  translationKey: 'PATIENT_PROGRAM_SEARCH',
   requiredPrivileges: [],
   locationAware: 'loggedInLocation',
-  url: '/openmrs/ws/rest/v1/episode/search',
+  url: '/openmrs/ws/rest/v1/program/search',
   pageSize: 10,
   resultFields: mockResultFields,
   criteria: [
     {
-      field: { key: 'episode.identifier' },
-      translationKey: 'EPISODE_IDENTIFIER',
+      id: 'patientProgram.identifier',
+      field: { key: 'patientProgram.identifier' },
+      translationKey: 'PATIENT_PROGRAM_IDENTIFIER',
       input: {
         kind: 'text',
-        placeholderTranslationKey: 'EPISODE_IDENTIFIER_PLACEHOLDER',
+        placeholderTranslationKey: 'PATIENT_PROGRAM_IDENTIFIER_PLACEHOLDER',
       },
     },
     {
-      field: { key: 'episode.status' },
-      translationKey: 'EPISODE_STATUS',
+      id: 'patientProgram.status',
+      field: { key: 'patientProgram.status' },
+      translationKey: 'PATIENT_PROGRAM_STATUS',
       input: {
         kind: 'options',
-        placeholderTranslationKey: 'EPISODE_STATUS_PLACEHOLDER',
+        placeholderTranslationKey: 'PATIENT_PROGRAM_STATUS_PLACEHOLDER',
         options: [{ translationKey: 'ACTIVE', value: 'active' }],
       },
     },
@@ -134,6 +141,7 @@ export const mockPatientContextWithRangeNumeric: SearchContextConfig = {
   resultFields: mockResultFields,
   criteria: [
     {
+      id: 'patient.age',
       field: { key: 'patient.age' },
       translationKey: 'PATIENT_AGE',
       default: true,
@@ -156,6 +164,7 @@ export const mockContextMultipleDefaults: SearchContextConfig = {
   resultFields: mockResultFields,
   criteria: [
     {
+      id: 'patient.name.given',
       field: { key: 'patient.name.given' },
       translationKey: 'PATIENT_GIVEN_NAME',
       default: true,
@@ -165,6 +174,7 @@ export const mockContextMultipleDefaults: SearchContextConfig = {
       },
     },
     {
+      id: 'patient.gender',
       field: { key: 'patient.gender' },
       translationKey: 'PATIENT_GENDER',
       default: true,
@@ -190,6 +200,7 @@ export const mockPatientContextWithRegex: SearchContextConfig = {
   resultFields: mockResultFields,
   criteria: [
     {
+      id: 'patient.name.given',
       field: { key: 'patient.name.given' },
       translationKey: 'PATIENT_GIVEN_NAME',
       default: true,

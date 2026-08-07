@@ -244,6 +244,26 @@ describe('encounterBundleService', () => {
         'provisional',
       );
     });
+
+    it('should propagate conceptSystem to condition coding system', () => {
+      const diagnosisWithSystem: DiagnosisInputEntry = {
+        ...mockDiagnosis,
+        conceptSystem: 'http://snomed.info/sct',
+      };
+
+      const result = createDiagnosisBundleEntries({
+        selectedDiagnoses: [diagnosisWithSystem],
+        encounterSubject: mockEncounterSubject,
+        encounterReference: mockDiagnosisEncounterReference,
+        practitionerUUID: mockDiagnosisPractitionerUUID,
+        consultationDate: new Date('2025-01-01T10:00:00Z'),
+      });
+
+      const condition = result[0].resource as Condition;
+      expect(condition.code?.coding?.[0]?.system).toBe(
+        'http://snomed.info/sct',
+      );
+    });
   });
 
   describe('postEncounterBundle', () => {
@@ -2101,6 +2121,26 @@ describe('encounterBundleService', () => {
         expect(result).toHaveLength(1);
         expect(result[0].resource?.resourceType).toBe('Condition');
       });
+
+      it('should propagate conceptSystem to condition coding system', () => {
+        const conditionWithSystem: ConditionInputEntry = {
+          ...mockValidCondition,
+          conceptSystem: 'http://snomed.info/sct',
+        };
+
+        const result = createConditionsBundleEntries({
+          selectedConditions: [conditionWithSystem],
+          encounterSubject: mockEncounterSubject,
+          encounterReference: mockEncounterReference,
+          practitionerUUID: mockPractitionerUUID,
+          consultationDate: new Date('2025-01-15T10:30:00Z'),
+        });
+
+        const condition = result[0].resource as Condition;
+        expect(condition.code?.coding?.[0]?.system).toBe(
+          'http://snomed.info/sct',
+        );
+      });
     });
   });
 
@@ -2341,7 +2381,7 @@ describe('encounterBundleService', () => {
         reference: 'ServiceRequest/service-request-123',
       };
 
-      it('should pass basedOn reference to createObservationResources when provided', () => {
+      it('should pass basedOn reference to createObservationEntries when provided', () => {
         const result = createObservationBundleEntries({
           observationFormsData: [
             {

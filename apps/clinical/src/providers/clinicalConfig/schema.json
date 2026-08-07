@@ -289,6 +289,13 @@
           "type": "number",
           "description": "Duration in milliseconds for which a STAT order is valid"
         },
+        "allowedVisitTypes": {
+          "type": "array",
+          "description": "List of visit type names the user can choose from when starting a visit",
+          "items": {
+            "type": "string"
+          }
+        },
         "inputControls": {
           "type": "array",
           "description": "Ordered list of input controls to display in the consultation pad",

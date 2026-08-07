@@ -1,7 +1,9 @@
 import { getTasks, shouldEnableEncounterFilter } from '@bahmni/services';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, screen, waitFor } from '@testing-library/react';
+import { TaskActionType, TaskViewType } from '../constants';
 import TaskList from '../TaskList';
+import { mockTaskConfigWithViews } from './__mocks__/configMocks';
 import {
   mockTasksBundle,
   emptyTasksBundle,
@@ -38,8 +40,10 @@ const mockShouldEnableEncounterFilter =
     typeof shouldEnableEncounterFilter
   >;
 
+let queryClient: QueryClient;
+
 const createWrapper = () => {
-  const queryClient = new QueryClient({
+  queryClient = new QueryClient({
     defaultOptions: {
       queries: {
         retry: false,
@@ -377,7 +381,7 @@ describe('TaskList', () => {
       mockGetTasks.mockResolvedValue(mockTasksBundle);
     });
 
-    it('should show actions column header when actionConfig exists', async () => {
+    it('should show actions column header when taskConfig exists', async () => {
       render(<TaskList config={mockTasksControlConfigWithActions} />, {
         wrapper: createWrapper(),
       });
@@ -387,7 +391,7 @@ describe('TaskList', () => {
       });
     });
 
-    it('should not show actions column when no actionConfig', async () => {
+    it('should not show actions column when no taskConfig', async () => {
       render(<TaskList config={mockTasksControlConfigNoFitlers} />, {
         wrapper: createWrapper(),
       });
@@ -399,9 +403,9 @@ describe('TaskList', () => {
       expect(screen.queryByText('TASK_ACTIONS')).not.toBeInTheDocument();
     });
 
-    it('should not show actions column when actionConfig is empty', async () => {
+    it('should not show actions column when taskConfig is empty', async () => {
       render(
-        <TaskList config={{ showOnlyLeafTasks: false, actionConfig: [] }} />,
+        <TaskList config={{ showOnlyLeafTasks: false, taskConfig: [] }} />,
         {
           wrapper: createWrapper(),
         },
@@ -414,10 +418,10 @@ describe('TaskList', () => {
       expect(screen.queryByText('TASK_ACTIONS')).not.toBeInTheDocument();
     });
 
-    it('should not show actions column when actionConfig has no actions', async () => {
+    it('should not show actions column when taskConfig has no actions', async () => {
       const configWithoutActions = {
         showOnlyLeafTasks: false,
-        actionConfig: [{ taskCode: 'some-code', actions: [] }],
+        taskConfig: [{ taskCode: 'some-code', actions: [] }],
       };
 
       render(<TaskList config={configWithoutActions} />, {
@@ -432,6 +436,141 @@ describe('TaskList', () => {
     });
   });
 
+  describe('Results Column', () => {
+    beforeEach(() => {
+      mockGetTasks.mockResolvedValue(mockTasksBundle);
+    });
+
+    it('should show results column header when taskConfig has views', async () => {
+      const configWithViews = {
+        showOnlyLeafTasks: false,
+        taskConfig: mockTaskConfigWithViews,
+      };
+
+      render(<TaskList config={configWithViews} />, {
+        wrapper: createWrapper(),
+      });
+
+      await waitFor(() => {
+        expect(screen.getByText('TASK_RESULTS')).toBeInTheDocument();
+      });
+    });
+
+    it('should not show results column when no taskConfig', async () => {
+      render(<TaskList config={mockTasksControlConfigNoFitlers} />, {
+        wrapper: createWrapper(),
+      });
+
+      await waitFor(() => {
+        expect(screen.getByTestId('tasks-table')).toBeInTheDocument();
+      });
+
+      expect(screen.queryByText('TASK_RESULTS')).not.toBeInTheDocument();
+    });
+
+    it('should not show results column when taskConfig is empty', async () => {
+      render(
+        <TaskList config={{ showOnlyLeafTasks: false, taskConfig: [] }} />,
+        {
+          wrapper: createWrapper(),
+        },
+      );
+
+      await waitFor(() => {
+        expect(screen.getByTestId('tasks-table')).toBeInTheDocument();
+      });
+
+      expect(screen.queryByText('TASK_RESULTS')).not.toBeInTheDocument();
+    });
+
+    it('should not show results column when taskConfig has no views', async () => {
+      const configWithoutViews = {
+        showOnlyLeafTasks: false,
+        taskConfig: [{ taskCode: 'some-code', actions: [] }],
+      };
+
+      render(<TaskList config={configWithoutViews} />, {
+        wrapper: createWrapper(),
+      });
+
+      await waitFor(() => {
+        expect(screen.getByTestId('tasks-table')).toBeInTheDocument();
+      });
+
+      expect(screen.queryByText('TASK_RESULTS')).not.toBeInTheDocument();
+    });
+
+    it('should not show results column when taskConfig has empty views array', async () => {
+      const configWithEmptyViews = {
+        showOnlyLeafTasks: false,
+        taskConfig: [{ taskCode: 'some-code', views: [] }],
+      };
+
+      render(<TaskList config={configWithEmptyViews} />, {
+        wrapper: createWrapper(),
+      });
+
+      await waitFor(() => {
+        expect(screen.getByTestId('tasks-table')).toBeInTheDocument();
+      });
+
+      expect(screen.queryByText('TASK_RESULTS')).not.toBeInTheDocument();
+    });
+
+    it('should show both Results and Actions columns when both exist', async () => {
+      const configWithBoth = {
+        showOnlyLeafTasks: false,
+        taskConfig: [
+          {
+            taskCode: 'some-code',
+            actions: [
+              {
+                label: 'Test Action',
+                type: TaskActionType.LAUNCH_FORM,
+                icon: 'edit',
+                requiredPrivileges: [],
+                handlerConfig: {},
+              },
+            ],
+            views: [
+              {
+                label: 'Test View',
+                type: TaskViewType.VIEW_FORM,
+                requiredPrivileges: [],
+                handlerConfig: { formInputCode: 'test' },
+              },
+            ],
+          },
+        ],
+      };
+
+      render(<TaskList config={configWithBoth} />, {
+        wrapper: createWrapper(),
+      });
+
+      await waitFor(() => {
+        expect(screen.getByText('TASK_RESULTS')).toBeInTheDocument();
+        expect(screen.getByText('TASK_ACTIONS')).toBeInTheDocument();
+      });
+    });
+
+    it('should show Results column but not Actions column when only views exist', async () => {
+      const configWithOnlyViews = {
+        showOnlyLeafTasks: false,
+        taskConfig: mockTaskConfigWithViews,
+      };
+
+      render(<TaskList config={configWithOnlyViews} />, {
+        wrapper: createWrapper(),
+      });
+
+      await waitFor(() => {
+        expect(screen.getByText('TASK_RESULTS')).toBeInTheDocument();
+        expect(screen.queryByText('TASK_ACTIONS')).not.toBeInTheDocument();
+      });
+    });
+  });
+
   describe('Task Refetch on Consultation Save', () => {
     beforeEach(() => {
       mockGetTasks.mockResolvedValue(mockTasksBundle);
@@ -439,9 +578,15 @@ describe('TaskList', () => {
     });
 
     it('should refetch tasks when observationFormsWithBasedOn is true', async () => {
-      render(<TaskList config={mockTasksControlConfigNoFitlers} />, {
-        wrapper: createWrapper(),
-      });
+      render(
+        <TaskList
+          config={mockTasksControlConfigNoFitlers}
+          orderReference="order-123"
+        />,
+        {
+          wrapper: createWrapper(),
+        },
+      );
 
       await waitFor(() => {
         expect(screen.getByTestId('tasks-table')).toBeInTheDocument();
@@ -455,7 +600,7 @@ describe('TaskList', () => {
         callback({
           patientUUID: 'patient-uuid',
           updatedResources: {
-            observationFormsWithBasedOn: true,
+            observationFormsWithBasedOn: 'order-123',
           },
         });
       }
@@ -466,9 +611,15 @@ describe('TaskList', () => {
     });
 
     it('should not refetch when observationFormsWithBasedOn is false', async () => {
-      render(<TaskList config={mockTasksControlConfigNoFitlers} />, {
-        wrapper: createWrapper(),
-      });
+      render(
+        <TaskList
+          config={mockTasksControlConfigNoFitlers}
+          orderReference="order-123"
+        />,
+        {
+          wrapper: createWrapper(),
+        },
+      );
 
       await waitFor(() => {
         expect(screen.getByTestId('tasks-table')).toBeInTheDocument();
@@ -482,7 +633,7 @@ describe('TaskList', () => {
         callback({
           patientUUID: 'patient-uuid',
           updatedResources: {
-            observationFormsWithBasedOn: false,
+            observationFormsWithBasedOn: undefined,
           },
         });
       }
@@ -493,9 +644,15 @@ describe('TaskList', () => {
     });
 
     it('should not refetch for different patientUUID', async () => {
-      render(<TaskList config={mockTasksControlConfigNoFitlers} />, {
-        wrapper: createWrapper(),
-      });
+      render(
+        <TaskList
+          config={mockTasksControlConfigNoFitlers}
+          orderReference="order-123"
+        />,
+        {
+          wrapper: createWrapper(),
+        },
+      );
 
       await waitFor(() => {
         expect(screen.getByTestId('tasks-table')).toBeInTheDocument();
@@ -509,7 +666,7 @@ describe('TaskList', () => {
         callback({
           patientUUID: 'different-patient-uuid',
           updatedResources: {
-            observationFormsWithBasedOn: true,
+            observationFormsWithBasedOn: 'order-123',
           },
         });
       }
@@ -520,9 +677,15 @@ describe('TaskList', () => {
     });
 
     it('should refetch only for matching patientUUID', async () => {
-      render(<TaskList config={mockTasksControlConfigNoFitlers} />, {
-        wrapper: createWrapper(),
-      });
+      render(
+        <TaskList
+          config={mockTasksControlConfigNoFitlers}
+          orderReference="order-123"
+        />,
+        {
+          wrapper: createWrapper(),
+        },
+      );
 
       await waitFor(() => {
         expect(screen.getByTestId('tasks-table')).toBeInTheDocument();
@@ -535,7 +698,7 @@ describe('TaskList', () => {
       if (callback) {
         callback({
           patientUUID: 'wrong-patient',
-          updatedResources: { observationFormsWithBasedOn: true },
+          updatedResources: { observationFormsWithBasedOn: 'order-123' },
         });
       }
 
@@ -547,12 +710,44 @@ describe('TaskList', () => {
       if (callback) {
         callback({
           patientUUID: 'patient-uuid',
-          updatedResources: { observationFormsWithBasedOn: true },
+          updatedResources: { observationFormsWithBasedOn: 'order-123' },
         });
       }
 
       await waitFor(() => {
         expect(mockGetTasks).toHaveBeenCalledTimes(initialCallCount + 1);
+      });
+    });
+
+    it('should remove observationsByServiceRequest cache for matching orderReference on consultation save', async () => {
+      render(
+        <TaskList
+          config={mockTasksControlConfigNoFitlers}
+          orderReference="order-123"
+        />,
+        { wrapper: createWrapper() },
+      );
+
+      await waitFor(() => {
+        expect(screen.getByTestId('tasks-table')).toBeInTheDocument();
+      });
+
+      const removeQueriesSpy = jest.spyOn(queryClient, 'removeQueries');
+
+      const callback = (globalThis as any).__consultationSavedCallback;
+      if (callback) {
+        callback({
+          patientUUID: 'patient-uuid',
+          updatedResources: {
+            observationFormsWithBasedOn: 'order-123',
+          },
+        });
+      }
+
+      await waitFor(() => {
+        expect(removeQueriesSpy).toHaveBeenCalledWith({
+          queryKey: ['observationsByServiceRequest', 'order-123'],
+        });
       });
     });
   });

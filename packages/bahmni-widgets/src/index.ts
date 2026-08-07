@@ -24,14 +24,14 @@ export { RadiologyInvestigationTable } from './radiologyInvestigation';
 export { RadiologyInvestigationReport } from './radiologyInvestigationReport';
 export { ObservationsRenderer } from './observationsRenderer';
 export { LabInvestigation } from './labinvestigation';
-export { SearchPatient } from './searchPatient';
+export { SearchPatient } from './search/searchPatient';
 export { VitalFlowSheet } from './vitalFlowSheet';
 export { GenericServiceRequestTable } from './genericServiceRequest';
 export { TaskList } from './tasks';
 export { PatientProgramsTable } from './patientPrograms';
 export { ImmunizationHistory } from './immunizationHistory';
 export { ProgramDetails } from './programDetails';
-export { extractFormName } from './forms/utils';
+export { extractFormName } from './observations';
 
 export {
   CommandPaletteProvider,

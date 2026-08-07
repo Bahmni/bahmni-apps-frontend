@@ -291,9 +291,9 @@ const RadiologyInvestigationTable: React.FC<WidgetProps> = ({
     let showViewReportLink = false;
 
     if (groupLinkedOrders && !showInlineReport) {
-      showViewReportLink = !!investigation.reportId && isPrimaryOrder;
+      showViewReportLink = !!investigation.reportIds?.[0] && isPrimaryOrder;
     } else if (!showInlineReport) {
-      showViewReportLink = !!investigation.reportId;
+      showViewReportLink = !!investigation.reportIds?.[0];
     }
 
     const hasImagingStudyId =
@@ -302,8 +302,8 @@ const RadiologyInvestigationTable: React.FC<WidgetProps> = ({
       investigation.imagingStudies[0]?.id;
 
     const reportExists = primaryInvestigation
-      ? !!primaryInvestigation.reportId
-      : !!investigation.reportId;
+      ? !!primaryInvestigation.reportIds?.[0]
+      : !!investigation.reportIds?.[0];
 
     const showQALink = reportExists && hasImagingStudyId;
 
@@ -484,7 +484,7 @@ const RadiologyInvestigationTable: React.FC<WidgetProps> = ({
     const hasLinkedOrders =
       investigation.linkedOrders && investigation.linkedOrders.length > 0;
     const isCompleted = investigation.status === 'completed';
-    const hasReport = !!investigation.reportId;
+    const hasReport = !!investigation.reportIds?.[0];
     const showLinkedOrders = groupLinkedOrders && hasLinkedOrders;
     const showReport = showInlineReport && isCompleted && hasReport;
 
@@ -569,28 +569,29 @@ const RadiologyInvestigationTable: React.FC<WidgetProps> = ({
         })}
       </Accordion>
 
-      {selectedInvestigation && modalType === ModalType.REPORT && (
-        <Modal
-          open={!!selectedInvestigation}
-          onRequestClose={() => {
-            setSelectedInvestigation(null);
-            setModalType(null);
-          }}
-          passiveModal
-          modalLabel={`${t('RECORDED_ON')} : ${reportedOnDate}  | ${t('RECORDED_BY')}: ${reportedBy}`}
-          modalHeading={selectedInvestigation.testName}
-          testId="diagnostic-report-modal"
-          size="lg"
-          id="modalIdForActionAreaLayout"
-          portalId={'main-display-area'}
-        >
-          <Modal.Body>
-            <RadiologyInvestigationReport
-              reportId={selectedInvestigation.reportId!}
-            />
-          </Modal.Body>
-        </Modal>
-      )}
+      {selectedInvestigation?.reportIds?.[0] &&
+        modalType === ModalType.REPORT && (
+          <Modal
+            open={!!selectedInvestigation}
+            onRequestClose={() => {
+              setSelectedInvestigation(null);
+              setModalType(null);
+            }}
+            passiveModal
+            modalLabel={`${t('RECORDED_ON')} : ${reportedOnDate}  | ${t('RECORDED_BY')}: ${reportedBy}`}
+            modalHeading={selectedInvestigation.testName}
+            testId="diagnostic-report-modal"
+            size="lg"
+            id="modalIdForActionAreaLayout"
+            portalId={'main-display-area'}
+          >
+            <Modal.Body>
+              <RadiologyInvestigationReport
+                reportId={selectedInvestigation.reportIds[0]}
+              />
+            </Modal.Body>
+          </Modal>
+        )}
 
       {selectedInvestigation && modalType === ModalType.QA && (
         <Modal

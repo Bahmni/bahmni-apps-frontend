@@ -1,3 +1,4 @@
+import { FHIR_OBSERVATION_VALUE_ATTACHMENT_URL } from '@bahmni/services';
 import type { Observation, Reference } from 'fhir/r4';
 import { ExtractedObservation, ObservationValue } from '../observations/models';
 
@@ -110,6 +111,19 @@ export function extractObservationValue(
     return createObservationValue(
       valueCodeableConcept.text ?? valueCodeableConcept.coding![0].display!,
       'codeable',
+      isAbnormal,
+    );
+  }
+
+  const attachmentExt = observation.extension?.find(
+    (ext) =>
+      ext.url === FHIR_OBSERVATION_VALUE_ATTACHMENT_URL &&
+      ext.valueAttachment?.url,
+  );
+  if (attachmentExt?.valueAttachment?.url) {
+    return createObservationValue(
+      attachmentExt.valueAttachment.url,
+      'string',
       isAbnormal,
     );
   }
