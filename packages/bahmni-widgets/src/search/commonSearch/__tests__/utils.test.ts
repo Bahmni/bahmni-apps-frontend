@@ -21,6 +21,7 @@ import {
   validateConfigForActions,
   resolveNavigationURL,
   toSearchAuditEventType,
+  needsDisplayKey,
 } from '../utils';
 import {
   mockContextMultipleDefaults,
@@ -772,6 +773,25 @@ describe('resultTransforms', () => {
       expect(resultTransforms[key](value, identityT)).toContain(contains);
     },
   );
+});
+
+describe('needsDisplayKey', () => {
+  it.each(['formatDate', 'formatTime', 'formatDateTime', 'formatAge'])(
+    'returns true for %s',
+    (transform) => {
+      expect(needsDisplayKey(transform)).toBe(true);
+    },
+  );
+
+  it.each([
+    undefined,
+    'formatGender',
+    'formatCountry',
+    'formatSearchResult',
+    'nonExistentTransform',
+  ])('returns false for %s', (transform) => {
+    expect(needsDisplayKey(transform)).toBe(false);
+  });
 });
 
 describe('formatSearchResult', () => {
