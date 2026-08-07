@@ -108,9 +108,14 @@ export const markUnchangedObservations = (
       if (!obs.uuid || obs.voided) continue;
       const orig = originalByUuid.get(obs.uuid);
       if (!orig) continue;
+      // Date-only concepts have no meaningful time-of-day; strip it before fingerprinting so
+      // an untouched field doesn't look "changed" purely from UTC-vs-local formatting drift.
+      const dateOnly = obs.concept?.datatype === 'Date';
+      const fingerprint = (v: unknown) =>
+        dateOnly ? valueFingerprint(v).split(' ')[0] : valueFingerprint(v);
       // Interpretation compared case-insensitively (getValue() echoes uppercase codes; snapshot holds display strings).
       if (
-        valueFingerprint(obs.value) === valueFingerprint(orig.value) &&
+        fingerprint(obs.value) === fingerprint(orig.value) &&
         obs.comment === orig.comment &&
         (obs.interpretation ?? '').toUpperCase() ===
           (orig.interpretation ?? '').toUpperCase()
@@ -126,9 +131,13 @@ export const markUnchangedObservations = (
 /** Converts a single observation value to a stable, comparable string (coded/complex/date-aware). */
 export const valueFingerprint = (v: unknown): string => {
   if (v == null) return '';
-  // Date: validate the parsed date before treating the string as a date value
-  if (v instanceof Date && !Number.isNaN(v.getTime()))
-    return `date:${v.toISOString().slice(0, 10)}`;
+  // Date: validate the parsed date before treating the string as a date value.
+  // Keep the time-of-day here — truncating unconditionally would hide a time-only edit
+  // on a Datetime field; date-only concepts are truncated by the caller instead.
+  if (v instanceof Date && !Number.isNaN(v.getTime())) {
+    const pad = (n: number) => String(n).padStart(2, '0');
+    return `date:${v.getFullYear()}-${pad(v.getMonth() + 1)}-${pad(v.getDate())} ${pad(v.getHours())}:${pad(v.getMinutes())}`;
+  }
   if (typeof v === 'string') {
     const m = /^(\d{4}-\d{2}-\d{2})(?:[ T](\d{2}):(\d{2}))?/.exec(v);
     if (m && !Number.isNaN(new Date(m[1]).getTime())) {

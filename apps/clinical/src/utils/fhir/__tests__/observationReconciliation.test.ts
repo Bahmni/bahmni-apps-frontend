@@ -48,9 +48,15 @@ describe('valueFingerprint', () => {
     expect(valueFingerprint(undefined)).toBe('');
   });
 
-  it('returns date: prefix for a Date object', () => {
-    const d = new Date('2024-03-15');
-    expect(valueFingerprint(d)).toBe('date:2024-03-15');
+  it('returns date: prefix with time for a Date object', () => {
+    const d = new Date(2024, 2, 15, 10, 30);
+    expect(valueFingerprint(d)).toBe('date:2024-03-15 10:30');
+  });
+
+  it('distinguishes two Date objects that only differ by time', () => {
+    const morning = new Date(2024, 2, 15, 10, 30);
+    const afternoon = new Date(2024, 2, 15, 13, 45);
+    expect(valueFingerprint(morning)).not.toBe(valueFingerprint(afternoon));
   });
 
   it('returns date: prefix for a date-only string', () => {
@@ -282,5 +288,33 @@ describe('markUnchangedObservations', () => {
     markUnchangedObservations(transformed, original);
     expect(changedChild.unchanged).toBeUndefined();
     expect(unchangedChild.unchanged).toBe(true);
+  });
+
+  it('marks a date-only concept unchanged despite a stray time-of-day in the original snapshot', () => {
+    const dateOnlyObs = (uuid: string, value: unknown) => ({
+      concept: { uuid: 'c1', datatype: 'Date' },
+      value,
+      obsDatetime: '2024-01-01',
+      formNamespace: 'Bahmni',
+      uuid,
+    });
+    const transformed = [dateOnlyObs('obs-1', '2024-03-15')];
+    const original = [dateOnlyObs('obs-1', '2024-03-15T00:00:00.000Z')];
+    markUnchangedObservations(transformed, original);
+    expect(transformed[0].unchanged).toBe(true);
+  });
+
+  it('does not mark a Datetime concept unchanged when only the time changed via a Date object', () => {
+    const dateTimeObs = (uuid: string, value: unknown) => ({
+      concept: { uuid: 'c1', datatype: 'Datetime' },
+      value,
+      obsDatetime: '2024-01-01',
+      formNamespace: 'Bahmni',
+      uuid,
+    });
+    const transformed = [dateTimeObs('obs-1', new Date(2024, 2, 15, 13, 45))];
+    const original = [dateTimeObs('obs-1', '2024-03-15T10:30:00')];
+    markUnchangedObservations(transformed, original);
+    expect(transformed[0].unchanged).toBeUndefined();
   });
 });

@@ -349,6 +349,7 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
           currentObservations && currentObservations.length > 0
             ? transformContainerObservationsToForm2Observations(
                 currentObservations,
+                formMetadata,
               )
             : [];
 
@@ -379,6 +380,7 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
         currentObservations && currentObservations.length > 0
           ? transformContainerObservationsToForm2Observations(
               currentObservations,
+              formMetadata,
             )
           : [];
 
@@ -486,6 +488,7 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
         currentObservations && currentObservations.length > 0
           ? transformContainerObservationsToForm2Observations(
               currentObservations,
+              formMetadata,
             )
           : [];
 

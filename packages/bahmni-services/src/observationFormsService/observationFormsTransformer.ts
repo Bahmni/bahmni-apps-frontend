@@ -317,9 +317,15 @@ function getObsValue(
 /**
  * Transforms raw observations from Container.getValue() to Form2Observation format
  * This ensures comment, interpretation, and other fields are properly included
+ *
+ * @param formMetadata - Optional form schema. When provided, each obs's concept.datatype
+ * is re-derived from the schema instead of the raw container value — FHIR has no separate
+ * value[x] for date-only vs datetime concepts (both use valueDateTime), so datatype echoed
+ * back from an edit-mode fetch is unreliable for that distinction; the schema is not.
  */
 export function transformContainerObservationsToForm2Observations(
   containerObservations: Record<string, unknown>[],
+  formMetadata?: FormMetadata,
 ): Form2Observation[] {
   const transform = (obs: Record<string, unknown>): Form2Observation => {
     const concept = obs.concept as Record<string, unknown> | string | undefined;
@@ -328,9 +334,10 @@ export function transformContainerObservationsToForm2Observations(
         ? (concept.uuid as string)
         : (concept as string);
     const conceptDatatype: string | undefined =
-      typeof concept === 'object' && concept !== null && 'datatype' in concept
+      (formMetadata && findConceptDatatype(formMetadata, conceptUuid)) ??
+      (typeof concept === 'object' && concept !== null && 'datatype' in concept
         ? (concept.datatype as string | undefined)
-        : undefined;
+        : undefined);
 
     const observation: Form2Observation = {
       concept: {
