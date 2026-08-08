@@ -1,6 +1,8 @@
-import { Bundle, Encounter } from 'fhir/r4';
+import { EpisodeOfCare } from 'fhir/r2';
+import { Bundle, Condition, Encounter } from 'fhir/r4';
 import { get } from '../api';
-import { EOC_ENCOUNTERS_URL } from './constants';
+import { PATIENT_CONDITION_RESOURCE_URL } from '../conditionService/constants';
+import { EOC_BY_UUID_URL, EOC_ENCOUNTERS_URL } from './constants';
 import { EpisodeOfCareDataType } from './models';
 
 /**
@@ -42,4 +44,10 @@ export async function getEncountersAndVisitsForEOC(
   const visitUuids = Array.from(visitUuidsSet);
 
   return { visitUuids, encounterUuids };
+}
+
+export async function getEpisodeOfCare(
+  episodeUUID: string,
+): Promise<EpisodeOfCare> {
+  return await get<EpisodeOfCare>(`${EOC_BY_UUID_URL(episodeUUID)}`);
 }

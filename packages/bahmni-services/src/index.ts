@@ -287,6 +287,7 @@ export {
 export {
   getEncountersAndVisitsForEOC,
   type EpisodeOfCareDataType,
+  getEpisodeOfCare,
 } from './episodeOfCareService';
 
 export {
