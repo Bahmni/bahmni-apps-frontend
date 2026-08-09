@@ -1,6 +1,7 @@
 import { get, post } from '@bahmni/services';
-import { MedicationRequest, ValueSet, Bundle } from 'fhir/r4';
+import { MedicationRequest, ValueSet, Bundle, Encounter } from 'fhir/r4';
 import {
+  ENCOUNTER_SEARCH_URL,
   STOP_REASON_VALUESET_URL,
   STOP_REASON_VALUESET_EXPAND_URL,
   STOP_MEDICATION_URL,
@@ -41,11 +42,30 @@ export async function fetchStopReasons(): Promise<StopReason[]> {
   }
 }
 
+export async function createEncounterForStop(
+  patientUuid: string,
+  encounterTypeUuid: string,
+): Promise<string | null> {
+  try {
+    const encounter = await post<Encounter>(ENCOUNTER_SEARCH_URL, {
+      resourceType: 'Encounter',
+      status: 'finished',
+      class: { system: 'http://terminology.hl7.org/CodeSystem/v3-ActCode', code: 'AMB' },
+      type: [{ coding: [{ code: encounterTypeUuid }] }],
+      subject: { reference: `Patient/${patientUuid}` },
+    });
+    return encounter.id ?? null;
+  } catch {
+    return null;
+  }
+}
+
 interface StopMedicationParams {
   medicationRequestId: string;
   reason: StopReason;
   effectiveDate: Date;
   note?: string;
+  encounterUuid?: string;
 }
 
 /**
@@ -55,14 +75,14 @@ interface StopMedicationParams {
 export async function stopMedication(
   params: StopMedicationParams,
 ): Promise<MedicationRequest> {
-  const { medicationRequestId, reason, effectiveDate, note } = params;
+  const { medicationRequestId, reason, effectiveDate, note, encounterUuid } = params;
 
   const fhirParams = {
     resourceType: 'Parameters' as const,
     parameter: [
       {
         name: 'reason',
-        valueCodableConcept: {
+        valueCodeableConcept: {
           coding: [{ code: reason.uuid, display: reason.display }],
           text: reason.display,
         },
@@ -72,6 +92,9 @@ export async function stopMedication(
         valueDate: `${effectiveDate.getFullYear()}-${String(effectiveDate.getMonth() + 1).padStart(2, '0')}-${String(effectiveDate.getDate()).padStart(2, '0')}`,
       },
       ...(note ? [{ name: 'note', valueString: note }] : []),
+      ...(encounterUuid
+        ? [{ name: 'encounter', valueString: encounterUuid }]
+        : []),
     ],
   };
 

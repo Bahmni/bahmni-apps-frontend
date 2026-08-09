@@ -3,7 +3,7 @@ import {
   AUDIT_LOG_EVENT_DETAILS,
   AuditEventType,
 } from '@bahmni/services';
-import { stopMedication } from '../../../services/stopMedicationService';
+import { stopMedication, createEncounterForStop } from '../../../services/stopMedicationService';
 import { useStopMedicationStore } from '../../../stores/stopMedicationsStore';
 import { registerInputControl } from '../registry';
 import StopMedicationForm from './StopMedicationForm';
@@ -19,11 +19,19 @@ registerInputControl({
   onDirectSubmit: async () => {
     const state = useStopMedicationStore.getState();
     if (!state.medicationToStop?.id || !state.stopReason) return;
+    let encounterUuid = state.sessionEncounterUuid ?? undefined;
+    if (!encounterUuid) {
+      const patientUuid = state.medicationToStop.subject?.reference?.split('/').pop();
+      if (patientUuid) {
+        encounterUuid = (await createEncounterForStop(patientUuid, 'Consultation')) ?? undefined;
+      }
+    }
     await stopMedication({
       medicationRequestId: state.medicationToStop.id,
       reason: state.stopReason,
       effectiveDate: state.stopDate,
       note: state.note || undefined,
+      encounterUuid,
     });
     const patientUuid = state.medicationToStop.subject?.reference
       ?.split('/')
