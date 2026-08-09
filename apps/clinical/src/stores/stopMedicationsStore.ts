@@ -10,12 +10,14 @@ export interface StopMedicationState {
   medicationToStop: MedicationRequest | null;
   fieldConfig: StopMedicationConfig;
   errors: Record<string, string>;
+  sessionEncounterUuid: string | null;
 
   setStopDate: (date: Date) => void;
   setStopReason: (reason: StopReason | null) => void;
   setNote: (note: string) => void;
   setMedicationToStop: (medication: MedicationRequest | null) => void;
   setFieldConfig: (config: StopMedicationConfig) => void;
+  setSessionEncounterUuid: (uuid: string | null) => void;
   validate: () => boolean;
   hasData: () => boolean;
   reset: () => void;
@@ -35,6 +37,7 @@ export const useStopMedicationStore = create<StopMedicationState>(
     medicationToStop: null,
     fieldConfig: DEFAULT_FIELD_CONFIG,
     errors: {},
+    sessionEncounterUuid: null,
 
     setStopDate: (date: Date) => {
       set((state) => {
@@ -77,9 +80,12 @@ export const useStopMedicationStore = create<StopMedicationState>(
       });
     },
 
+    setSessionEncounterUuid: (uuid: string | null) => {
+      set({ sessionEncounterUuid: uuid });
+    },
+
     validate: () => {
       const state = get();
-      // Nothing to validate if no medication is being stopped
       if (!state.medicationToStop) return true;
 
       const errors: Record<string, string> = {};
@@ -124,6 +130,7 @@ export const useStopMedicationStore = create<StopMedicationState>(
         medicationToStop: null,
         fieldConfig: DEFAULT_FIELD_CONFIG,
         errors: {},
+        sessionEncounterUuid: null,
       });
     },
   }),

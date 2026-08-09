@@ -50,7 +50,10 @@ export async function createEncounterForStop(
     const encounter = await post<Encounter>(ENCOUNTER_SEARCH_URL, {
       resourceType: 'Encounter',
       status: 'finished',
-      class: { system: 'http://terminology.hl7.org/CodeSystem/v3-ActCode', code: 'AMB' },
+      class: {
+        system: 'http://terminology.hl7.org/CodeSystem/v3-ActCode',
+        code: 'AMB',
+      },
       type: [{ coding: [{ code: encounterTypeUuid }] }],
       subject: { reference: `Patient/${patientUuid}` },
     });
@@ -75,7 +78,8 @@ interface StopMedicationParams {
 export async function stopMedication(
   params: StopMedicationParams,
 ): Promise<MedicationRequest> {
-  const { medicationRequestId, reason, effectiveDate, note, encounterUuid } = params;
+  const { medicationRequestId, reason, effectiveDate, note, encounterUuid } =
+    params;
 
   const fhirParams = {
     resourceType: 'Parameters' as const,

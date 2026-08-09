@@ -53,6 +53,7 @@ const StopMedicationForm: React.FC<StopMedicationFormProps> = React.memo(
       setNote,
       setMedicationToStop,
       setFieldConfig,
+      setSessionEncounterUuid,
     } = useStopMedicationStore();
 
     const [hasNote, setHasNote] = useState(!!note);
@@ -93,6 +94,16 @@ const StopMedicationForm: React.FC<StopMedicationFormProps> = React.memo(
         setMedicationToStop(stopMedication);
       }
     }, [stopMedication, setMedicationToStop]);
+
+    useEffect(() => {
+      const uuid = encounterSessionStartContext?.sessionEncounterUuid as
+        | string
+        | undefined;
+      setSessionEncounterUuid(uuid ?? null);
+    }, [
+      encounterSessionStartContext?.sessionEncounterUuid,
+      setSessionEncounterUuid,
+    ]);
 
     useEffect(() => {
       if (medicationConfig?.stopMedicationFields) {

@@ -3,7 +3,10 @@ import {
   AUDIT_LOG_EVENT_DETAILS,
   AuditEventType,
 } from '@bahmni/services';
-import { stopMedication, createEncounterForStop } from '../../../services/stopMedicationService';
+import {
+  stopMedication,
+  createEncounterForStop,
+} from '../../../services/stopMedicationService';
 import { useStopMedicationStore } from '../../../stores/stopMedicationsStore';
 import { registerInputControl } from '../registry';
 import StopMedicationForm from './StopMedicationForm';
@@ -19,12 +22,14 @@ registerInputControl({
   onDirectSubmit: async () => {
     const state = useStopMedicationStore.getState();
     if (!state.medicationToStop?.id || !state.stopReason) return;
+    const patientUuid = state.medicationToStop.subject?.reference
+      ?.split('/')
+      .pop();
     let encounterUuid = state.sessionEncounterUuid ?? undefined;
-    if (!encounterUuid) {
-      const patientUuid = state.medicationToStop.subject?.reference?.split('/').pop();
-      if (patientUuid) {
-        encounterUuid = (await createEncounterForStop(patientUuid, 'Consultation')) ?? undefined;
-      }
+    if (!encounterUuid && patientUuid) {
+      encounterUuid =
+        (await createEncounterForStop(patientUuid, 'Consultation')) ??
+        undefined;
     }
     await stopMedication({
       medicationRequestId: state.medicationToStop.id,
@@ -33,9 +38,6 @@ registerInputControl({
       note: state.note || undefined,
       encounterUuid,
     });
-    const patientUuid = state.medicationToStop.subject?.reference
-      ?.split('/')
-      .pop();
     if (patientUuid) {
       dispatchAuditEvent({
         eventType: AUDIT_LOG_EVENT_DETAILS.STOP_MEDICATION

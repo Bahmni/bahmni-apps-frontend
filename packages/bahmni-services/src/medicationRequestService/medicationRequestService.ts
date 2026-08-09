@@ -175,11 +175,16 @@ function getQuantity(
 
 function getNote(note: FhirMedicationRequest['note']): string {
   if (!note || note.length === 0) return '';
-  // Join all note texts with a space separator
   return note
+    .filter((n) => n.authorString !== 'stop')
     .map((n) => n.text)
     .filter(Boolean)
     .join(' ');
+}
+
+function getStopNote(note: FhirMedicationRequest['note']): string {
+  if (!note || note.length === 0) return '';
+  return note.find((n) => n.authorString === 'stop')?.text ?? '';
 }
 
 /**
@@ -340,6 +345,7 @@ function formatMedications(bundle: Bundle): MedicationRequest[] {
         medication.dosageInstruction,
       ),
       note: getNote(medication.note),
+      stopNote: getStopNote(medication.note),
       doseForm: doseForm,
       statusReason:
         medication.statusReason?.text ??

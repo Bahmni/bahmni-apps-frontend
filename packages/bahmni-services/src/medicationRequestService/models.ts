@@ -45,6 +45,7 @@ export interface MedicationRequest {
   readonly asNeeded: boolean;
   readonly isImmediate: boolean;
   readonly note?: string;
+  readonly stopNote?: string;
   readonly doseForm?: string;
   readonly statusReason?: string;
   readonly dateStopped?: string;

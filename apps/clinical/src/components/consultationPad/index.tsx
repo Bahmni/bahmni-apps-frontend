@@ -526,7 +526,10 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
             key={entry.key}
             entry={entry}
             encounterType={resolvedEncounterType!}
-            encounterSessionStartContext={encounterSessionStartContext}
+            encounterSessionStartContext={{
+              ...encounterSessionStartContext,
+              sessionEncounterUuid: sessionEncounter?.id ?? undefined,
+            }}
           />
         ))}
       </div>

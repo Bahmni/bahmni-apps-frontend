@@ -350,6 +350,13 @@ const MedicationsTable: React.FC<WidgetProps> = ({
                 {row.stopReason && (
                   <span className={styles.stopReasonText}>
                     {t('MEDICATIONS_STOPPED_DUE_TO')} {row.stopReason}
+                    {row.stopNote && (
+                      <TooltipIcon
+                        iconName="fa-file-lines"
+                        content={row.stopNote}
+                        ariaLabel={row.stopNote}
+                      />
+                    )}
                   </span>
                 )}
               </div>
