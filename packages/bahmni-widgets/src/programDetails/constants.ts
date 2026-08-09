@@ -4,6 +4,7 @@ export const KNOWN_FIELDS: string[] = [
   'endDate',
   'outcome',
   'state',
+  'careManager',
 ];
 
 export const EDIT_PATIENT_PROGRAMS_PRIVILEGE = 'Edit Patient Programs';

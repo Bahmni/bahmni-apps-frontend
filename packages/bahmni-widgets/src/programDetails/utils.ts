@@ -3,6 +3,7 @@ import {
   getCurrentStateName,
   ProgramEnrollment,
 } from '@bahmni/services';
+import { EpisodeOfCare } from 'fhir/r4';
 import { KNOWN_FIELDS } from './constants';
 import { ProgramDetailsViewModel, ProgramField } from './model';
 
@@ -18,6 +19,7 @@ export function extractProgramAttributeNames(
 export function createProgramDetailsViewModel(
   enrollment: ProgramEnrollment,
   programAttributes: string[],
+  episodeOfCare?: EpisodeOfCare,
 ): ProgramDetailsViewModel {
   return {
     id: enrollment.uuid,
@@ -37,6 +39,7 @@ export function createProgramDetailsViewModel(
         : null
       : null,
     currentStateName: getCurrentStateName(enrollment),
+    careManager: episodeOfCare?.careManager?.display ?? null,
     attributes: extractAttributes(enrollment, programAttributes),
     allowedStates: enrollment.allowedStates.map((state) => ({
       uuid: state.uuid,

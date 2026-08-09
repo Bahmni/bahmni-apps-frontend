@@ -2,6 +2,7 @@ import {
   getProgramByUUID,
   updateProgramState,
   getCurrentUserPrivileges,
+  getEpisodeOfCare,
 } from '@bahmni/services';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, screen, waitFor } from '@testing-library/react';
@@ -16,6 +17,7 @@ jest.mock('@bahmni/services', () => ({
   ...jest.requireActual('@bahmni/services'),
   getProgramByUUID: jest.fn(),
   updateProgramState: jest.fn(),
+  getEpisodeOfCare: jest.fn(),
   getCurrentUserPrivileges: jest
     .fn()
     .mockResolvedValue([
@@ -36,6 +38,8 @@ const detailFields = [
   { name: 'state' },
 ];
 
+const fieldsWithCareManager = [...detailFields, { name: 'careManager' }];
+
 describe('ProgramDetails Integration', () => {
   const queryClient: QueryClient = new QueryClient({
     defaultOptions: {
@@ -51,6 +55,9 @@ describe('ProgramDetails Integration', () => {
     (getCurrentUserPrivileges as jest.Mock).mockResolvedValue([
       { uuid: 'privilege-uuid-1', name: 'Edit Patient Programs' },
     ]);
+    (getEpisodeOfCare as jest.Mock).mockResolvedValue({
+      careManager: { display: 'Dr. Test' },
+    });
     (useNotification as jest.Mock).mockReturnValue({
       addNotification: jest.fn(),
     });
@@ -100,6 +107,55 @@ describe('ProgramDetails Integration', () => {
 
     expect(getProgramByUUID).toHaveBeenCalledTimes(1);
     expect(getProgramByUUID).toHaveBeenCalledWith('enrollment-uuid-2');
+  });
+
+  it('should fetch episode of care and display the care manager when episodeUuid is present', async () => {
+    (getProgramByUUID as jest.Mock).mockResolvedValue(
+      mockProgramWithAttributes,
+    );
+
+    renderWithProviders(
+      <ProgramDetails
+        programUUID="enrollment-uuid-2"
+        config={{ fields: fieldsWithCareManager }}
+      />,
+    );
+
+    await waitFor(() => {
+      expect(
+        screen.getByTestId('patient-programs-tile-test-id'),
+      ).toBeInTheDocument();
+    });
+
+    expect(getEpisodeOfCare).toHaveBeenCalledWith('episode-2');
+    expect(
+      screen.getByTestId('program-details-careManager-value-test-id'),
+    ).toHaveTextContent('Dr. Test');
+  });
+
+  it("should not fetch episode of care and show '-' for care manager when episodeUuid is absent", async () => {
+    (getProgramByUUID as jest.Mock).mockResolvedValue({
+      ...mockProgramWithAttributes,
+      episodeUuid: '',
+    });
+
+    renderWithProviders(
+      <ProgramDetails
+        programUUID="enrollment-uuid-2"
+        config={{ fields: fieldsWithCareManager }}
+      />,
+    );
+
+    await waitFor(() => {
+      expect(
+        screen.getByTestId('patient-programs-tile-test-id'),
+      ).toBeInTheDocument();
+    });
+
+    expect(getEpisodeOfCare).not.toHaveBeenCalled();
+    expect(
+      screen.getByTestId('program-details-careManager-value-test-id'),
+    ).toHaveTextContent('-');
   });
 
   it('should show error state when an error occurs', async () => {

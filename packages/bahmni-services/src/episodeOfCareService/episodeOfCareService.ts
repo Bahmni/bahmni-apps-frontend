@@ -1,7 +1,5 @@
-import { EpisodeOfCare } from 'fhir/r2';
-import { Bundle, Condition, Encounter } from 'fhir/r4';
+import { Bundle, Encounter, EpisodeOfCare } from 'fhir/r4';
 import { get } from '../api';
-import { PATIENT_CONDITION_RESOURCE_URL } from '../conditionService/constants';
 import { EOC_BY_UUID_URL, EOC_ENCOUNTERS_URL } from './constants';
 import { EpisodeOfCareDataType } from './models';
 

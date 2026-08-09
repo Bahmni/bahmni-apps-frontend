@@ -17,6 +17,7 @@ import {
   formatDateTime,
   camelToScreamingSnakeCase,
   hasPrivilege,
+  getEpisodeOfCare,
 } from '@bahmni/services';
 import { useQuery } from '@tanstack/react-query';
 import React, { useMemo, useState } from 'react';
@@ -39,6 +40,14 @@ const fetchProgramDetails = async (
   programAttributes: string[],
 ): Promise<ProgramDetailsViewModel> => {
   const response = await getProgramByUUID(programUUID!);
+  if (response.episodeUuid) {
+    const episodeOfCare = await getEpisodeOfCare(response.episodeUuid);
+    return createProgramDetailsViewModel(
+      response,
+      programAttributes,
+      episodeOfCare,
+    );
+  }
   return createProgramDetailsViewModel(response, programAttributes);
 };
 
@@ -223,6 +232,8 @@ const ProgramDetails: React.FC<ProgramDetailsProps> = ({
         return data.outcomeName ?? '-';
       case 'state':
         return data.currentStateName ?? '-';
+      case 'careManager':
+        return data?.careManager ?? '-';
     }
   };
 
