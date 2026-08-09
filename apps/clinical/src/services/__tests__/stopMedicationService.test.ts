@@ -165,7 +165,7 @@ describe('stopMedicationService', () => {
           parameter: [
             {
               name: 'reason',
-              valueCodableConcept: {
+              valueCodeableConcept: {
                 coding: [
                   { code: 'reason-uuid-1', display: 'Adverse reaction' },
                 ],
@@ -200,7 +200,7 @@ describe('stopMedicationService', () => {
       expect(
         calledParams.parameter.find(
           (p: { name: string }) => p.name === 'reason',
-        ).valueCodableConcept.text,
+        ).valueCodeableConcept.text,
       ).toBe('Patient request');
       expect(
         calledParams.parameter.find(
