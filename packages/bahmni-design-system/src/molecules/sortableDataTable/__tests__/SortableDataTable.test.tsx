@@ -274,9 +274,10 @@ describe('SortableDataTable', () => {
     );
 
     const headers = screen.getAllByRole('columnheader');
-    expect(headers[0].querySelector('button')).toBeNull(); // name not sortable
-    // status not in `sortable` array, default = false
-    expect(headers[1].querySelector('button')).toBeNull();
+    // name not sortable - should have nonSortableHeader class
+    expect(headers[0]).toHaveClass('nonSortableHeader');
+    // status not in `sortable` array, default = false - should have nonSortableHeader class
+    expect(headers[1]).toHaveClass('nonSortableHeader');
   });
 
   describe('Snapshots', () => {

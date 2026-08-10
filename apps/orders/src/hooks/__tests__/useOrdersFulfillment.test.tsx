@@ -123,6 +123,27 @@ describe('useOrdersFulfillment', () => {
       expect(headerKeys).toContain('owner');
     });
 
+    it('returns headers with isSortable property from config', () => {
+      const { result } = renderHook(() => useOrdersFulfillment('Rehab Order'));
+
+      expect(result.current.headers).toBeDefined();
+
+      // Check that all headers have isSortable property
+      result.current.headers.forEach((header) => {
+        const headerWithSort = header as typeof header & {
+          isSortable?: boolean;
+        };
+        expect(headerWithSort).toHaveProperty('isSortable');
+        expect(typeof headerWithSort.isSortable).toBe('boolean');
+      });
+
+      // Verify isSortable is set from config
+      const ownerHeader = result.current.headers.find(
+        (h) => h.key === 'owner',
+      ) as (typeof result.current.headers)[0] & { isSortable?: boolean };
+      expect(ownerHeader?.isSortable).toBe(true);
+    });
+
     it('returns isDrugOrderTab as false for Rehab Order tab', () => {
       const { result } = renderHook(() => useOrdersFulfillment('Rehab Order'));
 

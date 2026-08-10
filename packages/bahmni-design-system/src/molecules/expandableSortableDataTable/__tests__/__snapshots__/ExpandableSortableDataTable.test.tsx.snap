@@ -139,18 +139,18 @@ exports[`ExpandableSortableDataTable Snapshots matches snapshot with expanded ro
             />
             <th
               aria-sort="none"
-              class="cds--table-sort__header"
+              class="nonSortableHeader cds--table-sort__header"
               scope="col"
             >
               <div
                 class="cds--table-sort__description"
-                id="table-sort-«rr»"
+                id="table-sort-«r10»"
               >
                 Click to sort rows by Name header in ascending order
               </div>
               <button
-                aria-describedby="table-sort-«rr»"
-                class="cds--table-sort"
+                aria-describedby="table-sort-«r10»"
+                class="nonSortableHeader cds--table-sort"
                 type="button"
               >
                 <span
@@ -199,18 +199,18 @@ exports[`ExpandableSortableDataTable Snapshots matches snapshot with expanded ro
             </th>
             <th
               aria-sort="none"
-              class="cds--table-sort__header"
+              class="nonSortableHeader cds--table-sort__header"
               scope="col"
             >
               <div
                 class="cds--table-sort__description"
-                id="table-sort-«rs»"
+                id="table-sort-«r11»"
               >
                 Click to sort rows by Status header in ascending order
               </div>
               <button
-                aria-describedby="table-sort-«rs»"
-                class="cds--table-sort"
+                aria-describedby="table-sort-«r11»"
+                class="nonSortableHeader cds--table-sort"
                 type="button"
               >
                 <span
@@ -259,18 +259,18 @@ exports[`ExpandableSortableDataTable Snapshots matches snapshot with expanded ro
             </th>
             <th
               aria-sort="none"
-              class="cds--table-sort__header"
+              class="nonSortableHeader cds--table-sort__header"
               scope="col"
             >
               <div
                 class="cds--table-sort__description"
-                id="table-sort-«rt»"
+                id="table-sort-«r12»"
               >
                 Click to sort rows by Count header in ascending order
               </div>
               <button
-                aria-describedby="table-sort-«rt»"
-                class="cds--table-sort"
+                aria-describedby="table-sort-«r12»"
+                class="nonSortableHeader cds--table-sort"
                 type="button"
               >
                 <span
@@ -496,18 +496,18 @@ exports[`ExpandableSortableDataTable Snapshots matches snapshot with full data 1
             />
             <th
               aria-sort="none"
-              class="cds--table-sort__header"
+              class="nonSortableHeader cds--table-sort__header"
               scope="col"
             >
               <div
                 class="cds--table-sort__description"
-                id="table-sort-«ro»"
+                id="table-sort-«rt»"
               >
                 Click to sort rows by Name header in ascending order
               </div>
               <button
-                aria-describedby="table-sort-«ro»"
-                class="cds--table-sort"
+                aria-describedby="table-sort-«rt»"
+                class="nonSortableHeader cds--table-sort"
                 type="button"
               >
                 <span
@@ -556,18 +556,18 @@ exports[`ExpandableSortableDataTable Snapshots matches snapshot with full data 1
             </th>
             <th
               aria-sort="none"
-              class="cds--table-sort__header"
+              class="nonSortableHeader cds--table-sort__header"
               scope="col"
             >
               <div
                 class="cds--table-sort__description"
-                id="table-sort-«rp»"
+                id="table-sort-«ru»"
               >
                 Click to sort rows by Status header in ascending order
               </div>
               <button
-                aria-describedby="table-sort-«rp»"
-                class="cds--table-sort"
+                aria-describedby="table-sort-«ru»"
+                class="nonSortableHeader cds--table-sort"
                 type="button"
               >
                 <span
@@ -616,18 +616,18 @@ exports[`ExpandableSortableDataTable Snapshots matches snapshot with full data 1
             </th>
             <th
               aria-sort="none"
-              class="cds--table-sort__header"
+              class="nonSortableHeader cds--table-sort__header"
               scope="col"
             >
               <div
                 class="cds--table-sort__description"
-                id="table-sort-«rq»"
+                id="table-sort-«rv»"
               >
                 Click to sort rows by Count header in ascending order
               </div>
               <button
-                aria-describedby="table-sort-«rq»"
-                class="cds--table-sort"
+                aria-describedby="table-sort-«rv»"
+                class="nonSortableHeader cds--table-sort"
                 type="button"
               >
                 <span

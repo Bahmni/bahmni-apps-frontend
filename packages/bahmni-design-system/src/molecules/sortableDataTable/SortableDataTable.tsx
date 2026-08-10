@@ -36,7 +36,12 @@ export const SortableDataTable = <T extends { id: string }>({
   headers,
   rows,
   ariaLabel,
-  sortable = headers.map((header) => ({ key: header.key, sortable: true })),
+  sortable = headers.map((header) => ({
+    key: header.key,
+    sortable:
+      (header as DataTableHeader & { isSortable?: boolean }).isSortable ===
+      true,
+  })),
   loading = false,
   errorStateMessage = null,
   emptyStateMessage = 'No data available',
@@ -146,17 +151,23 @@ export const SortableDataTable = <T extends { id: string }>({
               <TableHead>
                 <TableRow>
                   {tableHeaders.map((header) => {
+                    const isSortable =
+                      sortable.find((s) => s.key === header.key)?.sortable ??
+                      false;
+                    // Always render as sortable for consistent spacing, control behavior with CSS
                     const headerProps = getHeaderProps({
                       header,
-                      isSortable:
-                        sortable.find((s) => s.key === header.key)?.sortable ??
-                        false,
+                      isSortable: true,
                     });
                     return (
                       <TableHeader
                         {...headerProps}
                         key={header.key}
                         data-testid={`table-header-${header.key}`}
+                        className={classnames(
+                          headerProps.className,
+                          !isSortable ? styles.nonSortableHeader : '',
+                        )}
                       >
                         {header.header}
                       </TableHeader>

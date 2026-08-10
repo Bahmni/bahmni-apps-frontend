@@ -8,7 +8,7 @@ exports[`PatientProgramsTable should match snapshot with program data 1`] = `
     id="patient-programs-table"
   >
     <div
-      class="table _sortableDataTableBody_1w499_1"
+      class="table _sortableDataTableBody_uxxub_1"
       data-testid="patient-programs-table"
     >
       <div
@@ -22,7 +22,7 @@ exports[`PatientProgramsTable should match snapshot with program data 1`] = `
             <tr>
               <th
                 aria-sort="none"
-                class="cds--table-sort__header"
+                class="_nonSortableHeader_uxxub_42 cds--table-sort__header"
                 scope="col"
               >
                 <div
@@ -33,7 +33,7 @@ exports[`PatientProgramsTable should match snapshot with program data 1`] = `
                 </div>
                 <button
                   aria-describedby="table-sort-_r_27_"
-                  class="cds--table-sort"
+                  class="_nonSortableHeader_uxxub_42 cds--table-sort"
                   data-testid="table-header-programName"
                   type="button"
                 >
@@ -83,7 +83,7 @@ exports[`PatientProgramsTable should match snapshot with program data 1`] = `
               </th>
               <th
                 aria-sort="none"
-                class="cds--table-sort__header"
+                class="_nonSortableHeader_uxxub_42 cds--table-sort__header"
                 scope="col"
               >
                 <div
@@ -94,7 +94,7 @@ exports[`PatientProgramsTable should match snapshot with program data 1`] = `
                 </div>
                 <button
                   aria-describedby="table-sort-_r_28_"
-                  class="cds--table-sort"
+                  class="_nonSortableHeader_uxxub_42 cds--table-sort"
                   data-testid="table-header-startDate"
                   type="button"
                 >
@@ -144,7 +144,7 @@ exports[`PatientProgramsTable should match snapshot with program data 1`] = `
               </th>
               <th
                 aria-sort="none"
-                class="cds--table-sort__header"
+                class="_nonSortableHeader_uxxub_42 cds--table-sort__header"
                 scope="col"
               >
                 <div
@@ -155,7 +155,7 @@ exports[`PatientProgramsTable should match snapshot with program data 1`] = `
                 </div>
                 <button
                   aria-describedby="table-sort-_r_29_"
-                  class="cds--table-sort"
+                  class="_nonSortableHeader_uxxub_42 cds--table-sort"
                   data-testid="table-header-endDate"
                   type="button"
                 >
@@ -205,7 +205,7 @@ exports[`PatientProgramsTable should match snapshot with program data 1`] = `
               </th>
               <th
                 aria-sort="none"
-                class="cds--table-sort__header"
+                class="_nonSortableHeader_uxxub_42 cds--table-sort__header"
                 scope="col"
               >
                 <div
@@ -216,7 +216,7 @@ exports[`PatientProgramsTable should match snapshot with program data 1`] = `
                 </div>
                 <button
                   aria-describedby="table-sort-_r_2a_"
-                  class="cds--table-sort"
+                  class="_nonSortableHeader_uxxub_42 cds--table-sort"
                   data-testid="table-header-state"
                   type="button"
                 >
@@ -266,7 +266,7 @@ exports[`PatientProgramsTable should match snapshot with program data 1`] = `
               </th>
               <th
                 aria-sort="none"
-                class="cds--table-sort__header"
+                class="_nonSortableHeader_uxxub_42 cds--table-sort__header"
                 scope="col"
               >
                 <div
@@ -277,7 +277,7 @@ exports[`PatientProgramsTable should match snapshot with program data 1`] = `
                 </div>
                 <button
                   aria-describedby="table-sort-_r_2b_"
-                  class="cds--table-sort"
+                  class="_nonSortableHeader_uxxub_42 cds--table-sort"
                   data-testid="table-header-outcome"
                   type="button"
                 >
@@ -464,7 +464,7 @@ exports[`PatientProgramsTable should match snapshot with program data 1`] = `
         </table>
       </div>
       <div
-        class="_sortableDataTablePagination_1w499_37"
+        class="_sortableDataTablePagination_uxxub_37"
       >
         <div
           class="cds--pagination cds--pagination--md"

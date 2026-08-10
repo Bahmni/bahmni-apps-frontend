@@ -135,3 +135,15 @@
   }
 }
 
+.nonSortableHeader {
+  :global(.cds--table-sort) {
+    pointer-events: none !important;
+    cursor: default !important;
+  }
+
+  :global(.cds--table-sort__icon),
+  :global(.cds--table-sort__icon-unsorted) {
+    display: none !important;
+  }
+}
+

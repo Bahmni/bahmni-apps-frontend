@@ -38,7 +38,12 @@ export const ExpandableSortableDataTable = <
   headers,
   rows,
   ariaLabel,
-  sortable = headers.map((header) => ({ key: header.key, sortable: true })),
+  sortable = headers.map((header) => ({
+    key: header.key,
+    sortable:
+      (header as DataTableHeader & { isSortable?: boolean }).isSortable ===
+      true,
+  })),
   loading = false,
   errorStateMessage = null,
   emptyStateMessage = 'No data available.',
@@ -118,14 +123,23 @@ export const ExpandableSortableDataTable = <
               <TableRow>
                 <TableExpandHeader aria-label="Expand row" />
                 {tableHeaders.map((header) => {
+                  const isSortable =
+                    sortable.find((s) => s.key === header.key)?.sortable ??
+                    false;
+                  // Always render as sortable for consistent spacing, control behavior with CSS
                   const headerProps = getHeaderProps({
                     header,
-                    isSortable:
-                      sortable.find((s) => s.key === header.key)?.sortable ??
-                      false,
+                    isSortable: true,
                   });
                   return (
-                    <TableHeader {...headerProps} key={header.key}>
+                    <TableHeader
+                      {...headerProps}
+                      key={header.key}
+                      className={classnames(
+                        headerProps.className,
+                        !isSortable ? styles.nonSortableHeader : '',
+                      )}
+                    >
                       {header.header}
                     </TableHeader>
                   );
@@ -137,7 +151,6 @@ export const ExpandableSortableDataTable = <
                 const originalRow = rowMap.get(row.id)!;
                 const isExpanded = expandedRows.has(row.id);
                 const isRowExpandable = originalRow.isExpandable !== false;
-                // eslint-disable-next-line @typescript-eslint/no-unused-vars
                 const { key: _key, ...rowProps } = getRowProps({ row });
 
                 return (
