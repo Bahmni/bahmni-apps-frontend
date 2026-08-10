@@ -70,11 +70,16 @@ $col-owner: 13%;
     min-width: 140px;
   }
 
-  thead tr th:nth-child(6),
+  thead tr th:nth-child(6) {
+    width: $col-priority;
+    min-width: 70px;
+    text-align: left !important;
+  }
+
   tbody tr td:nth-child(6) {
     width: $col-priority;
     min-width: 70px;
-    text-align: center !important;
+    text-align: left !important;
   }
 
   thead tr th:nth-child(7),
@@ -129,22 +134,20 @@ $col-owner: 13%;
     font-weight: 600 !important;
   }
 
-  // Priority column header - center aligned
   thead tr th:nth-child(6) {
-    text-align: center !important;
+    text-align: left !important;
   }
 
-  // Center-align the sortable button content in priority column
   thead tr th:nth-child(6) button {
     display: flex !important;
-    justify-content: center !important;
+    justify-content: flex-start !important;
     width: 100% !important;
   }
 
-  // Center-align the flex container inside the button
+
   thead tr th:nth-child(6) button :global(.cds--table-sort__flex) {
-    display: flex !important;
-    justify-content: center !important;
+    display: flex !important; 
+    justify-content: flex-start !important;
   }
 
   tbody tr {
@@ -198,13 +201,11 @@ $col-owner: 13%;
 
 .priorityCell {
   display: flex;
-  justify-content: center;
+  justify-content: flex-start;
   align-items: center;
   min-width: 70px;
   width: 100%;
   height: 100%;
-  padding-left: 0 !important;
-  padding-right: 0 !important;
 }
 
 .expandedContent {
@@ -250,9 +251,9 @@ $col-owner: 13%;
   padding-block: 0 !important;
   padding-inline: 0 !important;
   padding-block-end: 0 !important;
-  height: auto !important; // Allow child rows to control vertical size
+  height: auto !important;
   vertical-align: top !important;
-  line-height: 0 !important; // Remove extra line-height space
+  line-height: 0 !important;
 }
 
 :global(.cds--data-table) tbody tr:global([data-child-row]) td {

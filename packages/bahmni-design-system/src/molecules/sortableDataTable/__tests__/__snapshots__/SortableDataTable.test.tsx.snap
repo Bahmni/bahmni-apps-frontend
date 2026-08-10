@@ -206,7 +206,7 @@ exports[`SortableDataTable Snapshots matches snapshot with full data 1`] = `
           <tr>
             <th
               aria-sort="none"
-              class="cds--table-sort__header"
+              class="nonSortableHeader cds--table-sort__header"
               scope="col"
             >
               <div
@@ -217,7 +217,7 @@ exports[`SortableDataTable Snapshots matches snapshot with full data 1`] = `
               </div>
               <button
                 aria-describedby="table-sort-_r_1g_"
-                class="cds--table-sort"
+                class="nonSortableHeader cds--table-sort"
                 data-testid="table-header-name"
                 type="button"
               >
@@ -267,7 +267,7 @@ exports[`SortableDataTable Snapshots matches snapshot with full data 1`] = `
             </th>
             <th
               aria-sort="none"
-              class="cds--table-sort__header"
+              class="nonSortableHeader cds--table-sort__header"
               scope="col"
             >
               <div
@@ -278,7 +278,7 @@ exports[`SortableDataTable Snapshots matches snapshot with full data 1`] = `
               </div>
               <button
                 aria-describedby="table-sort-_r_1h_"
-                class="cds--table-sort"
+                class="nonSortableHeader cds--table-sort"
                 data-testid="table-header-dosage"
                 type="button"
               >
@@ -328,7 +328,7 @@ exports[`SortableDataTable Snapshots matches snapshot with full data 1`] = `
             </th>
             <th
               aria-sort="none"
-              class="cds--table-sort__header"
+              class="nonSortableHeader cds--table-sort__header"
               scope="col"
             >
               <div
@@ -339,7 +339,7 @@ exports[`SortableDataTable Snapshots matches snapshot with full data 1`] = `
               </div>
               <button
                 aria-describedby="table-sort-_r_1i_"
-                class="cds--table-sort"
+                class="nonSortableHeader cds--table-sort"
                 data-testid="table-header-instruction"
                 type="button"
               >
@@ -389,7 +389,7 @@ exports[`SortableDataTable Snapshots matches snapshot with full data 1`] = `
             </th>
             <th
               aria-sort="none"
-              class="cds--table-sort__header"
+              class="nonSortableHeader cds--table-sort__header"
               scope="col"
             >
               <div
@@ -400,7 +400,7 @@ exports[`SortableDataTable Snapshots matches snapshot with full data 1`] = `
               </div>
               <button
                 aria-describedby="table-sort-_r_1j_"
-                class="cds--table-sort"
+                class="nonSortableHeader cds--table-sort"
                 data-testid="table-header-startDate"
                 type="button"
               >
@@ -450,7 +450,7 @@ exports[`SortableDataTable Snapshots matches snapshot with full data 1`] = `
             </th>
             <th
               aria-sort="none"
-              class="cds--table-sort__header"
+              class="nonSortableHeader cds--table-sort__header"
               scope="col"
             >
               <div
@@ -461,7 +461,7 @@ exports[`SortableDataTable Snapshots matches snapshot with full data 1`] = `
               </div>
               <button
                 aria-describedby="table-sort-_r_1k_"
-                class="cds--table-sort"
+                class="nonSortableHeader cds--table-sort"
                 data-testid="table-header-orderDate"
                 type="button"
               >
@@ -511,7 +511,7 @@ exports[`SortableDataTable Snapshots matches snapshot with full data 1`] = `
             </th>
             <th
               aria-sort="none"
-              class="cds--table-sort__header"
+              class="nonSortableHeader cds--table-sort__header"
               scope="col"
             >
               <div
@@ -522,7 +522,7 @@ exports[`SortableDataTable Snapshots matches snapshot with full data 1`] = `
               </div>
               <button
                 aria-describedby="table-sort-_r_1l_"
-                class="cds--table-sort"
+                class="nonSortableHeader cds--table-sort"
                 data-testid="table-header-orderedBy"
                 type="button"
               >
@@ -572,7 +572,7 @@ exports[`SortableDataTable Snapshots matches snapshot with full data 1`] = `
             </th>
             <th
               aria-sort="none"
-              class="cds--table-sort__header"
+              class="nonSortableHeader cds--table-sort__header"
               scope="col"
             >
               <div
@@ -583,7 +583,7 @@ exports[`SortableDataTable Snapshots matches snapshot with full data 1`] = `
               </div>
               <button
                 aria-describedby="table-sort-_r_1m_"
-                class="cds--table-sort"
+                class="nonSortableHeader cds--table-sort"
                 data-testid="table-header-quantity"
                 type="button"
               >
@@ -633,7 +633,7 @@ exports[`SortableDataTable Snapshots matches snapshot with full data 1`] = `
             </th>
             <th
               aria-sort="none"
-              class="cds--table-sort__header"
+              class="nonSortableHeader cds--table-sort__header"
               scope="col"
             >
               <div
@@ -644,7 +644,7 @@ exports[`SortableDataTable Snapshots matches snapshot with full data 1`] = `
               </div>
               <button
                 aria-describedby="table-sort-_r_1n_"
-                class="cds--table-sort"
+                class="nonSortableHeader cds--table-sort"
                 data-testid="table-header-status"
                 type="button"
               >

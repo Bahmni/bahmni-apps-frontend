@@ -36,6 +36,7 @@ export const useOrdersFulfillment = (
       .map((col) => ({
         key: col.key,
         header: col.translationKey ? t(col.translationKey) : col.header,
+        isSortable: col.sortable,
       }));
   }, [isDrugTab, t, defaultColumnConfigs, drugOrderColumnConfigs]);
 

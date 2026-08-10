@@ -280,6 +280,64 @@ describe('ExpandableSortableDataTable', () => {
     expect(screen.getByText('Patient C')).toBeInTheDocument();
   });
 
+  it('respects sortable prop for columns', () => {
+    const headersWithSortable: DataTableHeader[] = [
+      { key: 'name', header: 'Name' },
+      { key: 'status', header: 'Status' },
+      { key: 'count', header: 'Count' },
+    ];
+
+    const sortableConfig = [
+      { key: 'name', sortable: true },
+      { key: 'status', sortable: false },
+      { key: 'count', sortable: true },
+    ];
+
+    render(
+      <ExpandableSortableDataTable
+        headers={headersWithSortable}
+        rows={mockRows}
+        sortable={sortableConfig}
+        ariaLabel="Sortable Config Table"
+        renderCell={renderCell}
+        renderExpandedContent={renderExpandedContent}
+      />,
+    );
+
+    // All headers should be rendered (we render all as sortable for consistent spacing)
+    expect(screen.getByText('Name')).toBeInTheDocument();
+    expect(screen.getByText('Status')).toBeInTheDocument();
+    expect(screen.getByText('Count')).toBeInTheDocument();
+
+    // Non-sortable header should have nonSortableHeader class
+    const statusHeader = screen.getByText('Status').closest('th');
+    expect(statusHeader).toHaveClass('nonSortableHeader');
+  });
+
+  it('defaults to non-sortable when isSortable is not provided', () => {
+    const headersWithoutSortable: DataTableHeader[] = [
+      { key: 'name', header: 'Name' },
+      { key: 'status', header: 'Status' },
+    ];
+
+    render(
+      <ExpandableSortableDataTable
+        headers={headersWithoutSortable}
+        rows={mockRows}
+        ariaLabel="Default Non-Sortable Table"
+        renderCell={renderCell}
+        renderExpandedContent={renderExpandedContent}
+      />,
+    );
+
+    // Both headers should have nonSortableHeader class (default behavior)
+    const nameHeader = screen.getByText('Name').closest('th');
+    const statusHeader = screen.getByText('Status').closest('th');
+
+    expect(nameHeader).toHaveClass('nonSortableHeader');
+    expect(statusHeader).toHaveClass('nonSortableHeader');
+  });
+
   it('allows multiple rows to be expanded', () => {
     render(
       <ExpandableSortableDataTable
