@@ -669,7 +669,63 @@ describe('observationUtils', () => {
       expect(mockFormatDateTime).toHaveBeenCalledWith(
         '2024-06-15T10:30:00+00:00',
         mockT,
+        true,
       );
+
+      mockFormatDateTime.mockClear();
+    });
+
+    it('should not include time for a date-only value defaulted to midnight', () => {
+      const mockFormatDateTime = services.formatDateTime as jest.MockedFunction<
+        typeof services.formatDateTime
+      >;
+      mockFormatDateTime.mockReturnValue({
+        formattedResult: '15/06/2024',
+      });
+
+      const mockT = (key: string) => key;
+      const observation: ExtractedObservation = {
+        id: 'obs-5',
+        display: 'Date of Onset',
+        observationValue: {
+          value: '2024-06-15T00:00:00+00:00',
+          type: 'dateTime',
+        },
+      };
+
+      expect(formatObservationValue(observation, mockT)).toBe('15/06/2024');
+      expect(mockFormatDateTime).toHaveBeenCalledWith(
+        '2024-06-15T00:00:00+00:00',
+        mockT,
+        false,
+      );
+
+      mockFormatDateTime.mockClear();
+    });
+
+    it('formats each date separately when add-more grouping has merged multiple dateTime values', () => {
+      const mockFormatDateTime = services.formatDateTime as jest.MockedFunction<
+        typeof services.formatDateTime
+      >;
+      mockFormatDateTime.mockImplementation((value) => ({
+        formattedResult:
+          value === '2024-05-14T00:00:00+00:00' ? '14/05/2024' : '12/05/2024',
+      }));
+
+      const mockT = (key: string) => key;
+      const observation: ExtractedObservation = {
+        id: 'obs-6',
+        display: 'Last HbA1c Date',
+        observationValue: {
+          value: '2024-05-14T00:00:00+00:00, 2024-05-12T00:00:00+00:00',
+          type: 'dateTime',
+        },
+      };
+
+      expect(formatObservationValue(observation, mockT)).toBe(
+        '14/05/2024, 12/05/2024',
+      );
+      expect(mockFormatDateTime).toHaveBeenCalledTimes(2);
 
       mockFormatDateTime.mockClear();
     });
