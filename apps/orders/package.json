@@ -1,0 +1,31 @@
+{
+  "name": "@bahmni/orders-app",
+  "version": "0.0.1",
+  "type": "module",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    "./package.json": "./package.json",
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    },
+    "./styles": "./dist/index.css",
+    "./locales/*": "./dist/locales/*"
+  },
+  "peerDependencies": {
+    "react": ">=18.0.0",
+    "react-dom": ">=18.0.0",
+    "@tanstack/react-query": "^5.85.5"
+  },
+  "author": "Thoughtworks Inc.",
+  "license": "MPLv2",
+  "description": "A modern orders management module for Bahmni, built with React and the Bahmni Design System. Provides intuitive interfaces for managing Radiology, Laboratory, Rehab, and other medical orders in healthcare settings.",
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ]
+}

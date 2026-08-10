@@ -1,0 +1,64 @@
+@use "@carbon/react/scss/spacing" as *;
+@use "@carbon/react/scss/theme" as *;
+@use "@carbon/react/scss/type" as *;
+
+.pageContainer {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+  background-color: $background;
+}
+
+.contentContainer {
+  flex: 1;
+  padding: $spacing-05 $spacing-06;
+  overflow-y: auto;
+}
+
+.ordersContainer {
+  background-color: $background;
+  border: 1px solid $border-subtle-01;
+  border-radius: $spacing-02;
+  padding: $spacing-05;
+  margin-top: $spacing-05;
+}
+
+.tabList {
+  margin-left: 0;
+  padding-left: 16px;
+}
+
+.tabContent {
+  padding: $spacing-05 0;
+}
+
+.searchContainer {
+  max-width: 500px;
+  margin-bottom: $spacing-05;
+
+  :global(input::placeholder) {
+    color: #525252 !important;
+  }
+}
+
+.ordersTable {
+  border: 1px solid $border-subtle-01;
+  border-radius: $spacing-02;
+  overflow: hidden;
+}
+
+.errorContainer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: $spacing-07;
+  background-color: $background;
+  min-height: 25rem;
+}
+
+.errorMessage {
+  @include type-style("body-01");
+  color: $text-error;
+  text-align: center;
+}

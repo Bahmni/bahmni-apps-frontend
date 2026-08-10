@@ -220,7 +220,13 @@ export {
   ORDER_TYPE_QUERY_KEY,
 } from './investigationService';
 
-export { getConfig } from './configService';
+export {
+  getConfig,
+  getOrdersConfig,
+  type OrdersConfig,
+  type OrderExtension,
+  type OrderExtensionParams,
+} from './configService';
 
 export {
   getCurrentUser,

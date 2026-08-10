@@ -1,0 +1,89 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Orders Extension Configuration Schema",
+  "description": "Schema for orders extension configuration including order types and their display properties",
+  "type": "object",
+  "patternProperties": {
+    ".*": {
+      "type": "object",
+      "required": [
+        "id",
+        "extensionPointId",
+        "type",
+        "extensionParams",
+        "label",
+        "order",
+        "requiredPrivilege"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the extension"
+        },
+        "extensionPointId": {
+          "type": "string",
+          "description": "Extension point identifier"
+        },
+        "type": {
+          "type": "string",
+          "description": "Type of extension"
+        },
+        "extensionParams": {
+          "type": "object",
+          "required": [
+            "searchHandler",
+            "display",
+            "translationKey",
+            "forwardUrl",
+            "forwardButtonTitle",
+            "view"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "searchHandler": {
+              "type": "string",
+              "description": "SQL search handler for patient queries"
+            },
+            "display": {
+              "type": "string",
+              "description": "Display name for the order type"
+            },
+            "translationKey": {
+              "type": "string",
+              "description": "i18n translation key"
+            },
+            "forwardUrl": {
+              "type": "string",
+              "description": "URL pattern for order fulfillment"
+            },
+            "forwardButtonTitle": {
+              "type": "string",
+              "description": "Button label for navigation"
+            },
+            "view": {
+              "type": "string",
+              "description": "View type (e.g., tabular)"
+            },
+            "targetedTab": {
+              "type": "string",
+              "description": "Optional targeted tab name"
+            }
+          }
+        },
+        "label": {
+          "type": "string",
+          "description": "Label for the order type"
+        },
+        "order": {
+          "type": "number",
+          "description": "Display order for tabs"
+        },
+        "requiredPrivilege": {
+          "type": "string",
+          "description": "Required privilege to access this order type"
+        }
+      }
+    }
+  }
+}
