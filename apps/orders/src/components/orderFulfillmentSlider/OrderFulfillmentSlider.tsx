@@ -4,11 +4,17 @@ import {
   Provider,
   createTask,
   getCurrentProvider,
+  getPatientLmpData,
+  LmpData,
 } from '@bahmni/services';
 import { useNotification } from '@bahmni/widgets';
 import { Close } from '@carbon/icons-react';
 import { ComboBox, TextArea } from '@carbon/react';
 import React, { useEffect, useState } from 'react';
+import {
+  RADIOLOGY_TAB_LABEL,
+  LMP_WARNING_DAYS_THRESHOLD,
+} from '../../constants/app';
 import {
   UI_STATUS_TO_FHIR_TASK_STATUS,
   DEFAULT_STATUS_FOR_NEW_ORDER,
@@ -48,6 +54,9 @@ export const OrderFulfillmentSlider: React.FC<OrderFulfillmentSliderProps> = ({
   const [owner, setOwner] = useState('');
   const [isSaving, setIsSaving] = useState(false);
   const [currentProviders, setCurrentProviders] = useState<Provider[]>([]);
+  const [lmpData, setLmpData] = useState<LmpData | null>(null);
+
+  const isRadiologyTab = tabLabel === RADIOLOGY_TAB_LABEL;
 
   const availableStatuses: OrderStatusConfig[] = (
     (ordersTableConfig?.orderStatusesAvailable as OrderStatusConfig[]) ?? []
@@ -80,6 +89,17 @@ export const OrderFulfillmentSlider: React.FC<OrderFulfillmentSliderProps> = ({
       setCurrentProviders(providers[tabLabel]);
     }
   }, [tabLabel, providers]);
+
+  useEffect(() => {
+    if (isOpen && isRadiologyTab && order?.patientUuid) {
+      setLmpData(null);
+      getPatientLmpData(order.patientUuid).then((data) => {
+        setLmpData(data);
+      });
+    } else if (!isOpen) {
+      setLmpData(null);
+    }
+  }, [isOpen, isRadiologyTab, order?.patientUuid]);
 
   const getNestedValue = (obj: Order, key: string): string => {
     const keys = key.split('.');
@@ -179,7 +199,8 @@ export const OrderFulfillmentSlider: React.FC<OrderFulfillmentSliderProps> = ({
           </section>
         )}
 
-        {patientDetailFields.length > 0 && (
+        {(patientDetailFields.length > 0 ||
+          (isRadiologyTab && lmpData !== null)) && (
           <section className={styles.section}>
             <h3 className={styles.sectionTitle}>{t('PATIENT_DETAILS')}</h3>
             <div className={styles.patientDetailsGrid}>
@@ -194,6 +215,24 @@ export const OrderFulfillmentSlider: React.FC<OrderFulfillmentSliderProps> = ({
                   </div>
                 );
               })}
+              {isRadiologyTab && lmpData && (
+                <div
+                  className={styles.patientDetailItem}
+                  data-testid="lmp-days-display"
+                >
+                  <span className={styles.label}>{t('DAYS_SINCE_LMP')}</span>
+                  <span
+                    className={`${styles.value} ${
+                      lmpData.daysSinceLmp >= LMP_WARNING_DAYS_THRESHOLD
+                        ? styles.lmpWarning
+                        : ''
+                    }`}
+                    data-testid="lmp-days-value"
+                  >
+                    {lmpData.daysSinceLmp}
+                  </span>
+                </div>
+              )}
             </div>
           </section>
         )}

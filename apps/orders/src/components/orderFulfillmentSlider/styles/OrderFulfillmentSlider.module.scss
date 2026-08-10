@@ -227,6 +227,11 @@
   color: #da1e28;
 }
 
+.value.lmpWarning {
+  color: #ff0000 !important;
+  font-weight: 600;
+}
+
 .notesTextarea {
   @include type-style("body-compact-01");
   width: 100%;

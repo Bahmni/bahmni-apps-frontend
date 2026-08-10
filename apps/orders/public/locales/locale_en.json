@@ -35,6 +35,7 @@
   "AGE": "Age",
   "GENDER": "Gender",
   "DOB": "Date of Birth",
+  "DAYS_SINCE_LMP": "Days since LMP",
   "APPLY": "Apply",
   "CANCEL": "Cancel",
   "SAVE": "Save",

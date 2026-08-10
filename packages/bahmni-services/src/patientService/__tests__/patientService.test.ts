@@ -29,6 +29,8 @@ import {
   getAddressHierarchyEntries,
   getPatientProfile,
   fetchPatientPhotoFromUrl,
+  calculateDaysSinceLmp,
+  getPatientLmpData,
 } from '../patientService';
 
 jest.mock('../../api');
@@ -1574,6 +1576,131 @@ describe('Patient Service', () => {
       await expect(fetchPatientPhotoFromUrl(PHOTO_URL)).rejects.toThrow(
         'Network error',
       );
+    });
+  });
+
+  describe('calculateDaysSinceLmp', () => {
+    beforeEach(() => {
+      jest.useFakeTimers();
+      jest.setSystemTime(new Date('2025-02-20'));
+    });
+
+    afterEach(() => {
+      jest.useRealTimers();
+    });
+
+    it('should calculate days since LMP correctly', () => {
+      const result = calculateDaysSinceLmp('2025-02-10');
+      expect(result).toBe(10);
+    });
+
+    it('should return 0 for LMP on today', () => {
+      const result = calculateDaysSinceLmp('2025-02-20');
+      expect(result).toBe(0);
+    });
+
+    it('should return null for empty or invalid input', () => {
+      expect(calculateDaysSinceLmp('')).toBeNull();
+      expect(calculateDaysSinceLmp('not-a-date')).toBeNull();
+      expect(calculateDaysSinceLmp(null as any)).toBeNull();
+    });
+
+    it('should return null for future date', () => {
+      const result = calculateDaysSinceLmp('2025-12-31');
+      expect(result).toBeNull();
+    });
+
+    it('should calculate 34 days threshold correctly (pregnancy risk)', () => {
+      const result = calculateDaysSinceLmp('2025-01-17');
+      expect(result).toBe(34);
+    });
+  });
+
+  describe('getPatientLmpData', () => {
+    const patientUuid = 'patient-123-uuid';
+
+    beforeEach(() => {
+      jest.clearAllMocks();
+    });
+
+    it('should fetch and return LMP data successfully', async () => {
+      const mockBundle = {
+        entry: [
+          {
+            resource: {
+              resourceType: 'Observation',
+              valueDateTime: '2025-01-15T08:30:00',
+            },
+          },
+        ],
+      };
+      mockedGet.mockResolvedValueOnce(mockBundle);
+
+      const result = await getPatientLmpData(patientUuid);
+
+      expect(result).toEqual({
+        lmpDate: '2025-01-15',
+        daysSinceLmp: expect.any(Number),
+      });
+    });
+
+    it('should return null when no LMP data found (empty bundle)', async () => {
+      mockedGet.mockResolvedValueOnce({ entry: [] });
+
+      const result = await getPatientLmpData(patientUuid);
+
+      expect(result).toBeNull();
+    });
+
+    it('should return null for invalid or empty patientUuid', async () => {
+      const result1 = await getPatientLmpData('');
+      const result2 = await getPatientLmpData('   ');
+
+      expect(result1).toBeNull();
+      expect(result2).toBeNull();
+      expect(mockedGet).not.toHaveBeenCalled();
+    });
+
+    it('should return null on API error', async () => {
+      mockedGet.mockRejectedValueOnce(new Error('API Error'));
+
+      const result = await getPatientLmpData(patientUuid);
+
+      expect(result).toBeNull();
+    });
+
+    it('should handle both valueDateTime and valueString formats', async () => {
+      const mockBundleDateTime = {
+        entry: [
+          {
+            resource: {
+              resourceType: 'Observation',
+              valueDateTime: '2025-01-15',
+            },
+          },
+        ],
+      };
+      mockedGet.mockResolvedValueOnce(mockBundleDateTime);
+
+      const result1 = await getPatientLmpData(patientUuid);
+
+      expect(result1?.lmpDate).toBe('2025-01-15');
+
+      const mockBundleString = {
+        entry: [
+          {
+            resource: {
+              resourceType: 'Observation',
+              valueString: '2025-01-10',
+            },
+          },
+        ],
+      };
+      mockedGet.mockResolvedValueOnce(mockBundleString);
+
+      const result2 = await getPatientLmpData(patientUuid);
+
+      expect(result2?.lmpDate).toBe('2025-01-10');
     });
   });
 });

@@ -19,6 +19,8 @@ export {
   getPatientProfile,
   getRelationshipTypes,
   getPersonAttributeTypes,
+  getPatientLmpData,
+  calculateDaysSinceLmp,
 } from './patientService';
 export {
   type FormattedPatientData,
@@ -46,6 +48,7 @@ export {
   type AppointmentSearchResult,
   type ExpectedFieldConfig,
   type SearchActionConfig,
+  type LmpData,
 } from './models';
 export {
   AttributeFormat,

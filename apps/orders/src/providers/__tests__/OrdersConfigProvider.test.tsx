@@ -195,12 +195,34 @@ describe('OrdersConfigProvider', () => {
       );
       expect(screen.getByTestId('config-error').textContent).toBe('No error');
       expect(screen.getByTestId('tabs-data').textContent).not.toBe('No tabs');
+      // Component adds hasBeenAdmittedConfig to the columns
+      const expectedGenericHeaders = [
+        ...mockTableConfig.ordersTableColumnHeadersGeneric,
+        {
+          key: 'hasBeenAdmitted',
+          header: '',
+          translationKey: '',
+          visible: true,
+          sortable: false,
+        },
+      ];
       expect(
         screen.getByTestId('orders-table-column-headers-Generic').textContent,
-      ).toBe(JSON.stringify(mockTableConfig.ordersTableColumnHeadersGeneric));
+      ).toBe(JSON.stringify(expectedGenericHeaders));
+      // Component adds hasBeenAdmittedConfig to the columns
+      const expectedCustomHeaders = [
+        ...mockTableConfig.ordersTableColumnHeadersCustom,
+        {
+          key: 'hasBeenAdmitted',
+          header: '',
+          translationKey: '',
+          visible: true,
+          sortable: false,
+        },
+      ];
       expect(
         screen.getByTestId('orders-table-column-headers-Custom').textContent,
-      ).toBe(JSON.stringify(mockTableConfig.ordersTableColumnHeadersCustom));
+      ).toBe(JSON.stringify(expectedCustomHeaders));
     });
 
     test('should handle minimal configuration', async () => {

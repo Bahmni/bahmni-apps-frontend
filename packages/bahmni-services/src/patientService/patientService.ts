@@ -1,4 +1,4 @@
-import { Patient } from 'fhir/r4';
+import { Patient, Bundle, Observation } from 'fhir/r4';
 import { get, post, put } from '../api';
 import { APP_PROPERTY_URL } from '../applicationConfigService/constants';
 import { BIRTH_TIME_EXT_URL } from '../constants/fhir';
@@ -23,6 +23,7 @@ import {
   GET_PATIENT_PROFILE_URL,
   PERSON_ATTRIBUTE_TYPES_URL,
   RELATIONSHIP_TYPES_URL,
+  LMP_OBSERVATION_URL,
 } from './constants';
 import {
   PatientSearchField,
@@ -37,6 +38,7 @@ import {
   PatientProfileResponse,
   PersonAttributeTypesResponse,
   RelationshipTypesResponse,
+  LmpData,
 } from './models';
 
 export const mapGenderFromFhir = (fhirGender: string): string => {
@@ -486,3 +488,63 @@ export const getPersonAttributeTypes =
   async (): Promise<PersonAttributeTypesResponse> => {
     return get<PersonAttributeTypesResponse>(PERSON_ATTRIBUTE_TYPES_URL);
   };
+
+/**
+ * Calculate the number of days between an LMP date and today
+ * @param lmpDateStr - ISO date string for the last menstrual period (e.g. "2024-03-15")
+ * @returns Number of days since LMP, or null if the date is invalid
+ */
+export const calculateDaysSinceLmp = (lmpDateStr: string): number | null => {
+  if (!lmpDateStr) return null;
+  const lmpDate = new Date(lmpDateStr);
+  if (isNaN(lmpDate.getTime())) return null;
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  lmpDate.setHours(0, 0, 0, 0);
+  const diffMs = today.getTime() - lmpDate.getTime();
+  if (diffMs < 0) return null;
+  return Math.floor(diffMs / (1000 * 60 * 60 * 24));
+};
+
+/**
+ * Fetch the most recent LMP (Last Menstrual Period) observation for a patient
+ * Uses FHIR R4 Observation API filtered by the LMP concept
+ * @param patientUuid - The UUID of the patient
+ * @returns Promise<LmpData | null> - LMP date and days since LMP, or null if not captured
+ */
+export const getPatientLmpData = async (
+  patientUuid: string,
+): Promise<LmpData | null> => {
+  if (!patientUuid || patientUuid.trim() === '') {
+    return null;
+  }
+
+  try {
+    const bundle = await get<Bundle<Observation>>(
+      LMP_OBSERVATION_URL(patientUuid),
+    );
+    const observations =
+      bundle.entry
+        ?.filter((entry) => entry.resource?.resourceType === 'Observation')
+        .map((entry) => entry.resource as Observation) ?? [];
+
+    if (observations.length === 0) {
+      return null;
+    }
+
+    // Use the most recent observation (results are sorted by -_lastUpdated)
+    const lmpObs = observations[0];
+    const lmpDateStr = lmpObs.valueDateTime ?? lmpObs.valueString ?? null;
+
+    if (!lmpDateStr) return null;
+
+    // Normalise to YYYY-MM-DD
+    const isoDateStr = lmpDateStr.split('T')[0];
+    const daysSinceLmp = calculateDaysSinceLmp(isoDateStr);
+    if (daysSinceLmp === null) return null;
+
+    return { lmpDate: isoDateStr, daysSinceLmp };
+  } catch {
+    return null;
+  }
+};
