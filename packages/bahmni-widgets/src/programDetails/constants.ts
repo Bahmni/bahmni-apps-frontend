@@ -7,4 +7,6 @@ export const KNOWN_FIELDS: string[] = [
   'careManager',
 ];
 
+export const EPISODE_OF_CARE_FIELDS: string[] = ['careManager'];
+
 export const EDIT_PATIENT_PROGRAMS_PRIVILEGE = 'Edit Patient Programs';

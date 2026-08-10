@@ -24,7 +24,11 @@ import React, { useMemo, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useNotification } from '../notification';
 import { useUserPrivilege } from '../userPrivileges/useUserPrivilege';
-import { EDIT_PATIENT_PROGRAMS_PRIVILEGE, KNOWN_FIELDS } from './constants';
+import {
+  EDIT_PATIENT_PROGRAMS_PRIVILEGE,
+  EPISODE_OF_CARE_FIELDS,
+  KNOWN_FIELDS,
+} from './constants';
 import { ProgramDetailsViewModel, ProgramField } from './model';
 import styles from './styles/ProgramDetails.module.scss';
 import {
@@ -38,9 +42,10 @@ export const programsQueryKeys = (programUUID: string) =>
 const fetchProgramDetails = async (
   programUUID: string,
   programAttributes: string[],
+  hasEpisodeOfCareField: boolean,
 ): Promise<ProgramDetailsViewModel> => {
   const response = await getProgramByUUID(programUUID!);
-  if (response.episodeUuid) {
+  if (hasEpisodeOfCareField && response.episodeUuid) {
     const episodeOfCare = await getEpisodeOfCare(response.episodeUuid);
     return createProgramDetailsViewModel(
       response,
@@ -79,9 +84,22 @@ const ProgramDetails: React.FC<ProgramDetailsProps> = ({
     [config?.fields],
   );
 
+  const hasEpisodeOfCareField = useMemo(
+    () =>
+      (config?.fields ?? []).some((field) =>
+        EPISODE_OF_CARE_FIELDS.includes(field.name),
+      ),
+    [config?.fields],
+  );
+
   const { data, isLoading, isError, refetch } = useQuery({
     queryKey: programsQueryKeys(programUUID!),
-    queryFn: () => fetchProgramDetails(programUUID!, programAttributes),
+    queryFn: () =>
+      fetchProgramDetails(
+        programUUID!,
+        programAttributes,
+        hasEpisodeOfCareField,
+      ),
     enabled: !!programUUID,
   });
 

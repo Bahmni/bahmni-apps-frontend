@@ -608,6 +608,32 @@ describe('PatientProgramsTable Integration', () => {
     },
   );
 
+  it('should not fetch episode of care when no episode of care field is configured, even if episodeUuid is present', async () => {
+    mockedGetPatientProgramsPage.mockResolvedValue(
+      wrapPage(mockPatientProgramsResponse.results),
+    );
+
+    render(
+      <QueryClientProvider client={queryClient}>
+        <PatientProgramsTable
+          config={{
+            fields: [
+              { name: 'programName' },
+              { name: 'startDate' },
+              { name: 'state' },
+            ],
+          }}
+        />
+      </QueryClientProvider>,
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText('HIV Program')).toBeInTheDocument();
+    });
+
+    expect(mockedGetEpisodeOfCare).not.toHaveBeenCalled();
+  });
+
   it('should show error state when an error occurs', async () => {
     const errorMessage = 'Failed to fetch patient programs from server';
     mockedGetPatientProgramsPage.mockRejectedValue(new Error(errorMessage));

@@ -158,6 +158,27 @@ describe('ProgramDetails Integration', () => {
     ).toHaveTextContent('-');
   });
 
+  it('should not fetch episode of care when no episode of care field is configured, even if episodeUuid is present', async () => {
+    (getProgramByUUID as jest.Mock).mockResolvedValue(
+      mockProgramWithAttributes,
+    );
+
+    renderWithProviders(
+      <ProgramDetails
+        programUUID="enrollment-uuid-2"
+        config={{ fields: detailFields }}
+      />,
+    );
+
+    await waitFor(() => {
+      expect(
+        screen.getByTestId('patient-programs-tile-test-id'),
+      ).toBeInTheDocument();
+    });
+
+    expect(getEpisodeOfCare).not.toHaveBeenCalled();
+  });
+
   it('should show error state when an error occurs', async () => {
     const errorMessage = 'Failed to fetch program details from server';
     (getProgramByUUID as jest.Mock).mockRejectedValue(new Error(errorMessage));

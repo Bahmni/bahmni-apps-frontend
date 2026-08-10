@@ -10,6 +10,7 @@ import { useQuery } from '@tanstack/react-query';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { usePatientUUID } from '../hooks/usePatientUUID';
 import { WidgetProps } from '../registry/model';
+import { EPISODE_OF_CARE_FIELDS } from './constants';
 import { PatientProgramViewModel, ProgramField } from './model';
 import styles from './styles/PatientProgramsTable.module.scss';
 import {
@@ -37,11 +38,18 @@ const PatientProgramsTable: React.FC<WidgetProps> = ({ config }) => {
     [configFields],
   );
 
+  const hasEpisodeOfCareField = useMemo(
+    () =>
+      configFields.some((field) => EPISODE_OF_CARE_FIELDS.includes(field.name)),
+    [configFields],
+  );
+
   const { data, isLoading, isError } = useQuery({
     queryKey: [
       'programs',
       patientUUID!,
       programAttributes,
+      hasEpisodeOfCareField,
       currentPage,
       selectedPageSize,
     ],
@@ -56,7 +64,7 @@ const PatientProgramsTable: React.FC<WidgetProps> = ({ config }) => {
 
       const programs = await Promise.all(
         page.programs.map(async (program) => {
-          if (program.episodeUuid) {
+          if (hasEpisodeOfCareField && program.episodeUuid) {
             const episodeOfCare = await getEpisodeOfCare(program.episodeUuid);
             return createPatientProgramViewModal(
               program,

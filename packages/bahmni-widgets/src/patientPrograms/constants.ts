@@ -6,3 +6,5 @@ export const KNOWN_FIELDS: string[] = [
   'state',
   'careManager',
 ];
+
+export const EPISODE_OF_CARE_FIELDS: string[] = ['careManager'];
