@@ -52,18 +52,18 @@ exports[`RegistrationList Snapshot matches snapshot 1`] = `
         class="cds--header__global"
         data-testid="header-global-bar"
       >
+        <button
+          class="headerButton cds--btn cds--btn--md cds--layout--size-md cds--btn--primary"
+          data-testid="create-new-patient-button"
+          type="button"
+        >
+          CREATE_PATIENT_BUTTON_TEXT
+        </button>
         <div
           data-testid="user-global-action-test-id"
         />
       </div>
     </header>
-    <button
-      class="headerButton cds--btn cds--btn--md cds--layout--size-md cds--btn--primary"
-      data-testid="create-new-patient-button"
-      type="button"
-    >
-      CREATE_PATIENT_BUTTON_TEXT
-    </button>
   </div>
   <div
     aria-label="main-display-area-aria-label"

@@ -66,16 +66,19 @@ const RegistrationList = () => {
         >
           <Header
             breadcrumbItems={breadcrumbItems}
+            globalFeatures={[
+              <Button
+                key="create-new-patient"
+                onClick={handleCreateNewPatient}
+                size="md"
+                className={styles.headerButton}
+                data-testid="create-new-patient-button"
+              >
+                {t('CREATE_PATIENT_BUTTON_TEXT')}
+              </Button>,
+            ]}
             userMenu={<UserGlobalAction />}
           />
-          <Button
-            onClick={handleCreateNewPatient}
-            size="md"
-            className={styles.headerButton}
-            data-testid="create-new-patient-button"
-          >
-            {t('CREATE_PATIENT_BUTTON_TEXT')}
-          </Button>
         </div>
       }
       main={

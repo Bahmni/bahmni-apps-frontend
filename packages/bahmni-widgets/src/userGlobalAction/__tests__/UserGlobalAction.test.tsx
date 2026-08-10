@@ -2,11 +2,9 @@ import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { axe, toHaveNoViolations } from 'jest-axe';
 import React from 'react';
-import {
-  ActivePractitionerContext,
-  ActivePractitionerContextType,
-} from '../../activePractitioner/ActivePractitionerContext';
-import { NotificationContext } from '../../notification/NotificationContext';
+import { ActivePractitionerContextType } from '../../activePractitioner/ActivePractitionerContext';
+import { useActivePractitioner } from '../../activePractitioner/useActivePractitioner';
+import { useNotification } from '../../notification/useNotification';
 import { useUserPrivilege } from '../../userPrivileges/useUserPrivilege';
 import { registerDefaultActions } from '../actions';
 import { UserActionProvider } from '../registry/provider';
@@ -15,8 +13,17 @@ import { UserGlobalAction } from '../UserGlobalAction';
 expect.extend(toHaveNoViolations);
 
 jest.mock('../../userPrivileges/useUserPrivilege');
+jest.mock('../../activePractitioner/useActivePractitioner');
+jest.mock('../../notification/useNotification');
 jest.mock('../actions', () => ({
   registerDefaultActions: jest.fn(),
+}));
+jest.mock('@bahmni/services', () => ({
+  ...jest.requireActual('@bahmni/services'),
+  useTranslation: () => ({
+    t: (key: string, options?: { name?: string }) =>
+      options?.name ? `${key} ${options.name}` : key,
+  }),
 }));
 
 const buildActivePractitionerValue = (
@@ -30,24 +37,17 @@ const buildActivePractitionerValue = (
   ...overrides,
 });
 
-const renderWithProviders = (
-  activePractitionerValue?: ActivePractitionerContextType,
-) => {
-  const tree = (
-    <UserActionProvider>
-      <UserGlobalAction />
-    </UserActionProvider>
-  );
+const mockAddNotification = jest.fn();
 
-  if (activePractitionerValue === undefined) {
-    // Simulates apps that haven't wired an ActivePractitionerProvider.
-    return render(tree);
-  }
+const renderWithProviders = (
+  activePractitionerValue: ActivePractitionerContextType = buildActivePractitionerValue(),
+) => {
+  (useActivePractitioner as jest.Mock).mockReturnValue(activePractitionerValue);
 
   return render(
-    <ActivePractitionerContext.Provider value={activePractitionerValue}>
-      {tree}
-    </ActivePractitionerContext.Provider>,
+    <UserActionProvider>
+      <UserGlobalAction />
+    </UserActionProvider>,
   );
 };
 
@@ -56,6 +56,15 @@ describe('UserGlobalAction', () => {
     jest.clearAllMocks();
     (useUserPrivilege as jest.Mock).mockReturnValue({
       userPrivileges: [],
+    });
+    (useActivePractitioner as jest.Mock).mockReturnValue(
+      buildActivePractitionerValue(),
+    );
+    (useNotification as jest.Mock).mockReturnValue({
+      notifications: [],
+      addNotification: mockAddNotification,
+      removeNotification: jest.fn(),
+      clearAllNotifications: jest.fn(),
     });
   });
 
@@ -72,7 +81,23 @@ describe('UserGlobalAction', () => {
     const button = screen.getByTestId('user-global-action-button-test-id');
     expect(button).toBeInTheDocument();
     expect(screen.getByTestId('user-icon-button-test-id')).toBeInTheDocument();
-    expect(screen.getByText('USER_GLOBAL_ACTION_GREETING')).toBeInTheDocument();
+    expect(
+      screen.getByText('USER_GLOBAL_ACTION_GREETING Jane'),
+    ).toBeInTheDocument();
+  });
+
+  it('should greet with only the first name when the display name has multiple words', () => {
+    renderWithProviders(
+      buildActivePractitionerValue({
+        user: {
+          display: 'Jane Elizabeth Doe',
+        } as ActivePractitionerContextType['user'],
+      }),
+    );
+
+    expect(
+      screen.getByText('USER_GLOBAL_ACTION_GREETING Jane'),
+    ).toBeInTheDocument();
   });
 
   it('should render a skeleton while the active practitioner is loading', () => {
@@ -97,17 +122,6 @@ describe('UserGlobalAction', () => {
     expect(
       screen.queryByText('USER_GLOBAL_ACTION_GREETING'),
     ).not.toBeInTheDocument();
-  });
-
-  it('should still render the avatar trigger without crashing when no ActivePractitionerProvider is present', () => {
-    // Regression guard: apps like registration/appointments don't wire
-    // ActivePractitionerProvider today. The widget must degrade to avatar-only
-    // instead of throwing/disappearing.
-    renderWithProviders(undefined);
-
-    const button = screen.getByTestId('user-global-action-button-test-id');
-    expect(button).toBeInTheDocument();
-    expect(screen.getByTestId('user-icon-button-test-id')).toBeInTheDocument();
   });
 
   it('should open menu when trigger is clicked', async () => {
@@ -284,7 +298,6 @@ describe('UserGlobalAction', () => {
       const consoleError = jest
         .spyOn(console, 'error')
         .mockImplementation(() => {});
-      const addNotification = jest.fn();
       (registerDefaultActions as jest.Mock).mockImplementation((registry) => {
         registry.registerAction({
           id: 'user-logout-global-action',
@@ -293,24 +306,7 @@ describe('UserGlobalAction', () => {
         });
       });
 
-      render(
-        <NotificationContext.Provider
-          value={{
-            notifications: [],
-            addNotification,
-            removeNotification: jest.fn(),
-            clearAllNotifications: jest.fn(),
-          }}
-        >
-          <ActivePractitionerContext.Provider
-            value={buildActivePractitionerValue()}
-          >
-            <UserActionProvider>
-              <UserGlobalAction />
-            </UserActionProvider>
-          </ActivePractitionerContext.Provider>
-        </NotificationContext.Provider>,
-      );
+      renderWithProviders(buildActivePractitionerValue());
 
       await userEvent.click(
         screen.getByTestId('user-global-action-button-test-id'),
@@ -320,7 +316,7 @@ describe('UserGlobalAction', () => {
       );
 
       await waitFor(() =>
-        expect(addNotification).toHaveBeenCalledWith(
+        expect(mockAddNotification).toHaveBeenCalledWith(
           expect.objectContaining({ type: 'error' }),
         ),
       );

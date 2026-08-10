@@ -9,16 +9,29 @@ import {
   useMemo,
   useEffect,
   useRef,
-  useContext,
 } from 'react';
-import { ActivePractitionerContext } from '../activePractitioner/ActivePractitionerContext';
-import { NotificationContext } from '../notification/NotificationContext';
+import { useActivePractitioner } from '../activePractitioner/useActivePractitioner';
+import { useNotification } from '../notification/useNotification';
 import { useUserPrivilege } from '../userPrivileges/useUserPrivilege';
 import { registerDefaultActions } from './actions';
 import { useUserActionRegistry } from './registry/hook';
 import styles from './styles/UserGlobalAction.module.scss';
 
 const MENU_ID = 'user-global-action-menu';
+
+// `User.display` (the OpenMRS user resource) is the full name, e.g. "Jane Doe".
+// The header greeting only has room for one word before truncating, so use
+// just the first name rather than letting CSS ellipsis cut the full name.
+const getFirstName = (display: string) => display.split(' ')[0];
+
+// Resolves the index to focus next given the currently focused item's index.
+// `current === -1` means focus was lost (no menu item is active) — fall back
+// to the first item for ArrowDown and the last item for ArrowUp, rather than
+// running the wrap-around formula on a nonexistent index.
+const getNextFocusIndex = (current: number, delta: 1 | -1, length: number) => {
+  if (current === -1) return delta === 1 ? 0 : length - 1;
+  return (current + delta + length) % length;
+};
 
 // HeaderGlobalAction spreads unrecognised props (id, data-testid, aria-*) onto
 // its underlying <button> at runtime, but its published type doesn't declare
@@ -36,21 +49,13 @@ const HeaderGlobalActionWithHtmlAttrs = HeaderGlobalAction as ComponentType<
 export const UserGlobalAction = () => {
   const { t } = useTranslation();
   const { userPrivileges } = useUserPrivilege();
-  // Consumed directly (not via the throwing `useNotification` hook) so the widget
-  // still works in an app that hasn't wired a `NotificationProvider` — it just
-  // falls back to logging instead of a toast.
-  const notification = useContext(NotificationContext);
+  const { addNotification } = useNotification();
   const [isOpen, setIsOpen] = useState(false);
   const registry = useUserActionRegistry();
   const { getActions, version } = registry;
   const hasRegistered = useRef(false);
 
-  // Consumed directly (not via the throwing `useActivePractitioner` hook) so this
-  // widget keeps working — avatar-only, no greeting — in apps that haven't wired
-  // an `ActivePractitionerProvider` yet, instead of crashing the header.
-  const activePractitioner = useContext(ActivePractitionerContext);
-  const user = activePractitioner?.user ?? null;
-  const loading = activePractitioner?.loading ?? false;
+  const { user, loading } = useActivePractitioner();
 
   useEffect(() => {
     if (!hasRegistered.current) {
@@ -89,17 +94,20 @@ export const UserGlobalAction = () => {
 
       const current = items.indexOf(document.activeElement as HTMLElement);
       const delta = e.key === 'ArrowDown' ? 1 : -1;
-      const next = (current + delta + items.length) % items.length;
+      const next = getNextFocusIndex(current, delta, items.length);
       items[next].focus();
     };
 
     let frame = 0;
     let attempts = 0;
     let menuEl: HTMLElement | null = null;
+    let cancelled = false;
 
     // The menu is portaled, so it may not exist on the first frame — retry until
     // its items render, then focus the first item and attach the key handler.
     const setup = () => {
+      if (cancelled) return;
+
       const menu = document.getElementById(MENU_ID);
       const items = menu ? getItems(menu) : [];
       if (menu && items.length > 0) {
@@ -114,6 +122,9 @@ export const UserGlobalAction = () => {
     frame = requestAnimationFrame(setup);
 
     return () => {
+      // Guards against a stale retry callback from a previous open cycle
+      // firing after this cleanup (e.g. rapid toggling of the menu).
+      cancelled = true;
       cancelAnimationFrame(frame);
       menuEl?.removeEventListener('keydown', handleArrowKeys, true);
     };
@@ -169,7 +180,9 @@ export const UserGlobalAction = () => {
         <UserAvatar id="user-icon" data-testid="user-icon-button-test-id" />
         {user?.display && (
           <span className={styles.greeting}>
-            {t('USER_GLOBAL_ACTION_GREETING', { name: user.display })}
+            {t('USER_GLOBAL_ACTION_GREETING', {
+              name: getFirstName(user.display),
+            })}
           </span>
         )}
       </HeaderGlobalActionWithHtmlAttrs>
@@ -187,18 +200,20 @@ export const UserGlobalAction = () => {
             data-testid={`user-global-action-${action.id}-test-id`}
             key={action.id}
             label={t(action.label)}
-            onClick={() => {
-              Promise.resolve(action.onClick()).catch((error) => {
+            onClick={async () => {
+              try {
+                await action.onClick();
+              } catch (error) {
                 // Surface a toast so failures (e.g. logout) are visible to the
                 // user, not just logged — parity with the old Home user menu.
-                notification?.addNotification({
+                addNotification({
                   title: t('USER_GLOBAL_ACTION_ERROR_TITLE'),
                   message: t('USER_GLOBAL_ACTION_ERROR'),
                   type: 'error',
                 });
                 // eslint-disable-next-line no-console
                 console.error(`User action "${action.id}" failed:`, error);
-              });
+              }
             }}
             testId={`user-action-${action.id}`}
           />

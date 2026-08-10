@@ -122,7 +122,7 @@ exports[`UserGlobalAction Snapshot matches snapshot with avatar and greeting 1`]
         <span
           class="greeting"
         >
-          USER_GLOBAL_ACTION_GREETING
+          USER_GLOBAL_ACTION_GREETING Jane
         </span>
       </button>
     </div>
