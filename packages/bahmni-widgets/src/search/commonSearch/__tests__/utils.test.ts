@@ -923,8 +923,8 @@ describe('resolveNavigationURL', () => {
 describe('getLookupComboBoxItems', () => {
   const messages = { loading: 'Loading', error: 'Error', empty: 'Empty' };
   const options: LookupOption[] = [
-    { uuid: 'service-uuid-1', label: 'US Health Assessment' },
-    { uuid: 'service-uuid-2', label: 'General Checkup' },
+    { uuid: 'service-uuid-1', label: 'TB Program' },
+    { uuid: 'service-uuid-2', label: 'HIV Program' },
   ];
 
   beforeEach(() => {
@@ -951,12 +951,12 @@ describe('getLookupComboBoxItems', () => {
   );
 
   it('passes only the substring-matching options to resolveComboBoxItems once the user types', () => {
-    getLookupComboBoxItems('gen', options, false, false, messages);
+    getLookupComboBoxItems('tb', options, false, false, messages);
 
     expect(mockResolveComboBoxItems).toHaveBeenCalledWith(
       false,
       false,
-      [options[1]],
+      [options[0]],
       expect.any(Function),
       messages,
     );

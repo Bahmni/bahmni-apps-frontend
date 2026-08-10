@@ -14,13 +14,13 @@ export const mockUnsupportedLookupInput: LookupInput = {
 };
 
 export const mockLookupOptions: LookupOption[] = [
-  { uuid: 'service-uuid-1', label: 'US Health Assessment' },
-  { uuid: 'service-uuid-2', label: 'General Checkup' },
+  { uuid: 'service-uuid-1', label: 'TB Program' },
+  { uuid: 'service-uuid-2', label: 'HIV Program' },
 ];
 
 export const mockUserLoginLocation: UserLocation = {
   uuid: 'login-location-uuid',
-  name: 'MHAC Center A',
+  name: 'Bengaluru',
 };
 
 const buildMockAppointmentService = (
@@ -42,8 +42,8 @@ const buildMockAppointmentService = (
 });
 
 export const mockAppointmentServices: AppointmentService[] = [
-  buildMockAppointmentService('service-uuid-1', 'US Health Assessment'),
-  buildMockAppointmentService('service-uuid-2', 'General Checkup'),
+  buildMockAppointmentService('service-uuid-1', 'TB Program'),
+  buildMockAppointmentService('service-uuid-2', 'HIV Program'),
 ];
 
 export const mockOtherLocationAppointmentService: AppointmentService =

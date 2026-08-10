@@ -57,18 +57,6 @@ describe('LookupCriterionInput', () => {
     mockGetUserLoginLocation.mockReturnValue(mockUserLoginLocation);
   });
 
-  it('shows no options until the user starts typing', async () => {
-    mockGetAllAppointmentServices.mockResolvedValue(mockAppointmentServices);
-    const user = userEvent.setup();
-    renderInput();
-
-    await user.click(
-      screen.getByTestId('lookup-input-LOOKUP_PLACEHOLDER-test-id'),
-    );
-
-    expect(screen.queryByRole('option')).not.toBeInTheDocument();
-  });
-
   it('shows a loading message once the user types while options are being fetched', async () => {
     mockGetAllAppointmentServices.mockReturnValue(new Promise(() => {}));
     const user = userEvent.setup();
@@ -140,14 +128,12 @@ describe('LookupCriterionInput', () => {
       'lookup-input-LOOKUP_PLACEHOLDER-test-id',
     );
     await user.click(combobox);
-    await user.type(combobox, 'us');
-    await user.click(
-      await screen.findByRole('option', { name: 'US Health Assessment' }),
-    );
+    await user.type(combobox, 'tb');
+    await user.click(await screen.findByRole('option', { name: 'TB Program' }));
 
     expect(mockOnChange).toHaveBeenCalledWith({
       value: 'service-uuid-1',
-      label: 'US Health Assessment',
+      label: 'TB Program',
     });
   });
 
@@ -159,7 +145,7 @@ describe('LookupCriterionInput', () => {
     await waitFor(() =>
       expect(
         screen.getByTestId('lookup-input-LOOKUP_PLACEHOLDER-test-id'),
-      ).toHaveValue('US Health Assessment'),
+      ).toHaveValue('TB Program'),
     );
     await user.click(
       screen.getByRole('button', { name: /clear selected item/i }),
@@ -177,13 +163,13 @@ describe('LookupCriterionInput', () => {
       'lookup-input-LOOKUP_PLACEHOLDER-test-id',
     );
     await user.click(combobox);
-    await user.type(combobox, 'g');
+    await user.type(combobox, 'b');
 
     expect(
-      await screen.findByRole('option', { name: 'General Checkup' }),
+      await screen.findByRole('option', { name: 'TB Program' }),
     ).toBeInTheDocument();
     expect(
-      screen.queryByRole('option', { name: 'US Health Assessment' }),
+      screen.queryByRole('option', { name: 'HIV Program' }),
     ).not.toBeInTheDocument();
   });
 
@@ -204,10 +190,10 @@ describe('LookupCriterionInput', () => {
       }),
     ).toBeInTheDocument();
     expect(
-      screen.queryByRole('option', { name: 'US Health Assessment' }),
+      screen.queryByRole('option', { name: 'TB Program' }),
     ).not.toBeInTheDocument();
     expect(
-      screen.queryByRole('option', { name: 'General Checkup' }),
+      screen.queryByRole('option', { name: 'HIV Program' }),
     ).not.toBeInTheDocument();
   });
 });

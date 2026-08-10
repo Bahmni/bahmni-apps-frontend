@@ -35,8 +35,8 @@ describe('appointmentService lookup source', () => {
     const options = await LOOKUP_SOURCES.appointmentService!();
 
     expect(options).toEqual([
-      { uuid: 'service-uuid-1', label: 'US Health Assessment' },
-      { uuid: 'service-uuid-2', label: 'General Checkup' },
+      { uuid: 'service-uuid-1', label: 'TB Program' },
+      { uuid: 'service-uuid-2', label: 'HIV Program' },
     ]);
   });
 

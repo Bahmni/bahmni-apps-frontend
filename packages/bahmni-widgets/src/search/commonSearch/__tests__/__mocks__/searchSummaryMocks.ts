@@ -125,6 +125,14 @@ export const mockLookupRow: CriterionRow = {
   rangeOrderError: null,
 };
 
+export const mockLookupRowWithLabel: CriterionRow = {
+  rowId: 'row-lookup-label',
+  criterionKey: 'patientId',
+  value: { value: 'P001', label: 'John Doe' },
+  validationError: null,
+  rangeOrderError: null,
+};
+
 export const mockNumericScalarRow: CriterionRow = {
   rowId: 'row-age-scalar',
   criterionKey: 'ageScalar',

@@ -29,7 +29,7 @@ const LookupCriterionInput = ({
 
   const { data, isLoading, isError } = useQuery({
     queryKey: ['lookup', input.lookup.source],
-    queryFn: loader!,
+    queryFn: loader,
     enabled: !!loader,
     staleTime: 30 * 60 * 1000,
   });
