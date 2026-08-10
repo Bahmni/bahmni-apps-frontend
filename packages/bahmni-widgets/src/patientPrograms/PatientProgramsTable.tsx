@@ -4,6 +4,7 @@ import {
   formatDateTime,
   getPatientProgramsPage,
   camelToScreamingSnakeCase,
+  getEpisodeOfCare,
 } from '@bahmni/services';
 import { useQuery } from '@tanstack/react-query';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
@@ -52,11 +53,23 @@ const PatientProgramsTable: React.FC<WidgetProps> = ({ config }) => {
         selectedPageSize,
         currentPage,
       );
+
+      const programs = await Promise.all(
+        page.programs.map(async (program) => {
+          if (program.episodeUuid) {
+            const episodeOfCare = await getEpisodeOfCare(program.episodeUuid);
+            return createPatientProgramViewModal(
+              program,
+              programAttributes,
+              episodeOfCare,
+            );
+          }
+          return createPatientProgramViewModal(program, programAttributes);
+        }),
+      );
+
       return {
-        programs: createPatientProgramViewModal(
-          { results: page.programs },
-          programAttributes,
-        ),
+        programs,
         total: page.total,
       };
     },
@@ -181,6 +194,15 @@ const PatientProgramsTable: React.FC<WidgetProps> = ({ config }) => {
           </Tag>
         ) : (
           '-'
+        );
+      case 'careManager':
+        return (
+          <span
+            id={`${program.uuid}-care-manager`}
+            data-testid={`${program.uuid}-care-manager-test-id`}
+          >
+            {program.careManagerDisplay ?? '-'}
+          </span>
         );
       default:
         return (

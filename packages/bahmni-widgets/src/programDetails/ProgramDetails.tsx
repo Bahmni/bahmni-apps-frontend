@@ -233,7 +233,7 @@ const ProgramDetails: React.FC<ProgramDetailsProps> = ({
       case 'state':
         return data.currentStateName ?? '-';
       case 'careManager':
-        return data?.careManager ?? '-';
+        return data?.careManagerDisplay ?? '-';
     }
   };
 

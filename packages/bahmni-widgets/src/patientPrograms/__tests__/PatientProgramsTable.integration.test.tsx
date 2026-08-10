@@ -1,4 +1,5 @@
 import {
+  getEpisodeOfCare,
   getPatientProgramsPage,
   ProgramEnrollment,
   PatientProgramsResponse,
@@ -6,7 +7,7 @@ import {
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { usePatientUUID } from '../../hooks/usePatientUUID';
+import { EpisodeOfCare } from 'fhir/r4';
 import { useNotification } from '../../notification';
 import PatientProgramsTable from '../PatientProgramsTable';
 
@@ -14,6 +15,7 @@ jest.mock('../../notification');
 jest.mock('@bahmni/services', () => ({
   ...jest.requireActual('@bahmni/services'),
   getPatientProgramsPage: jest.fn(),
+  getEpisodeOfCare: jest.fn(),
 }));
 jest.mock('../../hooks/usePatientUUID', () => ({
   usePatientUUID: jest.fn(() => 'test-patient-uuid'),
@@ -21,6 +23,9 @@ jest.mock('../../hooks/usePatientUUID', () => ({
 
 const mockedGetPatientProgramsPage =
   getPatientProgramsPage as jest.MockedFunction<typeof getPatientProgramsPage>;
+const mockedGetEpisodeOfCare = getEpisodeOfCare as jest.MockedFunction<
+  typeof getEpisodeOfCare
+>;
 
 const wrapPage = (programs: ProgramEnrollment[], total?: number) => ({
   programs,
@@ -119,6 +124,9 @@ const mockPatientProgramsResponse: PatientProgramsResponse = {
             links: [],
             resourceVersion: '1.0',
           },
+          auditInfo: {
+            dateCreated: '',
+          },
         },
       ],
       attributes: [],
@@ -135,6 +143,7 @@ const mockPatientProgramsResponse: PatientProgramsResponse = {
       },
       links: [],
       resourceVersion: '1.0',
+      allowedStates: [],
     },
     {
       uuid: 'enrollment-uuid-2',
@@ -249,6 +258,9 @@ const mockPatientProgramsResponse: PatientProgramsResponse = {
             links: [],
             resourceVersion: '1.0',
           },
+          auditInfo: {
+            dateCreated: '',
+          },
         },
       ],
       attributes: [],
@@ -265,6 +277,7 @@ const mockPatientProgramsResponse: PatientProgramsResponse = {
       },
       links: [],
       resourceVersion: '1.0',
+      allowedStates: [],
     },
   ],
 };
@@ -359,6 +372,9 @@ const mockPatientProgramsWithAttributes: PatientProgramsResponse = {
             links: [],
             resourceVersion: '1.0',
           },
+          auditInfo: {
+            dateCreated: '',
+          },
         },
       ],
       attributes: [
@@ -421,6 +437,7 @@ const mockPatientProgramsWithAttributes: PatientProgramsResponse = {
       },
       links: [],
       resourceVersion: '1.0',
+      allowedStates: [],
     },
   ],
 };
@@ -443,6 +460,7 @@ describe('PatientProgramsTable Integration', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+    mockedGetEpisodeOfCare.mockResolvedValue({} as EpisodeOfCare);
     (useNotification as jest.Mock).mockReturnValue({
       addNotification: mockAddNotification,
     });
@@ -509,6 +527,86 @@ describe('PatientProgramsTable Integration', () => {
       1,
     );
   });
+
+  it.each([
+    {
+      description: 'both programs have an episodeUuid',
+      programs: mockPatientProgramsResponse.results,
+      getEpisodeOfCareImpl: async (episodeUuid: string) => {
+        const careManagerByEpisode: Record<string, string> = {
+          'episode-1': 'Dr. One',
+          'episode-2': 'Dr. Two',
+        };
+        return {
+          careManager: { display: careManagerByEpisode[episodeUuid] },
+        } as EpisodeOfCare;
+      },
+      expectedEpisodeOfCareCalls: ['episode-1', 'episode-2'],
+      expectedCareManagerTexts: {
+        'enrollment-uuid-1': 'Dr. One',
+        'enrollment-uuid-2': 'Dr. Two',
+      },
+    },
+    {
+      description: 'one program is missing an episodeUuid',
+      programs: [
+        mockPatientProgramsResponse.results[0],
+        { ...mockPatientProgramsResponse.results[1], episodeUuid: '' },
+      ],
+      getEpisodeOfCareImpl: async () =>
+        ({ careManager: { display: 'Dr. One' } }) as EpisodeOfCare,
+      expectedEpisodeOfCareCalls: ['episode-1'],
+      expectedCareManagerTexts: {
+        'enrollment-uuid-1': 'Dr. One',
+        'enrollment-uuid-2': '-',
+      },
+    },
+  ])(
+    'should fetch and display the care manager correctly when $description',
+    async ({
+      programs,
+      getEpisodeOfCareImpl,
+      expectedEpisodeOfCareCalls,
+      expectedCareManagerTexts,
+    }) => {
+      mockedGetPatientProgramsPage.mockResolvedValue(wrapPage(programs));
+      mockedGetEpisodeOfCare.mockImplementation(getEpisodeOfCareImpl);
+
+      render(
+        <QueryClientProvider client={queryClient}>
+          <PatientProgramsTable
+            config={{
+              fields: [
+                { name: 'programName' },
+                { name: 'startDate' },
+                { name: 'state' },
+                { name: 'careManager' },
+              ],
+            }}
+          />
+        </QueryClientProvider>,
+      );
+
+      await waitFor(() => {
+        expect(screen.getByText('HIV Program')).toBeInTheDocument();
+      });
+
+      expect(mockedGetEpisodeOfCare).toHaveBeenCalledTimes(
+        expectedEpisodeOfCareCalls.length,
+      );
+      expectedEpisodeOfCareCalls.forEach((episodeUuid) => {
+        expect(mockedGetEpisodeOfCare).toHaveBeenCalledWith(episodeUuid);
+      });
+
+      Object.entries(expectedCareManagerTexts).forEach(
+        ([enrollmentUuid, text]) => {
+          expect(
+            screen.getByTestId(`${enrollmentUuid}-care-manager-test-id`),
+          ).toHaveTextContent(text);
+        },
+      );
+    },
+  );
 
   it('should show error state when an error occurs', async () => {
     const errorMessage = 'Failed to fetch patient programs from server';

@@ -77,7 +77,7 @@ describe('Utils', () => {
         outcomeName: null,
         outcomeDetails: null,
         currentStateName: null,
-        careManager: null,
+        careManagerDisplay: null,
         attributes: {},
         allowedStates: [],
       });
@@ -167,7 +167,7 @@ describe('Utils', () => {
       expect(result.allowedStates).toEqual([]);
     });
 
-    it('should extract careManager display name when episodeOfCare has a careManager', () => {
+    it('should extract careManagerDisplay from episodeOfCare when it has a careManager', () => {
       const enrollment = mockEnrollment();
       const episodeOfCare = {
         careManager: { display: 'Dr. Test' },
@@ -179,10 +179,10 @@ describe('Utils', () => {
         episodeOfCare,
       );
 
-      expect(result.careManager).toBe('Dr. Test');
+      expect(result.careManagerDisplay).toBe('Dr. Test');
     });
 
-    it('should return null careManager when episodeOfCare has no careManager', () => {
+    it('should return null careManagerDisplay when episodeOfCare has no careManager', () => {
       const enrollment = mockEnrollment();
       const episodeOfCare = {} as EpisodeOfCare;
 
@@ -192,7 +192,7 @@ describe('Utils', () => {
         episodeOfCare,
       );
 
-      expect(result.careManager).toBeNull();
+      expect(result.careManagerDisplay).toBeNull();
     });
   });
 });

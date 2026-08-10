@@ -4,4 +4,5 @@ export const KNOWN_FIELDS: string[] = [
   'endDate',
   'outcome',
   'state',
+  'careManager',
 ];
