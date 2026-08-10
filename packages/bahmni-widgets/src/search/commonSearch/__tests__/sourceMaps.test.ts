@@ -62,9 +62,7 @@ describe('appointmentService lookup source', () => {
 
     const options = await LOOKUP_SOURCES.appointmentService!();
 
-    expect(options).toEqual([
-      { uuid: 'service-uuid-1', label: 'TB Program' },
-    ]);
+    expect(options).toEqual([{ uuid: 'service-uuid-1', label: 'TB Program' }]);
   });
 
   it('propagates errors from getAllAppointmentServices', async () => {

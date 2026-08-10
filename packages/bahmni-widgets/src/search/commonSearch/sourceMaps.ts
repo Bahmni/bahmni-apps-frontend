@@ -8,7 +8,9 @@ const appointmentServiceSource = async () => {
   const loginLocation = getUserLoginLocation();
 
   return (await getAllAppointmentServices())
-    .filter((s) => s.location === null || s.location.uuid === loginLocation.uuid)
+    .filter(
+      (s) => s.location === null || s.location.uuid === loginLocation.uuid,
+    )
     .map((s) => ({
       uuid: s.uuid,
       label: s.name,
