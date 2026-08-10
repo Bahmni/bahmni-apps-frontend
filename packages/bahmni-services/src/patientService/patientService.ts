@@ -2,8 +2,8 @@ import { differenceInDays, parseISO } from 'date-fns';
 import { Patient } from 'fhir/r4';
 import { get, post, put } from '../api';
 import { APP_PROPERTY_URL } from '../applicationConfigService/constants';
-import { BIRTH_TIME_EXT_URL } from '../constants/fhir';
 import { OPENMRS_REST_V1 } from '../constants/app';
+import { BIRTH_TIME_EXT_URL } from '../constants/fhir';
 import { getUserLoginLocation } from '../userService';
 import { blobToDataUrl } from '../utils';
 import {
