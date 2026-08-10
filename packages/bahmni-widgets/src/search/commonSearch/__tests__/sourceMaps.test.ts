@@ -54,7 +54,7 @@ describe('appointmentService lookup source', () => {
     );
   });
 
-  it('excludes services with no location', async () => {
+  it('includes services with no location', async () => {
     mockGetUserLoginLocation.mockReturnValue(mockUserLoginLocation);
     mockGetAllAppointmentServices.mockResolvedValue([
       { ...mockAppointmentServices[0], location: null },
@@ -62,7 +62,9 @@ describe('appointmentService lookup source', () => {
 
     const options = await LOOKUP_SOURCES.appointmentService!();
 
-    expect(options).toEqual([]);
+    expect(options).toEqual([
+      { uuid: 'service-uuid-1', label: 'TB Program' },
+    ]);
   });
 
   it('propagates errors from getAllAppointmentServices', async () => {
