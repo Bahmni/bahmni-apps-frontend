@@ -1,8 +1,11 @@
+import { initFontAwesome } from '@bahmni/design-system';
 import { useTranslation } from '@bahmni/services';
 import { render, screen } from '@testing-library/react';
 import { axe, toHaveNoViolations } from 'jest-axe';
 import { OrdersHeader } from '../OrdersHeader';
 import '@testing-library/jest-dom';
+
+initFontAwesome();
 
 expect.extend(toHaveNoViolations);
 

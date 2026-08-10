@@ -1,0 +1,137 @@
+@use "@carbon/react/scss/type" as *;
+@use "@carbon/react/scss/spacing" as *;
+@use "@carbon/react/scss/colors" as *;
+@use "@carbon/react/scss/theme" as *;
+// Custom: Drug Order Tab - Patient Name and Identifier columns left-aligned and 50% width each
+.expandableDataTableBody.drugOrderTab :global(.cds--data-table) thead tr th:nth-child(1),
+.expandableDataTableBody.drugOrderTab :global(.cds--data-table) thead tr th:nth-child(2),
+.expandableDataTableBody.drugOrderTab :global(.cds--data-table) tbody tr td:nth-child(1),
+.expandableDataTableBody.drugOrderTab :global(.cds--data-table) tbody tr td:nth-child(2) {
+  text-align: left !important;
+  width: 50% !important;
+  min-width: 50% !important;
+  max-width: 50% !important;
+}
+
+.expandableDataTableBody {
+  :global(.cds--data-table) thead tr th,
+  :global(.cds--data-table) thead tr th * {
+    background-color: #e0e0e0 !important;
+    font-weight: 600 !important;
+    color: #161616 !important;
+  }
+
+  :global(.cds--data-table) thead tr th {
+    border-bottom: 1px solid #c6c6c6 !important;
+    vertical-align: middle;
+  }
+
+  :global(.cds--data-table) thead tr th button {
+    font-weight: 600 !important;
+    color: #161616 !important;
+    background-color: transparent !important;
+  }
+
+  :global(.cds--table-expand) {
+    background-color: #e0e0e0 !important;
+  }
+
+  :global(.cds--data-table) thead th:global(.cds--table-expand),
+  :global(.cds--data-table) tbody td:global(.cds--table-expand) {
+    inline-size: 48px !important;
+    min-inline-size: 48px !important;
+    max-inline-size: 48px !important;
+    padding: 0 !important;
+  }
+
+  :global(.cds--table-expand__button) {
+    inline-size: 100% !important;
+    block-size: 100% !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+  }
+
+  :global(.cds--table-expand__svg) {
+    margin: 0 !important;
+  }
+
+  :global(.cds--data-table) tbody tr td {
+    @include type-style("body-compact-01");
+    background-color: #f4f4f4 !important;
+    color: #161616 !important;
+    height: $spacing-10;
+    vertical-align: middle;
+    border-bottom: 1px solid #e0e0e0;
+  }
+
+  :global(.cds--data-table) tbody tr td:global(.cds--table-expand) {
+    background-color: #f4f4f4 !important;
+  }
+
+  :global(.cds--data-table) tbody tr:global(.cds--parent-row):hover td {
+    background-color: #e8e8e8 !important;
+  }
+
+  :global(.cds--data-table) tbody tr:global(.cds--expanded-row):hover td {
+    background-color: #ffffff !important;
+  }
+
+  :global(.cds--data-table) tbody tr[data-child-row] td {
+    background-color: #ffffff !important;
+  }
+  :global(.cds--data-table) tbody tr[data-child-row]:hover td {
+    background-color: #ffffff !important;
+  }
+
+  :global(.cds--data-table) tbody tr:global(.cds--parent-row).cds--expandable-row:hover + tr[data-child-row] td {
+    border-block-start: 1px solid transparent !important;
+  }
+
+  :global(.cds--table-expand__button:focus),
+  :global(.cds--table-expand__button:focus-visible),
+  :global(.cds--table-expand__button:active) {
+    outline: none !important;
+    box-shadow: none !important;
+  }
+}
+
+.expandableDataTableSkeleton {
+  td,
+  th {
+    background-color: $layer-01 !important;
+  }
+}
+
+.expandableDataTableBodyEmpty {
+  @include type-style("body-compact-01");
+  background-color: $background;
+  padding: $spacing-06 $spacing-05;
+  text-align: center;
+  border-top: 1px solid $border-subtle-02;
+}
+
+.expandedRowContent {
+  background-color: #ffffff !important;
+  padding: 0 !important;
+
+  td {
+    padding: 0 !important;
+    background-color: #ffffff !important;
+  }
+}
+
+:global(.cds--data-table) tbody tr:global(.cds--expanded-row) td {
+  background-color: #ffffff !important;
+  padding: 0 !important;
+}
+
+.hideExpandButton {
+  :global(.cds--table-expand__button) {
+    visibility: hidden;
+    pointer-events: none;
+  }
+}
+

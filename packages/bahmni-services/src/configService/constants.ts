@@ -1,5 +1,6 @@
 export const ORDERS_CONFIG_BASE_URL = '/bahmni_config/openmrs/apps/orders/v2';
 export const ORDERS_CONFIG_URL = ORDERS_CONFIG_BASE_URL + '/extension.json';
+export const ORDERS_TABLE_CONFIG_URL = ORDERS_CONFIG_BASE_URL + '/app.json';
 
 /**
  * Configuration-related error messages

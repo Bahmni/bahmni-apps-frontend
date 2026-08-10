@@ -68,6 +68,7 @@ export {
   type ActionDataTableProps,
 } from './molecules/actionDataTable';
 export { ExpandableDataTable } from './molecules/expandableDataTable';
+export { ExpandableSortableDataTable } from './molecules/expandableSortableDataTable';
 export {
   SimpleDataTable,
   type SimpleDataTableProps,

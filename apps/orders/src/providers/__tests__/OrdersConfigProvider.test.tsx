@@ -1,7 +1,9 @@
 import {
   getOrdersConfig,
+  getOrdersTableConfig,
   notificationService,
   OrdersConfig,
+  OrdersTableConfig,
 } from '@bahmni/services';
 import {
   render,
@@ -19,6 +21,7 @@ import { OrdersConfigProvider } from '../OrdersConfigProvider';
 jest.mock('@bahmni/services', () => ({
   ...jest.requireActual('@bahmni/services'),
   getOrdersConfig: jest.fn(),
+  getOrdersTableConfig: jest.fn(),
   notificationService: {
     showError: jest.fn(),
     showSuccess: jest.fn(),
@@ -31,13 +34,23 @@ jest.mock('@bahmni/services', () => ({
 const mockGetConfig = getOrdersConfig as jest.MockedFunction<
   typeof getOrdersConfig
 >;
+const mockGetTableConfig = getOrdersTableConfig as jest.MockedFunction<
+  typeof getOrdersTableConfig
+>;
 
 // Mock the timer functions
 jest.useFakeTimers();
 
 // Test component that uses the useOrdersConfig hook
 const TestComponent = () => {
-  const { ordersConfig, tabs, isLoading, error } = useOrdersConfig();
+  const {
+    ordersConfig,
+    tabs,
+    defaultColumnConfigs,
+    drugOrderColumnConfigs,
+    isLoading,
+    error,
+  } = useOrdersConfig();
   return (
     <div>
       <div data-testid="config-test">{isLoading ? 'Loading' : 'Loaded'}</div>
@@ -46,6 +59,16 @@ const TestComponent = () => {
       </div>
       <div data-testid="tabs-data">
         {tabs.length > 0 ? JSON.stringify(tabs) : 'No tabs'}
+      </div>
+      <div data-testid="default-column-configs">
+        {defaultColumnConfigs.length > 0
+          ? JSON.stringify(defaultColumnConfigs)
+          : 'No default configs'}
+      </div>
+      <div data-testid="drug-order-column-configs">
+        {drugOrderColumnConfigs.length > 0
+          ? JSON.stringify(drugOrderColumnConfigs)
+          : 'No drug configs'}
       </div>
       <div data-testid="config-error">{error ? error.message : 'No error'}</div>
     </div>
@@ -114,9 +137,52 @@ describe('OrdersConfigProvider', () => {
 
   describe('Configuration Loading Tests', () => {
     test('should load and provide configuration successfully', async () => {
+      const mockTableConfig: OrdersTableConfig = {
+        ordersTableColumnHeaders: [
+          {
+            key: 'badge',
+            header: '',
+            translationKey: '',
+            visible: true,
+            sortable: false,
+          },
+          {
+            key: 'patientName',
+            header: 'Patient Name',
+            translationKey: 'PATIENT_NAME',
+            visible: true,
+            sortable: true,
+          },
+          {
+            key: 'identifier',
+            header: 'Identifier',
+            translationKey: 'IDENTIFIER',
+            visible: true,
+            sortable: true,
+          },
+        ],
+        drugTabsColumnHeaders: [
+          {
+            key: 'patientName',
+            header: 'Patient Name',
+            translationKey: 'PATIENT_NAME',
+            visible: true,
+            sortable: true,
+          },
+          {
+            key: 'identifier',
+            header: 'Identifier',
+            translationKey: 'IDENTIFIER',
+            visible: true,
+            sortable: true,
+          },
+        ],
+      };
+
       mockGetConfig.mockResolvedValueOnce(
         configMocks.validFullOrdersConfig as OrdersConfig,
       );
+      mockGetTableConfig.mockResolvedValueOnce(mockTableConfig);
 
       render(
         <OrdersConfigProvider>
@@ -133,12 +199,19 @@ describe('OrdersConfigProvider', () => {
       );
       expect(screen.getByTestId('config-error').textContent).toBe('No error');
       expect(screen.getByTestId('tabs-data').textContent).not.toBe('No tabs');
+      expect(screen.getByTestId('default-column-configs').textContent).toBe(
+        JSON.stringify(mockTableConfig.ordersTableColumnHeaders),
+      );
+      expect(screen.getByTestId('drug-order-column-configs').textContent).toBe(
+        JSON.stringify(mockTableConfig.drugTabsColumnHeaders),
+      );
     });
 
     test('should handle minimal configuration', async () => {
       mockGetConfig.mockResolvedValueOnce(
         configMocks.minimalOrdersConfig as OrdersConfig,
       );
+      mockGetTableConfig.mockResolvedValueOnce(null);
 
       render(
         <OrdersConfigProvider>
@@ -154,12 +227,19 @@ describe('OrdersConfigProvider', () => {
         JSON.stringify(configMocks.minimalOrdersConfig),
       );
       expect(screen.getByTestId('config-error').textContent).toBe('No error');
+      expect(screen.getByTestId('default-column-configs').textContent).toBe(
+        'No default configs',
+      );
+      expect(screen.getByTestId('drug-order-column-configs').textContent).toBe(
+        'No drug configs',
+      );
     });
 
     test('should handle empty configuration', async () => {
       mockGetConfig.mockResolvedValueOnce(
         configMocks.emptyOrdersConfig as OrdersConfig,
       );
+      mockGetTableConfig.mockResolvedValueOnce(null);
 
       render(
         <OrdersConfigProvider>
@@ -180,6 +260,7 @@ describe('OrdersConfigProvider', () => {
 
     test('should handle null configuration', async () => {
       mockGetConfig.mockResolvedValueOnce(null);
+      mockGetTableConfig.mockResolvedValueOnce(null);
 
       render(
         <OrdersConfigProvider>
@@ -200,6 +281,7 @@ describe('OrdersConfigProvider', () => {
       mockGetConfig.mockResolvedValueOnce(
         configMocks.unsortedOrdersConfig as OrdersConfig,
       );
+      mockGetTableConfig.mockResolvedValueOnce(null);
 
       render(
         <OrdersConfigProvider>
@@ -223,6 +305,7 @@ describe('OrdersConfigProvider', () => {
       mockGetConfig.mockResolvedValueOnce(
         configMocks.validFullOrdersConfig as OrdersConfig,
       );
+      mockGetTableConfig.mockResolvedValueOnce(null);
 
       render(
         <OrdersConfigProvider>
@@ -251,6 +334,7 @@ describe('OrdersConfigProvider', () => {
       mockGetConfig.mockResolvedValueOnce(
         configMocks.validFullOrdersConfig as OrdersConfig,
       );
+      mockGetTableConfig.mockResolvedValueOnce(null);
 
       render(
         <OrdersConfigProvider>
@@ -282,6 +366,7 @@ describe('OrdersConfigProvider', () => {
       mockGetConfig.mockResolvedValueOnce(
         configMocks.validFullOrdersConfig as OrdersConfig,
       );
+      mockGetTableConfig.mockResolvedValueOnce(null);
 
       const { rerender } = render(
         <OrdersConfigProvider>
@@ -324,6 +409,7 @@ describe('OrdersConfigProvider', () => {
             );
           }),
       );
+      mockGetTableConfig.mockResolvedValueOnce(null);
 
       render(
         <OrdersConfigProvider>
@@ -360,6 +446,7 @@ describe('OrdersConfigProvider', () => {
     test('should handle configuration fetch error', async () => {
       const error = new Error('Failed to fetch configuration');
       mockGetConfig.mockRejectedValueOnce(error);
+      mockGetTableConfig.mockResolvedValueOnce(null);
 
       render(
         <OrdersConfigProvider>
@@ -381,6 +468,7 @@ describe('OrdersConfigProvider', () => {
     test('should handle malformed JSON response', async () => {
       const jsonError = new SyntaxError('Unexpected token in JSON');
       mockGetConfig.mockRejectedValueOnce(jsonError);
+      mockGetTableConfig.mockResolvedValueOnce(null);
 
       render(
         <OrdersConfigProvider>
@@ -402,6 +490,7 @@ describe('OrdersConfigProvider', () => {
     test('should handle network error', async () => {
       const networkError = new Error('Network request failed');
       mockGetConfig.mockRejectedValueOnce(networkError);
+      mockGetTableConfig.mockResolvedValueOnce(null);
 
       render(
         <OrdersConfigProvider>

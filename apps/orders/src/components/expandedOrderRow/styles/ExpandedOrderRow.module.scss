@@ -1,0 +1,90 @@
+@use "@carbon/react/scss/type" as *;
+@use "@carbon/react/scss/spacing" as *;
+@use "@carbon/react/scss/theme" as *;
+
+$row-height: 48px;
+
+$columns: 4fr 6fr 8fr 13fr 17fr 8fr 8fr 12fr 11fr 13fr;
+
+.expandedOrderRow {
+  display: grid;
+  grid-template-columns: $columns;
+  align-items: stretch; 
+  height: $row-height;
+  block-size: $row-height; 
+  background-color: #ffffff !important;
+  box-sizing: border-box;
+  width: 100%;
+  border-bottom: 1px solid $border-subtle-01;
+
+  &:last-child {
+    border-bottom: none;
+  }
+
+  > div {
+    @include type-style("body-compact-01");
+    padding: 0 $spacing-05;
+    display: flex;
+    align-items: center;
+    box-sizing: border-box;
+    height: 100%;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+
+  > div:first-child {
+    padding: 0;
+  }
+}
+
+.emptyCell {
+}
+
+.orderNameCell {
+}
+
+.priorityCell {
+  justify-content: center;
+  align-items: center;
+  display: flex;
+  min-width: 70px;
+  width: 100%;
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+}
+
+.statusCell {
+  @include type-style("body-compact-01");
+  color: $text-primary;
+}
+
+.providerCell {
+  @include type-style("body-compact-01");
+  color: $text-primary;
+}
+
+.dateTimeCell {
+  @include type-style("body-compact-01");
+  color: $text-primary;
+}
+
+.ownerCell {
+  @include type-style("body-compact-01");
+  color: $text-primary;
+}
+
+.orderLink {
+  @include type-style("body-compact-01");
+  color: $link-primary;
+  text-decoration: none;
+  cursor: pointer;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+.unassigned {
+  color: $support-error;
+}

@@ -13,7 +13,7 @@
 .contentContainer {
   flex: 1;
   padding: $spacing-05 $spacing-06;
-  overflow-y: auto;
+  overflow-y: scroll;
 }
 
 .ordersContainer {
