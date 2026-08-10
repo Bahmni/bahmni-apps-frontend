@@ -23,6 +23,8 @@ export {
   getRelatedPersonsByPatient,
   createRelatedPerson,
   deleteRelatedPerson,
+  getPatientLmpData,
+  calculateDaysSinceLmp,
 } from './patientService';
 export {
   type FormattedPatientData,
@@ -53,6 +55,7 @@ export {
   type SearchActionConfig,
   type FhirRelatedPerson,
   type FhirRelatedPersonBundle,
+  type LmpData,
 } from './models';
 export {
   AttributeFormat,
