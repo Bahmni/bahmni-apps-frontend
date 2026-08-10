@@ -15,6 +15,9 @@
       "path": "../apps/appointments"
     },
     {
+      "path": "../apps/orders"
+    },
+    {
       "path": "../apps/registration"
     },
     {

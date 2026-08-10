@@ -1,0 +1,9 @@
+{
+  "ERROR_LOADING_ORDERS_CONFIG": "Error loading orders configuration",
+  "LABEL_RADIOLOGY_ORDERS_KEY": "Radiology",
+  "LABEL_LAB_ORDERS_KEY": "Laboratory",
+  "LABEL_REHAB_ORDERS_KEY": "Rehab",
+  "LABEL_DRUG_ORDERS_KEY": "OPD Drug",
+  "LABEL_IPD_DRUG_ORDERS_KEY": "IPD Drug",
+  "LABEL_P&O_ORDERS_KEY": "Prosthetic and Orthotic"
+}

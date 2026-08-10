@@ -1,0 +1,9 @@
+{
+  "ERROR_LOADING_ORDERS_CONFIG": "Erreur lors du chargement de la configuration des ordonnances",
+  "LABEL_RADIOLOGY_ORDERS_KEY": "Radiologie",
+  "LABEL_LAB_ORDERS_KEY": "Laboratoire",
+  "LABEL_REHAB_ORDERS_KEY": "Réadaptation",
+  "LABEL_DRUG_ORDERS_KEY": "Médicament OPD",
+  "LABEL_IPD_DRUG_ORDERS_KEY": "Médicament IPD",
+  "LABEL_P&O_ORDERS_KEY": "Prothèse et Orthèse"
+}

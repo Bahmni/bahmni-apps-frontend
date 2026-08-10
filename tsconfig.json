@@ -41,6 +41,9 @@
     },
     {
       "path": "./apps/reports"
+    },
+    {
+      "path": "./apps/orders"
     }
   ]
 }

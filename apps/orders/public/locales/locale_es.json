@@ -1,0 +1,9 @@
+{
+  "ERROR_LOADING_ORDERS_CONFIG": "Error al cargar la configuración de órdenes",
+  "LABEL_RADIOLOGY_ORDERS_KEY": "Radiología",
+  "LABEL_LAB_ORDERS_KEY": "Laboratorio",
+  "LABEL_REHAB_ORDERS_KEY": "Rehabilitación",
+  "LABEL_DRUG_ORDERS_KEY": "Medicamento OPD",
+  "LABEL_IPD_DRUG_ORDERS_KEY": "Medicamento IPD",
+  "LABEL_P&O_ORDERS_KEY": "Prótesis y Ortesis"
+}

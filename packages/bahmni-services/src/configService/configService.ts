@@ -1,6 +1,8 @@
 import Ajv from 'ajv';
 import { get } from '../api';
-import { ERROR_MESSAGES } from './constants';
+import { ERROR_MESSAGES, ORDERS_CONFIG_URL } from './constants';
+import { OrdersConfig } from './models/ordersConfig';
+import ordersConfigSchema from './schemas/ordersConfig.schema.json';
 
 /**
  * Fetches and validates configuration from a URL against a JSON schema.
@@ -27,6 +29,16 @@ export const getConfig = async <T>(
   }
 
   return config;
+};
+
+/**
+ * Fetches and validates orders extension configuration from the server
+ *
+ * @returns Validated orders configuration object or null if invalid/error
+ * @throws Error if fetch fails or validation fails
+ */
+export const getOrdersConfig = async (): Promise<OrdersConfig | null> => {
+  return getConfig<OrdersConfig>(ORDERS_CONFIG_URL, ordersConfigSchema);
 };
 
 const fetchConfig = async <T>(configPath: string): Promise<T | null> => {
