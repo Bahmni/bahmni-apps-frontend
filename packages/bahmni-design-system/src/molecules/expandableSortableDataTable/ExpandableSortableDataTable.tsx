@@ -8,6 +8,7 @@ import {
   TableCell,
   TableExpandRow,
   TableExpandHeader,
+  TableExpandedRow,
   DataTableHeader,
   DataTableSkeleton,
 } from '@carbon/react';
@@ -172,9 +173,11 @@ export const ExpandableSortableDataTable = <
                           </TableCell>
                         ))}
                       </TableExpandRow>
-                      {rowProps.isExpanded &&
-                        isRowExpandable &&
-                        renderExpandedContent(originalRow)}
+                      {rowProps.isExpanded && isRowExpandable && (
+                        <TableExpandedRow colSpan={row.cells.length + 1}>
+                          {renderExpandedContent(originalRow)}
+                        </TableExpandedRow>
+                      )}
                     </React.Fragment>
                   );
                 })}
