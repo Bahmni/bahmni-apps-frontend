@@ -30,6 +30,7 @@ export interface ObservationsRendererProps {
   hideThumbnail?: boolean;
   controlOrder?: string[];
   sectionMap?: Record<string, string>;
+  conceptDatatypeMap?: Record<string, string>;
 }
 
 interface ObservationMemberProps {
@@ -38,6 +39,7 @@ interface ObservationMemberProps {
   memberIndex?: number;
   testIdPrefix?: string;
   hideThumbnail?: boolean;
+  conceptDatatypeMap?: Record<string, string>;
 }
 
 const renderValueWithMedia = (
@@ -100,6 +102,7 @@ const ObservationMember: React.FC<ObservationMemberProps> = ({
   memberIndex = 0,
   testIdPrefix = '',
   hideThumbnail = false,
+  conceptDatatypeMap,
 }) => {
   const { t } = useTranslation();
   const hasMembers = member.members && member.members.length > 0;
@@ -132,6 +135,7 @@ const ObservationMember: React.FC<ObservationMemberProps> = ({
               memberIndex={nestedIndex}
               testIdPrefix={testIdPrefix}
               hideThumbnail={hideThumbnail}
+              conceptDatatypeMap={conceptDatatypeMap}
             />
           ))}
         </div>
@@ -140,7 +144,7 @@ const ObservationMember: React.FC<ObservationMemberProps> = ({
   }
 
   const { rangeString, isAbnormal } = getObservationDisplayInfo(member);
-  const formattedValue = formatObservationValue(member, t);
+  const formattedValue = formatObservationValue(member, t, conceptDatatypeMap);
   const valueToDisplay = formattedValue
     ? renderValueWithMedia(formattedValue, hideThumbnail)
     : null;
@@ -194,10 +198,15 @@ const renderObservation = (
   t: (key: string) => string,
   testIdPrefix = '',
   hideThumbnail = false,
+  conceptDatatypeMap?: Record<string, string>,
 ) => {
   const hasMembers = observation.members && observation.members.length > 0;
   const { rangeString, isAbnormal } = getObservationDisplayInfo(observation);
-  const formattedValue = formatObservationValue(observation, t);
+  const formattedValue = formatObservationValue(
+    observation,
+    t,
+    conceptDatatypeMap,
+  );
   const valueToDisplay = formattedValue
     ? renderValueWithMedia(formattedValue, hideThumbnail)
     : null;
@@ -238,6 +247,7 @@ const renderObservation = (
                 memberIndex={memberIndex}
                 testIdPrefix={testIdPrefix}
                 hideThumbnail={hideThumbnail}
+                conceptDatatypeMap={conceptDatatypeMap}
               />
             ))}
           </div>
@@ -278,6 +288,7 @@ export const ObservationsRenderer: React.FC<ObservationsRendererProps> = ({
   hideThumbnail = false,
   controlOrder,
   sectionMap,
+  conceptDatatypeMap,
 }) => {
   const { t } = useTranslation();
 
@@ -378,6 +389,7 @@ export const ObservationsRenderer: React.FC<ObservationsRendererProps> = ({
         t,
         testIdPrefix,
         hideThumbnail,
+        conceptDatatypeMap,
       );
     }
     // Render form section exactly like an obsGroupControl
@@ -403,6 +415,7 @@ export const ObservationsRenderer: React.FC<ObservationsRendererProps> = ({
                 memberIndex={memberIndex}
                 testIdPrefix={testIdPrefix}
                 hideThumbnail={hideThumbnail}
+                conceptDatatypeMap={conceptDatatypeMap}
               />
             ))}
           </div>
