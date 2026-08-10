@@ -349,6 +349,7 @@ export {
   transformContainerObservationsToForm2Observations,
   convertImmutableToPlainObject,
   extractNotesFromFormData,
+  formatDateForControl,
   getPatientFormData,
   type ObservationForm,
   type FormApiResponse,

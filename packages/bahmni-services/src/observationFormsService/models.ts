@@ -55,15 +55,13 @@ export interface FormMetadata {
 
 // Observation data from form2-controls (used in consultation bundle)
 export interface Form2Observation {
-  /** FHIR Observation resource UUID. Present for observations fetched from the backend
-   *  (edit flow). Used to emit PUT instead of POST in the encounter bundle. */
+  /** FHIR Observation resource UUID; present for observations fetched from the backend (edit flow). */
   uuid?: string;
-  /** True when the observation was cleared/deleted by the user in edit mode.
-   *  Combined with uuid, signals the bundle builder to emit DELETE. */
+  /** True when the observation was cleared/deleted by the user in edit mode. */
   voided?: boolean;
-  /** Current FHIR status stored in OpenMRS (e.g. "final", "amended").
-   *  Preserved from the FHIR fetch so PUT requests echo back the same value —
-   *  OpenMRS rejects status changes and also errors when status is absent on PUT. */
+  /** True when this leaf obs's value/comment/interpretation exactly match what's already saved. */
+  unchanged?: boolean;
+  /** Current FHIR status stored in OpenMRS (e.g. "final", "amended"); echoed back on PUT. */
   status?: string;
   concept: { uuid: string; datatype?: string };
   value: string | number | boolean | ConceptValue | ComplexValue | null; // null for obsGroupControl parent observations
@@ -101,9 +99,7 @@ export interface FormResponseData {
   formType: string;
   formName: string;
   formVersion: number;
-  /** UUID of the specific published form version used when the encounter was saved.
-   *  This is the authoritative identifier — same field used by the old Bahmni
-   *  Angular frontend (observationForm.formUuid) to load the correct form for edit. */
+  /** UUID of the specific published form version used when the encounter was saved. */
   formUuid?: string;
   visitUuid: string;
   visitStartDateTime: number;
