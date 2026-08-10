@@ -5,36 +5,59 @@ import {
   TabPanels,
   TabPanel,
   Loading,
-  SortableDataTable,
   Search,
 } from '@bahmni/design-system';
 import { useTranslation } from '@bahmni/services';
 import React, { useState } from 'react';
+import { OrdersFulfillmentTable } from '../components/ordersFulfillmentTable';
 import { OrdersHeader } from '../components/ordersHeader/OrdersHeader';
 import { useOrdersConfig } from '../hooks/useOrdersConfig';
+import { useOrdersFulfillment } from '../hooks/useOrdersFulfillment';
+import { useOrdersTabCounts } from '../hooks/useOrdersTabCounts';
 import styles from './styles/OrdersPage.module.scss';
+
+interface OrdersTabContentProps {
+  tabLabel: string;
+}
+
+const OrdersTabContent: React.FC<OrdersTabContentProps> = ({ tabLabel }) => {
+  const { t } = useTranslation();
+  const { rows, headers, isLoading, isDrugOrderTab } =
+    useOrdersFulfillment(tabLabel);
+
+  return (
+    <div className={styles.tabContent}>
+      <div className={styles.searchContainer}>
+        <Search
+          placeholder={t('SEARCH_ORDERS_PLACEHOLDER')}
+          labelText={t('SEARCH_ORDERS_LABEL')}
+          closeButtonLabelText={t('CLEAR_SEARCH_INPUT')}
+          size="md"
+          onChange={() => {}}
+        />
+      </div>
+      <div className={styles.ordersTable}>
+        <OrdersFulfillmentTable
+          rows={rows}
+          headers={headers}
+          loading={isLoading}
+          isDrugOrderTab={isDrugOrderTab}
+        />
+      </div>
+    </div>
+  );
+};
 
 export const OrdersPage: React.FC = () => {
   const { t } = useTranslation();
   const { tabs, isLoading, error } = useOrdersConfig();
   const [selectedIndex, setSelectedIndex] = useState(0);
-
-  const headers = [
-    { key: 'expand', header: '' },
-    { key: 'badge', header: '' },
-    { key: 'patientName', header: 'Patient Name' },
-    { key: 'identifier', header: 'Identifier' },
-    { key: 'ordersPending', header: 'Orders Pending and Names' },
-    { key: 'priority', header: 'Priority' },
-    { key: 'status', header: 'Status' },
-    { key: 'provider', header: 'Provider' },
-    { key: 'dateTime', header: 'Date and Time' },
-    { key: 'owner', header: 'Owner' },
-  ];
+  const tabCounts = useOrdersTabCounts(tabs);
 
   if (isLoading) {
     return <Loading />;
   }
+
   if (error) {
     return (
       <div className={styles.errorContainer}>
@@ -44,6 +67,7 @@ export const OrdersPage: React.FC = () => {
       </div>
     );
   }
+
   return (
     <div className={styles.pageContainer}>
       <OrdersHeader />
@@ -53,35 +77,20 @@ export const OrdersPage: React.FC = () => {
             selectedIndex={selectedIndex}
             onChange={(evt) => setSelectedIndex(evt.selectedIndex)}
           >
-            <TabList aria-label="Orders tabs" className={styles.tabList}>
+            <TabList aria-label={t('ORDERS_TABS')} className={styles.tabList}>
               {tabs.map((tab) => (
                 <Tab key={tab.id}>
-                  {t(tab.translationKey) || tab.display} (0)
+                  {t(tab.translationKey) || tab.display} (
+                  {tabCounts[tab.label] ?? 0})
                 </Tab>
               ))}
             </TabList>
             <TabPanels>
-              {tabs.map((tab) => (
+              {tabs.map((tab, index) => (
                 <TabPanel key={tab.id}>
-                  <div className={styles.tabContent}>
-                    <div className={styles.searchContainer}>
-                      <Search
-                        placeholder="Search by Patient Name, Identifier, Provider or Owner"
-                        labelText="Search orders"
-                        closeButtonLabelText="Clear search input"
-                        size="md"
-                        onChange={() => {}}
-                      />
-                    </div>
-                    <div className={styles.ordersTable}>
-                      <SortableDataTable
-                        headers={headers}
-                        rows={[]}
-                        ariaLabel={`${tab.display} orders`}
-                        loading
-                      />
-                    </div>
-                  </div>
+                  {index === selectedIndex && (
+                    <OrdersTabContent tabLabel={tab.label} />
+                  )}
                 </TabPanel>
               ))}
             </TabPanels>

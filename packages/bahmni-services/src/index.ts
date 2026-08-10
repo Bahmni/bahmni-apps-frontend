@@ -235,9 +235,12 @@ export {
 export {
   getConfig,
   getOrdersConfig,
+  getOrdersTableConfig,
   type OrdersConfig,
   type OrderExtension,
   type OrderExtensionParams,
+  type OrdersTableConfig,
+  type OrderColumnConfig,
 } from './configService';
 
 export {

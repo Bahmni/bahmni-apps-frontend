@@ -9,6 +9,7 @@ import { OrdersPage } from '../OrdersPage';
 jest.mock('@bahmni/services', () => ({
   ...jest.requireActual('@bahmni/services'),
   getOrdersConfig: jest.fn(),
+  getOrdersTableConfig: jest.fn(),
   useTranslation: jest.fn(),
   notificationService: {
     showError: jest.fn(),
@@ -30,11 +31,34 @@ jest.mock('../../components/ordersHeader/OrdersHeader', () => ({
   OrdersHeader: () => <div data-testid="orders-header">Orders Header</div>,
 }));
 
+// Mock useOrdersFulfillment
+jest.mock('../../hooks/useOrdersFulfillment', () => ({
+  useOrdersFulfillment: () => ({
+    rows: [],
+    headers: [
+      { key: 'badge', header: '' },
+      { key: 'patientName', header: 'Patient Name' },
+      { key: 'identifier', header: 'Identifier' },
+    ],
+    isLoading: false,
+    error: null,
+    isDrugOrderTab: false,
+  }),
+}));
+
+// Mock OrdersFulfillmentTable
+jest.mock('../../components/ordersFulfillmentTable', () => ({
+  OrdersFulfillmentTable: () => (
+    <div data-testid="orders-fulfillment-table">Orders Table</div>
+  ),
+}));
+
 const mockedUseTranslation = useTranslation as jest.MockedFunction<
   typeof useTranslation
 >;
 
-const { getOrdersConfig } = jest.requireMock('@bahmni/services');
+const { getOrdersConfig, getOrdersTableConfig } =
+  jest.requireMock('@bahmni/services');
 
 // Mock window.matchMedia
 Object.defineProperty(window, 'matchMedia', {
@@ -66,6 +90,7 @@ describe('OrdersPage Component', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockedUseTranslation.mockReturnValue({ t: mockTranslate } as any);
+    getOrdersTableConfig.mockResolvedValue(null);
   });
 
   describe('Rendering', () => {

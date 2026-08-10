@@ -1,0 +1,23 @@
+@use "@carbon/react/scss/type" as *;
+@use "@carbon/react/scss/spacing" as *;
+
+.drugOrderTable {
+  :global(.cds--data-table) thead tr th,
+  :global(.cds--data-table) tbody tr td {
+    text-align: left !important;
+    padding-left: $spacing-05 !important;
+  }
+  :global(.cds--data-table) thead tr th,
+  :global(.cds--data-table) tbody tr td {
+    width: 50% !important;
+    min-width: 50% !important;
+    max-width: 50% !important;
+  }
+  .drugOrderCell {
+    text-align: left !important;
+    width: 100% !important;
+    display: block;
+    padding-left: $spacing-05 !important;
+    box-sizing: border-box;
+  }
+}

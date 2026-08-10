@@ -1,0 +1,813 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`ExpandableSortableDataTable Snapshots matches snapshot when empty 1`] = `
+<div>
+  <p
+    class="expandableDataTableBodyEmpty"
+    data-testid="expandable-table-empty"
+  >
+    No data found
+  </p>
+</div>
+`;
+
+exports[`ExpandableSortableDataTable Snapshots matches snapshot when loading 1`] = `
+<div>
+  <div
+    class="expandable-sortable-data-table"
+    data-testid="expandable-table-skeleton"
+  >
+    <div
+      class="cds--skeleton cds--data-table-container"
+    >
+      <table
+        class="expandableDataTableSkeleton cds--skeleton cds--data-table cds--data-table--compact"
+      >
+        <thead>
+          <tr>
+            <th>
+              <span />
+            </th>
+            <th>
+              <span />
+            </th>
+            <th>
+              <span />
+            </th>
+            <th>
+              <span />
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>
+              <span />
+            </td>
+            <td>
+              <span />
+            </td>
+            <td>
+              <span />
+            </td>
+            <td>
+              <span />
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <span />
+            </td>
+            <td>
+              <span />
+            </td>
+            <td>
+              <span />
+            </td>
+            <td>
+              <span />
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <span />
+            </td>
+            <td>
+              <span />
+            </td>
+            <td>
+              <span />
+            </td>
+            <td>
+              <span />
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <span />
+            </td>
+            <td>
+              <span />
+            </td>
+            <td>
+              <span />
+            </td>
+            <td>
+              <span />
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <span />
+            </td>
+            <td>
+              <span />
+            </td>
+            <td>
+              <span />
+            </td>
+            <td>
+              <span />
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+`;
+
+exports[`ExpandableSortableDataTable Snapshots matches snapshot with expanded row 1`] = `
+<div>
+  <div
+    class="expandable-sortable-data-table expandableDataTableBody"
+    data-testid="expandable-sortable-data-table"
+  >
+    <div
+      class="cds--data-table-content"
+    >
+      <table
+        aria-label="Snapshot Expanded"
+        class="cds--data-table cds--data-table--md cds--data-table--sort cds--data-table--visible-overflow-menu"
+      >
+        <thead>
+          <tr>
+            <th
+              class="cds--table-expand"
+              id="expand"
+              scope="col"
+            />
+            <th
+              aria-sort="none"
+              class="cds--table-sort__header"
+              scope="col"
+            >
+              <div
+                class="cds--table-sort__description"
+                id="table-sort-«rr»"
+              >
+                Click to sort rows by Name header in ascending order
+              </div>
+              <button
+                aria-describedby="table-sort-«rr»"
+                class="cds--table-sort"
+                type="button"
+              >
+                <span
+                  class="cds--table-sort__flex"
+                >
+                  <div
+                    class="cds--table-header-label"
+                  >
+                    Name
+                  </div>
+                  <svg
+                    aria-hidden="true"
+                    class="cds--table-sort__icon"
+                    fill="currentColor"
+                    focusable="false"
+                    height="20"
+                    preserveAspectRatio="xMidYMid meet"
+                    viewBox="0 0 32 32"
+                    width="20"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="M16 4L6 14 7.41 15.41 15 7.83 15 28 17 28 17 7.83 24.59 15.41 26 14 16 4z"
+                    />
+                  </svg>
+                  <svg
+                    aria-hidden="true"
+                    class="cds--table-sort__icon-unsorted"
+                    fill="currentColor"
+                    focusable="false"
+                    height="20"
+                    preserveAspectRatio="xMidYMid meet"
+                    viewBox="0 0 32 32"
+                    width="20"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="M27.6 20.6L24 24.2 24 4 22 4 22 24.2 18.4 20.6 17 22 23 28 29 22zM9 4L3 10 4.4 11.4 8 7.8 8 28 10 28 10 7.8 13.6 11.4 15 10z"
+                    />
+                  </svg>
+                  <div
+                    class="cds--table-header-label--decorator-inner"
+                  />
+                </span>
+              </button>
+            </th>
+            <th
+              aria-sort="none"
+              class="cds--table-sort__header"
+              scope="col"
+            >
+              <div
+                class="cds--table-sort__description"
+                id="table-sort-«rs»"
+              >
+                Click to sort rows by Status header in ascending order
+              </div>
+              <button
+                aria-describedby="table-sort-«rs»"
+                class="cds--table-sort"
+                type="button"
+              >
+                <span
+                  class="cds--table-sort__flex"
+                >
+                  <div
+                    class="cds--table-header-label"
+                  >
+                    Status
+                  </div>
+                  <svg
+                    aria-hidden="true"
+                    class="cds--table-sort__icon"
+                    fill="currentColor"
+                    focusable="false"
+                    height="20"
+                    preserveAspectRatio="xMidYMid meet"
+                    viewBox="0 0 32 32"
+                    width="20"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="M16 4L6 14 7.41 15.41 15 7.83 15 28 17 28 17 7.83 24.59 15.41 26 14 16 4z"
+                    />
+                  </svg>
+                  <svg
+                    aria-hidden="true"
+                    class="cds--table-sort__icon-unsorted"
+                    fill="currentColor"
+                    focusable="false"
+                    height="20"
+                    preserveAspectRatio="xMidYMid meet"
+                    viewBox="0 0 32 32"
+                    width="20"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="M27.6 20.6L24 24.2 24 4 22 4 22 24.2 18.4 20.6 17 22 23 28 29 22zM9 4L3 10 4.4 11.4 8 7.8 8 28 10 28 10 7.8 13.6 11.4 15 10z"
+                    />
+                  </svg>
+                  <div
+                    class="cds--table-header-label--decorator-inner"
+                  />
+                </span>
+              </button>
+            </th>
+            <th
+              aria-sort="none"
+              class="cds--table-sort__header"
+              scope="col"
+            >
+              <div
+                class="cds--table-sort__description"
+                id="table-sort-«rt»"
+              >
+                Click to sort rows by Count header in ascending order
+              </div>
+              <button
+                aria-describedby="table-sort-«rt»"
+                class="cds--table-sort"
+                type="button"
+              >
+                <span
+                  class="cds--table-sort__flex"
+                >
+                  <div
+                    class="cds--table-header-label"
+                  >
+                    Count
+                  </div>
+                  <svg
+                    aria-hidden="true"
+                    class="cds--table-sort__icon"
+                    fill="currentColor"
+                    focusable="false"
+                    height="20"
+                    preserveAspectRatio="xMidYMid meet"
+                    viewBox="0 0 32 32"
+                    width="20"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="M16 4L6 14 7.41 15.41 15 7.83 15 28 17 28 17 7.83 24.59 15.41 26 14 16 4z"
+                    />
+                  </svg>
+                  <svg
+                    aria-hidden="true"
+                    class="cds--table-sort__icon-unsorted"
+                    fill="currentColor"
+                    focusable="false"
+                    height="20"
+                    preserveAspectRatio="xMidYMid meet"
+                    viewBox="0 0 32 32"
+                    width="20"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="M27.6 20.6L24 24.2 24 4 22 4 22 24.2 18.4 20.6 17 22 23 28 29 22zM9 4L3 10 4.4 11.4 8 7.8 8 28 10 28 10 7.8 13.6 11.4 15 10z"
+                    />
+                  </svg>
+                  <div
+                    class="cds--table-header-label--decorator-inner"
+                  />
+                </span>
+              </button>
+            </th>
+          </tr>
+        </thead>
+        <tbody
+          aria-live="polite"
+        >
+          <tr
+            class="cds--parent-row cds--expandable-row"
+            data-parent-row="true"
+          >
+            <td
+              class="cds--table-expand"
+              data-previous-value="collapsed"
+              headers="expand"
+            >
+              <button
+                aria-controls="expanded-row-row-1"
+                aria-expanded="true"
+                aria-label="Expand row row-1"
+                class="cds--table-expand__button"
+                type="button"
+              >
+                <svg
+                  aria-hidden="true"
+                  class="cds--table-expand__svg"
+                  fill="currentColor"
+                  focusable="false"
+                  height="16"
+                  preserveAspectRatio="xMidYMid meet"
+                  viewBox="0 0 16 16"
+                  width="16"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="M11 8L6 13 5.3 12.3 9.6 8 5.3 3.7 6 3z"
+                  />
+                </svg>
+              </button>
+            </td>
+            <td>
+              Patient A
+            </td>
+            <td>
+              Active
+            </td>
+            <td>
+              3
+            </td>
+          </tr>
+          <tr
+            class="cds--expandable-row expandedRowContent"
+            data-child-row="true"
+          >
+            <td
+              colspan="4"
+            >
+              <div
+                class="cds--child-row-inner-container"
+              >
+                <div
+                  data-testid="expanded-row-1"
+                >
+                  Details for Patient A
+                </div>
+              </div>
+            </td>
+          </tr>
+          <tr
+            class="cds--parent-row"
+            data-parent-row="true"
+          >
+            <td
+              class="cds--table-expand"
+              headers="expand"
+            >
+              <button
+                aria-controls="expanded-row-row-2"
+                aria-expanded="false"
+                aria-label="Expand row row-2"
+                class="cds--table-expand__button"
+                type="button"
+              >
+                <svg
+                  aria-hidden="true"
+                  class="cds--table-expand__svg"
+                  fill="currentColor"
+                  focusable="false"
+                  height="16"
+                  preserveAspectRatio="xMidYMid meet"
+                  viewBox="0 0 16 16"
+                  width="16"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="M11 8L6 13 5.3 12.3 9.6 8 5.3 3.7 6 3z"
+                  />
+                </svg>
+              </button>
+            </td>
+            <td>
+              Patient B
+            </td>
+            <td>
+              Pending
+            </td>
+            <td>
+              2
+            </td>
+          </tr>
+          <tr
+            class="cds--parent-row hideExpandButton"
+            data-parent-row="true"
+          >
+            <td
+              class="cds--table-expand"
+              headers="expand"
+            >
+              <button
+                aria-controls="expanded-row-row-3"
+                aria-expanded="false"
+                aria-label="Expand row row-3"
+                class="cds--table-expand__button"
+                type="button"
+              >
+                <svg
+                  aria-hidden="true"
+                  class="cds--table-expand__svg"
+                  fill="currentColor"
+                  focusable="false"
+                  height="16"
+                  preserveAspectRatio="xMidYMid meet"
+                  viewBox="0 0 16 16"
+                  width="16"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="M11 8L6 13 5.3 12.3 9.6 8 5.3 3.7 6 3z"
+                  />
+                </svg>
+              </button>
+            </td>
+            <td>
+              Patient C
+            </td>
+            <td>
+              Completed
+            </td>
+            <td>
+              0
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+`;
+
+exports[`ExpandableSortableDataTable Snapshots matches snapshot with full data 1`] = `
+<div>
+  <div
+    class="expandable-sortable-data-table expandableDataTableBody"
+    data-testid="expandable-sortable-data-table"
+  >
+    <div
+      class="cds--data-table-content"
+    >
+      <table
+        aria-label="Snapshot Test Full"
+        class="cds--data-table cds--data-table--md cds--data-table--sort cds--data-table--visible-overflow-menu"
+      >
+        <thead>
+          <tr>
+            <th
+              class="cds--table-expand"
+              id="expand"
+              scope="col"
+            />
+            <th
+              aria-sort="none"
+              class="cds--table-sort__header"
+              scope="col"
+            >
+              <div
+                class="cds--table-sort__description"
+                id="table-sort-«ro»"
+              >
+                Click to sort rows by Name header in ascending order
+              </div>
+              <button
+                aria-describedby="table-sort-«ro»"
+                class="cds--table-sort"
+                type="button"
+              >
+                <span
+                  class="cds--table-sort__flex"
+                >
+                  <div
+                    class="cds--table-header-label"
+                  >
+                    Name
+                  </div>
+                  <svg
+                    aria-hidden="true"
+                    class="cds--table-sort__icon"
+                    fill="currentColor"
+                    focusable="false"
+                    height="20"
+                    preserveAspectRatio="xMidYMid meet"
+                    viewBox="0 0 32 32"
+                    width="20"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="M16 4L6 14 7.41 15.41 15 7.83 15 28 17 28 17 7.83 24.59 15.41 26 14 16 4z"
+                    />
+                  </svg>
+                  <svg
+                    aria-hidden="true"
+                    class="cds--table-sort__icon-unsorted"
+                    fill="currentColor"
+                    focusable="false"
+                    height="20"
+                    preserveAspectRatio="xMidYMid meet"
+                    viewBox="0 0 32 32"
+                    width="20"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="M27.6 20.6L24 24.2 24 4 22 4 22 24.2 18.4 20.6 17 22 23 28 29 22zM9 4L3 10 4.4 11.4 8 7.8 8 28 10 28 10 7.8 13.6 11.4 15 10z"
+                    />
+                  </svg>
+                  <div
+                    class="cds--table-header-label--decorator-inner"
+                  />
+                </span>
+              </button>
+            </th>
+            <th
+              aria-sort="none"
+              class="cds--table-sort__header"
+              scope="col"
+            >
+              <div
+                class="cds--table-sort__description"
+                id="table-sort-«rp»"
+              >
+                Click to sort rows by Status header in ascending order
+              </div>
+              <button
+                aria-describedby="table-sort-«rp»"
+                class="cds--table-sort"
+                type="button"
+              >
+                <span
+                  class="cds--table-sort__flex"
+                >
+                  <div
+                    class="cds--table-header-label"
+                  >
+                    Status
+                  </div>
+                  <svg
+                    aria-hidden="true"
+                    class="cds--table-sort__icon"
+                    fill="currentColor"
+                    focusable="false"
+                    height="20"
+                    preserveAspectRatio="xMidYMid meet"
+                    viewBox="0 0 32 32"
+                    width="20"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="M16 4L6 14 7.41 15.41 15 7.83 15 28 17 28 17 7.83 24.59 15.41 26 14 16 4z"
+                    />
+                  </svg>
+                  <svg
+                    aria-hidden="true"
+                    class="cds--table-sort__icon-unsorted"
+                    fill="currentColor"
+                    focusable="false"
+                    height="20"
+                    preserveAspectRatio="xMidYMid meet"
+                    viewBox="0 0 32 32"
+                    width="20"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="M27.6 20.6L24 24.2 24 4 22 4 22 24.2 18.4 20.6 17 22 23 28 29 22zM9 4L3 10 4.4 11.4 8 7.8 8 28 10 28 10 7.8 13.6 11.4 15 10z"
+                    />
+                  </svg>
+                  <div
+                    class="cds--table-header-label--decorator-inner"
+                  />
+                </span>
+              </button>
+            </th>
+            <th
+              aria-sort="none"
+              class="cds--table-sort__header"
+              scope="col"
+            >
+              <div
+                class="cds--table-sort__description"
+                id="table-sort-«rq»"
+              >
+                Click to sort rows by Count header in ascending order
+              </div>
+              <button
+                aria-describedby="table-sort-«rq»"
+                class="cds--table-sort"
+                type="button"
+              >
+                <span
+                  class="cds--table-sort__flex"
+                >
+                  <div
+                    class="cds--table-header-label"
+                  >
+                    Count
+                  </div>
+                  <svg
+                    aria-hidden="true"
+                    class="cds--table-sort__icon"
+                    fill="currentColor"
+                    focusable="false"
+                    height="20"
+                    preserveAspectRatio="xMidYMid meet"
+                    viewBox="0 0 32 32"
+                    width="20"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="M16 4L6 14 7.41 15.41 15 7.83 15 28 17 28 17 7.83 24.59 15.41 26 14 16 4z"
+                    />
+                  </svg>
+                  <svg
+                    aria-hidden="true"
+                    class="cds--table-sort__icon-unsorted"
+                    fill="currentColor"
+                    focusable="false"
+                    height="20"
+                    preserveAspectRatio="xMidYMid meet"
+                    viewBox="0 0 32 32"
+                    width="20"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="M27.6 20.6L24 24.2 24 4 22 4 22 24.2 18.4 20.6 17 22 23 28 29 22zM9 4L3 10 4.4 11.4 8 7.8 8 28 10 28 10 7.8 13.6 11.4 15 10z"
+                    />
+                  </svg>
+                  <div
+                    class="cds--table-header-label--decorator-inner"
+                  />
+                </span>
+              </button>
+            </th>
+          </tr>
+        </thead>
+        <tbody
+          aria-live="polite"
+        >
+          <tr
+            class="cds--parent-row"
+            data-parent-row="true"
+          >
+            <td
+              class="cds--table-expand"
+              headers="expand"
+            >
+              <button
+                aria-controls="expanded-row-row-1"
+                aria-expanded="false"
+                aria-label="Expand row row-1"
+                class="cds--table-expand__button"
+                type="button"
+              >
+                <svg
+                  aria-hidden="true"
+                  class="cds--table-expand__svg"
+                  fill="currentColor"
+                  focusable="false"
+                  height="16"
+                  preserveAspectRatio="xMidYMid meet"
+                  viewBox="0 0 16 16"
+                  width="16"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="M11 8L6 13 5.3 12.3 9.6 8 5.3 3.7 6 3z"
+                  />
+                </svg>
+              </button>
+            </td>
+            <td>
+              Patient A
+            </td>
+            <td>
+              Active
+            </td>
+            <td>
+              3
+            </td>
+          </tr>
+          <tr
+            class="cds--parent-row"
+            data-parent-row="true"
+          >
+            <td
+              class="cds--table-expand"
+              headers="expand"
+            >
+              <button
+                aria-controls="expanded-row-row-2"
+                aria-expanded="false"
+                aria-label="Expand row row-2"
+                class="cds--table-expand__button"
+                type="button"
+              >
+                <svg
+                  aria-hidden="true"
+                  class="cds--table-expand__svg"
+                  fill="currentColor"
+                  focusable="false"
+                  height="16"
+                  preserveAspectRatio="xMidYMid meet"
+                  viewBox="0 0 16 16"
+                  width="16"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="M11 8L6 13 5.3 12.3 9.6 8 5.3 3.7 6 3z"
+                  />
+                </svg>
+              </button>
+            </td>
+            <td>
+              Patient B
+            </td>
+            <td>
+              Pending
+            </td>
+            <td>
+              2
+            </td>
+          </tr>
+          <tr
+            class="cds--parent-row hideExpandButton"
+            data-parent-row="true"
+          >
+            <td
+              class="cds--table-expand"
+              headers="expand"
+            >
+              <button
+                aria-controls="expanded-row-row-3"
+                aria-expanded="false"
+                aria-label="Expand row row-3"
+                class="cds--table-expand__button"
+                type="button"
+              >
+                <svg
+                  aria-hidden="true"
+                  class="cds--table-expand__svg"
+                  fill="currentColor"
+                  focusable="false"
+                  height="16"
+                  preserveAspectRatio="xMidYMid meet"
+                  viewBox="0 0 16 16"
+                  width="16"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="M11 8L6 13 5.3 12.3 9.6 8 5.3 3.7 6 3z"
+                  />
+                </svg>
+              </button>
+            </td>
+            <td>
+              Patient C
+            </td>
+            <td>
+              Completed
+            </td>
+            <td>
+              0
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+`;

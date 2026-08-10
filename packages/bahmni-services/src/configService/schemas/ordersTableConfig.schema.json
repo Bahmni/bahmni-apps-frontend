@@ -1,0 +1,74 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Orders Table Configuration Schema",
+  "description": "Schema for orders table configuration including column definitions",
+  "type": "object",
+  "required": ["ordersTableColumnHeaders", "drugTabsColumnHeaders"],
+  "additionalProperties": true,
+  "properties": {
+    "ordersTableColumnHeaders": {
+      "type": "array",
+      "description": "Array of column configurations for the default orders table",
+      "items": {
+        "type": "object",
+        "required": ["key", "header", "translationKey", "visible", "sortable"],
+        "additionalProperties": false,
+        "properties": {
+          "key": {
+            "type": "string",
+            "description": "Unique column identifier"
+          },
+          "header": {
+            "type": "string",
+            "description": "Default header text"
+          },
+          "translationKey": {
+            "type": "string",
+            "description": "i18n translation key for the header"
+          },
+          "visible": {
+            "type": "boolean",
+            "description": "Whether the column is visible"
+          },
+          "sortable": {
+            "type": "boolean",
+            "description": "Whether the column is sortable"
+          }
+        }
+      },
+      "minItems": 1
+    },
+    "drugTabsColumnHeaders": {
+      "type": "array",
+      "description": "Array of column configurations for the drug orders table",
+      "items": {
+        "type": "object",
+        "required": ["key", "header", "translationKey", "visible", "sortable"],
+        "additionalProperties": false,
+        "properties": {
+          "key": {
+            "type": "string",
+            "description": "Unique column identifier"
+          },
+          "header": {
+            "type": "string",
+            "description": "Default header text"
+          },
+          "translationKey": {
+            "type": "string",
+            "description": "i18n translation key for the header"
+          },
+          "visible": {
+            "type": "boolean",
+            "description": "Whether the column is visible"
+          },
+          "sortable": {
+            "type": "boolean",
+            "description": "Whether the column is sortable"
+          }
+        }
+      },
+      "minItems": 1
+    }
+  }
+}
