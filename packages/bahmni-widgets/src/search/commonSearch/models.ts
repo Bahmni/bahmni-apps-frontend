@@ -23,6 +23,7 @@ export interface BoundValue {
 
 export interface ScalarValue {
   value: string;
+  label?: string;
 }
 
 export interface RangeValue {
@@ -61,6 +62,13 @@ export interface LookupInput {
   placeholderTranslationKey: string;
   lookup: LookupConfig;
 }
+
+export interface LookupOption {
+  uuid: string;
+  label: string;
+}
+
+export type LookupLoader = () => Promise<LookupOption[]>;
 
 export type InputConfig =
   | TextInput

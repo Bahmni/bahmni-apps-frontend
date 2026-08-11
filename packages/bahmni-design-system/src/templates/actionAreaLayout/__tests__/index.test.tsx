@@ -123,4 +123,106 @@ describe('ActionAreaLayout', () => {
     const mainDisplay = container.querySelector('#main-display-area');
     expect(mainDisplay?.className).not.toMatch(/collapse/);
   });
+
+  describe('isActionAreaExpanded', () => {
+    test('does not apply expanded class to panel group by default', () => {
+      const { container } = render(
+        <ActionAreaLayout {...defaultProps} isActionAreaVisible />,
+      );
+
+      const mainDisplayPanel = container.querySelector('#main-display-panel');
+      expect(mainDisplayPanel?.parentElement?.className).not.toMatch(
+        /expanded/,
+      );
+    });
+
+    test('applies expanded class to panel group when isActionAreaExpanded is true', () => {
+      const { container } = render(
+        <ActionAreaLayout
+          {...defaultProps}
+          isActionAreaVisible
+          isActionAreaExpanded
+        />,
+      );
+
+      const mainDisplayPanel = container.querySelector('#main-display-panel');
+      expect(mainDisplayPanel?.parentElement?.className).toMatch(/expanded/);
+    });
+
+    test('still renders both panels when expanded', () => {
+      const { container } = render(
+        <ActionAreaLayout
+          {...defaultProps}
+          isActionAreaVisible
+          isActionAreaExpanded
+        />,
+      );
+
+      const panels = container.querySelectorAll('[data-panel]');
+      expect(panels).toHaveLength(2);
+    });
+
+    test('renders main display and action area panels with explicit ids', () => {
+      const { container } = render(
+        <ActionAreaLayout {...defaultProps} isActionAreaVisible />,
+      );
+
+      expect(
+        container.querySelector('#main-display-panel'),
+      ).toBeInTheDocument();
+      expect(container.querySelector('#action-area-panel')).toBeInTheDocument();
+    });
+
+    test('hides the separator when isActionAreaExpanded is true', () => {
+      render(
+        <ActionAreaLayout
+          {...defaultProps}
+          isActionAreaVisible
+          isActionAreaExpanded
+        />,
+      );
+
+      expect(screen.queryByRole('separator')).not.toBeInTheDocument();
+    });
+
+    test('shows the separator when isActionAreaExpanded is false', () => {
+      render(
+        <ActionAreaLayout
+          {...defaultProps}
+          isActionAreaVisible
+          isActionAreaExpanded={false}
+        />,
+      );
+
+      expect(screen.getByRole('separator')).toBeInTheDocument();
+    });
+
+    test('makes the main display inert and hidden from assistive tech when expanded', () => {
+      const { container } = render(
+        <ActionAreaLayout
+          {...defaultProps}
+          isActionAreaVisible
+          isActionAreaExpanded
+        />,
+      );
+
+      const mainDisplay = container.querySelector('#main-display-area');
+      expect(mainDisplay).toHaveAttribute('inert');
+      expect(mainDisplay).toHaveAttribute('aria-hidden', 'true');
+    });
+
+    test('keeps the main display focusable and visible to assistive tech when collapsed', () => {
+      const { container } = render(
+        <ActionAreaLayout
+          {...defaultProps}
+          isActionAreaVisible
+          isActionAreaExpanded={false}
+        />,
+      );
+
+      const mainDisplay = container.querySelector('#main-display-area');
+      expect(mainDisplay).not.toHaveAttribute('inert');
+      expect(mainDisplay).toHaveAttribute('aria-hidden', 'false');
+    });
+  });
 });
