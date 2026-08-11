@@ -6,6 +6,7 @@ export type MedicationAction = {
   type: string;
   encounterType: string;
   requiredPrivilege: string[];
+  metadata?: Record<string, unknown>;
 };
 
 export interface FormattedMedicationRequest {

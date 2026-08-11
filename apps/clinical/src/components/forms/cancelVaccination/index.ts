@@ -18,10 +18,13 @@ registerInputControl({
   subscribe: (cb) => useCancelVaccinationStore.subscribe(cb),
   onDirectSubmit: async () => {
     const state = useCancelVaccinationStore.getState();
-    if (!state.medicationToCancel?.id ) return;
+    if (!state.medicationToCancel?.id) return;
+    const encounterUuid =
+      state.medicationToCancel.encounter?.reference?.split('/').pop();
     await cancelVaccination({
       medicationRequestId: state.medicationToCancel.id,
       reason: state.cancellationReason ?? '',
+      encounterUuid,
       note: state.note || undefined,
     });
     const patientUuid = state.medicationToCancel.subject?.reference

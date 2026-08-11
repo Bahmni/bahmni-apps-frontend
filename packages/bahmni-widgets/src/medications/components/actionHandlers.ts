@@ -18,6 +18,7 @@ const handleCancelAction = (
         editOnly: 'cancelVaccination',
         editTitle: 'CANCEL_VACCINATION_FORM_TITLE',
         editEncounterUuid: encounterUuid,
+        cancelReasonValueSetUuid: action.metadata?.cancelReasonValueSetUuid,
       },
     }),
   );

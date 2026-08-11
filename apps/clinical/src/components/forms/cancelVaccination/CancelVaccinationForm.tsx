@@ -5,16 +5,13 @@ import {
   TextArea,
   Tile,
 } from '@bahmni/design-system';
-import { useTranslation } from '@bahmni/services';
+import { searchFHIRConcepts, useTranslation } from '@bahmni/services';
 import { useQuery } from '@tanstack/react-query';
 import { MedicationRequest } from 'fhir/r4';
 import React, { useEffect, useState } from 'react';
 
 import type { EncounterSessionStartContext } from '../../../events/startConsultation';
-import {
-  fetchCancelReasons,
-  CancelReason,
-} from '../../../services/cancelVaccinationService';
+import type { CancelReason } from '../../../services/cancelVaccinationService';
 import { useCancelVaccinationStore } from '../../../stores/cancelVaccinationStore';
 import styles from './styles/CancelVaccinationForm.module.scss';
 
@@ -42,9 +39,16 @@ const CancelVaccinationForm: React.FC<CancelVaccinationFormProps> = React.memo(
 
     const [isNoteVisible, setIsNoteVisible] = useState(false);
 
-    const { data: conceptCancelReasons } = useQuery({
-      queryKey: ['cancelReasons'],
-      queryFn: fetchCancelReasons,
+    const cancelReasonValueSetUuid =
+      encounterSessionStartContext?.cancelReasonValueSetUuid as
+        | string
+        | undefined;
+
+    const { data: cancelReasonValueSet } = useQuery({
+      queryKey: ['cancelReasonValueSet', cancelReasonValueSetUuid],
+      queryFn: () => searchFHIRConcepts(cancelReasonValueSetUuid!),
+      enabled: !!cancelReasonValueSetUuid,
+      staleTime: Infinity,
     });
 
     useEffect(() => {
@@ -64,9 +68,10 @@ const CancelVaccinationForm: React.FC<CancelVaccinationFormProps> = React.memo(
       '';
 
     const cancelReasons: CancelReason[] =
-      conceptCancelReasons && conceptCancelReasons.length > 0
-        ? conceptCancelReasons
-        : [];
+      cancelReasonValueSet?.expansion?.contains?.map((c) => ({
+        uuid: c.code ?? '',
+        display: c.display ?? '',
+      })) ?? [];
 
     const isCancellationReasonVisible =
       fieldConfig.cancellationReason?.isVisible !== false;
