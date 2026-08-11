@@ -200,6 +200,150 @@ describe('createObservationEntries', () => {
     });
   });
 
+  describe('task-linked observations (basedOn)', () => {
+    const basedOn: Reference = {
+      reference: 'ServiceRequest/service-request-1',
+    };
+
+    it('emits DELETE + POST (not PUT) when editing a task-linked leaf so the ServiceRequest linkage is preserved on the replacement', () => {
+      const obs: Form2Observation = {
+        concept: { uuid: 'concept-1' },
+        value: 'Yes',
+        uuid: 'task-obs-uuid',
+        status: 'final',
+      };
+      (getFhirObservations as jest.Mock).mockReturnValue([
+        mockEntry('urn:uuid:new-task-obs'),
+      ]);
+
+      const entries = createObservationEntries(
+        [obs],
+        subject,
+        encounter,
+        performer,
+        basedOn,
+      );
+
+      expect(entries).toHaveLength(2);
+      const deleteEntry = entries.find((e) => e.request?.method === 'DELETE');
+      const postEntry = entries.find((e) => e.request?.method === 'POST');
+      expect(entries.some((e) => e.request?.method === 'PUT')).toBe(false);
+
+      expect(deleteEntry?.request?.url).toBe('Observation/task-obs-uuid');
+      expect(deleteEntry?.resource).toMatchObject({
+        resourceType: 'Observation',
+        id: 'task-obs-uuid',
+      });
+
+      expect(postEntry?.fullUrl).toBe('urn:uuid:new-task-obs');
+    });
+
+    it('skips unchanged task-linked observations (unchanged path is untouched)', () => {
+      const obs: Form2Observation = {
+        concept: { uuid: 'concept-1' },
+        value: 'Yes',
+        uuid: 'task-obs-uuid',
+        unchanged: true,
+      };
+      const entries = createObservationEntries(
+        [obs],
+        subject,
+        encounter,
+        performer,
+        basedOn,
+      );
+      expect(entries).toHaveLength(0);
+    });
+
+    it('POSTs a brand-new task-linked observation exactly as before (no existing uuid → normal POST path)', () => {
+      const obs: Form2Observation = {
+        concept: { uuid: 'concept-1' },
+        value: 'Yes',
+      };
+      (getFhirObservations as jest.Mock).mockReturnValue([
+        mockEntry('urn:uuid:new-task-obs'),
+      ]);
+
+      const entries = createObservationEntries(
+        [obs],
+        subject,
+        encounter,
+        performer,
+        basedOn,
+      );
+
+      expect(entries).toHaveLength(1);
+      expect(entries[0].request?.method).toBe('POST');
+      expect(entries[0].fullUrl).toBe('urn:uuid:new-task-obs');
+    });
+
+    it('DELETEs voided task-linked observations exactly as before (voided path is untouched)', () => {
+      const obs: Form2Observation = {
+        concept: { uuid: 'concept-1' },
+        value: null,
+        uuid: 'task-obs-uuid',
+        voided: true,
+      };
+      const entries = createObservationEntries(
+        [obs],
+        subject,
+        encounter,
+        performer,
+        basedOn,
+      );
+
+      expect(entries).toHaveLength(1);
+      expect(entries[0].request?.method).toBe('DELETE');
+      expect(entries[0].request?.url).toBe('Observation/task-obs-uuid');
+    });
+
+    it('parent obsGroup PUT references the recreated child via its new urn:uuid: (not the voided old uuid)', () => {
+      const groupObs: Form2Observation = {
+        concept: { uuid: 'group-concept' },
+        value: null,
+        uuid: 'parent-obs-uuid',
+        status: 'final',
+        groupMembers: [
+          {
+            concept: { uuid: 'child-concept' },
+            value: 'Yes',
+            uuid: 'child-obs-uuid',
+            status: 'final',
+          },
+        ],
+      };
+      (getFhirObservations as jest.Mock)
+        .mockReturnValueOnce([mockEntry('urn:uuid:new-child')]) // recreated child POST
+        .mockReturnValueOnce([mockEntry('Observation/parent-obs-uuid')]); // parent PUT
+
+      const entries = createObservationEntries(
+        [groupObs],
+        subject,
+        encounter,
+        performer,
+        basedOn,
+      );
+
+      const deleteChild = entries.find(
+        (e) => e.request?.url === 'Observation/child-obs-uuid',
+      );
+      const postChild = entries.find((e) => e.fullUrl === 'urn:uuid:new-child');
+      const parentEntry = entries.find(
+        (e) => e.fullUrl === 'Observation/parent-obs-uuid',
+      );
+      expect(deleteChild?.request?.method).toBe('DELETE');
+      expect(postChild?.request?.method).toBe('POST');
+      expect(parentEntry?.request?.method).toBe('PUT');
+
+      const hasMember = (
+        parentEntry?.resource as unknown as {
+          hasMember: { reference: string }[];
+        }
+      ).hasMember;
+      expect(hasMember).toEqual([{ reference: 'urn:uuid:new-child' }]);
+    });
+  });
+
   describe('grouped observations (obsGroup)', () => {
     it('emits POST for a new parent obsGroup (no uuid)', () => {
       const groupObs: Form2Observation = {

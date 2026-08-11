@@ -68,8 +68,13 @@ const ObservationFormsPanel: React.FC<ObservationFormsPanelProps> = ({
     prevViewingFormRef.current = viewingForm;
   }, [viewingForm, refetchPinnedForms]);
 
+  const editFormName = encounterSessionStartContext?.editFormName;
+  const editEncounterUuid = encounterSessionStartContext?.editEncounterUuid;
+  const isEditObservationFormsMode =
+    encounterSessionStartContext?.editOnly === 'observationForms';
+
   useEffect(() => {
-    if (taskFormName && directFormMode && !isAllFormsLoading) {
+    if (taskFormName && directFormMode && !isAllFormsLoading && !editFormName) {
       useObservationFormsStore.getState().reset();
       const matchingForm = allForms.find(
         (form) => form.name.toLowerCase() === taskFormName.toLowerCase(),
@@ -79,12 +84,14 @@ const ObservationFormsPanel: React.FC<ObservationFormsPanelProps> = ({
         addForm(matchingForm);
       }
     }
-  }, [taskFormName, directFormMode, allForms, isAllFormsLoading, addForm]);
-
-  const editFormName = encounterSessionStartContext?.editFormName;
-  const editEncounterUuid = encounterSessionStartContext?.editEncounterUuid;
-  const isEditObservationFormsMode =
-    encounterSessionStartContext?.editOnly === 'observationForms';
+  }, [
+    taskFormName,
+    directFormMode,
+    allForms,
+    isAllFormsLoading,
+    editFormName,
+    addForm,
+  ]);
 
   // useObservationFormsStore is a session-wide singleton, not scoped to a single
   // edit session. Without this, `selectedForms` from a previous edit (or from the

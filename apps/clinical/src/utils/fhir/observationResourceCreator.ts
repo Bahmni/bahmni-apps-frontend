@@ -166,6 +166,12 @@ function processLeafObservation(
     if (obs.unchanged) {
       return { ref: null, stillExists: true };
     }
+    // TODO: Task-linked obs (basedOn → ServiceRequest) are immutable in OpenMRS: PUT with
+    // obsDatetime/valueCoded change is rejected, and PUT without basedOn silently
+    // strips the linkage. Void the old + POST a new one carrying the same basedOn.
+    if (options.basedOnReference) {
+      return voidAndRecreateLeaf(obs, entries, options);
+    }
     const url = putExistingLeaf(obs, entries, options);
     return url
       ? { ref: url, stillExists: true }
@@ -185,6 +191,35 @@ function processLeafObservation(
   }
   // No uuid + voided = was never saved, skip
   return NONE;
+}
+
+/** Voids an existing task-linked leaf (DELETE) and POSTs a fresh replacement carrying the same basedOn.
+ *  Required because OpenMRS rejects PUT edits to obsDatetime/valueCoded on obs with a ServiceRequest linkage. */
+function voidAndRecreateLeaf(
+  obs: Form2Observation,
+  entries: BundleEntry[],
+  options: ObsOptions,
+): ChildResult {
+  const deleteUrl = `Observation/${obs.uuid}`;
+  entries.push(
+    createBundleEntry(
+      deleteUrl,
+      { resourceType: 'Observation', id: obs.uuid } as Observation,
+      'DELETE',
+      deleteUrl,
+    ),
+  );
+
+  const freshObs: Form2Observation = {
+    ...obs,
+    uuid: undefined,
+    status: undefined,
+  };
+  const [entry] = getFhirObservations([freshObs], options) as ObsEntry[];
+  if (!entry) return { ...NONE, stillExists: false };
+
+  entries.push(createBundleEntry(entry.fullUrl, entry.resource, 'POST'));
+  return { ref: entry.fullUrl, stillExists: true };
 }
 
 /** PUTs an existing leaf observation, echoing back its current FHIR status as OpenMRS requires. */
