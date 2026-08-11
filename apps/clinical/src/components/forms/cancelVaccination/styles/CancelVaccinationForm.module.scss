@@ -6,51 +6,31 @@
   margin: $spacing-03;
   background-color: $background !important;
   overflow: hidden !important;
-}
-
-.formTitle {
-  @include type-style('heading-compact-02');
-  padding-bottom: $spacing-05;
+  margin-left: $spacing-05;
+  padding-bottom: $spacing-03;
 }
 
 .medicationInfoCard {
   background-color: $layer-01;
-  border: 1px solid $border-subtle-01;
-  border-radius: 4px;
-  padding: $spacing-04;
-  margin-bottom: $spacing-05;
+  padding-block: $spacing-04;
+  padding-inline: 0 $spacing-04;
+  margin-bottom: $spacing-07;
 }
 
 .medicationName {
   @include type-style('body-compact-01');
   font-weight: 600;
-  padding-bottom: $spacing-03;
+  padding: $spacing-04;
 }
 
-.medicationDetails {
-  display: flex;
-  flex-wrap: wrap;
-  gap: $spacing-05;
-}
-
-.medicationDetailItem {
-  display: flex;
-  flex-direction: column;
-  gap: $spacing-01;
-}
-
-.detailLabel {
-  @include type-style('label-01');
+.medicationRoute {
+  @include type-style('body-compact-01');
   color: $text-secondary;
 }
 
-.detailValue {
-  @include type-style('body-compact-01');
-  color: $text-primary;
-}
-
-.column {
-  padding-bottom: $spacing-05;
+.fieldsGrid {
+  --cds-grid-margin: 0;
+  --cds-grid-gutter: 0;
 }
 
 .fieldLabel {
@@ -78,6 +58,7 @@
   background: none;
   border: none;
   padding: 0;
+  margin-top: $spacing-02;
   text-decoration: none;
 
   &:hover {

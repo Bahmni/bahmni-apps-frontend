@@ -5,7 +5,7 @@ import {
   TextArea,
   Tile,
 } from '@bahmni/design-system';
-import { formatDateTime, useTranslation } from '@bahmni/services';
+import { useTranslation } from '@bahmni/services';
 import { useQuery } from '@tanstack/react-query';
 import { MedicationRequest } from 'fhir/r4';
 import React, { useEffect, useState } from 'react';
@@ -59,24 +59,9 @@ const CancelVaccinationForm: React.FC<CancelVaccinationFormProps> = React.memo(
 
     const medicationName =
       cancelVaccination.medicationReference?.display ?? '';
-
-    const dosageInstruction = cancelVaccination.dosageInstruction?.[0];
-    const dosage = dosageInstruction
-      ? [
-          dosageInstruction.doseAndRate?.[0]?.doseQuantity?.value,
-          dosageInstruction.doseAndRate?.[0]?.doseQuantity?.unit,
-        ]
-          .filter(Boolean)
-          .join(' ')
-      : '';
-
-    const instruction = dosageInstruction?.text ?? '';
-    const startDate = cancelVaccination.dosageInstruction?.[0]?.timing?.repeat
-      ?.boundsPeriod?.start
-      ?? cancelVaccination.authoredOn
-      ?? '';
-    const orderedBy = cancelVaccination.requester?.display ?? '';
-    const orderedOn = cancelVaccination.authoredOn ?? '';
+    const route =
+      cancelVaccination.dosageInstruction?.[0]?.route?.coding?.[0]?.display ??
+      '';
 
     const cancelReasons: CancelReason[] =
       conceptCancelReasons && conceptCancelReasons.length > 0
@@ -92,67 +77,17 @@ const CancelVaccinationForm: React.FC<CancelVaccinationFormProps> = React.memo(
         className={styles.cancelVaccinationFormTile}
         data-testid="cancel-vaccination-form-tile"
       >
-        <div className={styles.formTitle}>
-          {t('CANCEL_VACCINATION_FORM_TITLE')}
-        </div>
-
-        {/* Medication Info Card */}
         <div
           className={styles.medicationInfoCard}
           data-testid="cancel-vaccination-medication-info"
         >
-          <p className={styles.medicationName}>{medicationName}</p>
-          <div className={styles.medicationDetails}>
-            {dosage && (
-              <div className={styles.medicationDetailItem}>
-                <span className={styles.detailLabel}>
-                  {t('CANCEL_VACCINATION_DOSAGE_LABEL')}
-                </span>
-                <span className={styles.detailValue}>{dosage}</span>
-              </div>
-            )}
-            {instruction && (
-              <div className={styles.medicationDetailItem}>
-                <span className={styles.detailLabel}>
-                  {t('CANCEL_VACCINATION_INSTRUCTIONS_LABEL')}
-                </span>
-                <span className={styles.detailValue}>{instruction}</span>
-              </div>
-            )}
-            {startDate && (
-              <div className={styles.medicationDetailItem}>
-                <span className={styles.detailLabel}>
-                  {t('CANCEL_VACCINATION_START_DATE_LABEL')}
-                </span>
-                <span className={styles.detailValue}>
-                  {formatDateTime(startDate, t).formattedResult}
-                </span>
-              </div>
-            )}
-            {orderedBy && (
-              <div className={styles.medicationDetailItem}>
-                <span className={styles.detailLabel}>
-                  {t('CANCEL_VACCINATION_ORDERED_BY_LABEL')}
-                </span>
-                <span className={styles.detailValue}>{orderedBy}</span>
-              </div>
-            )}
-            {orderedOn && (
-              <div className={styles.medicationDetailItem}>
-                <span className={styles.detailLabel}>
-                  {t('CANCEL_VACCINATION_ORDERED_ON_LABEL')}
-                </span>
-                <span className={styles.detailValue}>
-                  {formatDateTime(orderedOn, t).formattedResult}
-                </span>
-              </div>
-            )}
-          </div>
+          <span className={styles.medicationName}>{medicationName}</span>
+          {route && <span className={styles.medicationRoute}>[{route}]</span>}
         </div>
 
-        <Grid condensed={false}>
+        <Grid condensed={false} className={styles.fieldsGrid}>
           {isCancellationReasonVisible && (
-            <Column sm={4} md={8} lg={16} className={styles.column}>
+            <Column sm={4} md={8} lg={16} className={styles.reasonColumn}>
               <Dropdown
                 id="cancel-vaccination-reason"
                 data-testid="cancel-vaccination-reason-dropdown"
