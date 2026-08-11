@@ -193,6 +193,59 @@ describe('cancelVaccination input control', () => {
       });
     });
 
+    it('derives encounterUuid from medicationToCancel.encounter.reference', async () => {
+      const control = getCancelVaccinationControl()!;
+
+      mockCancelVaccination.mockResolvedValueOnce({
+        resourceType: 'MedicationRequest',
+        id: 'med-1',
+        status: 'stopped',
+        intent: 'order',
+        subject: { reference: 'Patient/patient-uuid-1' },
+      });
+
+      useCancelVaccinationStore.getState().setMedicationToCancel({
+        resourceType: 'MedicationRequest',
+        id: 'med-1',
+        status: 'active',
+        intent: 'order',
+        subject: { reference: 'Patient/patient-uuid-1' },
+        encounter: { reference: 'Encounter/enc-uuid-1' },
+      });
+
+      await control.onDirectSubmit!();
+
+      expect(mockCancelVaccination).toHaveBeenCalledWith(
+        expect.objectContaining({ encounterUuid: 'enc-uuid-1' }),
+      );
+    });
+
+    it('omits encounterUuid when medicationToCancel has no encounter reference', async () => {
+      const control = getCancelVaccinationControl()!;
+
+      mockCancelVaccination.mockResolvedValueOnce({
+        resourceType: 'MedicationRequest',
+        id: 'med-1',
+        status: 'stopped',
+        intent: 'order',
+        subject: { reference: 'Patient/patient-uuid-1' },
+      });
+
+      useCancelVaccinationStore.getState().setMedicationToCancel({
+        resourceType: 'MedicationRequest',
+        id: 'med-1',
+        status: 'active',
+        intent: 'order',
+        subject: { reference: 'Patient/patient-uuid-1' },
+      });
+
+      await control.onDirectSubmit!();
+
+      expect(mockCancelVaccination).toHaveBeenCalledWith(
+        expect.objectContaining({ encounterUuid: undefined }),
+      );
+    });
+
     it('does not dispatch audit event when subject.reference is missing', async () => {
       const control = getCancelVaccinationControl()!;
 

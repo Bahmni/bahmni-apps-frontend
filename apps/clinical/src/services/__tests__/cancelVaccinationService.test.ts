@@ -1,149 +1,24 @@
-import { get, post } from '@bahmni/services';
-import { Bundle, ValueSet } from 'fhir/r4';
-import { fetchCancelReasons, cancelVaccination } from '../cancelVaccinationService';
+import { post } from '@bahmni/services';
+import { cancelVaccination } from '../cancelVaccinationService';
 
 jest.mock('@bahmni/services', () => ({
   ...jest.requireActual('@bahmni/services'),
-  get: jest.fn(),
   post: jest.fn(),
 }));
 
-const mockGet = get as jest.MockedFunction<typeof get>;
 const mockPost = post as jest.MockedFunction<typeof post>;
 
 describe('cancelVaccinationService', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    jest.useFakeTimers().setSystemTime(new Date(2025, 5, 10));
   });
 
-  describe('fetchCancelReasons', () => {
-    it('should return cancel reasons from ValueSet expand', async () => {
-      const searchBundle: Bundle = {
-        resourceType: 'Bundle',
-        type: 'searchset',
-        entry: [
-          {
-            resource: {
-              resourceType: 'ValueSet',
-              id: 'vs-uuid-1',
-              status: 'active',
-            } as ValueSet,
-          },
-        ],
-      };
-
-      const expandedValueSet: ValueSet = {
-        resourceType: 'ValueSet',
-        id: 'vs-uuid-1',
-        status: 'active',
-        expansion: {
-          timestamp: '2025-01-01',
-          contains: [
-            { code: 'reason-1', display: 'Adverse reaction' },
-            { code: 'reason-2', display: 'Patient request' },
-          ],
-        },
-      };
-
-      mockGet
-        .mockResolvedValueOnce(searchBundle)
-        .mockResolvedValueOnce(expandedValueSet);
-
-      const result = await fetchCancelReasons();
-
-      expect(result).toEqual([
-        { uuid: 'reason-1', display: 'Adverse reaction' },
-        { uuid: 'reason-2', display: 'Patient request' },
-      ]);
-
-      expect(mockGet).toHaveBeenCalledWith(
-        '/openmrs/ws/fhir2/R4/ValueSet?title=Stopped%20Order%20Reason',
-      );
-      expect(mockGet).toHaveBeenCalledWith(
-        '/openmrs/ws/fhir2/R4/ValueSet/vs-uuid-1/$expand',
-      );
-    });
-
-    it('should return empty array when ValueSet not found', async () => {
-      const emptyBundle: Bundle = {
-        resourceType: 'Bundle',
-        type: 'searchset',
-        entry: [],
-      };
-
-      mockGet.mockResolvedValueOnce(emptyBundle);
-
-      const result = await fetchCancelReasons();
-
-      expect(result).toEqual([]);
-      expect(mockGet).toHaveBeenCalledTimes(1);
-    });
-
-    it('should return empty array when search bundle has no entries', async () => {
-      const bundleNoEntries: Bundle = {
-        resourceType: 'Bundle',
-        type: 'searchset',
-      };
-
-      mockGet.mockResolvedValueOnce(bundleNoEntries);
-
-      const result = await fetchCancelReasons();
-
-      expect(result).toEqual([]);
-    });
-
-    it('should return empty array on API error', async () => {
-      mockGet.mockRejectedValueOnce(new Error('Network error'));
-
-      const result = await fetchCancelReasons();
-
-      expect(result).toEqual([]);
-    });
-
-    it('should handle missing code/display in contains gracefully', async () => {
-      const searchBundle: Bundle = {
-        resourceType: 'Bundle',
-        type: 'searchset',
-        entry: [
-          {
-            resource: {
-              resourceType: 'ValueSet',
-              id: 'vs-uuid-1',
-              status: 'active',
-            } as ValueSet,
-          },
-        ],
-      };
-
-      const expandedValueSet: ValueSet = {
-        resourceType: 'ValueSet',
-        id: 'vs-uuid-1',
-        status: 'active',
-        expansion: {
-          timestamp: '2025-01-01',
-          contains: [{ system: 'http://example.com' }],
-        },
-      };
-
-      mockGet
-        .mockResolvedValueOnce(searchBundle)
-        .mockResolvedValueOnce(expandedValueSet);
-
-      const result = await fetchCancelReasons();
-
-      expect(result).toEqual([{ uuid: '', display: '' }]);
-    });
+  afterEach(() => {
+    jest.useRealTimers();
   });
 
   describe('cancelVaccination', () => {
-    beforeEach(() => {
-      jest.useFakeTimers().setSystemTime(new Date(2025, 5, 10));
-    });
-
-    afterEach(() => {
-      jest.useRealTimers();
-    });
-
     it('should call POST with correct endpoint and Parameters resource', async () => {
       const mockResponse = {
         resourceType: 'MedicationRequest' as const,
@@ -166,7 +41,10 @@ describe('cancelVaccinationService', () => {
         {
           resourceType: 'Parameters',
           parameter: [
-            { name: 'reason', valueString: 'Adverse reaction' },
+            {
+              name: 'reason',
+              valueCodeableConcept: { text: 'Adverse reaction' },
+            },
             { name: 'effectiveDate', valueDate: '2025-06-10' },
             { name: 'note', valueString: 'Patient developed rash' },
           ],
@@ -176,7 +54,39 @@ describe('cancelVaccinationService', () => {
       expect(result).toEqual(mockResponse);
     });
 
-    it('should omit note parameter when note is undefined', async () => {
+    it('should include the encounter parameter when encounterUuid is provided', async () => {
+      mockPost.mockResolvedValueOnce({});
+
+      await cancelVaccination({
+        medicationRequestId: 'med-req-2',
+        reason: 'Patient request',
+        encounterUuid: 'encounter-uuid-1',
+      });
+
+      const calledParams = mockPost.mock.calls[0][1] as any;
+      expect(calledParams.parameter).toContainEqual({
+        name: 'encounter',
+        valueString: 'encounter-uuid-1',
+      });
+    });
+
+    it('should omit the encounter parameter when encounterUuid is undefined', async () => {
+      mockPost.mockResolvedValueOnce({});
+
+      await cancelVaccination({
+        medicationRequestId: 'med-req-2',
+        reason: 'Patient request',
+      });
+
+      const calledParams = mockPost.mock.calls[0][1] as any;
+      const paramNames = calledParams.parameter.map(
+        (p: { name: string }) => p.name,
+      );
+
+      expect(paramNames).not.toContain('encounter');
+    });
+
+    it('should omit the note parameter when note is undefined', async () => {
       mockPost.mockResolvedValueOnce({});
 
       await cancelVaccination({
@@ -207,6 +117,42 @@ describe('cancelVaccinationService', () => {
       ).valueDate;
 
       expect(valueDate).toBe('2025-06-10');
+    });
+
+    it('should send the reason as a valueCodeableConcept with the reason text', async () => {
+      mockPost.mockResolvedValueOnce({});
+
+      await cancelVaccination({
+        medicationRequestId: 'med-1',
+        reason: 'Allergy',
+      });
+
+      const calledParams = mockPost.mock.calls[0][1] as any;
+      const reasonParam = calledParams.parameter.find(
+        (p: { name: string }) => p.name === 'reason',
+      );
+
+      expect(reasonParam.valueCodeableConcept).toEqual({ text: 'Allergy' });
+    });
+
+    it('should return the MedicationRequest response', async () => {
+      const mockResponse = {
+        resourceType: 'MedicationRequest' as const,
+        id: 'med-req-1',
+        status: 'stopped' as const,
+        intent: 'order' as const,
+        subject: { reference: 'Patient/patient-1' },
+      };
+
+      mockPost.mockResolvedValueOnce(mockResponse);
+
+      const result = await cancelVaccination({
+        medicationRequestId: 'med-req-1',
+        reason: 'reason',
+      });
+
+      expect(result).toEqual(mockResponse);
+      expect(result.status).toBe('stopped');
     });
   });
 });

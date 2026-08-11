@@ -39,10 +39,6 @@ jest.mock('@tanstack/react-query', () => ({
   useQuery: jest.fn(),
 }));
 
-jest.mock('../../../../services/cancelVaccinationService', () => ({
-  fetchCancelReasons: jest.fn(),
-}));
-
 jest.mock('../../../../stores/cancelVaccinationStore', () => ({
   useCancelVaccinationStore: jest.fn(),
 }));
@@ -61,10 +57,17 @@ const mockMedicationRequest = {
   dosageInstruction: [{ route: { coding: [{ display: 'Intramuscular' }] } }],
 };
 
-const mockCancelReasons = [
-  { uuid: 'reason-uuid-1', display: 'Adverse reaction' },
-  { uuid: 'reason-uuid-2', display: 'Patient request' },
-];
+const mockCancelReasonValueSet = {
+  resourceType: 'ValueSet' as const,
+  status: 'active' as const,
+  expansion: {
+    timestamp: '2025-01-01',
+    contains: [
+      { code: 'reason-uuid-1', display: 'Adverse reaction' },
+      { code: 'reason-uuid-2', display: 'Patient request' },
+    ],
+  },
+};
 
 const defaultFieldConfig = {
   cancellationReason: { isVisible: true, isMandatory: false },
@@ -101,7 +104,7 @@ describe('CancelVaccinationForm', () => {
     jest.clearAllMocks();
     capturedDropdownProps = null;
     mockUseQuery.mockReturnValue({
-      data: mockCancelReasons,
+      data: mockCancelReasonValueSet,
       isLoading: false,
       error: null,
     } as any);
