@@ -23,5 +23,6 @@ export interface StopMedicationConfig {
 export interface MedicationJSONConfig {
   drugFormDefaults?: Record<string, DrugFormDefault>;
   stopReasons?: string[];
+  stopOrderedReasonConceptSet?: string;
   stopMedicationFields?: StopMedicationConfig;
 }

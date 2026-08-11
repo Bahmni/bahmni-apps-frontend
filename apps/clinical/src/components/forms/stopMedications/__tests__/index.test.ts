@@ -12,7 +12,6 @@ jest.mock('../../../../services/stopMedicationService', () => ({
   stopMedication: jest.fn(),
 }));
 
-// Mock the StopMedicationForm component to avoid its deep dependency tree
 jest.mock('../StopMedicationForm', () => () => null);
 
 const mockStopMedication = stopMedication as jest.MockedFunction<
@@ -28,7 +27,6 @@ describe('stopMedications input control', () => {
     useStopMedicationStore.getState().reset();
   });
 
-  // Import the module to trigger registerInputControl
   beforeAll(async () => {
     await import('../index');
   });
@@ -45,28 +43,18 @@ describe('stopMedications input control', () => {
   });
 
   it('reset() calls store reset', () => {
-    const control = getStopMedicationsControl()!;
-
-    control.reset();
-
-    // Verify the store was reset (stopReason should be null after reset)
+    getStopMedicationsControl()!.reset();
     const state = useStopMedicationStore.getState();
     expect(state.medicationToStop).toBeNull();
     expect(state.stopReason).toBeNull();
     expect(state.note).toBe('');
   });
 
-  it('validate() calls store validate', () => {
-    const control = getStopMedicationsControl()!;
-
-    // No medication set -> validate returns true
-    const result = control.validate();
-    expect(result).toBe(true);
+  it('validate() returns true when no medication set', () => {
+    expect(getStopMedicationsControl()!.validate()).toBe(true);
   });
 
   it('validate() returns false when mandatory fields are missing', () => {
-    const control = getStopMedicationsControl()!;
-
     useStopMedicationStore.getState().setMedicationToStop({
       resourceType: 'MedicationRequest',
       id: 'med-1',
@@ -74,14 +62,10 @@ describe('stopMedications input control', () => {
       intent: 'order',
       subject: { reference: 'Patient/p-1' },
     });
-
-    const result = control.validate();
-    expect(result).toBe(false);
+    expect(getStopMedicationsControl()!.validate()).toBe(false);
   });
 
   it('hasData() returns true when medicationToStop is set', () => {
-    const control = getStopMedicationsControl()!;
-
     useStopMedicationStore.getState().setMedicationToStop({
       resourceType: 'MedicationRequest',
       id: 'med-1',
@@ -89,28 +73,16 @@ describe('stopMedications input control', () => {
       intent: 'order',
       subject: { reference: 'Patient/p-1' },
     });
-
-    expect(control.hasData()).toBe(true);
+    expect(getStopMedicationsControl()!.hasData()).toBe(true);
   });
 
   it('hasData() returns false when medicationToStop is null', () => {
-    const control = getStopMedicationsControl()!;
-
-    expect(control.hasData()).toBe(false);
+    expect(getStopMedicationsControl()!.hasData()).toBe(false);
   });
 
   describe('onDirectSubmit', () => {
-    it('calls stopMedication with correct params', async () => {
-      const control = getStopMedicationsControl()!;
-
-      mockStopMedication.mockResolvedValueOnce({
-        resourceType: 'MedicationRequest',
-        id: 'med-1',
-        status: 'stopped',
-        intent: 'order',
-        subject: { reference: 'Patient/patient-uuid-1' },
-      });
-
+    it('calls stopMedication with correct params including patientUuid', async () => {
+      mockStopMedication.mockResolvedValueOnce(undefined);
       const stopDate = new Date('2025-06-10');
       const store = useStopMedicationStore.getState();
       store.setMedicationToStop({
@@ -127,10 +99,11 @@ describe('stopMedications input control', () => {
       store.setStopDate(stopDate);
       store.setNote('Patient had rash');
 
-      await control.onDirectSubmit!();
+      await getStopMedicationsControl()!.onDirectSubmit!();
 
       expect(mockStopMedication).toHaveBeenCalledWith({
         medicationRequestId: 'med-1',
+        patientUuid: 'patient-uuid-1',
         reason: { uuid: 'reason-uuid-1', display: 'Adverse reaction' },
         effectiveDate: stopDate,
         note: 'Patient had rash',
@@ -138,16 +111,7 @@ describe('stopMedications input control', () => {
     });
 
     it('dispatches audit event after success', async () => {
-      const control = getStopMedicationsControl()!;
-
-      mockStopMedication.mockResolvedValueOnce({
-        resourceType: 'MedicationRequest',
-        id: 'med-1',
-        status: 'stopped',
-        intent: 'order',
-        subject: { reference: 'Patient/patient-uuid-1' },
-      });
-
+      mockStopMedication.mockResolvedValueOnce(undefined);
       const store = useStopMedicationStore.getState();
       store.setMedicationToStop({
         resourceType: 'MedicationRequest',
@@ -162,7 +126,7 @@ describe('stopMedications input control', () => {
       });
       store.setStopDate(new Date());
 
-      await control.onDirectSubmit!();
+      await getStopMedicationsControl()!.onDirectSubmit!();
 
       expect(mockDispatchAuditEvent).toHaveBeenCalledWith({
         eventType: AUDIT_LOG_EVENT_DETAILS.STOP_MEDICATION.eventType,
@@ -172,17 +136,12 @@ describe('stopMedications input control', () => {
     });
 
     it('does nothing when medicationToStop is null', async () => {
-      const control = getStopMedicationsControl()!;
-
-      await control.onDirectSubmit!();
-
+      await getStopMedicationsControl()!.onDirectSubmit!();
       expect(mockStopMedication).not.toHaveBeenCalled();
       expect(mockDispatchAuditEvent).not.toHaveBeenCalled();
     });
 
     it('does nothing when medicationToStop has no id', async () => {
-      const control = getStopMedicationsControl()!;
-
       const store = useStopMedicationStore.getState();
       store.setMedicationToStop({
         resourceType: 'MedicationRequest',
@@ -192,14 +151,11 @@ describe('stopMedications input control', () => {
       });
       store.setStopReason({ uuid: 'reason-uuid-1', display: 'reason' });
 
-      await control.onDirectSubmit!();
-
+      await getStopMedicationsControl()!.onDirectSubmit!();
       expect(mockStopMedication).not.toHaveBeenCalled();
     });
 
     it('does nothing when stopReason is null', async () => {
-      const control = getStopMedicationsControl()!;
-
       const store = useStopMedicationStore.getState();
       store.setMedicationToStop({
         resourceType: 'MedicationRequest',
@@ -209,22 +165,12 @@ describe('stopMedications input control', () => {
         subject: { reference: 'Patient/patient-uuid-1' },
       });
 
-      await control.onDirectSubmit!();
-
+      await getStopMedicationsControl()!.onDirectSubmit!();
       expect(mockStopMedication).not.toHaveBeenCalled();
     });
 
     it('does not dispatch audit event when subject.reference is missing', async () => {
-      const control = getStopMedicationsControl()!;
-
-      mockStopMedication.mockResolvedValueOnce({
-        resourceType: 'MedicationRequest',
-        id: 'med-1',
-        status: 'stopped',
-        intent: 'order',
-        subject: {},
-      });
-
+      mockStopMedication.mockResolvedValueOnce(undefined);
       const store = useStopMedicationStore.getState();
       store.setMedicationToStop({
         resourceType: 'MedicationRequest',
@@ -236,23 +182,14 @@ describe('stopMedications input control', () => {
       store.setStopReason({ uuid: 'reason-uuid-1', display: 'reason' });
       store.setStopDate(new Date());
 
-      await control.onDirectSubmit!();
+      await getStopMedicationsControl()!.onDirectSubmit!();
 
-      expect(mockStopMedication).toHaveBeenCalled();
+      expect(mockStopMedication).not.toHaveBeenCalled();
       expect(mockDispatchAuditEvent).not.toHaveBeenCalled();
     });
 
     it('omits note when note is empty', async () => {
-      const control = getStopMedicationsControl()!;
-
-      mockStopMedication.mockResolvedValueOnce({
-        resourceType: 'MedicationRequest',
-        id: 'med-1',
-        status: 'stopped',
-        intent: 'order',
-        subject: { reference: 'Patient/patient-uuid-1' },
-      });
-
+      mockStopMedication.mockResolvedValueOnce(undefined);
       const store = useStopMedicationStore.getState();
       store.setMedicationToStop({
         resourceType: 'MedicationRequest',
@@ -263,14 +200,11 @@ describe('stopMedications input control', () => {
       });
       store.setStopReason({ uuid: 'reason-uuid-1', display: 'reason' });
       store.setStopDate(new Date());
-      // note is empty string by default
 
-      await control.onDirectSubmit!();
+      await getStopMedicationsControl()!.onDirectSubmit!();
 
       expect(mockStopMedication).toHaveBeenCalledWith(
-        expect.objectContaining({
-          note: undefined,
-        }),
+        expect.objectContaining({ note: undefined }),
       );
     });
   });

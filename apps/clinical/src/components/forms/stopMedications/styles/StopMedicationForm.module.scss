@@ -23,3 +23,15 @@
   padding-bottom: $spacing-05;
 }
 
+.noteColumn {
+  padding-bottom: $spacing-05;
+
+  // TextAreaWClose renders its own Grid which adds padding-inline (grid margin)
+  // and margin-block-start. Reset both so the textarea aligns with other fields.
+  :global(.cds--subgrid) {
+    padding-inline-start: 0 !important;
+    margin-inline-start: 0 !important;
+    margin-block-start: 0 !important;
+  }
+}
+

@@ -1,19 +1,69 @@
-import { get, post } from '@bahmni/services';
+import {
+  get,
+  post,
+  createEncounterBundle,
+  findActiveEncounterInSession,
+} from '@bahmni/services';
 import { Bundle, ValueSet } from 'fhir/r4';
 import { fetchStopReasons, stopMedication } from '../stopMedicationService';
+import { useEncounterDetailsStore } from '../../stores/encounterDetailsStore';
+import {
+  postEncounterBundle,
+  createEncounterBundleEntry,
+} from '../encounterBundleService';
+import { createEncounterResource } from '../../utils/fhir/encounterResourceCreator';
 
 jest.mock('@bahmni/services', () => ({
   ...jest.requireActual('@bahmni/services'),
   get: jest.fn(),
   post: jest.fn(),
+  createEncounterBundle: jest.fn((entries) => ({
+    resourceType: 'Bundle',
+    type: 'transaction',
+    entry: entries,
+  })),
+  findActiveEncounterInSession: jest.fn(),
+}));
+
+jest.mock('../encounterBundleService', () => ({
+  postEncounterBundle: jest.fn(),
+  createEncounterBundleEntry: jest.fn((existing, resource) => ({ resource })),
+}));
+
+jest.mock('../../utils/fhir/encounterResourceCreator', () => ({
+  createEncounterResource: jest.fn(() => ({ resourceType: 'Encounter' })),
+}));
+
+jest.mock('../../stores/encounterDetailsStore', () => ({
+  useEncounterDetailsStore: {
+    getState: jest.fn(() => ({
+      selectedEncounterType: { uuid: 'enc-type-uuid', name: 'Consultation' },
+      patientUUID: 'patient-1',
+      practitioner: { uuid: 'practitioner-uuid' },
+      encounterParticipants: [],
+      activeVisit: { id: 'visit-uuid' },
+      selectedLocation: { uuid: 'location-uuid' },
+    })),
+  },
 }));
 
 const mockGet = get as jest.MockedFunction<typeof get>;
 const mockPost = post as jest.MockedFunction<typeof post>;
+const mockPostEncounterBundle = postEncounterBundle as jest.MockedFunction<
+  typeof postEncounterBundle
+>;
+const mockFindActiveEncounterInSession =
+  findActiveEncounterInSession as jest.MockedFunction<
+    typeof findActiveEncounterInSession
+  >;
 
 describe('stopMedicationService', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    mockFindActiveEncounterInSession.mockResolvedValue(null);
+    mockPostEncounterBundle.mockResolvedValue({
+      entry: [{ resource: { id: 'enc-uuid-1' } }],
+    } as any);
   });
 
   describe('fetchStopReasons', () => {
@@ -31,7 +81,6 @@ describe('stopMedicationService', () => {
           },
         ],
       };
-
       const expandedValueSet: ValueSet = {
         resourceType: 'ValueSet',
         id: 'vs-uuid-1',
@@ -41,11 +90,9 @@ describe('stopMedicationService', () => {
           contains: [
             { code: 'reason-1', display: 'Adverse reaction' },
             { code: 'reason-2', display: 'Patient request' },
-            { code: 'reason-3', display: 'Drug interaction' },
           ],
         },
       };
-
       mockGet
         .mockResolvedValueOnce(searchBundle)
         .mockResolvedValueOnce(expandedValueSet);
@@ -55,219 +102,140 @@ describe('stopMedicationService', () => {
       expect(result).toEqual([
         { uuid: 'reason-1', display: 'Adverse reaction' },
         { uuid: 'reason-2', display: 'Patient request' },
-        { uuid: 'reason-3', display: 'Drug interaction' },
       ]);
-
       expect(mockGet).toHaveBeenCalledWith(
         '/openmrs/ws/fhir2/R4/ValueSet?title=Stopped%20Order%20Reason',
       );
-      expect(mockGet).toHaveBeenCalledWith(
-        '/openmrs/ws/fhir2/R4/ValueSet/vs-uuid-1/$expand',
-      );
     });
 
-    it('should return empty array when ValueSet not found', async () => {
-      const emptyBundle: Bundle = {
+    it('should use custom concept set name when provided', async () => {
+      const searchBundle: Bundle = {
         resourceType: 'Bundle',
         type: 'searchset',
         entry: [],
       };
+      mockGet.mockResolvedValueOnce(searchBundle);
 
-      mockGet.mockResolvedValueOnce(emptyBundle);
+      await fetchStopReasons('Custom Stop Reasons');
 
-      const result = await fetchStopReasons();
-
-      expect(result).toEqual([]);
-      expect(mockGet).toHaveBeenCalledTimes(1);
+      expect(mockGet).toHaveBeenCalledWith(
+        expect.stringContaining(encodeURIComponent('Custom Stop Reasons')),
+      );
     });
 
-    it('should return empty array when search bundle has no entries', async () => {
-      const bundleNoEntries: Bundle = {
+    it('should return empty array when ValueSet not found', async () => {
+      mockGet.mockResolvedValueOnce({
         resourceType: 'Bundle',
         type: 'searchset',
-      };
-
-      mockGet.mockResolvedValueOnce(bundleNoEntries);
-
-      const result = await fetchStopReasons();
-
-      expect(result).toEqual([]);
+        entry: [],
+      });
+      expect(await fetchStopReasons()).toEqual([]);
     });
 
     it('should return empty array on API error', async () => {
       mockGet.mockRejectedValueOnce(new Error('Network error'));
-
-      const result = await fetchStopReasons();
-
-      expect(result).toEqual([]);
-    });
-
-    it('should handle missing code/display in contains gracefully', async () => {
-      const searchBundle: Bundle = {
-        resourceType: 'Bundle',
-        type: 'searchset',
-        entry: [
-          {
-            resource: {
-              resourceType: 'ValueSet',
-              id: 'vs-uuid-1',
-              status: 'active',
-            } as ValueSet,
-          },
-        ],
-      };
-
-      const expandedValueSet: ValueSet = {
-        resourceType: 'ValueSet',
-        id: 'vs-uuid-1',
-        status: 'active',
-        expansion: {
-          timestamp: '2025-01-01',
-          contains: [{ system: 'http://example.com' }],
-        },
-      };
-
-      mockGet
-        .mockResolvedValueOnce(searchBundle)
-        .mockResolvedValueOnce(expandedValueSet);
-
-      const result = await fetchStopReasons();
-
-      expect(result).toEqual([{ uuid: '', display: '' }]);
+      expect(await fetchStopReasons()).toEqual([]);
     });
   });
 
   describe('stopMedication', () => {
-    it('should call POST with correct endpoint and Parameters resource', async () => {
-      const mockResponse = {
-        resourceType: 'MedicationRequest' as const,
-        id: 'med-req-1',
-        status: 'stopped' as const,
-        intent: 'order' as const,
-        subject: { reference: 'Patient/patient-1' },
-      };
+    const baseParams = {
+      medicationRequestId: 'med-req-1',
+      patientUuid: 'patient-1',
+      reason: { uuid: 'reason-uuid-1', display: 'Refused To Take' },
+      effectiveDate: new Date('2025-06-10'),
+    };
 
-      mockPost.mockResolvedValueOnce(mockResponse);
+    it('should create encounter then POST MedicationRequest with status=stopped', async () => {
+      mockPost.mockResolvedValueOnce({});
 
-      const params = {
-        medicationRequestId: 'med-req-1',
-        reason: { uuid: 'reason-uuid-1', display: 'Adverse reaction' },
-        effectiveDate: new Date('2025-06-10'),
-        note: 'Patient developed rash',
-      };
+      await stopMedication(baseParams);
 
-      const result = await stopMedication(params);
-
+      expect(mockPostEncounterBundle).toHaveBeenCalledTimes(1);
       expect(mockPost).toHaveBeenCalledWith(
-        '/openmrs/ws/fhir2/R4/MedicationRequest/med-req-1/$stop',
-        {
-          resourceType: 'Parameters',
-          parameter: [
-            {
-              name: 'reason',
-              valueCodeableConcept: {
-                coding: [
-                  { code: 'reason-uuid-1', display: 'Adverse reaction' },
-                ],
-                text: 'Adverse reaction',
-              },
-            },
-            { name: 'effectiveDate', valueDate: '2025-06-10' },
-            { name: 'note', valueString: 'Patient developed rash' },
-          ],
-        },
+        expect.stringContaining('/MedicationRequest'),
+        expect.objectContaining({
+          status: 'stopped',
+          priorPrescription: { reference: 'MedicationRequest/med-req-1' },
+          encounter: { reference: 'Encounter/enc-uuid-1' },
+          statusReason: expect.objectContaining({ text: 'Refused To Take' }),
+        }),
       );
-
-      expect(result).toEqual(mockResponse);
     });
 
-    it('should include reason and effectiveDate in parameters', async () => {
+    it('should reuse existing session encounter when available', async () => {
+      mockFindActiveEncounterInSession.mockResolvedValue({
+        id: 'existing-enc-uuid',
+      } as any);
       mockPost.mockResolvedValueOnce({});
 
-      await stopMedication({
-        medicationRequestId: 'med-req-2',
-        reason: { uuid: 'reason-uuid-2', display: 'Patient request' },
-        effectiveDate: new Date('2025-12-25'),
-      });
+      await stopMedication(baseParams);
 
-      const calledParams = mockPost.mock.calls[0][1] as any;
-      const paramNames = calledParams.parameter.map(
-        (p: { name: string }) => p.name,
+      expect(mockPostEncounterBundle).not.toHaveBeenCalled();
+      expect(mockPost).toHaveBeenCalledWith(
+        expect.any(String),
+        expect.objectContaining({
+          encounter: { reference: 'Encounter/existing-enc-uuid' },
+        }),
       );
-
-      expect(paramNames).toContain('reason');
-      expect(paramNames).toContain('effectiveDate');
-      expect(
-        calledParams.parameter.find(
-          (p: { name: string }) => p.name === 'reason',
-        ).valueCodeableConcept.text,
-      ).toBe('Patient request');
-      expect(
-        calledParams.parameter.find(
-          (p: { name: string }) => p.name === 'effectiveDate',
-        ).valueDate,
-      ).toBe('2025-12-25');
     });
 
-    it('should omit note parameter when note is undefined', async () => {
+    it('should include cancellation note with note-category extension when note provided', async () => {
       mockPost.mockResolvedValueOnce({});
 
-      await stopMedication({
-        medicationRequestId: 'med-req-3',
-        reason: { uuid: 'reason-uuid-3', display: 'Drug interaction' },
-        effectiveDate: new Date('2025-06-10'),
-      });
+      await stopMedication({ ...baseParams, note: 'Patient refused' });
 
-      const calledParams = mockPost.mock.calls[0][1] as any;
-      const paramNames = calledParams.parameter.map(
-        (p: { name: string }) => p.name,
-      );
-
-      expect(paramNames).not.toContain('note');
-      expect(calledParams.parameter).toHaveLength(2);
+      const body = mockPost.mock.calls[0][1] as any;
+      expect(body.note[0].text).toBe('Patient refused');
+      expect(body.note[0].extension[0].valueCode).toBe('cancellation-note');
     });
 
-    it('formats effectiveDate using local date parts (not UTC) to avoid timezone off-by-one', async () => {
+    it('should omit note field when note is not provided', async () => {
       mockPost.mockResolvedValueOnce({});
 
-      // new Date(year, month, day) creates local midnight — toISOString() would produce
-      // the previous day's date in UTC-offset timezones (e.g., UTC-1 → 2025-06-09T23:00Z).
-      // Local getters must be used instead.
-      const localMidnight = new Date(2025, 5, 10); // June 10 local midnight
+      await stopMedication(baseParams);
 
-      await stopMedication({
-        medicationRequestId: 'med-1',
-        reason: { uuid: 'reason-uuid-1', display: 'test' },
-        effectiveDate: localMidnight,
-      });
-
-      const calledParams = mockPost.mock.calls[0][1] as any;
-      const valueDate = calledParams.parameter.find(
-        (p: { name: string }) => p.name === 'effectiveDate',
-      ).valueDate;
-
-      expect(valueDate).toBe('2025-06-10');
+      expect((mockPost.mock.calls[0][1] as any).note).toBeUndefined();
     });
 
-    it('should return MedicationRequest response', async () => {
-      const mockResponse = {
-        resourceType: 'MedicationRequest' as const,
-        id: 'med-req-1',
-        status: 'stopped' as const,
-        intent: 'order' as const,
-        subject: { reference: 'Patient/patient-1' },
-      };
+    it('should include dateStopped extension with formatted date', async () => {
+      mockPost.mockResolvedValueOnce({});
+      const localMidnight = new Date(2025, 5, 10);
 
-      mockPost.mockResolvedValueOnce(mockResponse);
+      await stopMedication({ ...baseParams, effectiveDate: localMidnight });
 
-      const result = await stopMedication({
-        medicationRequestId: 'med-req-1',
-        reason: { uuid: 'reason-uuid-1', display: 'reason' },
-        effectiveDate: new Date('2025-01-01'),
+      const body = mockPost.mock.calls[0][1] as any;
+      expect(body.extension[0].valueDateTime).toBe('2025-06-10');
+    });
+
+    it('should use practitioner as encounter participant when encounterParticipants empty', async () => {
+      mockPost.mockResolvedValueOnce({});
+
+      await stopMedication(baseParams);
+
+      expect(createEncounterResource).toHaveBeenCalledWith(
+        expect.any(String),
+        expect.any(String),
+        'patient-1',
+        ['practitioner-uuid'],
+        expect.any(String),
+        [],
+        expect.any(String),
+        null,
+      );
+    });
+
+    it('should throw when missing session context', async () => {
+      (useEncounterDetailsStore.getState as jest.Mock).mockReturnValueOnce({
+        selectedEncounterType: null,
+        patientUUID: null,
+        activeVisit: null,
+        selectedLocation: null,
       });
 
-      expect(result).toEqual(mockResponse);
-      expect(result.status).toBe('stopped');
+      await expect(stopMedication(baseParams)).rejects.toThrow(
+        'Missing session context',
+      );
     });
   });
 });

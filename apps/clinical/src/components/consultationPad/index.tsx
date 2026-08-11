@@ -435,7 +435,7 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
       );
 
       for (const entry of directSubmitEntries) {
-        await entry.onDirectSubmit!(sessionEncounter?.id);
+        await entry.onDirectSubmit!();
       }
 
       // Skip bundle submission if all data was handled by direct submit

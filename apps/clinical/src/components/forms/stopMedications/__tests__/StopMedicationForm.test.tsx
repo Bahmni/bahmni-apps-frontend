@@ -227,9 +227,13 @@ describe('StopMedicationForm', () => {
       ).toBeInTheDocument();
     });
 
-    it('renders the note textarea', async () => {
+    it('renders the note textarea after clicking Add Note link', async () => {
       await act(async () => {
         renderForm({ stopMedication: mockMedicationRequest });
+      });
+
+      await act(async () => {
+        fireEvent.click(screen.getByTestId('stop-medication-add-note-link'));
       });
 
       expect(
@@ -379,7 +383,7 @@ describe('StopMedicationForm', () => {
     it('calls setNote when the textarea value changes within the 100-char limit', async () => {
       const setNote = jest.fn();
       mockUseStopMedicationStore.mockReturnValue(
-        makeStoreMock({ setNote, note: '' }) as any,
+        makeStoreMock({ setNote, note: 'existing' }) as any,
       );
 
       await act(async () => {
@@ -402,7 +406,7 @@ describe('StopMedicationForm', () => {
     it('does not call setNote when the new value exceeds 100 characters', async () => {
       const setNote = jest.fn();
       mockUseStopMedicationStore.mockReturnValue(
-        makeStoreMock({ setNote, note: '' }) as any,
+        makeStoreMock({ setNote, note: 'existing' }) as any,
       );
 
       await act(async () => {
@@ -421,7 +425,7 @@ describe('StopMedicationForm', () => {
     it('calls setNote when the new value is exactly 100 characters', async () => {
       const setNote = jest.fn();
       mockUseStopMedicationStore.mockReturnValue(
-        makeStoreMock({ setNote, note: '' }) as any,
+        makeStoreMock({ setNote, note: 'existing' }) as any,
       );
 
       await act(async () => {
@@ -449,6 +453,10 @@ describe('StopMedicationForm', () => {
 
       await act(async () => {
         renderForm({ stopMedication: mockMedicationRequest });
+      });
+
+      await act(async () => {
+        fireEvent.click(screen.getByTestId('stop-medication-add-note-link'));
       });
 
       expect(screen.getByText('0/100')).toBeInTheDocument();
@@ -677,9 +685,13 @@ describe('StopMedicationForm', () => {
       expect(screen.queryByText(/\/100/)).not.toBeInTheDocument();
     });
 
-    it('renders the note textarea when isVisible is true', async () => {
+    it('renders the note textarea when isVisible is true after clicking Add Note', async () => {
       await act(async () => {
         renderForm({ stopMedication: mockMedicationRequest });
+      });
+
+      await act(async () => {
+        fireEvent.click(screen.getByTestId('stop-medication-add-note-link'));
       });
 
       expect(
