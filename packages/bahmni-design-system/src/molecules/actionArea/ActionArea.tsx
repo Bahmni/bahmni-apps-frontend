@@ -118,6 +118,7 @@ export const ActionArea: React.FC<ActionAreaProps> = ({
                 size="sm"
                 label={isExpanded ? collapseAriaLabel : expandAriaLabel}
                 onClick={onToggleExpand}
+                aria-expanded={isExpanded}
                 testId="action-area-expand-toggle"
               >
                 {isExpanded ? (

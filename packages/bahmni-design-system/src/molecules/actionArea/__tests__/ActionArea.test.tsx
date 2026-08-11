@@ -344,6 +344,28 @@ describe('ActionArea', () => {
       expect(toggleButton).toHaveAccessibleName('Collapse consultation pad');
     });
 
+    it('sets aria-expanded to false on the toggle button when isExpanded is false', () => {
+      render(
+        <ActionArea
+          {...defaultProps}
+          onToggleExpand={jest.fn()}
+          isExpanded={false}
+        />,
+      );
+
+      const toggleButton = screen.getByTestId('action-area-expand-toggle');
+      expect(toggleButton).toHaveAttribute('aria-expanded', 'false');
+    });
+
+    it('sets aria-expanded to true on the toggle button when isExpanded is true', () => {
+      render(
+        <ActionArea {...defaultProps} onToggleExpand={jest.fn()} isExpanded />,
+      );
+
+      const toggleButton = screen.getByTestId('action-area-expand-toggle');
+      expect(toggleButton).toHaveAttribute('aria-expanded', 'true');
+    });
+
     it('calls onToggleExpand when the toggle button is clicked', () => {
       const onToggleExpand = jest.fn();
       render(<ActionArea {...defaultProps} onToggleExpand={onToggleExpand} />);
