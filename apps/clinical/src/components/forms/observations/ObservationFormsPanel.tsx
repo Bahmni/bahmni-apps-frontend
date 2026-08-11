@@ -34,7 +34,11 @@ const ObservationFormsPanel: React.FC<ObservationFormsPanelProps> = ({
   const directFormMode = encounterSessionStartContext?.directFormMode as
     | boolean
     | undefined;
-  const isTaskDirectMode = !!(taskFormName && directFormMode);
+  const editFormName = encounterSessionStartContext?.editFormName;
+  const editEncounterUuid = encounterSessionStartContext?.editEncounterUuid;
+  const isEditObservationFormsMode =
+    encounterSessionStartContext?.editOnly === 'observationForms';
+  const isTaskDirectMode = !!((taskFormName ?? editFormName) && directFormMode);
 
   const {
     forms: allForms,
@@ -67,11 +71,6 @@ const ObservationFormsPanel: React.FC<ObservationFormsPanelProps> = ({
     }
     prevViewingFormRef.current = viewingForm;
   }, [viewingForm, refetchPinnedForms]);
-
-  const editFormName = encounterSessionStartContext?.editFormName;
-  const editEncounterUuid = encounterSessionStartContext?.editEncounterUuid;
-  const isEditObservationFormsMode =
-    encounterSessionStartContext?.editOnly === 'observationForms';
 
   useEffect(() => {
     if (taskFormName && directFormMode && !isAllFormsLoading && !editFormName) {
