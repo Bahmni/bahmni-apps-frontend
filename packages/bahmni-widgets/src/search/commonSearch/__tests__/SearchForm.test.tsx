@@ -27,6 +27,7 @@ const mockOnSearch = jest
       'COMMON_SEARCH_CRITERION_REQUIRED',
       'COMMON_SEARCH_VALUE_REQUIRED',
       'COMMON_SEARCH_RANGE_ORDER_INVALID',
+      'COMMON_SEARCH_ADDITIONAL_CRITERIA_REQUIRED',
       (key: string) => key,
     ),
   );

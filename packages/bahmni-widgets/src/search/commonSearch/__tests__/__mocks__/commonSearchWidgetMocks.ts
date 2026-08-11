@@ -107,6 +107,40 @@ export const mockCommonSearchWidgetConfigWithoutLocationAware: CommonSearchWidge
     },
   ];
 
+export const mockGenderCriterionConfig: CriterionConfig = {
+  id: 'patient.gender',
+  field: { key: 'patient.gender' },
+  translationKey: 'PATIENT_GENDER',
+  requiresAdditionalCriterion: true,
+  input: {
+    kind: 'options',
+    placeholderTranslationKey: 'PATIENT_GENDER_PLACEHOLDER',
+    options: [{ translationKey: 'MALE', value: 'M' }],
+  },
+};
+
+export const mockRowGenderWithValue: CriterionRow = {
+  rowId: 'row-gender',
+  criterionKey: 'patient.gender',
+  value: { value: 'M' },
+  validationError: null,
+  rangeOrderError: null,
+};
+
+export const mockCommonSearchWidgetConfigWithRequiresAdditional: CommonSearchWidgetConfig =
+  [
+    {
+      context: 'patient',
+      translationKey: 'PATIENT_SEARCH',
+      requiredPrivileges: ['View Patients'],
+      locationAware: 'loggedInLocation',
+      url: '/openmrs/ws/rest/v1/patient/search',
+      pageSize: 20,
+      resultFields: mockResultFields,
+      criteria: [mockGenderCriterionConfig],
+    },
+  ];
+
 export const mockPrivilegeViewPatients: UserPrivilege[] = [
   { uuid: 'priv-uuid-1', name: 'View Patients' },
 ];

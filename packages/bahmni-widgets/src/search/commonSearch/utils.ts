@@ -335,9 +335,13 @@ export const validateRows = (
   criterionError: string,
   valueError: string,
   rangeOrderMessage: string,
+  additionalCriterionRequiredMessage: string,
   t: (key: string, options?: { defaultValue?: string }) => string,
-): CriterionRow[] =>
-  rows.map((r) => {
+): CriterionRow[] => {
+  const activeCriteriaCount = rows.filter(
+    (r) => r.criterionKey !== null,
+  ).length;
+  return rows.map((r) => {
     if (!r.criterionKey)
       return { ...r, validationError: criterionError, rangeOrderError: null };
     const criterion = criteria.find((c) => c.id === r.criterionKey);
@@ -359,8 +363,37 @@ export const validateRows = (
       rangeOrderMessage,
       t,
     );
+    if (
+      !validationError &&
+      !rangeOrderError &&
+      criterion.requiresAdditionalCriterion &&
+      activeCriteriaCount <= 1
+    ) {
+      return {
+        ...r,
+        validationError: additionalCriterionRequiredMessage,
+        rangeOrderError: null,
+      };
+    }
     return { ...r, validationError, rangeOrderError };
   });
+};
+
+export const reconcileAdditionalCriterionErrors = (
+  rows: CriterionRow[],
+  criteria: CriterionConfig[],
+  additionalCriterionRequiredMessage: string,
+): CriterionRow[] => {
+  const activeCriteriaCount = rows.filter(
+    (r) => r.criterionKey !== null,
+  ).length;
+  if (activeCriteriaCount <= 1) return rows;
+  return rows.map((r) =>
+    r.validationError === additionalCriterionRequiredMessage
+      ? { ...r, validationError: null }
+      : r,
+  );
+};
 
 export const validateConfigForActions = (
   contexts: SearchContextConfig[],

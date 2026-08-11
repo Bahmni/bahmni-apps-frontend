@@ -20,9 +20,11 @@ import {
   mockCommonSearchWidgetConfig,
   mockCommonSearchWidgetConfigWithoutLocationAware,
   mockCommonSearchWidgetConfigWithRange,
+  mockCommonSearchWidgetConfigWithRequiresAdditional,
   mockMultiContextConfig,
   mockPrivilegeViewAppointments,
   mockPrivilegeViewPatients,
+  mockRowGenderWithValue,
   mockRowWithEmptyValue,
   mockRowWithRangeOrderError,
   mockRowWithValidValue,
@@ -328,6 +330,30 @@ describe('CommonSearchWidget', () => {
           (c: { field?: string }) => c.field === 'location.uuid',
         ),
       ).toBe(false);
+    });
+
+    it('blocks search and returns a validation error when a requiresAdditionalCriterion field is the only active criterion', async () => {
+      (getConfig as jest.Mock).mockResolvedValueOnce(
+        mockCommonSearchWidgetConfigWithRequiresAdditional,
+      );
+      render(
+        <CommonSearchWidget extensionParams={{ configUrl: '/api/config' }} />,
+        { wrapper },
+      );
+      await waitFor(() =>
+        expect(screen.getByTestId('search-form')).toBeInTheDocument(),
+      );
+      let validated: CriterionRow[] = [];
+      act(() => {
+        validated = capturedOnSearch!(
+          [mockRowGenderWithValue],
+          mockCommonSearchWidgetConfigWithRequiresAdditional[0],
+        );
+      });
+      expect(validated[0].validationError).toBe(
+        'COMMON_SEARCH_ADDITIONAL_CRITERIA_REQUIRED',
+      );
+      expect(mockPost).not.toHaveBeenCalled();
     });
 
     it('does not call post when rows have validation errors', async () => {
