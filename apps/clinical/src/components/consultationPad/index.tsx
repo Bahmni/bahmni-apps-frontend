@@ -29,6 +29,7 @@ import { CDSS_SERVER_CONFIG_URL } from '../../constants/app';
 import { ERROR_TITLES } from '../../constants/errors';
 import { MEDICATIONS_INPUT_CONTROL_KEY } from '../../constants/medications';
 import type { EncounterSessionStartContext } from '../../events/startConsultation';
+import { useActionAreaExpandProps } from '../../hooks/useActionAreaExpandProps';
 import { useClinicalAppData } from '../../hooks/useClinicalAppData';
 import { useEncounterConcepts } from '../../hooks/useEncounterConcepts';
 import { useClinicalConfig } from '../../providers/clinicalConfig';
@@ -242,6 +243,12 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
     getFormData,
     removeForm,
   } = useObservationFormsStore();
+
+  const actionAreaExpandProps = useActionAreaExpandProps({
+    isExpanded: isActionAreaExpanded,
+    onToggleExpand: onToggleActionAreaExpand,
+    disabled: !!viewingForm,
+  });
 
   // Seed medication store with FHIR resources for edit mode
   useEffect(() => {
@@ -573,10 +580,7 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
         secondaryButtonText={t('CONSULTATION_PAD_CANCEL_BUTTON')}
         onSecondaryButtonClick={handleCancel}
         content={renderPadContent}
-        isExpanded={isActionAreaExpanded}
-        onToggleExpand={onToggleActionAreaExpand}
-        expandAriaLabel={t('CONSULTATION_PAD_EXPAND_ARIA_LABEL')}
-        collapseAriaLabel={t('CONSULTATION_PAD_COLLAPSE_ARIA_LABEL')}
+        {...actionAreaExpandProps}
       />
       {viewingForm && (
         <ObservationFormsContainer

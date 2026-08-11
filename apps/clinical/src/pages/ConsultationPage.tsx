@@ -90,6 +90,7 @@ const ConsultationPage: React.FC = () => {
     useCallback((event) => {
       setEncounterSessionStartContext(event);
       setIsActionAreaVisible(true);
+      setIsActionAreaExpanded(false);
     }, []),
   );
   const [isSearchOpen, setIsSearchOpen] = useState(false);

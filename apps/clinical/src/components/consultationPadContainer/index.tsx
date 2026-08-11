@@ -17,6 +17,7 @@ import {
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import type { EncounterSessionStartContext } from '../../events/startConsultation';
+import { useActionAreaExpandProps } from '../../hooks/useActionAreaExpandProps';
 import { useClinicalAppData } from '../../hooks/useClinicalAppData';
 import { useEncounterConcepts } from '../../hooks/useEncounterConcepts';
 import { useClinicalConfig } from '../../providers/clinicalConfig';
@@ -49,6 +50,10 @@ const ConsultationPadContainer: React.FC<ConsultationPadContainerProps> = ({
   const hasAddVisitsPrivilege = useHasPrivilege(
     CONSULTATION_PAD_PRIVILEGES.ADD_VISITS,
   );
+  const actionAreaExpandProps = useActionAreaExpandProps({
+    isExpanded: isActionAreaExpanded,
+    onToggleExpand: onToggleActionAreaExpand,
+  });
 
   const queryClient = useQueryClient();
 
@@ -224,10 +229,7 @@ const ConsultationPadContainer: React.FC<ConsultationPadContainerProps> = ({
           </div>
         }
         ariaLabel={t('CONSULTATION_PAD_TITLE')}
-        isExpanded={isActionAreaExpanded}
-        onToggleExpand={onToggleActionAreaExpand}
-        expandAriaLabel={t('CONSULTATION_PAD_EXPAND_ARIA_LABEL')}
-        collapseAriaLabel={t('CONSULTATION_PAD_COLLAPSE_ARIA_LABEL')}
+        {...actionAreaExpandProps}
       />
     );
   }
@@ -267,10 +269,7 @@ const ConsultationPadContainer: React.FC<ConsultationPadContainerProps> = ({
           </>
         }
         ariaLabel={t('CONSULTATION_PAD_TITLE')}
-        isExpanded={isActionAreaExpanded}
-        onToggleExpand={onToggleActionAreaExpand}
-        expandAriaLabel={t('CONSULTATION_PAD_EXPAND_ARIA_LABEL')}
-        collapseAriaLabel={t('CONSULTATION_PAD_COLLAPSE_ARIA_LABEL')}
+        {...actionAreaExpandProps}
       />
     );
   }

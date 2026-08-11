@@ -41,6 +41,7 @@ import {
   VALIDATION_STATE_SCRIPT_ERROR,
 } from '../../../constants/forms';
 import type { EncounterSessionStartContext } from '../../../events/startConsultation';
+import { useActionAreaExpandProps } from '../../../hooks/useActionAreaExpandProps';
 import { useClinicalAppData } from '../../../hooks/useClinicalAppData';
 import { useObservationFormData } from '../../../hooks/useObservationFormData';
 import useObservationFormsSearch from '../../../hooks/useObservationFormsSearch';
@@ -104,6 +105,10 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
   onToggleActionAreaExpand,
 }) => {
   const { t } = useTranslation();
+  const actionAreaExpandProps = useActionAreaExpandProps({
+    isExpanded: isActionAreaExpanded,
+    onToggleExpand: onToggleActionAreaExpand,
+  });
 
   // Derive early so it can be used for hook initialisation below.
   const isEditMode =
@@ -688,10 +693,7 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
         secondaryButtonText={secondaryButtonText}
         onSecondaryButtonClick={handleSecondaryClick}
         content={formViewContent}
-        isExpanded={isActionAreaExpanded}
-        onToggleExpand={onToggleActionAreaExpand}
-        expandAriaLabel={t('CONSULTATION_PAD_EXPAND_ARIA_LABEL')}
-        collapseAriaLabel={t('CONSULTATION_PAD_COLLAPSE_ARIA_LABEL')}
+        {...actionAreaExpandProps}
       />
     );
   }

@@ -396,6 +396,37 @@ describe('ActionArea', () => {
     });
   });
 
+  describe('Title id uniqueness', () => {
+    it('gives each ActionArea instance its own title id, referenced by its own content region', () => {
+      render(
+        <>
+          <ActionArea {...defaultProps} title="First" />
+          <ActionArea {...defaultProps} title="Second" />
+        </>,
+      );
+
+      const firstTitle = screen.getByText('First');
+      const secondTitle = screen.getByText('Second');
+
+      expect(firstTitle.id).toBeTruthy();
+      expect(secondTitle.id).toBeTruthy();
+      expect(firstTitle.id).not.toBe(secondTitle.id);
+
+      const contentRegions = screen.getAllByTestId('test-content');
+      const firstContentRegion = contentRegions[0].closest('[role="region"]');
+      const secondContentRegion = contentRegions[1].closest('[role="region"]');
+
+      expect(firstContentRegion).toHaveAttribute(
+        'aria-labelledby',
+        firstTitle.id,
+      );
+      expect(secondContentRegion).toHaveAttribute(
+        'aria-labelledby',
+        secondTitle.id,
+      );
+    });
+  });
+
   describe('Header Actions', () => {
     it('does not render a header actions row when neither headerActions nor onToggleExpand is provided', () => {
       render(<ActionArea {...defaultProps} />);

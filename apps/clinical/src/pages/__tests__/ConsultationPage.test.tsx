@@ -62,16 +62,21 @@ jest.mock('../../components/patientHeader/PatientHeader', () => ({
 
 jest.mock('../../components/consultationPadContainer', () => ({
   __esModule: true,
-  default: jest.fn(({ isActionAreaExpanded, onToggleActionAreaExpand }) => (
-    <div data-testid="mocked-consultation-pad">
-      <button
-        data-testid="toggle-expand-button"
-        onClick={onToggleActionAreaExpand}
-      >
-        {isActionAreaExpanded ? 'Collapse' : 'Expand'}
-      </button>
-    </div>
-  )),
+  default: jest.fn(
+    ({ isActionAreaExpanded, onToggleActionAreaExpand, onClose }) => (
+      <div data-testid="mocked-consultation-pad">
+        <button
+          data-testid="toggle-expand-button"
+          onClick={onToggleActionAreaExpand}
+        >
+          {isActionAreaExpanded ? 'Collapse' : 'Expand'}
+        </button>
+        <button data-testid="close-consultation-pad-button" onClick={onClose}>
+          Close
+        </button>
+      </div>
+    ),
+  ),
 }));
 
 jest.mock('../../components/dashboardContainer/DashboardContainer', () => ({
@@ -783,6 +788,51 @@ describe('ConsultationPage', () => {
       await waitFor(() => {
         expect(screen.getByTestId('sidenav-item-vitals')).toBeInTheDocument();
       });
+    });
+
+    it('reopens collapsed after being expanded and then closed', async () => {
+      renderWithProvider();
+
+      await waitFor(() => {
+        expect(screen.queryByTestId('carbon-loading')).not.toBeInTheDocument();
+      });
+
+      act(() => {
+        dispatchConsultationStart({ encounterType: 'Consultation' });
+      });
+
+      await waitFor(() => {
+        expect(
+          screen.getByTestId('mocked-consultation-pad'),
+        ).toBeInTheDocument();
+      });
+
+      fireEvent.click(screen.getByTestId('toggle-expand-button'));
+      await waitFor(() => {
+        expect(screen.getByTestId('toggle-expand-button')).toHaveTextContent(
+          'Collapse',
+        );
+      });
+
+      fireEvent.click(screen.getByTestId('close-consultation-pad-button'));
+      await waitFor(() => {
+        expect(
+          screen.queryByTestId('mocked-consultation-pad'),
+        ).not.toBeInTheDocument();
+      });
+
+      act(() => {
+        dispatchConsultationStart({ encounterType: 'Consultation' });
+      });
+
+      await waitFor(() => {
+        expect(
+          screen.getByTestId('mocked-consultation-pad'),
+        ).toBeInTheDocument();
+      });
+      expect(screen.getByTestId('toggle-expand-button')).toHaveTextContent(
+        'Expand',
+      );
     });
   });
 });

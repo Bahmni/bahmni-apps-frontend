@@ -1,11 +1,9 @@
 import { Maximize, Minimize } from '@carbon/icons-react';
 import { Button, ButtonSet } from '@carbon/react';
 import classNames from 'classnames';
-import React, { ReactNode, useEffect, useRef } from 'react';
+import React, { ReactNode, useEffect, useId, useRef } from 'react';
 import { IconButton } from '../../atoms/iconButton';
 import styles from './styles/ActionArea.module.scss';
-
-const TOGGLE_BUTTON_SELECTOR = '[data-testid="action-area-expand-toggle"]';
 
 const TOGGLE_ICON_SIZE = 16;
 
@@ -78,8 +76,9 @@ export const ActionArea: React.FC<ActionAreaProps> = ({
   // Determine accessible label for the component
   const accessibleLabel = ariaLabel ?? 'Action Area';
   const hasHeaderActions = Boolean(headerActions) || Boolean(onToggleExpand);
+  const titleId = useId();
 
-  const headerActionsRef = useRef<HTMLDivElement>(null);
+  const toggleButtonRef = useRef<HTMLButtonElement>(null);
   const hasMountedRef = useRef(false);
 
   // Toggling expand/collapse hides the main-display panel from keyboard/AT
@@ -90,9 +89,7 @@ export const ActionArea: React.FC<ActionAreaProps> = ({
       hasMountedRef.current = true;
       return;
     }
-    headerActionsRef.current
-      ?.querySelector<HTMLButtonElement>(TOGGLE_BUTTON_SELECTOR)
-      ?.focus();
+    toggleButtonRef.current?.focus();
   }, [isExpanded]);
 
   return (
@@ -108,14 +105,15 @@ export const ActionArea: React.FC<ActionAreaProps> = ({
       <div
         className={classNames(styles.header, isExpanded && styles.cappedWidth)}
       >
-        <h2 className={styles.title} id="action-area-title">
+        <h2 className={styles.title} id={titleId}>
           {title}
         </h2>
         {hasHeaderActions && (
-          <div className={styles.headerActions} ref={headerActionsRef}>
+          <div className={styles.headerActions}>
             {headerActions}
             {onToggleExpand && (
               <IconButton
+                ref={toggleButtonRef}
                 kind="ghost"
                 size="sm"
                 label={isExpanded ? collapseAriaLabel : expandAriaLabel}
@@ -132,11 +130,7 @@ export const ActionArea: React.FC<ActionAreaProps> = ({
           </div>
         )}
       </div>
-      <div
-        className={styles.content}
-        role="region"
-        aria-labelledby="action-area-title"
-      >
+      <div className={styles.content} role="region" aria-labelledby={titleId}>
         <div className={classNames(isExpanded && styles.cappedWidth)}>
           {content}
         </div>
