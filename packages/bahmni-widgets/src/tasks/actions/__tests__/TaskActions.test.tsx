@@ -610,6 +610,50 @@ describe('TaskActions', () => {
     });
   });
 
+  describe('Action Icons', () => {
+    it('should render the carbon Add icon for a LAUNCH_FORM action', async () => {
+      render(
+        <TaskActions
+          task={mockTaskViewModelWithInput}
+          taskConfig={mockTaskConfig}
+        />,
+        { wrapper: createWrapper() },
+      );
+
+      await waitFor(() => {
+        expect(
+          screen.getByRole('button', { name: 'Fill Form' }),
+        ).toBeInTheDocument();
+      });
+
+      expect(screen.getByTestId('task-action-icon-add')).toBeInTheDocument();
+      expect(
+        screen.queryByTestId('task-action-icon-edit'),
+      ).not.toBeInTheDocument();
+    });
+
+    it('should render the carbon Edit icon for an EDIT_FORM action', async () => {
+      render(
+        <TaskActions
+          task={mockTaskViewModelCompleted}
+          taskConfig={mockTaskConfigWithEditForm}
+        />,
+        { wrapper: createWrapper() },
+      );
+
+      await waitFor(() => {
+        expect(
+          screen.getByRole('button', { name: 'Edit Form' }),
+        ).toBeInTheDocument();
+      });
+
+      expect(screen.getByTestId('task-action-icon-edit')).toBeInTheDocument();
+      expect(
+        screen.queryByTestId('task-action-icon-add'),
+      ).not.toBeInTheDocument();
+    });
+  });
+
   describe('Edge Cases', () => {
     it('should handle missing taskConfig gracefully', async () => {
       const taskWithNoConfig = {

@@ -1,4 +1,6 @@
 import {
+  Add,
+  Edit,
   Icon,
   IconButton,
   OverflowMenu,
@@ -21,6 +23,11 @@ import { hasFormActions, isFormActionVisible } from '../utils';
 import { handleTaskAction } from './actionHandlers';
 
 const READY_TASK_STATUS = 'ready' as const;
+
+const TASK_ACTION_ICONS: Record<string, React.ReactNode> = {
+  [TaskActionType.LAUNCH_FORM]: <Add data-testid="task-action-icon-add" />,
+  [TaskActionType.EDIT_FORM]: <Edit data-testid="task-action-icon-edit" />,
+};
 
 interface TaskActionsProps {
   task: TaskViewModel;
@@ -94,7 +101,9 @@ const TaskActions: React.FC<TaskActionsProps> = ({ task, taskConfig }) => {
         testId={`task-action-${action.type}-${task.id}`}
         disabled={getIsActionDisabled(action)}
       >
-        <Icon name={action.icon} id={`task-action-icon-${task.id}`} />
+        {TASK_ACTION_ICONS[action.type] ?? (
+          <Icon name={action.icon} id={`task-action-icon-${task.id}`} />
+        )}
       </IconButton>
     );
   }
