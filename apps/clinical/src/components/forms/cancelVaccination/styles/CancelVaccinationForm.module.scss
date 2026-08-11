@@ -36,7 +36,7 @@
 .fieldLabel {
   @include type-style('label-01');
   display: block;
-  margin-bottom: $spacing-02;
+  margin-bottom: $spacing-03;
   color: $text-secondary;
 }
 
@@ -49,6 +49,7 @@
 .noteCounter {
   @include type-style('label-01');
   color: $text-secondary;
+  margin-top: $spacing-03;
 }
 
 .addNoteLink {
@@ -58,7 +59,7 @@
   background: none;
   border: none;
   padding: 0;
-  margin-top: $spacing-02;
+  margin: $spacing-03;
   text-decoration: none;
 
   &:hover {
