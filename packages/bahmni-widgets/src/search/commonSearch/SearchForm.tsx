@@ -53,7 +53,7 @@ const SearchForm = ({
     reconcileAdditionalCriterionErrors(
       nextRows,
       activeContext.criteria,
-      t('COMMON_SEARCH_ADDITIONAL_CRITERIA_REQUIRED'),
+      t('COMMON_SEARCH_ADDITIONAL_CRITERION_REQUIRED'),
     );
 
   const handleCriterionChange = (rowId: string, criterionKey: string) => {

@@ -351,7 +351,7 @@ describe('CommonSearchWidget', () => {
         );
       });
       expect(validated[0].validationError).toBe(
-        'COMMON_SEARCH_ADDITIONAL_CRITERIA_REQUIRED',
+        'COMMON_SEARCH_ADDITIONAL_CRITERION_REQUIRED',
       );
       expect(mockPost).not.toHaveBeenCalled();
     });
