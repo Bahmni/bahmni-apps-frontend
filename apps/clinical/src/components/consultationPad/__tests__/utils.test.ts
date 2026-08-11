@@ -4,6 +4,7 @@ import {
   useObservationFormsStore,
 } from '../../../stores';
 import type { InputControl } from '../../forms';
+import { getRegisteredInputControls } from '../../forms/registry';
 import {
   captureUpdatedResources,
   getActiveEntries,
@@ -225,6 +226,41 @@ describe('loadEncounterInputControls', () => {
     expect(result.find((e) => e.key === 'medication')).toBeUndefined();
     expect(result.find((e) => e.key === 'investigations')).toBeDefined();
   });
+
+  it('appends a globally-registered action-triggered control that is not present in config', () => {
+    const cancelVaccinationStub = {
+      key: 'cancelVaccination',
+      onActionTriggered: true,
+      component: () => null,
+      reset: jest.fn(),
+      validate: jest.fn().mockReturnValue(true),
+      hasData: jest.fn().mockReturnValue(false),
+      subscribe: jest.fn().mockReturnValue(jest.fn()),
+    };
+    (getRegisteredInputControls as jest.Mock).mockReturnValueOnce([
+      ...mockStubs,
+      cancelVaccinationStub,
+    ]);
+
+    const result = loadEncounterInputControls(mockConsultationPadConfig);
+
+    expect(result.find((e) => e.key === 'cancelVaccination')).toBe(
+      cancelVaccinationStub,
+    );
+  });
+
+  it('does not duplicate a control that is both configured and action-triggered', () => {
+    const stubsWithTriggeredMedication = mockStubs.map((s) =>
+      s.key === 'medication' ? { ...s, onActionTriggered: true } : s,
+    );
+    (getRegisteredInputControls as jest.Mock).mockReturnValueOnce(
+      stubsWithTriggeredMedication,
+    );
+
+    const result = loadEncounterInputControls(mockConsultationPadConfig);
+
+    expect(result.filter((e) => e.key === 'medication')).toHaveLength(1);
+  });
 });
 
 describe('getActiveEntries', () => {
@@ -387,6 +423,16 @@ describe('captureUpdatedResources', () => {
   it('returns true for medications when stopMedications hasData', () => {
     const entries = [
       makeMockEntry('stopMedications', {
+        hasData: jest.fn().mockReturnValue(true),
+      }),
+    ];
+
+    expect(captureUpdatedResources(entries).medications).toBe(true);
+  });
+
+  it('returns true for medications when cancelVaccination hasData', () => {
+    const entries = [
+      makeMockEntry('cancelVaccination', {
         hasData: jest.fn().mockReturnValue(true),
       }),
     ];
