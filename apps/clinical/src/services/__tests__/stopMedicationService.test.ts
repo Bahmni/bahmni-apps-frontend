@@ -1,17 +1,9 @@
-import {
-  get,
-  post,
-  createEncounterBundle,
-  findActiveEncounterInSession,
-} from '@bahmni/services';
+import { get, post, findActiveEncounterInSession } from '@bahmni/services';
 import { Bundle, ValueSet } from 'fhir/r4';
-import { fetchStopReasons, stopMedication } from '../stopMedicationService';
 import { useEncounterDetailsStore } from '../../stores/encounterDetailsStore';
-import {
-  postEncounterBundle,
-  createEncounterBundleEntry,
-} from '../encounterBundleService';
 import { createEncounterResource } from '../../utils/fhir/encounterResourceCreator';
+import { postEncounterBundle } from '../encounterBundleService';
+import { fetchStopReasons, stopMedication } from '../stopMedicationService';
 
 jest.mock('@bahmni/services', () => ({
   ...jest.requireActual('@bahmni/services'),

@@ -31,6 +31,10 @@
         "type": "string"
       }
     },
+    "stopOrderedReasonConceptSet": {
+      "type": "string",
+      "description": "Name of the concept set to use as stop reason ValueSet (fallback: Stopped Order Reason)"
+    },
     "stopMedicationFields": {
       "type": "object",
       "description": "Visibility and mandatory configuration for stop medication form fields",

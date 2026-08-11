@@ -71,6 +71,7 @@ const StopMedicationForm: React.FC<StopMedicationFormProps> = React.memo(
 
     const { data: medicationConfig } = useQuery({
       queryKey: ['medicationConfig'],
+      staleTime: 0,
       queryFn: async () => {
         const [jsonConfig, metadata] = await Promise.all([
           getConfig<MedicationJSONConfig>(
@@ -87,6 +88,7 @@ const StopMedicationForm: React.FC<StopMedicationFormProps> = React.memo(
       queryKey: ['stopReasons', medicationConfig?.stopOrderedReasonConceptSet],
       queryFn: () =>
         fetchStopReasons(medicationConfig?.stopOrderedReasonConceptSet),
+      enabled: medicationConfig !== undefined,
     });
 
     useEffect(() => {

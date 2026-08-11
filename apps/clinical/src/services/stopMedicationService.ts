@@ -8,7 +8,7 @@ import {
 } from '@bahmni/services';
 import { Bundle, MedicationRequest, ValueSet } from 'fhir/r4';
 import {
-  STOP_REASON_VALUESET_URL,
+  STOP_REASON_VALUESET_TITLE,
   STOP_REASON_VALUESET_EXPAND_URL,
 } from '../constants/app';
 import { useEncounterDetailsStore } from '../stores/encounterDetailsStore';
@@ -32,12 +32,8 @@ export async function fetchStopReasons(
   conceptSetName?: string,
 ): Promise<StopReason[]> {
   try {
-    const url = conceptSetName
-      ? STOP_REASON_VALUESET_URL.replace(
-          encodeURIComponent('Stopped Order Reason'),
-          encodeURIComponent(conceptSetName),
-        )
-      : STOP_REASON_VALUESET_URL;
+    const title = conceptSetName ?? STOP_REASON_VALUESET_TITLE;
+    const url = `${OPENMRS_FHIR_R4}/ValueSet?title=${encodeURIComponent(title)}`;
     const searchBundle = await get<Bundle>(url);
     const valueSetEntry = searchBundle.entry?.[0]?.resource as
       | ValueSet
