@@ -11,6 +11,7 @@ export interface PatientProgramViewModel {
   readonly outcomeDetails: string | null;
   readonly currentStateName: string | null;
   readonly attributes: Record<string, string | null>;
+  readonly careManagerDisplay?: string | null;
 }
 
 export interface ProgramField {

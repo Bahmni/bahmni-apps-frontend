@@ -1,7 +1,12 @@
-import { formatCountry, formatGender } from '@bahmni/services';
-import { TextInput } from '../models';
+import {
+  formatCountry,
+  formatGender,
+  resolveComboBoxItems,
+} from '@bahmni/services';
+import { LookupOption, TextInput } from '../models';
 import {
   formatSearchResult,
+  getLookupComboBoxItems,
   initialRows,
   availableCriteriaForRow,
   criteriaAvailableToAdd,
@@ -65,6 +70,13 @@ jest.mock('date-fns', () => ({
     return shifted.toISOString().slice(0, -1) + '+0530';
   },
 }));
+
+jest.mock('@bahmni/services', () => ({
+  ...jest.requireActual('@bahmni/services'),
+  resolveComboBoxItems: jest.fn(),
+}));
+
+const mockResolveComboBoxItems = jest.mocked(resolveComboBoxItems);
 
 describe('processContextConfigs', () => {
   it.each([
@@ -905,5 +917,48 @@ describe('resolveNavigationURL', () => {
   ])('returns null when %s', async (_description, template, rowData) => {
     const result = await resolveNavigationURL(template, rowData);
     expect(result).toBeNull();
+  });
+});
+
+describe('getLookupComboBoxItems', () => {
+  const messages = { loading: 'Loading', error: 'Error', empty: 'Empty' };
+  const options: LookupOption[] = [
+    { uuid: 'service-uuid-1', label: 'TB Program' },
+    { uuid: 'service-uuid-2', label: 'HIV Program' },
+  ];
+
+  beforeEach(() => {
+    mockResolveComboBoxItems.mockReturnValue([]);
+  });
+
+  it.each([
+    { label: 'null', inputValue: null },
+    { label: 'empty string', inputValue: '' },
+  ])(
+    'returns an empty array without calling resolveComboBoxItems when inputValue is $label',
+    ({ inputValue }) => {
+      const result = getLookupComboBoxItems(
+        inputValue,
+        options,
+        false,
+        false,
+        messages,
+      );
+
+      expect(result).toEqual([]);
+      expect(mockResolveComboBoxItems).not.toHaveBeenCalled();
+    },
+  );
+
+  it('passes only the substring-matching options to resolveComboBoxItems once the user types', () => {
+    getLookupComboBoxItems('tb', options, false, false, messages);
+
+    expect(mockResolveComboBoxItems).toHaveBeenCalledWith(
+      false,
+      false,
+      [options[0]],
+      expect.any(Function),
+      messages,
+    );
   });
 });

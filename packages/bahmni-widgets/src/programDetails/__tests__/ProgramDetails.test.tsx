@@ -216,6 +216,42 @@ describe('ProgramDetails', () => {
     ).toHaveTextContent('-');
   });
 
+  it('should render the care manager value when present', () => {
+    (useQuery as jest.Mock).mockReturnValue({
+      data: {
+        id: 'program-1',
+        uuid: 'program-uuid-1',
+        programName: 'TB Program',
+        dateEnrolled: '2023-01-15T10:30:00.000+00:00',
+        dateCompleted: null,
+        outcomeName: null,
+        outcomeDetails: null,
+        currentStateName: null,
+        careManagerDisplay: 'Dr. Test',
+        attributes: {},
+        allowedStates: [],
+      },
+      error: null,
+      isError: false,
+      isLoading: false,
+    });
+
+    render(
+      <QueryClientProvider client={queryClient}>
+        <ProgramDetails
+          programUUID="test-program-uuid"
+          config={{
+            fields: [{ name: 'programName' }, { name: 'careManager' }],
+          }}
+        />
+      </QueryClientProvider>,
+    );
+
+    expect(
+      screen.getByTestId('program-details-careManager-value-test-id'),
+    ).toHaveTextContent('Dr. Test');
+  });
+
   it('should not render description items when config fields is undefined', () => {
     const wrapperWithoutFields = (
       <QueryClientProvider client={queryClient}>
