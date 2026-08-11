@@ -17,6 +17,7 @@ import {
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import type { EncounterSessionStartContext } from '../../events/startConsultation';
+import { useActionAreaExpandProps } from '../../hooks/useActionAreaExpandProps';
 import { useClinicalAppData } from '../../hooks/useClinicalAppData';
 import { useEncounterConcepts } from '../../hooks/useEncounterConcepts';
 import { useClinicalConfig } from '../../providers/clinicalConfig';
@@ -30,11 +31,15 @@ import styles from './styles/ConsultationPadContainer.module.scss';
 interface ConsultationPadContainerProps {
   encounterSessionStartContext: EncounterSessionStartContext;
   onClose: () => void;
+  isActionAreaExpanded?: boolean;
+  onToggleActionAreaExpand?: () => void;
 }
 
 const ConsultationPadContainer: React.FC<ConsultationPadContainerProps> = ({
   encounterSessionStartContext,
   onClose,
+  isActionAreaExpanded,
+  onToggleActionAreaExpand,
 }) => {
   const { t } = useTranslation();
   const { addNotification } = useNotification();
@@ -45,6 +50,10 @@ const ConsultationPadContainer: React.FC<ConsultationPadContainerProps> = ({
   const hasAddVisitsPrivilege = useHasPrivilege(
     CONSULTATION_PAD_PRIVILEGES.ADD_VISITS,
   );
+  const actionAreaExpandProps = useActionAreaExpandProps({
+    isExpanded: isActionAreaExpanded,
+    onToggleExpand: onToggleActionAreaExpand,
+  });
 
   const queryClient = useQueryClient();
 
@@ -185,6 +194,8 @@ const ConsultationPadContainer: React.FC<ConsultationPadContainerProps> = ({
       <ConsultationPad
         encounterSessionStartContext={encounterSessionStartContext}
         onClose={onClose}
+        isActionAreaExpanded={isActionAreaExpanded}
+        onToggleActionAreaExpand={onToggleActionAreaExpand}
       />
     );
   }
@@ -218,6 +229,7 @@ const ConsultationPadContainer: React.FC<ConsultationPadContainerProps> = ({
           </div>
         }
         ariaLabel={t('CONSULTATION_PAD_TITLE')}
+        {...actionAreaExpandProps}
       />
     );
   }
@@ -257,6 +269,7 @@ const ConsultationPadContainer: React.FC<ConsultationPadContainerProps> = ({
           </>
         }
         ariaLabel={t('CONSULTATION_PAD_TITLE')}
+        {...actionAreaExpandProps}
       />
     );
   }
