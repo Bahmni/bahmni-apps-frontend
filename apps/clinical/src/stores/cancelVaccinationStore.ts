@@ -34,7 +34,7 @@ const DEFAULT_FIELD_CONFIG: CancelVaccinationConfig = {
 
 export const useCancelVaccinationStore = create<CancelVaccinationState>(
   (set, get) => ({
-    cancellationReason: 'Once Daily',
+    cancellationReason: null,
     note: '',
     medicationToCancel: null,
     fieldConfig: DEFAULT_FIELD_CONFIG,
