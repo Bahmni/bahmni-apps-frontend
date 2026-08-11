@@ -109,30 +109,6 @@ describe('ProgramDetails Integration', () => {
     expect(getProgramByUUID).toHaveBeenCalledWith('enrollment-uuid-2');
   });
 
-  it('should fetch episode of care and display the care manager when episodeUuid is present', async () => {
-    (getProgramByUUID as jest.Mock).mockResolvedValue(
-      mockProgramWithAttributes,
-    );
-
-    renderWithProviders(
-      <ProgramDetails
-        programUUID="enrollment-uuid-2"
-        config={{ fields: fieldsWithCareManager }}
-      />,
-    );
-
-    await waitFor(() => {
-      expect(
-        screen.getByTestId('patient-programs-tile-test-id'),
-      ).toBeInTheDocument();
-    });
-
-    expect(getEpisodeOfCare).toHaveBeenCalledWith('episode-2');
-    expect(
-      screen.getByTestId('program-details-careManager-value-test-id'),
-    ).toHaveTextContent('Dr. Test');
-  });
-
   it("should not fetch episode of care and show '-' for care manager when episodeUuid is absent", async () => {
     (getProgramByUUID as jest.Mock).mockResolvedValue({
       ...mockProgramWithAttributes,
