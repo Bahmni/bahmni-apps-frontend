@@ -115,7 +115,7 @@ describe('SearchForm', () => {
   });
 
   describe('Remove criterion', () => {
-    it('removes the row when × is clicked', () => {
+    it('removes the row when x is clicked', () => {
       renderForm();
       const removeButtons = screen.getAllByTestId(/remove-criterion/);
       expect(removeButtons).toHaveLength(1);
