@@ -14,6 +14,7 @@ import {
   getFormattedPatientById,
   capitalize,
   hasPrivilege,
+  PATIENT_NOT_FOUND_ERROR_KEY,
 } from '@bahmni/services';
 import {
   ProgramDetails,
@@ -138,8 +139,19 @@ const ConsultationPage: React.FC = () => {
     enabled: !!patientUUID,
   });
 
-  const isPatientNotFound =
-    isPatientError && isPatientNotFoundError(patientError);
+  // Every patient fetch failure must produce visible feedback. A 400/404 — and
+  // a malformed UUID, which getPatientById rejects with the same key before it
+  // reaches the network — means the patient is missing; anything else is an
+  // unexpected failure we report generically. The key is derived from the
+  // classification rather than from the error's shape, because the api client
+  // rejects with a bare string for non-key errors and an `instanceof Error`
+  // guard would silently skip the one message this feature guarantees.
+  const patientErrorMessageKey = useMemo(() => {
+    if (!isPatientError) return null;
+    return isPatientNotFoundError(patientError)
+      ? PATIENT_NOT_FOUND_ERROR_KEY
+      : 'ERROR_FETCHING_PATIENT_DATA';
+  }, [isPatientError, patientError]);
 
   // Only mount the patient-scoped content (patient header + dashboard widgets)
   // once the patient is confirmed to exist. Those widgets each fetch data for
@@ -218,14 +230,13 @@ const ConsultationPage: React.FC = () => {
   }, [dashboardConfigError]);
 
   useEffect(() => {
-    if (isPatientNotFound && patientError instanceof Error) {
-      addNotification({
-        title: t('ERROR_DEFAULT_TITLE'),
-        message: t(patientError.message),
-        type: 'error',
-      });
-    }
-  }, [isPatientNotFound, patientError, addNotification, t]);
+    if (!patientErrorMessageKey) return;
+    addNotification({
+      title: t('ERROR_DEFAULT_TITLE'),
+      message: t(patientErrorMessageKey),
+      type: 'error',
+    });
+  }, [patientErrorMessageKey, addNotification, t]);
 
   const filteredDashboardConfig = useMemo(() => {
     if (!dashboardConfig || !userPrivileges) return null;

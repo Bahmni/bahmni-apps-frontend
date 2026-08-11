@@ -150,6 +150,53 @@ describe('getFormattedError', () => {
           'Invalid input parameters. Please check your request and try again.',
       });
     });
+
+    // The patient photo lives under the patient resource URL. A missing photo
+    // must not be reported as a missing patient.
+    it('does not classify a 404 on a patient sub-resource as patient-not-found', () => {
+      const error = {
+        response: {
+          status: 404,
+          data: {},
+          config: { url: `${patientUrl}/$photo`, method: 'get' },
+        },
+      } as unknown as AxiosError;
+
+      expect(getFormattedError(error).message).not.toBe(
+        'ERROR_PATIENT_NOT_FOUND',
+      );
+    });
+
+    // updateFhirPatient PUTs to this exact URL, so a validation failure while
+    // editing a patient must keep its own message.
+    it('does not classify a 400 on a patient update as patient-not-found', () => {
+      const error = {
+        response: {
+          status: 400,
+          data: {},
+          config: { url: patientUrl, method: 'put' },
+        },
+      } as unknown as AxiosError;
+
+      expect(getFormattedError(error).message).not.toBe(
+        'ERROR_PATIENT_NOT_FOUND',
+      );
+    });
+
+    it('classifies an explicit GET on the patient resource as patient-not-found', () => {
+      const error = {
+        response: {
+          status: 404,
+          data: {},
+          config: { url: patientUrl, method: 'get' },
+        },
+      } as unknown as AxiosError;
+
+      expect(getFormattedError(error)).toEqual({
+        title: 'Error',
+        message: 'ERROR_PATIENT_NOT_FOUND',
+      });
+    });
   });
 
   describe('HTTP status errors', () => {

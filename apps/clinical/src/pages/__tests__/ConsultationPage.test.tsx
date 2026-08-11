@@ -461,7 +461,66 @@ describe('ConsultationPage', () => {
       ).toBeInTheDocument();
     });
 
-    it('does not show the patient-not-found notification for an unauthorized error', async () => {
+    // The api client rejects with a bare string for errors it cannot map to a
+    // translation key, so the notification must not depend on the error being
+    // an Error instance.
+    it('shows the patient-not-found notification when the fetch rejects with a bare string key', async () => {
+      const mockAddNotification = jest.fn();
+      (useNotification as jest.Mock).mockReturnValue({
+        addNotification: mockAddNotification,
+        notifications: [],
+        removeNotification: jest.fn(),
+        clearAllNotifications: jest.fn(),
+      });
+      (usePatientUUID as jest.Mock).mockReturnValue('missing-patient-uuid');
+      (getFormattedPatientById as jest.Mock).mockRejectedValue(
+        'ERROR_PATIENT_NOT_FOUND',
+      );
+
+      renderWithProvider();
+
+      await waitFor(() => {
+        expect(mockAddNotification).toHaveBeenCalledWith({
+          title: 'Error',
+          message: 'Patient not found',
+          type: 'error',
+        });
+      });
+    });
+
+    // getPatientById rejects on its own UUID validation before any network
+    // call, so this path must land on the same key as a 400/404.
+    it('shows the patient-not-found error notification when the URL holds a malformed UUID', async () => {
+      const mockAddNotification = jest.fn();
+      (useNotification as jest.Mock).mockReturnValue({
+        addNotification: mockAddNotification,
+        notifications: [],
+        removeNotification: jest.fn(),
+        clearAllNotifications: jest.fn(),
+      });
+      (usePatientUUID as jest.Mock).mockReturnValue('abc-not-uuid');
+      (getFormattedPatientById as jest.Mock).mockRejectedValue(
+        new Error('ERROR_PATIENT_NOT_FOUND'),
+      );
+
+      renderWithProvider();
+
+      await waitFor(() => {
+        expect(mockAddNotification).toHaveBeenCalledWith({
+          title: 'Error',
+          message: 'Patient not found',
+          type: 'error',
+        });
+      });
+
+      expect(
+        screen.queryByTestId('dashboard-container'),
+      ).not.toBeInTheDocument();
+    });
+
+    // Previously this case produced no notification at all — a blank area with
+    // no explanation. Any non-not-found failure now reports a generic message.
+    it('shows a generic error notification for an unauthorized error', async () => {
       const mockAddNotification = jest.fn();
       (useNotification as jest.Mock).mockReturnValue({
         addNotification: mockAddNotification,
@@ -477,7 +536,11 @@ describe('ConsultationPage', () => {
       renderWithProvider();
 
       await waitFor(() => {
-        expect(screen.queryByTestId('carbon-loading')).not.toBeInTheDocument();
+        expect(mockAddNotification).toHaveBeenCalledWith({
+          title: 'Error',
+          message: 'Error fetching patient data',
+          type: 'error',
+        });
       });
 
       expect(mockAddNotification).not.toHaveBeenCalledWith(

@@ -48,12 +48,20 @@ export const PATIENT_NOT_FOUND_ERROR_KEY = 'ERROR_PATIENT_NOT_FOUND';
 // request means the patient could not be found, so we surface a dedicated
 // "patient not found" message (as a translation key) instead of a generic one.
 // 5xx is intentionally excluded — that indicates a real server error, not a
-// missing patient, and must not be masked.
-const PATIENT_RESOURCE_REQUEST = /\/Patient\/[0-9a-f-]{36}/i;
+// missing patient, and must not be masked. The match is anchored to the end of
+// the path so sub-resources such as /Patient/{uuid}/$photo keep their own
+// error, and restricted to GET so a failed create/update on the same URL is
+// not mislabelled as a missing patient.
+const PATIENT_RESOURCE_REQUEST = /\/Patient\/[0-9a-f-]{36}(?:[?#]|$)/i;
 const PATIENT_NOT_FOUND_STATUSES = [400, 404];
 
-const isPatientResourceRequest = (url?: string): boolean =>
-  !!url && PATIENT_RESOURCE_REQUEST.test(url);
+const isPatientResourceFetch = (config?: {
+  url?: string;
+  method?: string;
+}): boolean =>
+  !!config?.url &&
+  (config.method ?? 'get').toLowerCase() === 'get' &&
+  PATIENT_RESOURCE_REQUEST.test(config.url);
 
 /**
  * Formats error messages from different sources
@@ -78,13 +86,12 @@ export const getFormattedError = (
 
     if (axiosError?.response) {
       const status = axiosError.response.status;
-      const requestUrl =
-        axiosError.response.config?.url ?? axiosError.config?.url;
+      const requestConfig = axiosError.response.config ?? axiosError.config;
 
       // A 400/404 on the patient-resource fetch means the patient is
       // missing/invalid, so surface a dedicated "patient not found" message.
       if (
-        isPatientResourceRequest(requestUrl) &&
+        isPatientResourceFetch(requestConfig) &&
         PATIENT_NOT_FOUND_STATUSES.includes(status)
       ) {
         return { title: 'Error', message: PATIENT_NOT_FOUND_ERROR_KEY };
