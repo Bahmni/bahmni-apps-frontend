@@ -43,10 +43,7 @@ interface FormsTableConfig {
   forms?: string[];
 }
 
-/**
- * Component to display patient forms grouped by form name in accordion format
- * Each accordion item contains a SortableDataTable with form records for that form type
- */
+/** Displays patient forms grouped by form name in accordion format. */
 const FormsTable: React.FC<WidgetProps> = ({
   episodeOfCareUuids,
   encounterUuids,
@@ -177,13 +174,10 @@ const FormsTable: React.FC<WidgetProps> = ({
     enabled: !!selectedRecord?.encounterUuid && isModalOpen,
   });
 
-  // Listen to consultation saved events and refetch cached data if observations were updated
+  // Refetch on any save for this patient — not gated on updatedConcepts, which stays empty for delete-only saves.
   useSubscribeConsultationSaved(
     (payload: ConsultationSavedEventPayload) => {
-      if (
-        payload.patientUUID === patientUuid &&
-        payload.updatedConcepts.size > 0
-      ) {
+      if (payload.patientUUID === patientUuid) {
         refetchForms();
         queryClient.invalidateQueries({ queryKey: ['formsEncounterFHIR'] });
       }
@@ -265,6 +259,29 @@ const FormsTable: React.FC<WidgetProps> = ({
       null,
     );
 
+    return Object.keys(map).length > 0 ? map : undefined;
+  }, [formMetadata]);
+
+  const conceptDatatypeMap = useMemo(() => {
+    if (!formMetadata?.schema) return undefined;
+    const map: Record<string, string> = {};
+
+    const collectDatatypes = (controls: unknown[]) => {
+      (controls ?? []).forEach((ctrl: unknown) => {
+        const c = ctrl as {
+          concept?: { uuid?: string; datatype?: string };
+          controls?: unknown[];
+        };
+        if (c.concept?.uuid && c.concept?.datatype) {
+          map[c.concept.uuid] = c.concept.datatype;
+        }
+        if (c.controls) collectDatatypes(c.controls);
+      });
+    };
+
+    collectDatatypes(
+      (formMetadata.schema as { controls?: unknown[] }).controls ?? [],
+    );
     return Object.keys(map).length > 0 ? map : undefined;
   }, [formMetadata]);
 
@@ -499,6 +516,7 @@ const FormsTable: React.FC<WidgetProps> = ({
             hideThumbnail={hideThumbnail}
             controlOrder={controlOrder}
             sectionMap={sectionMap}
+            conceptDatatypeMap={conceptDatatypeMap}
           />
         </Modal>
       )}

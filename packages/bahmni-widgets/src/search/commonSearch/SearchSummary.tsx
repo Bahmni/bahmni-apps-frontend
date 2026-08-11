@@ -22,6 +22,11 @@ const formatValue = (
       const option = input.options.find((o) => o.value === value.value);
       return option ? t(option.translationKey) : value.value;
     }
+
+    if (input.kind === 'lookup') {
+      return value.label ?? value.value;
+    }
+
     return value.value;
   }
 

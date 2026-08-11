@@ -287,6 +287,7 @@ export {
 export {
   getEncountersAndVisitsForEOC,
   type EpisodeOfCareDataType,
+  getEpisodeOfCare,
 } from './episodeOfCareService';
 
 export {
@@ -349,6 +350,7 @@ export {
   transformContainerObservationsToForm2Observations,
   convertImmutableToPlainObject,
   extractNotesFromFormData,
+  formatDateForControl,
   getPatientFormData,
   type ObservationForm,
   type FormApiResponse,
