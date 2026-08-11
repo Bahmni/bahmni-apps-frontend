@@ -6,6 +6,7 @@ import './medicationRequest';
 import './immunization';
 import './observations';
 import './stopMedications';
+import './cancelVaccination';
 
 export type { InputControl, EncounterContext } from './models';
 export { default as InputControlRenderer } from './renderer';

@@ -365,7 +365,7 @@ const MedicationsTable: React.FC<WidgetProps> = ({
             disabledActionTypes={[
               ...(isEditable(row) ? [] : ['edit']),
               ...(disableActions || !['active', 'on-hold'].includes(row.status)
-                ? ['stop']
+                ? ['stop', 'cancel']
                 : []),
             ]}
           />

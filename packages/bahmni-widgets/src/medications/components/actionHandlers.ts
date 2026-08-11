@@ -2,6 +2,27 @@ import { MEDICATIONS_INPUT_CONTROL_KEY } from '@bahmni/services';
 import { MedicationRequest } from 'fhir/r4';
 import { MedicationAction } from '../models';
 
+const handleCancelAction = (
+  action: MedicationAction,
+  fhirResource?: MedicationRequest,
+): void => {
+  if (!fhirResource) return;
+
+  const encounterUuid = fhirResource.encounter?.reference?.split('/').pop();
+
+  globalThis.dispatchEvent(
+    new CustomEvent('startConsultation', {
+      detail: {
+        encounterType: action.encounterType,
+        cancelVaccination: fhirResource,
+        editOnly: 'cancelVaccination',
+        editTitle: 'CANCEL_VACCINATION_FORM_TITLE',
+        editEncounterUuid: encounterUuid,
+      },
+    }),
+  );
+};
+
 const handleStopAction = (
   action: MedicationAction,
   fhirResource?: MedicationRequest,
@@ -32,6 +53,11 @@ export const handleAction = (
 ): void => {
   if (action.type === 'stop') {
     handleStopAction(action, fhirResource, startDate);
+    return;
+  }
+
+  if (action.type === 'cancel') {
+    handleCancelAction(action, fhirResource);
     return;
   }
 

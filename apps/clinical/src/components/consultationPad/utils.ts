@@ -10,7 +10,7 @@ export function loadEncounterInputControls(
 ): InputControl[] {
   if (!config) return [];
   const registeredControls = getRegisteredInputControls();
-  return [...config.inputControls]
+  const configBasedControls = [...config.inputControls]
     .sort((a, b) => {
       if (a.type === ENCOUNTER_DETAILS_INPUT_CONTROL_KEY) return -1;
       if (b.type === ENCOUNTER_DETAILS_INPUT_CONTROL_KEY) return 1;
@@ -36,6 +36,17 @@ export function loadEncounterInputControls(
         },
       ];
     });
+
+  // Also include any globally-registered action-triggered controls that are not
+  // in the config. These controls are hidden in the normal consultation flow
+  // (getActiveEntries filters them out unless editOnly matches their key) but
+  // must be present in the registry so they activate when their action fires.
+  const configKeys = new Set(configBasedControls.map((c) => c.key));
+  const actionTriggeredControls = registeredControls.filter(
+    (e) => e.onActionTriggered && !configKeys.has(e.key),
+  );
+
+  return [...configBasedControls, ...actionTriggeredControls];
 }
 
 export function getActiveEntries(
@@ -86,7 +97,8 @@ export function captureUpdatedResources(entries: InputControl[]) {
     medications:
       hasData('medication') ||
       hasData('vaccination') ||
-      hasData('stopMedications'),
+      hasData('stopMedications') ||
+      hasData('cancelVaccination'),
     immunizationHistory:
       hasData('immunizationHistory') ||
       hasData('immunizationAdministration') ||
