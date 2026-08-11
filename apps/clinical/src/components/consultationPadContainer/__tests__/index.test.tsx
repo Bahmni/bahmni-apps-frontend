@@ -81,9 +81,12 @@ jest.mock('../../../hooks/useEncounterConcepts');
 jest.mock('../../../providers/clinicalConfig');
 jest.mock('../../../stores/encounterDetailsStore');
 
+const mockConsultationPad = jest.fn(() => (
+  <div data-testid="consultation-pad" />
+));
 jest.mock('../../consultationPad', () => ({
   __esModule: true,
-  default: () => <div data-testid="consultation-pad" />,
+  default: (props: any) => mockConsultationPad(props),
 }));
 
 jest.mock('../../forms/encounterDetails/EncounterDetails', () => ({
@@ -270,6 +273,23 @@ describe('ConsultationPadContainer', () => {
     } as any);
     renderComponent();
     expect(screen.getByTestId('consultation-pad')).toBeInTheDocument();
+  });
+
+  it('forwards isActionAreaExpanded/onToggleActionAreaExpand to ConsultationPad so the maximize/minimize toggle stays available', () => {
+    jest.mocked(useQuery).mockReturnValue({
+      data: { id: 'visit-1' },
+      error: null,
+      isLoading: false,
+    } as any);
+    const onToggleActionAreaExpand = jest.fn();
+    renderComponent({ isActionAreaExpanded: true, onToggleActionAreaExpand });
+
+    expect(mockConsultationPad).toHaveBeenCalledWith(
+      expect.objectContaining({
+        isActionAreaExpanded: true,
+        onToggleActionAreaExpand,
+      }),
+    );
   });
 
   it('renders ConsultationPad after visit is successfully created', async () => {
