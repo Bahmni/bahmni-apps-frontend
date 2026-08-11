@@ -7,6 +7,7 @@ import {
   formatGender,
   getFormattedAge,
   hasPrivilege,
+  resolveComboBoxItems,
   type UserPrivilege,
 } from '@bahmni/services';
 import { format } from 'date-fns';
@@ -24,6 +25,7 @@ import {
   CriterionValue,
   FieldConfig,
   InputConfig,
+  LookupOption,
   ResolvedRow,
   ScalarValue,
   SearchCondition,
@@ -286,6 +288,28 @@ const localizeDateTime = (value: CriterionValue): CriterionValue => {
     }),
   };
 };
+
+export function getLookupComboBoxItems(
+  inputValue: string | null,
+  options: LookupOption[],
+  isLoading: boolean,
+  isError: boolean,
+  messages: { loading: string; error: string; empty: string },
+): (LookupOption & { disabled?: boolean })[] {
+  if (!inputValue) return [];
+
+  const filtered = options.filter((option) =>
+    option.label.toLowerCase().includes(inputValue.toLowerCase()),
+  );
+
+  return resolveComboBoxItems<LookupOption>(
+    isLoading,
+    isError,
+    filtered,
+    (message) => ({ uuid: '', label: message }),
+    messages,
+  );
+}
 
 export const resolveRows = (
   rows: CriterionRow[],

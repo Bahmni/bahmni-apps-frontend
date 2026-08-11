@@ -9,6 +9,7 @@ import {
   getObservationsBundleByEncounterUuid,
   useSubscribeConsultationSaved,
   dispatchConsultationSaved,
+  formatDateTime,
 } from '@bahmni/services';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, screen, waitFor, within } from '@testing-library/react';
@@ -93,6 +94,9 @@ const mockUseSubscribeConsultationSaved =
   useSubscribeConsultationSaved as jest.MockedFunction<
     typeof useSubscribeConsultationSaved
   >;
+const mockFormatDateTime = formatDateTime as jest.MockedFunction<
+  typeof formatDateTime
+>;
 
 // Mock ResizeObserver to avoid "ResizeObserver is not defined" errors
 globalThis.ResizeObserver = jest.fn().mockImplementation(() => ({
@@ -1214,7 +1218,8 @@ describe('FormsTable', () => {
       );
     });
 
-    it('should not refetch when consultation is saved but observations were not updated', async () => {
+    it('refetches even when updatedConcepts is empty (e.g. a delete-only save), as long as the patient matches', async () => {
+      // A delete-only save has no Observation body, so updatedConcepts stays empty — refetch must still fire.
       mockGetPatientFormData.mockResolvedValue(mockFormResponseData);
       let capturedCallback: ((payload: any) => void) | null = null;
 
@@ -1232,7 +1237,7 @@ describe('FormsTable', () => {
 
       const initialCallCount = mockGetPatientFormData.mock.calls.length;
 
-      // Simulate consultation saved event without observation updates
+      // Simulate a delete-only consultation save: matching patient, empty updatedConcepts.
       if (capturedCallback) {
         (capturedCallback as jest.Mock)({
           patientUUID: 'patient-123',
@@ -1241,15 +1246,11 @@ describe('FormsTable', () => {
         });
       }
 
-      // Wait a bit and verify no additional calls were made
-      await waitFor(
-        () => {
-          expect(mockGetPatientFormData.mock.calls).toHaveLength(
-            initialCallCount,
-          );
-        },
-        { timeout: 500 },
-      );
+      await waitFor(() => {
+        expect(mockGetPatientFormData.mock.calls.length).toBeGreaterThan(
+          initialCallCount,
+        );
+      });
     });
 
     it('should trigger fresh API call when consultation is saved, but use cache on second click', async () => {
@@ -1404,7 +1405,7 @@ describe('FormsTable', () => {
       expect(mockGetPatientFormData.mock.calls).toHaveLength(initialCallCount);
     });
 
-    it('should not refetch when real event is dispatched without observations update', async () => {
+    it('refetches on a real dispatched event for the matching patient even when updatedConcepts is empty', async () => {
       mockGetPatientFormData.mockResolvedValue(mockFormResponseData);
 
       // Use real event subscription for this test
@@ -1426,6 +1427,7 @@ describe('FormsTable', () => {
       const initialCallCount = mockGetPatientFormData.mock.calls.length;
 
       // Dispatch real event with matching patient but no observations update
+      // (e.g. a delete-only save) — the refetch must still happen.
       dispatchConsultationSaved({
         patientUUID: 'patient-123',
         updatedResources: {
@@ -1440,8 +1442,11 @@ describe('FormsTable', () => {
       // Run all timers to process the setTimeout in dispatchConsultationSaved
       jest.runAllTimers();
 
-      // Verify no additional calls were made
-      expect(mockGetPatientFormData.mock.calls).toHaveLength(initialCallCount);
+      await waitFor(() => {
+        expect(mockGetPatientFormData.mock.calls.length).toBeGreaterThan(
+          initialCallCount,
+        );
+      });
     });
   });
 
@@ -1768,6 +1773,72 @@ describe('FormsTable', () => {
         patientIdEl.compareDocumentPosition(temperatureEl) &
           Node.DOCUMENT_POSITION_FOLLOWING,
       ).toBeTruthy();
+    });
+
+    it('shows time for a midnight DateAndTime value when schema declares the concept datatype as Datetime', async () => {
+      const user = userEvent.setup();
+      mockGetPatientFormData.mockResolvedValue(mockFormResponseData);
+
+      mockFetchFormMetadata.mockResolvedValue({
+        ...mockFormMetadata,
+        schema: {
+          controls: [
+            {
+              id: 30,
+              type: 'obsControl',
+              concept: {
+                uuid: 'concept-incident-datetime',
+                datatype: 'Datetime',
+              },
+            },
+          ],
+        },
+      });
+
+      mockGetObservationsBundleByEncounterUuid.mockResolvedValue({
+        resourceType: 'Bundle',
+        type: 'searchset',
+        entry: [
+          {
+            resource: {
+              resourceType: 'Observation',
+              id: 'obs-incident-datetime',
+              status: 'final',
+              code: {
+                text: 'Incident response date/time',
+                coding: [{ code: 'concept-incident-datetime' }],
+              },
+              valueDateTime: '2026-07-28T00:00:00+00:00',
+              extension: [
+                {
+                  url: 'http://fhir.bahmni.org/ext/observation/form-namespace-path',
+                  valueString: 'History Form.1/30-0',
+                },
+              ],
+            },
+          },
+        ],
+      } as Bundle<Observation>);
+
+      renderFormsTable();
+
+      await waitFor(() =>
+        expect(screen.getByText('Dr. Williams')).toBeInTheDocument(),
+      );
+      const links = document.querySelectorAll('.cds--link');
+      await user.click(links[0] as HTMLElement);
+
+      await waitFor(() =>
+        expect(
+          screen.getByText('Incident response date/time'),
+        ).toBeInTheDocument(),
+      );
+
+      expect(mockFormatDateTime).toHaveBeenCalledWith(
+        '2026-07-28T00:00:00+00:00',
+        expect.anything(),
+        true,
+      );
     });
 
     it('renders section header when schema contains a type:section control', async () => {
