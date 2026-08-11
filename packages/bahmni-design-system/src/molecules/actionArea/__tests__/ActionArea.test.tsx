@@ -413,8 +413,8 @@ describe('ActionArea', () => {
       expect(firstTitle.id).not.toBe(secondTitle.id);
 
       const contentRegions = screen.getAllByTestId('test-content');
-      const firstContentRegion = contentRegions[0].closest('[role="region"]');
-      const secondContentRegion = contentRegions[1].closest('[role="region"]');
+      const firstContentRegion = contentRegions[0].closest('section');
+      const secondContentRegion = contentRegions[1].closest('section');
 
       expect(firstContentRegion).toHaveAttribute(
         'aria-labelledby',

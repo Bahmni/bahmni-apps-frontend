@@ -130,11 +130,11 @@ export const ActionArea: React.FC<ActionAreaProps> = ({
           </div>
         )}
       </div>
-      <div className={styles.content} role="region" aria-labelledby={titleId}>
+      <section className={styles.content} aria-labelledby={titleId}>
         <div className={classNames(isExpanded && styles.cappedWidth)}>
           {content}
         </div>
-      </div>
+      </section>
 
       <ButtonSet
         className={classNames(
