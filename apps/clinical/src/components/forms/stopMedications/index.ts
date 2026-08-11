@@ -2,14 +2,59 @@ import {
   dispatchAuditEvent,
   AUDIT_LOG_EVENT_DETAILS,
   AuditEventType,
+  createEncounterBundle,
 } from '@bahmni/services';
 import {
-  stopMedication,
-  createEncounterForStop,
-} from '../../../services/stopMedicationService';
+  createEncounterBundleEntry,
+  postEncounterBundle,
+} from '../../../services/encounterBundleService';
+import { stopMedication } from '../../../services/stopMedicationService';
+import { useEncounterDetailsStore } from '../../../stores/encounterDetailsStore';
 import { useStopMedicationStore } from '../../../stores/stopMedicationsStore';
+import { createEncounterResource } from '../../../utils/fhir/encounterResourceCreator';
 import { registerInputControl } from '../registry';
 import StopMedicationForm from './StopMedicationForm';
+
+async function resolveStopEncounterUuid(
+  sessionEncounterUuid?: string,
+): Promise<string | undefined> {
+  if (sessionEncounterUuid) return sessionEncounterUuid;
+
+  const {
+    selectedEncounterType,
+    patientUUID,
+    encounterParticipants,
+    activeVisit,
+    selectedLocation,
+  } = useEncounterDetailsStore.getState();
+
+  if (
+    !selectedEncounterType ||
+    !patientUUID ||
+    !activeVisit?.id ||
+    !selectedLocation?.uuid
+  ) {
+    return undefined;
+  }
+
+  const encounterResource = createEncounterResource(
+    selectedEncounterType.uuid,
+    selectedEncounterType.name,
+    patientUUID,
+    encounterParticipants.map((p) => p.uuid),
+    activeVisit.id,
+    [],
+    selectedLocation.uuid,
+    null,
+  );
+
+  const entry = createEncounterBundleEntry(null, encounterResource);
+  const bundle = await postEncounterBundle<{
+    entry?: { resource?: { id?: string } }[];
+  }>(createEncounterBundle([entry]));
+
+  return bundle?.entry?.[0]?.resource?.id ?? undefined;
+}
 
 registerInputControl({
   key: 'stopMedications',
@@ -19,18 +64,16 @@ registerInputControl({
   validate: () => useStopMedicationStore.getState().validate(),
   hasData: () => useStopMedicationStore.getState().hasData(),
   subscribe: (cb) => useStopMedicationStore.subscribe(cb),
-  onDirectSubmit: async () => {
+  onDirectSubmit: async (sessionEncounterUuid?: string) => {
     const state = useStopMedicationStore.getState();
     if (!state.medicationToStop?.id || !state.stopReason) return;
+
     const patientUuid = state.medicationToStop.subject?.reference
       ?.split('/')
       .pop();
-    let encounterUuid = state.sessionEncounterUuid ?? undefined;
-    if (!encounterUuid && patientUuid) {
-      encounterUuid =
-        (await createEncounterForStop(patientUuid, 'Consultation')) ??
-        undefined;
-    }
+
+    const encounterUuid = await resolveStopEncounterUuid(sessionEncounterUuid);
+
     await stopMedication({
       medicationRequestId: state.medicationToStop.id,
       reason: state.stopReason,
@@ -38,6 +81,7 @@ registerInputControl({
       note: state.note || undefined,
       encounterUuid,
     });
+
     if (patientUuid) {
       dispatchAuditEvent({
         eventType: AUDIT_LOG_EVENT_DETAILS.STOP_MEDICATION

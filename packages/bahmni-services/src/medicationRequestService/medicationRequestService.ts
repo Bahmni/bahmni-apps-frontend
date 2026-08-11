@@ -173,18 +173,37 @@ function getQuantity(
   };
 }
 
+const NOTE_CATEGORY_EXT =
+  'http://fhir.bahmni.org/ext/medicationRequest/note-category'; // NOSONAR
+
+function getNoteCategory(
+  n: NonNullable<FhirMedicationRequest['note']>[0],
+): string | undefined {
+  return n.extension?.find((e) => e.url === NOTE_CATEGORY_EXT)?.valueCode;
+}
+
 function getNote(note: FhirMedicationRequest['note']): string {
   if (!note || note.length === 0) return '';
   return note
-    .filter((n) => n.authorString !== 'stop')
+    .filter((n) => {
+      const tag = getNoteCategory(n);
+      return !tag || tag === 'order-note';
+    })
     .map((n) => n.text)
     .filter(Boolean)
     .join(' ');
 }
 
-function getStopNote(note: FhirMedicationRequest['note']): string {
-  if (!note || note.length === 0) return '';
-  return note.find((n) => n.authorString === 'stop')?.text ?? '';
+function getCancellationNote(
+  note: FhirMedicationRequest['note'],
+): string | undefined {
+  if (!note || note.length === 0) return undefined;
+  const text = note
+    .filter((n) => getNoteCategory(n) === 'cancellation-note')
+    .map((n) => n.text)
+    .filter(Boolean)
+    .join(' ');
+  return text || undefined;
 }
 
 /**
@@ -345,7 +364,7 @@ function formatMedications(bundle: Bundle): MedicationRequest[] {
         medication.dosageInstruction,
       ),
       note: getNote(medication.note),
-      stopNote: getStopNote(medication.note),
+      cancellationNote: getCancellationNote(medication.note),
       doseForm: doseForm,
       statusReason:
         medication.statusReason?.text ??

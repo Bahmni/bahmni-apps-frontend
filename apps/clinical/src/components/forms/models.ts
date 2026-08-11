@@ -25,7 +25,7 @@ export interface InputControl {
    * instead of including the form's data in the consultation bundle.
    * Used for forms that call dedicated FHIR operations (e.g., $stop).
    */
-  onDirectSubmit?: () => Promise<void>;
+  onDirectSubmit?: (encounterUuid?: string) => Promise<void>;
 }
 
 export interface EncounterContext {
