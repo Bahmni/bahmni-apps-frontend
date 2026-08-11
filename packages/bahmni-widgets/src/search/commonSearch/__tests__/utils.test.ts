@@ -3,7 +3,12 @@ import {
   formatGender,
   resolveComboBoxItems,
 } from '@bahmni/services';
-import { LookupOption, CriterionConfig, CriterionRow, TextInput } from '../models';
+import {
+  LookupOption,
+  CriterionConfig,
+  CriterionRow,
+  TextInput,
+} from '../models';
 import {
   formatSearchResult,
   getLookupComboBoxItems,
