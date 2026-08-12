@@ -28,7 +28,7 @@ export interface CancelVaccinationState {
 }
 
 const DEFAULT_FIELD_CONFIG: CancelVaccinationConfig = {
-  cancellationReason: { isVisible: true, isMandatory: false },
+  cancellationReason: { isVisible: true, isMandatory: true },
   note: { isVisible: true, isMandatory: false },
 };
 
