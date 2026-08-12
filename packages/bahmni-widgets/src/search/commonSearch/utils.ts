@@ -245,8 +245,8 @@ const buildCondition = ({ field, value }: ResolvedRow): SearchCondition => {
     return {
       operator: 'AND',
       conditions: [
-        { field: field.key, comparator: 'gt', value: value.from.value! },
-        { field: field.key, comparator: 'lt', value: value.to!.value! },
+        { field: field.key, comparator: 'ge', value: value.from.value! },
+        { field: field.key, comparator: 'le', value: value.to!.value! },
       ],
     };
   }
