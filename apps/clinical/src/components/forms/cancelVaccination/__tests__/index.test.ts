@@ -79,6 +79,17 @@ describe('cancelVaccination input control', () => {
     expect(control.hasData()).toBe(false);
   });
 
+  it('subscribe() notifies the callback on store changes', () => {
+    const control = getCancelVaccinationControl()!;
+    const cb = jest.fn();
+
+    const unsubscribe = control.subscribe!(cb);
+    useCancelVaccinationStore.getState().setNote('some note');
+
+    expect(cb).toHaveBeenCalled();
+    unsubscribe();
+  });
+
   describe('onDirectSubmit', () => {
     it('calls cancelVaccination with correct params', async () => {
       const control = getCancelVaccinationControl()!;

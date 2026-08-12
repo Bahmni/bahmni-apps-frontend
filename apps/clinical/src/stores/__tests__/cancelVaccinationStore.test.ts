@@ -122,6 +122,28 @@ describe('useCancelVaccinationStore', () => {
 
       expect(result.current.errors.note).toBeUndefined();
     });
+
+    it('should not clear note error when note is set to an empty string', () => {
+      const { result } = renderHook(() => useCancelVaccinationStore());
+
+      act(() => {
+        result.current.setFieldConfig({
+          note: { isMandatory: true },
+        });
+        result.current.setMedicationToCancel(mockMedicationRequest);
+      });
+      act(() => {
+        result.current.validate();
+      });
+
+      expect(result.current.errors.note).toBeDefined();
+
+      act(() => {
+        result.current.setNote('');
+      });
+
+      expect(result.current.errors.note).toBeDefined();
+    });
   });
 
   describe('setMedicationToCancel', () => {
@@ -228,6 +250,26 @@ describe('useCancelVaccinationStore', () => {
       expect(result.current.errors.cancellationReason).toBe(
         'CANCEL_VACCINATION_REASON_REQUIRED',
       );
+    });
+
+    it('should not set cancellationReason error when mandatory and already set', () => {
+      const { result } = renderHook(() => useCancelVaccinationStore());
+
+      act(() => {
+        result.current.setFieldConfig({
+          cancellationReason: { isMandatory: true },
+        });
+        result.current.setMedicationToCancel(mockMedicationRequest);
+        result.current.setCancellationReason('Adverse reaction');
+      });
+
+      let isValid: boolean;
+      act(() => {
+        isValid = result.current.validate();
+      });
+
+      expect(isValid!).toBe(true);
+      expect(result.current.errors.cancellationReason).toBeUndefined();
     });
 
     it('should set note error when mandatory and empty', () => {

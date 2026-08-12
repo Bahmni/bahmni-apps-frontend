@@ -161,6 +161,20 @@ describe('CancelVaccinationForm', () => {
     expect(screen.queryByText(/\[.*\]/)).not.toBeInTheDocument();
   });
 
+  it('formats dropdown items via itemToString, falling back to an empty string for a falsy item', async () => {
+    await act(async () => {
+      renderForm({ cancelVaccination: mockMedicationRequest });
+    });
+
+    expect(
+      capturedDropdownProps.itemToString({
+        uuid: 'reason-uuid-1',
+        display: 'Adverse reaction',
+      }),
+    ).toBe('Adverse reaction');
+    expect(capturedDropdownProps.itemToString(null)).toBe('');
+  });
+
   it('calls setCancellationReason with the selected reason display when a new item is chosen', async () => {
     const setCancellationReason = jest.fn();
     mockUseCancelVaccinationStore.mockReturnValue(
