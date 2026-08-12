@@ -269,7 +269,9 @@ describe('CancelVaccinationForm', () => {
 
     fireEvent.click(screen.getByTestId('cancel-vaccination-add-note-link'));
 
-    expect(screen.getByPlaceholderText('CANCEL_VACCINATION_NOTE_PLACEHOLDER')).toBeInTheDocument();
+    expect(
+      screen.getByPlaceholderText('CANCEL_VACCINATION_NOTE_PLACEHOLDER'),
+    ).toBeInTheDocument();
     expect(
       screen.queryByTestId('cancel-vaccination-add-note-link'),
     ).not.toBeInTheDocument();
@@ -286,9 +288,12 @@ describe('CancelVaccinationForm', () => {
     });
 
     fireEvent.click(screen.getByTestId('cancel-vaccination-add-note-link'));
-    fireEvent.change(screen.getByPlaceholderText('CANCEL_VACCINATION_NOTE_PLACEHOLDER'), {
-      target: { value: 'Hello' },
-    });
+    fireEvent.change(
+      screen.getByPlaceholderText('CANCEL_VACCINATION_NOTE_PLACEHOLDER'),
+      {
+        target: { value: 'Hello' },
+      },
+    );
 
     expect(setNote).toHaveBeenCalledWith('Hello');
   });
@@ -304,9 +309,12 @@ describe('CancelVaccinationForm', () => {
     });
 
     fireEvent.click(screen.getByTestId('cancel-vaccination-add-note-link'));
-    fireEvent.change(screen.getByPlaceholderText('CANCEL_VACCINATION_NOTE_PLACEHOLDER'), {
-      target: { value: 'A'.repeat(101) },
-    });
+    fireEvent.change(
+      screen.getByPlaceholderText('CANCEL_VACCINATION_NOTE_PLACEHOLDER'),
+      {
+        target: { value: 'A'.repeat(101) },
+      },
+    );
 
     expect(setNote).not.toHaveBeenCalled();
   });
@@ -323,9 +331,12 @@ describe('CancelVaccinationForm', () => {
 
     fireEvent.click(screen.getByTestId('cancel-vaccination-add-note-link'));
     const exactly100 = 'B'.repeat(100);
-    fireEvent.change(screen.getByPlaceholderText('CANCEL_VACCINATION_NOTE_PLACEHOLDER'), {
-      target: { value: exactly100 },
-    });
+    fireEvent.change(
+      screen.getByPlaceholderText('CANCEL_VACCINATION_NOTE_PLACEHOLDER'),
+      {
+        target: { value: exactly100 },
+      },
+    );
 
     expect(setNote).toHaveBeenCalledWith(exactly100);
   });

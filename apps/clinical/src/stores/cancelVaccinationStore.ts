@@ -85,8 +85,7 @@ export const useCancelVaccinationStore = create<CancelVaccinationState>(
         cfg.cancellationReason?.isMandatory
       ) {
         if (!state.cancellationReason) {
-          errors.cancellationReason =
-            'CANCEL_VACCINATION_REASON_REQUIRED';
+          errors.cancellationReason = 'CANCEL_VACCINATION_REASON_REQUIRED';
           isValid = false;
         }
       }

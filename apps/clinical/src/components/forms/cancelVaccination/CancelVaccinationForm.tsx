@@ -1,10 +1,4 @@
-import {
-  Column,
-  Dropdown,
-  Grid,
-  TextArea,
-  Tile,
-} from '@bahmni/design-system';
+import { Column, Dropdown, Grid, TextArea, Tile } from '@bahmni/design-system';
 import { searchFHIRConcepts, useTranslation } from '@bahmni/services';
 import { useQuery } from '@tanstack/react-query';
 import { MedicationRequest } from 'fhir/r4';
@@ -61,8 +55,7 @@ const CancelVaccinationForm: React.FC<CancelVaccinationFormProps> = React.memo(
       return null;
     }
 
-    const medicationName =
-      cancelVaccination.medicationReference?.display ?? '';
+    const medicationName = cancelVaccination.medicationReference?.display ?? '';
     const route =
       cancelVaccination.dosageInstruction?.[0]?.route?.coding?.[0]?.display ??
       '';
@@ -103,9 +96,8 @@ const CancelVaccinationForm: React.FC<CancelVaccinationFormProps> = React.memo(
                   item ? item.display : ''
                 }
                 selectedItem={
-                  cancelReasons.find(
-                    (r) => r.display === cancellationReason,
-                  ) ?? null
+                  cancelReasons.find((r) => r.display === cancellationReason) ??
+                  null
                 }
                 onChange={({
                   selectedItem,

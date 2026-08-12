@@ -288,7 +288,9 @@ describe('useCancelVaccinationStore', () => {
       });
 
       expect(isValid!).toBe(false);
-      expect(result.current.errors.note).toBe('CANCEL_VACCINATION_NOTE_REQUIRED');
+      expect(result.current.errors.note).toBe(
+        'CANCEL_VACCINATION_NOTE_REQUIRED',
+      );
     });
 
     it('should not validate hidden fields even if mandatory', () => {

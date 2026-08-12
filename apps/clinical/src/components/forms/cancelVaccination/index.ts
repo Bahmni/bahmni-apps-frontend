@@ -19,8 +19,9 @@ registerInputControl({
   onDirectSubmit: async () => {
     const state = useCancelVaccinationStore.getState();
     if (!state.medicationToCancel?.id) return;
-    const encounterUuid =
-      state.medicationToCancel.encounter?.reference?.split('/').pop();
+    const encounterUuid = state.medicationToCancel.encounter?.reference
+      ?.split('/')
+      .pop();
     await cancelVaccination({
       medicationRequestId: state.medicationToCancel.id,
       reason: state.cancellationReason ?? '',
