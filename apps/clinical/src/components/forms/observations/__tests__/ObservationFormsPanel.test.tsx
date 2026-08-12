@@ -218,6 +218,14 @@ describe('ObservationFormsPanel', () => {
   describe('DirectMode Form Handling', () => {
     const mockReset = jest.fn();
 
+    beforeEach(() => {
+      (
+        useObservationFormsStore as unknown as { getState: jest.Mock }
+      ).getState = jest.fn(() => ({
+        reset: mockReset,
+      }));
+    });
+
     it('calls useObservationFormsSearch without episodeUuids when in task direct mode', () => {
       render(
         <ObservationFormsPanel
@@ -232,14 +240,6 @@ describe('ObservationFormsPanel', () => {
         '',
         undefined,
       );
-    });
-
-    beforeEach(() => {
-      (
-        useObservationFormsStore as unknown as { getState: jest.Mock }
-      ).getState = jest.fn(() => ({
-        reset: mockReset,
-      }));
     });
 
     it('should reset store and add matching form when directFormMode is true and taskFormName is provided', () => {
