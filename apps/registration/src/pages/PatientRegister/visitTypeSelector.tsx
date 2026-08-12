@@ -2,10 +2,11 @@ import {
   ArrowRight,
   Button,
   ComboButton,
-  InlineLoading,
+  Loading,
   MenuItem,
 } from '@bahmni/design-system';
 import { useTranslation } from '@bahmni/services';
+import { createPortal } from 'react-dom';
 import { useParams } from 'react-router-dom';
 import { useActiveVisit, useVisitTypes } from '../../hooks/useVisit';
 import { useRegistrationConfig } from '../../providers/registrationConfig';
@@ -45,73 +46,80 @@ export const VisitTypeSelector = ({
     isLoadingVisitTypes ||
     visitTypesArray.length === 0;
 
-  return hasActiveVisit ? (
-    <Button
-      id="visit-button"
-      data-testid="start-visit-button"
-      kind="primary"
-      disabled={isDisabled}
-      onClick={() => {
-        if (onActiveVisitClick) {
-          onActiveVisitClick();
-        } else if (defaultVisitType) {
-          onVisitTypeSelect(defaultVisitType);
-        }
-      }}
-      renderIcon={ArrowRight}
-    >
-      {isLoading ? (
-        <InlineLoading description={t('STARTING_VISIT')} />
-      ) : !isLoadingVisitTypes && defaultVisitType ? (
-        (activeVisitLabel ?? t('ENTER_VISIT_DETAILS'))
+  return (
+    <>
+      {hasActiveVisit ? (
+        <Button
+          id="visit-button"
+          data-testid="start-visit-button"
+          kind="primary"
+          disabled={isDisabled}
+          onClick={() => {
+            if (onActiveVisitClick) {
+              onActiveVisitClick();
+            } else if (defaultVisitType) {
+              onVisitTypeSelect(defaultVisitType);
+            }
+          }}
+          renderIcon={ArrowRight}
+        >
+          {!isLoadingVisitTypes && defaultVisitType
+            ? (activeVisitLabel ?? t('ENTER_VISIT_DETAILS'))
+            : ''}
+        </Button>
+      ) : visitTypesArray.length > 1 ? (
+        <div>
+          <ComboButton
+            data-testid="start-visit-button"
+            label={
+              !isLoadingVisitTypes && defaultVisitType
+                ? t('START_VISIT_TYPE', { visitType: defaultVisitType.name })
+                : ''
+            }
+            onClick={() =>
+              defaultVisitType && onVisitTypeSelect(defaultVisitType)
+            }
+            disabled={isDisabled}
+          >
+            {visitTypesArray
+              .filter((vt) => vt.uuid !== defaultVisitType?.uuid)
+              .map((vt) => (
+                <MenuItem
+                  key={vt.uuid}
+                  label={t('START_VISIT_TYPE', { visitType: vt.name })}
+                  onClick={() => onVisitTypeSelect(vt)}
+                />
+              ))}
+          </ComboButton>
+        </div>
       ) : (
-        ''
+        <Button
+          id="visit-button"
+          data-testid="start-visit-button"
+          kind="tertiary"
+          disabled={isDisabled}
+          onClick={() => {
+            if (defaultVisitType) {
+              onVisitTypeSelect(defaultVisitType);
+            }
+          }}
+        >
+          {!isLoadingVisitTypes && defaultVisitType
+            ? t('START_VISIT_TYPE', { visitType: defaultVisitType.name })
+            : ''}
+        </Button>
       )}
-    </Button>
-  ) : visitTypesArray.length > 1 ? (
-    <div>
-      <ComboButton
-        data-testid="start-visit-button"
-        label={
-          isLoading
-            ? t('STARTING_VISIT')
-            : !isLoadingVisitTypes && defaultVisitType
-              ? t('START_VISIT_TYPE', { visitType: defaultVisitType.name })
-              : ''
-        }
-        onClick={() => defaultVisitType && onVisitTypeSelect(defaultVisitType)}
-        disabled={isDisabled}
-      >
-        {visitTypesArray
-          .filter((vt) => vt.uuid !== defaultVisitType?.uuid)
-          .map((vt) => (
-            <MenuItem
-              key={vt.uuid}
-              label={t('START_VISIT_TYPE', { visitType: vt.name })}
-              onClick={() => onVisitTypeSelect(vt)}
-            />
-          ))}
-      </ComboButton>
-    </div>
-  ) : (
-    <Button
-      id="visit-button"
-      data-testid="start-visit-button"
-      kind="tertiary"
-      disabled={isDisabled}
-      onClick={() => {
-        if (defaultVisitType) {
-          onVisitTypeSelect(defaultVisitType);
-        }
-      }}
-    >
-      {isLoading ? (
-        <InlineLoading description={t('STARTING_VISIT')} />
-      ) : !isLoadingVisitTypes && defaultVisitType ? (
-        t('START_VISIT_TYPE', { visitType: defaultVisitType.name })
-      ) : (
-        ''
-      )}
-    </Button>
+      {isLoading &&
+        createPortal(
+          <div
+            id="start-visit-loading-overlay"
+            data-testid="start-visit-loading-overlay-test-id"
+            aria-label="start-visit-loading-overlay-aria-label"
+          >
+            <Loading active withOverlay description={t('STARTING_VISIT')} />
+          </div>,
+          document.body,
+        )}
+    </>
   );
 };
