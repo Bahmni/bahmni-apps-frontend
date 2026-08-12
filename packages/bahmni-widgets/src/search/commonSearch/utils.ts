@@ -10,7 +10,7 @@ import {
   resolveComboBoxItems,
   type UserPrivilege,
 } from '@bahmni/services';
-import { format } from 'date-fns';
+import { endOfDay, format } from 'date-fns';
 import jsonata from 'jsonata';
 import { v4 as uuidv4 } from 'uuid';
 import {
@@ -270,8 +270,11 @@ const buildCondition = ({ field, value }: ResolvedRow): SearchCondition => {
   return { field: field.key, comparator: 'eq', value: value.value };
 };
 
-const toLocalIso = (v: string): string =>
-  format(new Date(v), LOCAL_ISO_DATE_FORMAT);
+const toLocalIso = (v: string, isEndOfDay = false): string =>
+  format(
+    isEndOfDay ? endOfDay(new Date(v)) : new Date(v),
+    LOCAL_ISO_DATE_FORMAT,
+  );
 
 const localizeDateTime = (value: CriterionValue): CriterionValue => {
   if (isScalarValue(value)) return { value: toLocalIso(value.value) };
@@ -283,7 +286,7 @@ const localizeDateTime = (value: CriterionValue): CriterionValue => {
     ...(value.to && {
       to: {
         ...value.to,
-        value: value.to.value ? toLocalIso(value.to.value) : null,
+        value: value.to.value ? toLocalIso(value.to.value, true) : null,
       },
     }),
   };

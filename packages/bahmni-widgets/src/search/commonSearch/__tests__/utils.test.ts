@@ -69,6 +69,11 @@ jest.mock('date-fns', () => ({
     const shifted = new Date(_date.getTime() + IST_OFFSET_MS);
     return shifted.toISOString().slice(0, -1) + '+0530';
   },
+  endOfDay: (_date: Date) => {
+    const ist = new Date(_date.getTime() + IST_OFFSET_MS);
+    ist.setUTCHours(23, 59, 59, 999);
+    return new Date(ist.getTime() - IST_OFFSET_MS);
+  },
 }));
 
 jest.mock('@bahmni/services', () => ({
@@ -564,7 +569,7 @@ describe('resolveRows', () => {
       row: mockRowDateRange,
       expected: {
         from: { value: '2026-01-15T05:30:00.000+0530', comparator: null },
-        to: { value: '2026-07-24T05:29:59.000+0530', comparator: null },
+        to: { value: '2026-07-23T23:59:59.999+0530', comparator: null },
       },
     },
     {
