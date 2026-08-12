@@ -634,7 +634,7 @@ describe('buildPayload', () => {
       },
     },
     {
-      label: 'range field → AND group with gt from and lt to',
+      label: 'range field → AND group with ge from and le to',
       resolvedRows: [mockResolvedRangeRow],
       entity: 'patient',
       expected: {
@@ -645,8 +645,8 @@ describe('buildPayload', () => {
             {
               operator: 'AND',
               conditions: [
-                { field: 'patient.age', comparator: 'gt', value: '20' },
-                { field: 'patient.age', comparator: 'lt', value: '50' },
+                { field: 'patient.age', comparator: 'ge', value: '20' },
+                { field: 'patient.age', comparator: 'le', value: '50' },
               ],
             },
             locationCondition,
