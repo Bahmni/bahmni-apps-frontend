@@ -1,19 +1,95 @@
 @use "@carbon/react/scss/spacing" as *;
+@use "@carbon/react/scss/type" as *;
+@use "@carbon/react/scss/theme" as *;
 
 .container {
   position: relative;
-  display: inline-block;
-  button,
-  button:hover,
-  button:active {
-    color: white;
-  }
+  display: inline-flex;
+  align-items: center;
 }
 
+.skeleton {
+  height: $spacing-08;
+}
+
+.greeting {
+  @include type-style("body-compact-01");
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: $text-on-color;
+}
+
+// HeaderGlobalAction is an icon-only 48x48 button by default. Override it so the
+// trigger holds the avatar + greeting as one unit (capped at 150px wide) and
+// fills the full header height — 3rem minus the header's 1px bottom border — so
+// the hover highlight covers the header top-to-bottom with no gap and no
+// overflow past the header edge.
+.userAction:global(.cds--header__action) {
+  inline-size: auto;
+  max-inline-size: 150px;
+  block-size: calc(#{$spacing-09} - 1px);
+  min-block-size: calc(#{$spacing-09} - 1px);
+  max-block-size: calc(#{$spacing-09} - 1px);
+  gap: $spacing-03;
+  padding-inline: $spacing-04;
+}
+
+// Carbon centers icon-only header buttons; keep the avatar + text left-aligned.
+.userAction:global(.cds--header__action.cds--btn--icon-only) {
+  justify-content: flex-start;
+}
+
+// Carbon's `.cds--btn.cds--btn--icon-only.cds--header__action svg` (0,3,1) forces
+// a dark icon; out-specify it so the avatar is white like the header text.
+.userAction:global(.cds--btn.cds--btn--icon-only.cds--header__action) svg {
+  fill: $icon-on-color;
+}
+
+// Icon-only buttons render the aria-label as a hover tooltip; we already show a
+// visible label, so hide the redundant tooltip (aria-label stays for a11y).
+.container :global(.cds--popover) {
+  display: none;
+}
+
+// Carbon and the design-system paint a white focus BORDER on the trigger. On a
+// full-height header button its bottom edge reads as a stray line, and it
+// lingers because Carbon returns focus to the trigger when the menu closes.
+// Remove the border-based focus (out-specifying the design-system rule); give
+// keyboard users a proper inset focus ring instead.
+.userAction:global(.cds--header__action.cds--btn):focus {
+  border-color: transparent;
+  outline: none;
+  box-shadow: none;
+}
+
+.userAction:global(.cds--header__action.cds--btn):focus-visible {
+  outline: 2px solid $focus;
+  outline-offset: -2px;
+  // Match the hover highlight so keyboard focus is clearly visible.
+  background-color: rgba(0, 0, 0, 0.15);
+}
+
+// Keep the trigger highlighted while its menu is open (isActive), matching the
+// hover style — without Carbon's active-state white background / side borders.
+.userAction:global(.cds--header__action--active) {
+  background-color: rgba(0, 0, 0, 0.15);
+  border-color: transparent;
+}
+
+// The dropdown Menu is portaled to <body>. It's positioned with fixed insets
+// (rather than the design's containerRef/x/y anchoring) so it reliably opens
+// just below the header regardless of where this widget is mounted in a given
+// app's header layout.
 .menu {
   position: fixed;
   inset-block-start: $spacing-09 !important;
   inset-inline-start: unset !important;
   inset-inline-end: $spacing-05 !important;
   z-index: 9999;
+  padding-block: 0;
+
+  :global(.cds--menu-item-divider) {
+    margin-block: 0;
+  }
 }
