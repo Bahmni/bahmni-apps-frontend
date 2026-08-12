@@ -7,9 +7,10 @@ import {
   formatGender,
   getFormattedAge,
   hasPrivilege,
+  resolveComboBoxItems,
   type UserPrivilege,
 } from '@bahmni/services';
-import { format } from 'date-fns';
+import { endOfDay, format } from 'date-fns';
 import jsonata from 'jsonata';
 import { v4 as uuidv4 } from 'uuid';
 import {
@@ -24,6 +25,7 @@ import {
   CriterionValue,
   FieldConfig,
   InputConfig,
+  LookupOption,
   ResolvedRow,
   ScalarValue,
   SearchCondition,
@@ -243,8 +245,8 @@ const buildCondition = ({ field, value }: ResolvedRow): SearchCondition => {
     return {
       operator: 'AND',
       conditions: [
-        { field: field.key, comparator: 'gt', value: value.from.value! },
-        { field: field.key, comparator: 'lt', value: value.to!.value! },
+        { field: field.key, comparator: 'ge', value: value.from.value! },
+        { field: field.key, comparator: 'le', value: value.to!.value! },
       ],
     };
   }
@@ -268,8 +270,11 @@ const buildCondition = ({ field, value }: ResolvedRow): SearchCondition => {
   return { field: field.key, comparator: 'eq', value: value.value };
 };
 
-const toLocalIso = (v: string): string =>
-  format(new Date(v), LOCAL_ISO_DATE_FORMAT);
+const toLocalIso = (v: string, isEndOfDay = false): string =>
+  format(
+    isEndOfDay ? endOfDay(new Date(v)) : new Date(v),
+    LOCAL_ISO_DATE_FORMAT,
+  );
 
 const localizeDateTime = (value: CriterionValue): CriterionValue => {
   if (isScalarValue(value)) return { value: toLocalIso(value.value) };
@@ -281,11 +286,33 @@ const localizeDateTime = (value: CriterionValue): CriterionValue => {
     ...(value.to && {
       to: {
         ...value.to,
-        value: value.to.value ? toLocalIso(value.to.value) : null,
+        value: value.to.value ? toLocalIso(value.to.value, true) : null,
       },
     }),
   };
 };
+
+export function getLookupComboBoxItems(
+  inputValue: string | null,
+  options: LookupOption[],
+  isLoading: boolean,
+  isError: boolean,
+  messages: { loading: string; error: string; empty: string },
+): (LookupOption & { disabled?: boolean })[] {
+  if (!inputValue) return [];
+
+  const filtered = options.filter((option) =>
+    option.label.toLowerCase().includes(inputValue.toLowerCase()),
+  );
+
+  return resolveComboBoxItems<LookupOption>(
+    isLoading,
+    isError,
+    filtered,
+    (message) => ({ uuid: '', label: message }),
+    messages,
+  );
+}
 
 export const resolveRows = (
   rows: CriterionRow[],

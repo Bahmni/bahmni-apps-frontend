@@ -1,13 +1,17 @@
+import { Maximize, Minimize } from '@carbon/icons-react';
 import { Button, ButtonSet } from '@carbon/react';
 import classNames from 'classnames';
-import React, { ReactNode } from 'react';
+import React, { ReactNode, useEffect, useId, useRef } from 'react';
+import { IconButton } from '../../atoms/iconButton';
 import styles from './styles/ActionArea.module.scss';
+
+const TOGGLE_ICON_SIZE = 16;
 
 /**
  * ActionArea component props
  */
 export interface ActionAreaProps {
-  title: string; // Title of the ActionArea
+  title: ReactNode; // Title of the ActionArea
   primaryButtonText: string; // Text for the primary button
   onPrimaryButtonClick: () => void; // Function to be called when primary button is clicked
   isPrimaryButtonDisabled?: boolean; // Whether the primary button should be disabled
@@ -22,6 +26,11 @@ export interface ActionAreaProps {
   ariaLabel?: string; // Accessible label for the component
   buttonGroupAriaLabel?: string; // Aria label for the button group
   hidden?: boolean;
+  isExpanded?: boolean; // Whether the ActionArea is expanded to full width
+  onToggleExpand?: () => void; // Function to be called when the expand/collapse toggle is clicked
+  expandAriaLabel?: string; // Accessible label for the expand toggle button
+  collapseAriaLabel?: string; // Accessible label for the collapse toggle button
+  headerActions?: ReactNode; // Extra controls rendered alongside the expand/collapse toggle
 }
 
 /**
@@ -47,6 +56,11 @@ export const ActionArea: React.FC<ActionAreaProps> = ({
   ariaLabel,
   buttonGroupAriaLabel = 'Action buttons',
   hidden = false,
+  isExpanded = false,
+  onToggleExpand,
+  expandAriaLabel = 'Expand',
+  collapseAriaLabel = 'Collapse',
+  headerActions,
 }) => {
   const buttonCount =
     1 + // primary button (always present)
@@ -61,28 +75,75 @@ export const ActionArea: React.FC<ActionAreaProps> = ({
 
   // Determine accessible label for the component
   const accessibleLabel = ariaLabel ?? 'Action Area';
+  const hasHeaderActions = Boolean(headerActions) || Boolean(onToggleExpand);
+  const titleId = useId();
+
+  const toggleButtonRef = useRef<HTMLButtonElement>(null);
+  const hasMountedRef = useRef(false);
+
+  // Toggling expand/collapse hides the main-display panel from keyboard/AT
+  // users (see ActionAreaLayout's `inert` on that panel); refocus the
+  // toggle so focus isn't silently dropped when it was inside that panel.
+  useEffect(() => {
+    if (!hasMountedRef.current) {
+      hasMountedRef.current = true;
+      return;
+    }
+    toggleButtonRef.current?.focus();
+  }, [isExpanded]);
 
   return (
     <div
       className={classNames(styles.actionArea, className, {
         [styles.hidden]: hidden,
+        [styles.noBorder]: isExpanded,
       })}
       role="region"
       aria-label={accessibleLabel}
       aria-hidden={hidden}
     >
-      <h2 className={styles.title} id="action-area-title">
-        {title}
-      </h2>
       <div
-        className={styles.content}
-        role="region"
-        aria-labelledby="action-area-title"
+        className={classNames(styles.header, isExpanded && styles.cappedWidth)}
       >
-        {content}
+        <h2 className={styles.title} id={titleId}>
+          {title}
+        </h2>
+        {hasHeaderActions && (
+          <div className={styles.headerActions}>
+            {headerActions}
+            {onToggleExpand && (
+              <IconButton
+                ref={toggleButtonRef}
+                kind="ghost"
+                size="sm"
+                label={isExpanded ? collapseAriaLabel : expandAriaLabel}
+                onClick={onToggleExpand}
+                aria-expanded={isExpanded}
+                testId="action-area-expand-toggle"
+              >
+                {isExpanded ? (
+                  <Minimize size={TOGGLE_ICON_SIZE} />
+                ) : (
+                  <Maximize size={TOGGLE_ICON_SIZE} />
+                )}
+              </IconButton>
+            )}
+          </div>
+        )}
       </div>
+      <section className={styles.content} aria-labelledby={titleId}>
+        <div className={classNames(isExpanded && styles.cappedWidth)}>
+          {content}
+        </div>
+      </section>
 
-      <ButtonSet className={styles.buttonSet} aria-label={buttonGroupAriaLabel}>
+      <ButtonSet
+        className={classNames(
+          styles.buttonSet,
+          isExpanded && styles.cappedWidth,
+        )}
+        aria-label={buttonGroupAriaLabel}
+      >
         {secondaryButtonText && onSecondaryButtonClick && (
           <Button
             kind="secondary"

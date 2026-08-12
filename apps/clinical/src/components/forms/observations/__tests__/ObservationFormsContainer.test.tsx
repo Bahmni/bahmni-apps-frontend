@@ -116,6 +116,7 @@ jest.mock('@bahmni/design-system', () => ({
     ({
       className,
       title,
+      headerActions,
       primaryButtonText,
       onPrimaryButtonClick,
       isPrimaryButtonDisabled,
@@ -124,9 +125,14 @@ jest.mock('@bahmni/design-system', () => ({
       tertiaryButtonText,
       onTertiaryButtonClick,
       content,
+      isExpanded,
+      onToggleExpand,
+      expandAriaLabel,
+      collapseAriaLabel,
     }) => (
       <div data-testid="action-area" className={className}>
         <div data-testid="action-area-title">{title}</div>
+        <div data-testid="action-area-header-actions">{headerActions}</div>
         <div data-testid="action-area-content">{content}</div>
         <div data-testid="action-area-buttons">
           <button
@@ -146,6 +152,15 @@ jest.mock('@bahmni/design-system', () => ({
             {tertiaryButtonText}
           </button>
         </div>
+        {onToggleExpand && (
+          <button
+            data-testid="expand-toggle-button"
+            aria-label={isExpanded ? collapseAriaLabel : expandAriaLabel}
+            onClick={onToggleExpand}
+          >
+            {isExpanded ? 'Collapse' : 'Expand'}
+          </button>
+        )}
       </div>
     ),
   ),
@@ -190,7 +205,6 @@ jest.mock('../styles/ObservationFormsContainer.module.scss', () => ({
   formView: 'formView',
   formContent: 'formContent',
   formViewActionArea: 'formViewActionArea',
-  formTitleContainer: 'formTitleContainer',
   pinIconContainer: 'pinIconContainer',
   pinned: 'pinned',
   unpinned: 'unpinned',
@@ -288,6 +302,49 @@ describe('ObservationFormsContainer', () => {
         <ObservationFormsContainer {...defaultProps} viewingForm={null} />,
       );
       expect(container).toMatchSnapshot();
+    });
+
+    it('should not render the expand toggle when onToggleActionAreaExpand is not provided', () => {
+      render(
+        <ObservationFormsContainer {...defaultProps} viewingForm={mockForm} />,
+      );
+
+      expect(
+        screen.queryByTestId('expand-toggle-button'),
+      ).not.toBeInTheDocument();
+    });
+
+    it('should render the expand toggle and forward isActionAreaExpanded/onToggleActionAreaExpand to ActionArea', () => {
+      const mockOnToggleActionAreaExpand = jest.fn();
+      render(
+        <ObservationFormsContainer
+          {...defaultProps}
+          viewingForm={mockForm}
+          isActionAreaExpanded={false}
+          onToggleActionAreaExpand={mockOnToggleActionAreaExpand}
+        />,
+      );
+
+      const toggleButton = screen.getByTestId('expand-toggle-button');
+      expect(toggleButton).toHaveTextContent('Expand');
+
+      fireEvent.click(toggleButton);
+      expect(mockOnToggleActionAreaExpand).toHaveBeenCalledTimes(1);
+    });
+
+    it('should show the collapse label on the toggle when isActionAreaExpanded is true', () => {
+      render(
+        <ObservationFormsContainer
+          {...defaultProps}
+          viewingForm={mockForm}
+          isActionAreaExpanded
+          onToggleActionAreaExpand={jest.fn()}
+        />,
+      );
+
+      expect(screen.getByTestId('expand-toggle-button')).toHaveTextContent(
+        'Collapse',
+      );
     });
   });
 
@@ -775,6 +832,26 @@ describe('ObservationFormsContainer', () => {
 
       expect(pinContainer).toHaveClass('pinned');
       expect(pinContainer).toHaveAttribute('title', 'Unpin form');
+    });
+
+    it('should render the pin icon alongside the maximize/minimize toggle, not inside the title', () => {
+      render(
+        <ObservationFormsContainer
+          {...defaultProps}
+          viewingForm={nonDefaultForm}
+          isActionAreaExpanded={false}
+          onToggleActionAreaExpand={jest.fn()}
+        />,
+      );
+
+      const titleContainer = screen.getByTestId('action-area-title');
+      const headerActionsContainer = screen.getByTestId(
+        'action-area-header-actions',
+      );
+      const pinIcon = screen.getByTestId('icon-pin-icon');
+
+      expect(titleContainer).not.toContainElement(pinIcon);
+      expect(headerActionsContainer).toContainElement(pinIcon);
     });
 
     it('should show unpinned state when form is not in pinnedForms array', () => {

@@ -92,9 +92,10 @@ jest.mock('../../../hooks/useClinicalAppData');
 jest.mock('../../../hooks/useEncounterConcepts');
 jest.mock('../../../providers/clinicalConfig');
 
+const mockObservationFormsContainer = jest.fn(() => null);
 jest.mock('../../forms/observations/ObservationFormsContainer', () => ({
   __esModule: true,
-  default: () => null,
+  default: (props: unknown) => mockObservationFormsContainer(props),
 }));
 
 jest.mock('../services', () => ({
@@ -223,6 +224,26 @@ describe('ConsultationPad', () => {
       expect(screen.getByTestId('action-area')).toHaveAttribute(
         'data-hidden',
         'true',
+      );
+    });
+
+    it('forwards isActionAreaExpanded and onToggleActionAreaExpand to ObservationFormsContainer when viewing a form', () => {
+      jest.mocked(useObservationFormsStore).mockReturnValue({
+        ...mockObsFormsState,
+        viewingForm: { uuid: 'form-uuid', name: 'Vitals' } as any,
+      } as any);
+      const mockOnToggleActionAreaExpand = jest.fn();
+
+      renderComponent({
+        isActionAreaExpanded: true,
+        onToggleActionAreaExpand: mockOnToggleActionAreaExpand,
+      });
+
+      expect(mockObservationFormsContainer).toHaveBeenCalledWith(
+        expect.objectContaining({
+          isActionAreaExpanded: true,
+          onToggleActionAreaExpand: mockOnToggleActionAreaExpand,
+        }),
       );
     });
   });
