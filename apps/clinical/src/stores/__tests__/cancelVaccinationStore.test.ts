@@ -28,7 +28,7 @@ describe('useCancelVaccinationStore', () => {
     it('should have default fieldConfig', () => {
       const { result } = renderHook(() => useCancelVaccinationStore());
       expect(result.current.fieldConfig).toEqual({
-        cancellationReason: { isVisible: true, isMandatory: false },
+        cancellationReason: { isVisible: true, isMandatory: true },
         note: { isVisible: true, isMandatory: false },
       });
     });
@@ -215,22 +215,6 @@ describe('useCancelVaccinationStore', () => {
       expect(isValid!).toBe(true);
     });
 
-    it('should return true when fields are not mandatory (default)', () => {
-      const { result } = renderHook(() => useCancelVaccinationStore());
-
-      act(() => {
-        result.current.setMedicationToCancel(mockMedicationRequest);
-      });
-
-      let isValid: boolean;
-      act(() => {
-        isValid = result.current.validate();
-      });
-
-      expect(isValid!).toBe(true);
-      expect(result.current.errors).toEqual({});
-    });
-
     it('should set cancellationReason error when mandatory and empty', () => {
       const { result } = renderHook(() => useCancelVaccinationStore());
 
@@ -356,7 +340,7 @@ describe('useCancelVaccinationStore', () => {
       expect(result.current.note).toBe('');
       expect(result.current.errors).toEqual({});
       expect(result.current.fieldConfig).toEqual({
-        cancellationReason: { isVisible: true, isMandatory: false },
+        cancellationReason: { isVisible: true, isMandatory: true },
         note: { isVisible: true, isMandatory: false },
       });
     });
