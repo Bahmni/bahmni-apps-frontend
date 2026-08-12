@@ -227,6 +227,86 @@ describe('PatientProgramsTable', () => {
     expect(nullAttributeCell).toHaveTextContent('-');
   });
 
+  describe('careManager', () => {
+    it('should render the care manager value when present', () => {
+      (useQuery as jest.Mock).mockReturnValue({
+        data: {
+          programs: [
+            {
+              id: 'program-1',
+              uuid: 'program-uuid-1',
+              programName: 'HIV Program',
+              dateEnrolled: '2023-01-15T10:30:00.000+00:00',
+              dateCompleted: null,
+              outcomeName: null,
+              outcomeDetails: null,
+              currentStateName: null,
+              careManagerDisplay: 'Dr. Test',
+              attributes: {},
+            },
+          ],
+          total: 1,
+        },
+        error: null,
+        isError: false,
+        isLoading: false,
+      });
+
+      render(
+        <QueryClientProvider client={queryClient}>
+          <PatientProgramsTable
+            config={{
+              fields: [{ name: 'programName' }, { name: 'careManager' }],
+            }}
+          />
+        </QueryClientProvider>,
+      );
+
+      expect(
+        screen.getByTestId('program-uuid-1-care-manager-test-id'),
+      ).toHaveTextContent('Dr. Test');
+    });
+
+    it("should render '-' when the care manager is null", () => {
+      (useQuery as jest.Mock).mockReturnValue({
+        data: {
+          programs: [
+            {
+              id: 'program-1',
+              uuid: 'program-uuid-1',
+              programName: 'HIV Program',
+              dateEnrolled: '2023-01-15T10:30:00.000+00:00',
+              dateCompleted: null,
+              outcomeName: null,
+              outcomeDetails: null,
+              currentStateName: null,
+              careManagerDisplay: null,
+              attributes: {},
+            },
+          ],
+          total: 1,
+        },
+        error: null,
+        isError: false,
+        isLoading: false,
+      });
+
+      render(
+        <QueryClientProvider client={queryClient}>
+          <PatientProgramsTable
+            config={{
+              fields: [{ name: 'programName' }, { name: 'careManager' }],
+            }}
+          />
+        </QueryClientProvider>,
+      );
+
+      expect(
+        screen.getByTestId('program-uuid-1-care-manager-test-id'),
+      ).toHaveTextContent('-');
+    });
+  });
+
   describe('Pagination', () => {
     const manyPrograms = Array.from({ length: 3 }, (_, i) => ({
       id: `program-${i + 1}`,

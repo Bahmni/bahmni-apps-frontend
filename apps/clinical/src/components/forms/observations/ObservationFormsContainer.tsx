@@ -41,6 +41,7 @@ import {
   VALIDATION_STATE_SCRIPT_ERROR,
 } from '../../../constants/forms';
 import type { EncounterSessionStartContext } from '../../../events/startConsultation';
+import { useActionAreaExpandProps } from '../../../hooks/useActionAreaExpandProps';
 import { useClinicalAppData } from '../../../hooks/useClinicalAppData';
 import { useObservationFormData } from '../../../hooks/useObservationFormData';
 import useObservationFormsSearch from '../../../hooks/useObservationFormsSearch';
@@ -85,6 +86,8 @@ interface ObservationFormsContainerProps {
   onDirectModeSubmit?: () => void | Promise<void>;
   onDirectModeCancel?: () => void;
   encounterSessionStartContext?: EncounterSessionStartContext;
+  isActionAreaExpanded?: boolean;
+  onToggleActionAreaExpand?: () => void;
 }
 
 const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
@@ -98,8 +101,14 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
   onDirectModeSubmit,
   onDirectModeCancel,
   encounterSessionStartContext,
+  isActionAreaExpanded,
+  onToggleActionAreaExpand,
 }) => {
   const { t } = useTranslation();
+  const actionAreaExpandProps = useActionAreaExpandProps({
+    isExpanded: isActionAreaExpanded,
+    onToggleExpand: onToggleActionAreaExpand,
+  });
 
   // Derive early so it can be used for hook initialisation below.
   const isEditMode =
@@ -627,26 +636,24 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
     </div>
   );
 
-  const formTitleWithPin = (
+  const formTitle = (
+    <span data-testid="observation-form-name">
+      {isEditMode
+        ? `${t('EDIT_OBSERVATION_FORM')} ${viewingForm?.name}`
+        : viewingForm?.name}
+    </span>
+  );
+
+  const canPinForm =
+    !directMode && !DEFAULT_FORM_API_NAMES.includes(viewingForm?.name ?? '');
+
+  const pinIcon = canPinForm && (
     <div
-      className={styles.formTitleContainer}
-      data-testid="observation-form-title-container"
+      onClick={handlePinToggle}
+      className={`${styles.pinIconContainer} ${isCurrentFormPinned ? styles.pinned : styles.unpinned}`}
+      title={isCurrentFormPinned ? 'Unpin form' : 'Pin form'}
     >
-      <span data-testid="observation-form-name">
-        {isEditMode
-          ? `${t('EDIT_OBSERVATION_FORM')} ${viewingForm?.name}`
-          : viewingForm?.name}
-      </span>
-      {!directMode &&
-        !DEFAULT_FORM_API_NAMES.includes(viewingForm?.name ?? '') && (
-          <div
-            onClick={handlePinToggle}
-            className={`${styles.pinIconContainer} ${isCurrentFormPinned ? styles.pinned : styles.unpinned}`}
-            title={isCurrentFormPinned ? 'Unpin form' : 'Pin form'}
-          >
-            <Icon id="pin-icon" name="fa-thumbtack" size={ICON_SIZE.SM} />
-          </div>
-        )}
+      <Icon id="pin-icon" name="fa-thumbtack" size={ICON_SIZE.SM} />
     </div>
   );
 
@@ -676,7 +683,8 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
     return (
       <ActionArea
         className={styles.formViewActionArea}
-        title={formTitleWithPin as unknown as string}
+        title={formTitle}
+        headerActions={pinIcon}
         primaryButtonText={primaryButtonText}
         onPrimaryButtonClick={handlePrimaryClick}
         isPrimaryButtonDisabled={
@@ -685,6 +693,7 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
         secondaryButtonText={secondaryButtonText}
         onSecondaryButtonClick={handleSecondaryClick}
         content={formViewContent}
+        {...actionAreaExpandProps}
       />
     );
   }

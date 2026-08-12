@@ -18,15 +18,42 @@
   pointer-events: none;
 }
 
-.title {
-  @include type-style("heading-03");
+// When expanded to fill the whole screen, there's no adjacent main-display
+// panel to divide from, so the separator border no longer makes sense.
+.noBorder {
+  border-left: none;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   padding: $spacing-06;
   padding-bottom: $spacing-04;
+  gap: $spacing-04;
+  width: 100%;
+}
+
+.title {
+  @include type-style("heading-03");
+  padding: 0;
+}
+
+.headerActions {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  gap: $spacing-03;
 }
 
 .content {
   flex: 1;
   overflow-y: auto;
+}
+
+.cappedWidth {
+  max-width: 75rem;
+  margin: 0 auto;
 }
 
 .buttonSet {
