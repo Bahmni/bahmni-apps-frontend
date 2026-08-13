@@ -45,6 +45,7 @@ interface StopMedicationParams {
   medicationRequestId: string;
   reason: string;
   effectiveDate: Date;
+  encounterUuid?: string;
   note?: string;
 }
 
@@ -55,16 +56,20 @@ interface StopMedicationParams {
 export async function stopMedication(
   params: StopMedicationParams,
 ): Promise<MedicationRequest> {
-  const { medicationRequestId, reason, effectiveDate, note } = params;
+  const { medicationRequestId, reason, effectiveDate, encounterUuid, note } =
+    params;
 
   const fhirParams = {
     resourceType: 'Parameters' as const,
     parameter: [
-      { name: 'reason', valueString: reason },
+      { name: 'reason', valueCodeableConcept: { text: reason } },
       {
         name: 'effectiveDate',
         valueDate: `${effectiveDate.getFullYear()}-${String(effectiveDate.getMonth() + 1).padStart(2, '0')}-${String(effectiveDate.getDate()).padStart(2, '0')}`,
       },
+      ...(encounterUuid
+        ? [{ name: 'encounter', valueString: encounterUuid }]
+        : []),
       ...(note ? [{ name: 'note', valueString: note }] : []),
     ],
   };

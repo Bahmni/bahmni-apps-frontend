@@ -103,11 +103,13 @@ function buildStoreMock(overrides: Record<string, unknown> = {}) {
     note: '',
     errors: {} as Record<string, string>,
     fieldConfig: defaultFieldConfig,
+    isCancelVaccination: false,
     setStopDate: jest.fn(),
     setStopReason: jest.fn(),
     setNote: jest.fn(),
     setMedicationToStop: jest.fn(),
     setFieldConfig: jest.fn(),
+    setIsCancelVaccination: jest.fn(),
     ...overrides,
   };
 }
@@ -723,19 +725,16 @@ describe('StopMedicationForm', () => {
         note: { isVisible: false, isMandatory: false },
       };
 
-      mockUseQuery.mockImplementation(({ queryKey }: any) => {
+      const queryMockWithFieldConfig = ({ queryKey }: any) => {
         if (queryKey[0] === 'medicationConfig') {
-          return {
-            data: { stopMedicationFields },
-            isLoading: false,
-            error: null,
-          };
+          return { data: { stopMedicationFields }, isLoading: false, error: null };
         }
         if (queryKey[0] === 'stopReasons') {
           return { data: mockStopReasons, isLoading: false, error: null };
         }
         return { data: undefined, isLoading: false, error: null };
-      });
+      };
+      mockUseQuery.mockImplementation(queryMockWithFieldConfig as any);
 
       await act(async () => {
         renderForm({ stopMedication: mockMedicationRequest });
@@ -750,19 +749,16 @@ describe('StopMedicationForm', () => {
         makeStoreMock({ setFieldConfig }) as any,
       );
 
-      mockUseQuery.mockImplementation(({ queryKey }: any) => {
+      const queryMockNoFieldConfig: any = ({ queryKey }: any) => {
         if (queryKey[0] === 'medicationConfig') {
-          return {
-            data: { stopReasons: ['Some reason'] },
-            isLoading: false,
-            error: null,
-          };
+          return { data: { stopReasons: ['Some reason'] }, isLoading: false, error: null };
         }
         if (queryKey[0] === 'stopReasons') {
           return { data: mockStopReasons, isLoading: false, error: null };
         }
         return { data: undefined, isLoading: false, error: null };
-      });
+      };
+      mockUseQuery.mockImplementation(queryMockNoFieldConfig);
 
       await act(async () => {
         renderForm({ stopMedication: mockMedicationRequest });
@@ -781,12 +777,13 @@ describe('StopMedicationForm', () => {
         { uuid: 'c-uuid-1', display: 'Allergy' },
         { uuid: 'c-uuid-2', display: 'Ineffective' },
       ];
-      mockUseQuery.mockImplementation(({ queryKey }: any) => {
+      const conceptReasonsQueryMock: any = ({ queryKey }: any) => {
         if (queryKey[0] === 'stopReasons') {
           return { data: conceptReasons, isLoading: false, error: null };
         }
         return { data: undefined, isLoading: false, error: null };
-      });
+      };
+      mockUseQuery.mockImplementation(conceptReasonsQueryMock);
 
       await act(async () => {
         renderForm({ stopMedication: mockMedicationRequest });
@@ -799,7 +796,7 @@ describe('StopMedicationForm', () => {
     });
 
     it('falls back to config-based stop reasons when API returns an empty array', async () => {
-      mockUseQuery.mockImplementation(({ queryKey }: any) => {
+      const fallbackReasonsQueryMock: any = ({ queryKey }: any) => {
         if (queryKey[0] === 'stopReasons') {
           return { data: [], isLoading: false, error: null };
         }
@@ -811,7 +808,8 @@ describe('StopMedicationForm', () => {
           };
         }
         return { data: undefined, isLoading: false, error: null };
-      });
+      };
+      mockUseQuery.mockImplementation(fallbackReasonsQueryMock);
 
       await act(async () => {
         renderForm({ stopMedication: mockMedicationRequest });

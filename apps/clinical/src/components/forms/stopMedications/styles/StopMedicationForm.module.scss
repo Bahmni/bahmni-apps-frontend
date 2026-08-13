@@ -23,6 +23,10 @@
   padding-bottom: $spacing-05;
 }
 
+.cancelField {
+  padding-bottom: $spacing-05;
+}
+
 .fieldLabel {
   @include type-style('label-01');
   display: block;
@@ -39,4 +43,36 @@
 .noteCounter {
   @include type-style('label-01');
   color: $text-secondary;
+}
+
+.medicationInfoCard {
+  background-color: $layer-01;
+  padding-block: $spacing-04;
+  padding-inline: 0 $spacing-04;
+  margin-bottom: $spacing-07;
+}
+
+.fieldsGrid {
+  --cds-grid-margin: 0;
+  --cds-grid-gutter: 0;
+}
+
+.infoCardName {
+  @include type-style('body-compact-01');
+  font-weight: 600;
+}
+
+.medicationRoute {
+  @include type-style('label-01');
+  color: $text-secondary;
+}
+
+.addNoteLink {
+  background: none;
+  border: none;
+  padding: 0;
+  color: $link-primary;
+  @include type-style('body-compact-01');
+  cursor: pointer;
+  text-decoration: underline;
 }

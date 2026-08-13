@@ -9,12 +9,14 @@ export interface StopMedicationState {
   medicationToStop: MedicationRequest | null;
   fieldConfig: StopMedicationConfig;
   errors: Record<string, string>;
+  isCancelVaccination: boolean;
 
   setStopDate: (date: Date) => void;
   setStopReason: (reason: string | null) => void;
   setNote: (note: string) => void;
   setMedicationToStop: (medication: MedicationRequest | null) => void;
   setFieldConfig: (config: StopMedicationConfig) => void;
+  setIsCancelVaccination: (value: boolean) => void;
   validate: () => boolean;
   hasData: () => boolean;
   reset: () => void;
@@ -34,6 +36,7 @@ export const useStopMedicationStore = create<StopMedicationState>(
     medicationToStop: null,
     fieldConfig: DEFAULT_FIELD_CONFIG,
     errors: {},
+    isCancelVaccination: false,
 
     setStopDate: (date: Date) => {
       set((state) => {
@@ -74,6 +77,10 @@ export const useStopMedicationStore = create<StopMedicationState>(
           note: { ...DEFAULT_FIELD_CONFIG.note, ...config.note },
         },
       });
+    },
+
+    setIsCancelVaccination: (value: boolean) => {
+      set({ isCancelVaccination: value });
     },
 
     validate: () => {
@@ -123,6 +130,7 @@ export const useStopMedicationStore = create<StopMedicationState>(
         medicationToStop: null,
         fieldConfig: DEFAULT_FIELD_CONFIG,
         errors: {},
+        isCancelVaccination: false,
       });
     },
   }),

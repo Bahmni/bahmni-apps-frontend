@@ -163,7 +163,7 @@ describe('stopMedicationService', () => {
         {
           resourceType: 'Parameters',
           parameter: [
-            { name: 'reason', valueString: 'Adverse reaction' },
+            { name: 'reason', valueCodeableConcept: { text: 'Adverse reaction' } },
             { name: 'effectiveDate', valueDate: '2025-06-10' },
             { name: 'note', valueString: 'Patient developed rash' },
           ],
@@ -192,7 +192,7 @@ describe('stopMedicationService', () => {
       expect(
         calledParams.parameter.find(
           (p: { name: string }) => p.name === 'reason',
-        ).valueString,
+        ).valueCodeableConcept?.text,
       ).toBe('Patient request');
       expect(
         calledParams.parameter.find(

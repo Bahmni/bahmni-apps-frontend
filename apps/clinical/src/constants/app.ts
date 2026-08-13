@@ -31,6 +31,3 @@ export const STOP_REASON_VALUESET_EXPAND_URL = (uuid: string) =>
   OPENMRS_FHIR_R4 + `/ValueSet/${uuid}/$expand`;
 export const STOP_MEDICATION_URL = (id: string) =>
   OPENMRS_FHIR_R4 + `/MedicationRequest/${id}/$stop`;
-
-export const CANCEL_VACCINATION_URL = (id: string) =>
-  OPENMRS_FHIR_R4 + `/MedicationRequest/${id}/$stop`;

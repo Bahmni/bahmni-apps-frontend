@@ -134,7 +134,7 @@ describe('stopMedications input control', () => {
       });
     });
 
-    it('dispatches audit event after success', async () => {
+    it('dispatches STOP_MEDICATION audit event after success (medication stop)', async () => {
       const control = getStopMedicationsControl()!;
 
       mockStopMedication.mockResolvedValueOnce({
@@ -155,11 +155,44 @@ describe('stopMedications input control', () => {
       });
       store.setStopReason('Patient request');
       store.setStopDate(new Date());
+      // isCancelVaccination is false by default
 
       await control.onDirectSubmit!();
 
       expect(mockDispatchAuditEvent).toHaveBeenCalledWith({
         eventType: AUDIT_LOG_EVENT_DETAILS.STOP_MEDICATION.eventType,
+        patientUuid: 'patient-uuid-1',
+        messageParams: {},
+      });
+    });
+
+    it('dispatches CANCEL_VACCINATION audit event when isCancelVaccination is true', async () => {
+      const control = getStopMedicationsControl()!;
+
+      mockStopMedication.mockResolvedValueOnce({
+        resourceType: 'MedicationRequest',
+        id: 'med-1',
+        status: 'stopped',
+        intent: 'order',
+        subject: { reference: 'Patient/patient-uuid-1' },
+      });
+
+      const store = useStopMedicationStore.getState();
+      store.setMedicationToStop({
+        resourceType: 'MedicationRequest',
+        id: 'med-1',
+        status: 'active',
+        intent: 'order',
+        subject: { reference: 'Patient/patient-uuid-1' },
+      });
+      store.setStopReason('Entered in Error');
+      store.setStopDate(new Date());
+      store.setIsCancelVaccination(true);
+
+      await control.onDirectSubmit!();
+
+      expect(mockDispatchAuditEvent).toHaveBeenCalledWith({
+        eventType: AUDIT_LOG_EVENT_DETAILS.CANCEL_VACCINATION.eventType,
         patientUuid: 'patient-uuid-1',
         messageParams: {},
       });

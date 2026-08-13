@@ -42,6 +42,7 @@ const handleStopAction = (
         editOnly: 'stopMedications',
         editTitle: 'STOP_MEDICATION_FORM_TITLE',
         editEncounterUuid: encounterUuid,
+        cancelReasonValueSetUuid: action.metadata?.cancelReasonValueSetUuid,
       },
     }),
   );

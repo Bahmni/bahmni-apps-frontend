@@ -19,19 +19,24 @@ registerInputControl({
   onDirectSubmit: async () => {
     const state = useStopMedicationStore.getState();
     if (!state.medicationToStop?.id || !state.stopReason) return;
+    const encounterUuid =
+      state.medicationToStop.encounter?.reference?.split('/').pop();
     await stopMedication({
       medicationRequestId: state.medicationToStop.id,
       reason: state.stopReason,
       effectiveDate: state.stopDate,
+      encounterUuid,
       note: state.note || undefined,
     });
     const patientUuid = state.medicationToStop.subject?.reference
       ?.split('/')
       .pop();
     if (patientUuid) {
+      const auditEventDetails = state.isCancelVaccination
+        ? AUDIT_LOG_EVENT_DETAILS.CANCEL_VACCINATION
+        : AUDIT_LOG_EVENT_DETAILS.STOP_MEDICATION;
       dispatchAuditEvent({
-        eventType: AUDIT_LOG_EVENT_DETAILS.STOP_MEDICATION
-          .eventType as AuditEventType,
+        eventType: auditEventDetails.eventType as AuditEventType,
         patientUuid,
         messageParams: {},
       });
