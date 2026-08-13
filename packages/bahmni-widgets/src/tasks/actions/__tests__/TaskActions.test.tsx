@@ -404,7 +404,7 @@ describe('TaskActions', () => {
           type: 'startConsultation',
           detail: expect.objectContaining({
             task: mockTaskViewModelWithInput.fhirResource,
-            taskFormName: 'Vitals',
+            formName: 'Vitals',
           }),
         }),
       );
@@ -564,7 +564,7 @@ describe('TaskActions', () => {
             detail: expect.objectContaining({
               editOnly: 'observationForms',
               editEncounterUuid: FILL_ENCOUNTER_UUID,
-              editFormName: 'Vitals',
+              formName: 'Vitals',
               directFormMode: true,
               task: mockTaskViewModelCompleted.fhirResource,
             }),

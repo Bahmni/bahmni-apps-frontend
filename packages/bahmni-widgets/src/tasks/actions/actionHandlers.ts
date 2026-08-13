@@ -19,7 +19,7 @@ const handleLaunchFormAction = (
     new CustomEvent('startConsultation', {
       detail: {
         encounterType: action.handlerConfig.encounterType,
-        taskFormName: formName,
+        formName,
         directFormMode: true,
         editOnly: 'observationForms',
         task: task.fhirResource,
@@ -66,8 +66,7 @@ const handleEditFormAction = async (
         editOnly: 'observationForms',
         editTitle: 'EDIT_OBSERVATION_FORM_TITLE',
         editEncounterUuid,
-        taskFormName: formName,
-        editFormName: formName,
+        formName,
         directFormMode: true,
         task: task.fhirResource,
       },

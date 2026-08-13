@@ -230,7 +230,7 @@ describe('ObservationFormsPanel', () => {
       render(
         <ObservationFormsPanel
           encounterSessionStartContext={{
-            taskFormName: 'Vitals',
+            formName: 'Vitals',
             directFormMode: true,
           }}
         />,
@@ -242,9 +242,9 @@ describe('ObservationFormsPanel', () => {
       );
     });
 
-    it('should reset store and add matching form when directFormMode is true and taskFormName is provided', () => {
+    it('should reset store and add matching form when directFormMode is true and formName is provided', () => {
       const encounterContext = {
-        taskFormName: 'Vitals',
+        formName: 'Vitals',
         directFormMode: true,
       };
 
@@ -260,7 +260,7 @@ describe('ObservationFormsPanel', () => {
 
     it('should not reset store when directFormMode is false', () => {
       const encounterContext = {
-        taskFormName: 'Vitals',
+        formName: 'Vitals',
         directFormMode: false,
       };
 
@@ -274,7 +274,7 @@ describe('ObservationFormsPanel', () => {
       expect(mockAddForm).not.toHaveBeenCalled();
     });
 
-    it('should not reset store when taskFormName is not provided', () => {
+    it('should not reset store when formName is not provided', () => {
       const encounterContext = {
         directFormMode: true,
       };
@@ -291,7 +291,7 @@ describe('ObservationFormsPanel', () => {
 
     it('should not add form when matching form is not found', () => {
       const encounterContext = {
-        taskFormName: 'Non-existent Form',
+        formName: 'Non-existent Form',
         directFormMode: true,
       };
 
@@ -313,7 +313,7 @@ describe('ObservationFormsPanel', () => {
       });
 
       const encounterContext = {
-        taskFormName: 'Vitals',
+        formName: 'Vitals',
         directFormMode: true,
       };
 
@@ -362,7 +362,7 @@ describe('ObservationFormsPanel', () => {
         <ObservationFormsPanel
           encounterSessionStartContext={{
             editOnly: 'observationForms',
-            editFormName: 'Vitals',
+            formName: 'Vitals',
             editEncounterUuid: 'encounter-uuid-1',
           }}
         />,
@@ -410,7 +410,7 @@ describe('ObservationFormsPanel', () => {
         <ObservationFormsPanel
           encounterSessionStartContext={{
             editOnly: 'observationForms',
-            editFormName: 'Vitals',
+            formName: 'Vitals',
             editEncounterUuid: 'encounter-uuid-1',
           }}
         />,
@@ -436,7 +436,7 @@ describe('ObservationFormsPanel', () => {
         <ObservationFormsPanel
           encounterSessionStartContext={{
             editOnly: 'observationForms',
-            editFormName: 'Vitals',
+            formName: 'Vitals',
             editEncounterUuid: 'encounter-uuid-1',
           }}
         />,
@@ -447,12 +447,12 @@ describe('ObservationFormsPanel', () => {
       });
     });
 
-    it('does not fetch when editFormName does not match any form', async () => {
+    it('does not fetch when formName does not match any form', async () => {
       render(
         <ObservationFormsPanel
           encounterSessionStartContext={{
             editOnly: 'observationForms',
-            editFormName: 'NonExistentForm',
+            formName: 'NonExistentForm',
             editEncounterUuid: 'encounter-uuid-1',
           }}
         />,
@@ -484,7 +484,7 @@ describe('ObservationFormsPanel', () => {
 
       const sessionContext = {
         editOnly: 'observationForms',
-        editFormName: 'Vitals',
+        formName: 'Vitals',
         editEncounterUuid: 'encounter-uuid-1',
       };
 
@@ -543,7 +543,7 @@ describe('ObservationFormsPanel', () => {
         <ObservationFormsPanel
           encounterSessionStartContext={{
             editOnly: 'observationForms',
-            editFormName: 'Vitals',
+            formName: 'Vitals',
             editEncounterUuid: 'encounter-uuid-1',
           }}
         />,
@@ -602,7 +602,7 @@ describe('ObservationFormsPanel', () => {
         <ObservationFormsPanel
           encounterSessionStartContext={{
             editOnly: 'observationForms',
-            editFormName: 'Vitals',
+            formName: 'Vitals',
             editEncounterUuid: 'encounter-uuid-1',
           }}
         />,
@@ -648,7 +648,7 @@ describe('ObservationFormsPanel', () => {
         <ObservationFormsPanel
           encounterSessionStartContext={{
             editOnly: 'observationForms',
-            editFormName: 'Vitals',
+            formName: 'Vitals',
             editEncounterUuid: 'encounter-uuid-1',
           }}
         />,
@@ -697,7 +697,7 @@ describe('ObservationFormsPanel', () => {
         <ObservationFormsPanel
           encounterSessionStartContext={{
             editOnly: 'observationForms',
-            editFormName: 'Vitals',
+            formName: 'Vitals',
             editEncounterUuid: 'encounter-uuid-1',
           }}
         />,

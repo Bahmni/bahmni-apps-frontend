@@ -9,7 +9,7 @@ export interface EncounterSessionStartContext {
   editTitle?: string;
   /** UUID of the encounter being edited (used by edit flows for all input controls). */
   editEncounterUuid?: string;
-  /** Form name to auto-open in the observation forms panel when editing. */
-  editFormName?: string;
+  /** Form name to auto-open in the observation forms panel (launch or edit mode). */
+  formName?: string;
   [key: string]: unknown;
 }
