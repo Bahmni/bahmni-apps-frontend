@@ -63,9 +63,6 @@ jest.mock('@bahmni/services', () => ({
       if (key === 'PATIENT_DASHBOARD_REDIRECT') {
         return 'Patient Dashboard';
       }
-      if (key === 'STARTING_VISIT') {
-        return 'Starting visit...';
-      }
       return key;
     },
   }),

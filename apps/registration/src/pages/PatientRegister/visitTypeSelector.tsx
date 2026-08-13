@@ -116,7 +116,7 @@ export const VisitTypeSelector = ({
             data-testid="start-visit-loading-overlay-test-id"
             aria-label="start-visit-loading-overlay-aria-label"
           >
-            <Loading active withOverlay description={t('STARTING_VISIT')} />
+            <Loading active withOverlay />
           </div>,
           document.body,
         )}
