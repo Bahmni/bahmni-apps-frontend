@@ -28,7 +28,7 @@ const ObservationFormsPanel: React.FC<ObservationFormsPanelProps> = ({
   const { episodeOfCare } = useClinicalAppData();
   const episodeOfCareUuids = episodeOfCare.map((eoc) => eoc.uuid);
 
-  const formName = encounterSessionStartContext?.formName;
+  const formName = encounterSessionStartContext?.formName as string | undefined;
   const directFormMode = encounterSessionStartContext?.directFormMode as
     | boolean
     | undefined;
