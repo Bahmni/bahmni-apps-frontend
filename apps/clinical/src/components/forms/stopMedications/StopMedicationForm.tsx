@@ -55,7 +55,9 @@ const StopMedicationForm: React.FC<StopMedicationFormProps> = React.memo(
       setFieldConfig,
     } = useStopMedicationStore();
 
-    const [hasNote, setHasNote] = useState(!!note);
+    const [hasNote, setHasNote] = useState(
+      !!note || fieldConfig.note?.isMandatory === true,
+    );
 
     // Stable ref for the DatePicker `value` prop — prevents the controlled-value cycle
     // where Carbon calls fp.setDate(value) on every Zustand update and clears the input
