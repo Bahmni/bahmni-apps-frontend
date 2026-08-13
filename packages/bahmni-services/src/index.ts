@@ -70,6 +70,8 @@ export {
   checkIfActiveVisitExists,
   createVisitForPatient,
   getActiveVisitByPatient,
+  getVisitLocationUUID,
+  createVisitWithFhirR4,
   type VisitType,
   type VisitTypes,
   type VisitData,
@@ -268,6 +270,7 @@ export {
 
 export {
   getActiveVisit,
+  getActiveVisitAtLoginLocation,
   getEncounterByUuid,
   getVisits,
   getPatientEncounters,
@@ -284,6 +287,7 @@ export {
 export {
   getEncountersAndVisitsForEOC,
   type EpisodeOfCareDataType,
+  getEpisodeOfCare,
 } from './episodeOfCareService';
 
 export {
@@ -346,6 +350,7 @@ export {
   transformContainerObservationsToForm2Observations,
   convertImmutableToPlainObject,
   extractNotesFromFormData,
+  formatDateForControl,
   getPatientFormData,
   type ObservationForm,
   type FormApiResponse,

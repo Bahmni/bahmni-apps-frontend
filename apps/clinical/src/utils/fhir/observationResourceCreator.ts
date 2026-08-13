@@ -2,23 +2,7 @@ import { getFhirObservations, FhirReference } from '@bahmni/form2-controls';
 import { Form2Observation, createBundleEntry } from '@bahmni/services';
 import { BundleEntry, Observation, Reference } from 'fhir/r4';
 
-/**
- * Creates FHIR bundle entries for a list of Form2Observations, using the
- * correct HTTP verb for each observation based on its uuid and voided state:
- *
- *   uuid present + voided:true          → DELETE  Observation/{uuid}
- *   uuid present + has value            → PUT     Observation/{uuid}
- *   no uuid + has value                 → POST    urn:uuid:{newUUID}
- *   no uuid + voided (never saved)      → skipped
- *
- * For grouped observations (groupMembers):
- *   - Children are processed first with the rules above.
- *   - If the parent has a uuid and ALL children are deleted → parent is also DELETE.
- *   - If the parent has a uuid and some children remain     → parent is POST with
- *     resource.id set to the existing uuid.  OpenMRS recognises the id and updates
- *     the obsGroup in place; new child entries are linked via hasMember.
- *   - If the parent has no uuid                             → parent is POST.
- */
+/** Creates FHIR bundle entries for a list of Form2Observations, choosing POST/PUT/DELETE/skip per obs's uuid/voided/unchanged state. */
 export function createObservationEntries(
   observations: Form2Observation[],
   subjectReference: Reference,
@@ -35,8 +19,7 @@ export function createObservationEntries(
     basedOnReference: basedOn as FhirReference | undefined,
   };
 
-  const processObservation = (obs: Form2Observation): string | null => {
-    // Returns the fullUrl/reference to use in a parent's hasMember (null = deleted).
+  const processObservation = (obs: Form2Observation): ChildResult => {
     if (obs.groupMembers && obs.groupMembers.length > 0) {
       return processGroupedObservation(
         obs,
@@ -64,59 +47,63 @@ type ObsOptions = {
 
 type ObsEntry = { resource: Observation; fullUrl: string };
 
-/**
- * Processes a grouped observation (obsGroup): collects hasMember refs for all
- * children, then delegates to the existing-group or new-group path.
- */
+/** Outcome of processing one observation, reported to its parent: hasMember ref (if any) and whether it still exists. */
+type ChildResult = {
+  ref: string | null;
+  stillExists: boolean;
+};
+
+const NONE: ChildResult = { ref: null, stillExists: false };
+
+/** Processes a grouped observation (obsGroup): collects hasMember refs, then delegates to existing/new-group path. */
 function processGroupedObservation(
   obs: Form2Observation,
-  processChild: (child: Form2Observation) => string | null,
+  processChild: (child: Form2Observation) => ChildResult,
   entries: BundleEntry[],
   options: ObsOptions,
-): string | null {
-  const hasMemberRefs: string[] = [];
-  for (const child of obs.groupMembers!) {
-    const ref = processChild(child);
-    if (ref) hasMemberRefs.push(ref);
-  }
-  const allChildrenDeleted = hasMemberRefs.length === 0;
+): ChildResult {
+  const childResults = obs.groupMembers!.map(processChild);
+  const hasMemberRefs = childResults
+    .map((r) => r.ref)
+    .filter((ref): ref is string => ref !== null);
+  const anyStillExists = childResults.some((r) => r.stillExists);
+  const anyChangedOrNew = hasMemberRefs.length > 0;
+
   if (obs.uuid) {
-    return processExistingGroup(
-      obs,
-      allChildrenDeleted,
-      hasMemberRefs,
-      entries,
-      options,
-    );
+    if (!anyStillExists) {
+      const url = `Observation/${obs.uuid}`;
+      entries.push(
+        createBundleEntry(
+          url,
+          { resourceType: 'Observation', id: obs.uuid } as Observation,
+          'DELETE',
+          url,
+        ),
+      );
+      return { ref: null, stillExists: false };
+    }
+    if (!anyChangedOrNew) {
+      // Nothing new/changed to link — skip the parent entirely (a removed child's own DELETE is sufficient).
+      return { ref: `Observation/${obs.uuid}`, stillExists: true };
+    }
+    const url = processExistingGroup(obs, hasMemberRefs, entries, options);
+    return url
+      ? { ref: url, stillExists: true }
+      : { ...NONE, stillExists: true };
   }
-  if (allChildrenDeleted) return null;
-  return postNewGroup(obs, hasMemberRefs, entries, options);
+
+  if (!anyStillExists) return NONE;
+  const url = postNewGroup(obs, hasMemberRefs, entries, options);
+  return url ? { ref: url, stillExists: true } : NONE;
 }
 
-/**
- * Handles an obsGroup that already exists in the DB (has a uuid).
- * All children deleted → DELETE the parent.
- * Some children remain → POST parent with uuid so OpenMRS updates in place.
- */
+/** PUTs an existing obsGroup parent with hasMember set to only its new/changed children. */
 function processExistingGroup(
   obs: Form2Observation,
-  allChildrenDeleted: boolean,
   hasMemberRefs: string[],
   entries: BundleEntry[],
   options: ObsOptions,
 ): string | null {
-  if (allChildrenDeleted) {
-    const url = `Observation/${obs.uuid}`;
-    entries.push(
-      createBundleEntry(
-        url,
-        { resourceType: 'Observation', id: obs.uuid } as Observation,
-        'DELETE',
-        url,
-      ),
-    );
-    return null;
-  }
   const [parentEntry] = getFhirObservations(
     [{ ...obs, groupMembers: [] }],
     options,
@@ -130,7 +117,7 @@ function processExistingGroup(
       reference: ref,
     }));
     const url = `Observation/${obs.uuid}`;
-    entries.push(createBundleEntry(url, parentEntry.resource, 'POST'));
+    entries.push(createBundleEntry(url, parentEntry.resource, 'PUT', url));
     return url;
   }
   return null;
@@ -159,30 +146,30 @@ function postNewGroup(
   return null;
 }
 
-/**
- * Processes a leaf (non-grouped) observation.
- * New obs → POST. Existing, not voided → PUT. Existing, voided → DELETE.
- * Never saved + voided → skipped.
- */
+/** Processes a leaf observation: new→POST, unchanged→skip, changed→PUT, voided→DELETE. */
 function processLeafObservation(
   obs: Form2Observation,
   entries: BundleEntry[],
   options: ObsOptions,
-): string | null {
+): ChildResult {
   if (!obs.uuid && !obs.voided) {
-    // Skip observations with no value — these are empty addMore trailing slots
-    // that CarbonContainer includes in getValue(). POSTing them triggers a
-    // ConceptComplex cast error on the backend for Complex-type concepts.
-    if (obs.value == null) return null;
+    // Skip empty addMore trailing slots — POSTing them errors on Complex-type concepts.
+    if (obs.value == null) return NONE;
     const [entry] = getFhirObservations([obs], options) as ObsEntry[];
     if (entry) {
       entries.push(createBundleEntry(entry.fullUrl, entry.resource, 'POST'));
-      return entry.fullUrl;
+      return { ref: entry.fullUrl, stillExists: true };
     }
-    return null;
+    return NONE;
   }
   if (obs.uuid && !obs.voided) {
-    return putExistingLeaf(obs, entries, options);
+    if (obs.unchanged) {
+      return { ref: null, stillExists: true };
+    }
+    const url = putExistingLeaf(obs, entries, options);
+    return url
+      ? { ref: url, stillExists: true }
+      : { ...NONE, stillExists: true };
   }
   if (obs.uuid && obs.voided) {
     const url = `Observation/${obs.uuid}`;
@@ -194,18 +181,13 @@ function processLeafObservation(
         url,
       ),
     );
-    return null;
+    return { ref: null, stillExists: false };
   }
   // No uuid + voided = was never saved, skip
-  return null;
+  return NONE;
 }
 
-/**
- * PUTs an existing leaf observation with its updated value.
- * `obs.status` carries the current FHIR status from the DB ("final" on a
- * first edit, "amended" on subsequent edits) — OpenMRS requires this field
- * to be present on PUT and rejects any value different from what it stores.
- */
+/** PUTs an existing leaf observation, echoing back its current FHIR status as OpenMRS requires. */
 function putExistingLeaf(
   obs: Form2Observation,
   entries: BundleEntry[],

@@ -6,6 +6,7 @@ import { Icon } from '../../molecules/icon/Icon';
 import styles from './styles/index.module.scss';
 
 const MAIN_DISPLAY_PANEL_DEFAULT_SIZE = 40;
+const MAIN_DISPLAY_PANEL_EXPANDED_SIZE = 0;
 const ACTION_AREA_PANEL_DEFAULT_SIZE = 60;
 const PANEL_MIN_SIZE = 40;
 
@@ -18,6 +19,7 @@ interface ActionAreaLayoutProps {
   isActionAreaVisible: boolean;
   hasSideNav?: boolean;
   layoutVariant?: LayoutVariant;
+  isActionAreaExpanded?: boolean;
 }
 
 /**
@@ -39,6 +41,7 @@ const ActionAreaLayout: React.FC<ActionAreaLayoutProps> = ({
   isActionAreaVisible,
   hasSideNav = true,
   layoutVariant = 'default',
+  isActionAreaExpanded = false,
 }) => {
   return (
     <div
@@ -52,15 +55,28 @@ const ActionAreaLayout: React.FC<ActionAreaLayoutProps> = ({
       )}
     >
       {headerWSideNav}
-      <Group orientation="horizontal" className={styles.panelGroup}>
+      <Group
+        orientation="horizontal"
+        className={classNames(
+          styles.panelGroup,
+          isActionAreaExpanded && styles.expanded,
+        )}
+      >
         <Panel
+          id="main-display-panel"
           defaultSize={MAIN_DISPLAY_PANEL_DEFAULT_SIZE}
-          minSize={PANEL_MIN_SIZE}
+          minSize={
+            isActionAreaExpanded
+              ? MAIN_DISPLAY_PANEL_EXPANDED_SIZE
+              : PANEL_MIN_SIZE
+          }
         >
           <div
             id="main-display-area"
             data-testid="main-display-area-test-id"
             aria-label="main-display-area-aria-label"
+            aria-hidden={isActionAreaExpanded}
+            {...(isActionAreaExpanded ? { inert: true } : {})}
             className={classNames(styles.mainDisplay, {
               [styles.expand]: !isActionAreaVisible && hasSideNav,
               [styles.collapsedModal]: isActionAreaVisible,
@@ -72,28 +88,31 @@ const ActionAreaLayout: React.FC<ActionAreaLayoutProps> = ({
         </Panel>
         {isActionAreaVisible && (
           <>
-            <Separator
-              id="panel-separator"
-              data-testid="panel-separator-test-id"
-              aria-label="panel-separator-aria-label"
-              className={styles.separator}
-            >
-              <div
-                id="panel-separator-grip"
-                data-testid="panel-separator-grip-test-id"
-                aria-label="panel-separator-grip-aria-label"
-                className={styles.separatorGrip}
+            {!isActionAreaExpanded && (
+              <Separator
+                id="panel-separator"
+                data-testid="panel-separator-test-id"
+                aria-label="panel-separator-aria-label"
+                className={styles.separator}
               >
-                <Icon
-                  id="separator-grip-icon"
-                  data-testid="separator-grip-icon-test-id"
-                  aria-label="separator-grip-icon-aria-label"
-                  name="fa-grip-vertical"
-                  size={ICON_SIZE.XS}
-                />
-              </div>
-            </Separator>
+                <div
+                  id="panel-separator-grip"
+                  data-testid="panel-separator-grip-test-id"
+                  aria-label="panel-separator-grip-aria-label"
+                  className={styles.separatorGrip}
+                >
+                  <Icon
+                    id="separator-grip-icon"
+                    data-testid="separator-grip-icon-test-id"
+                    aria-label="separator-grip-icon-aria-label"
+                    name="fa-grip-vertical"
+                    size={ICON_SIZE.XS}
+                  />
+                </div>
+              </Separator>
+            )}
             <Panel
+              id="action-area-panel"
               defaultSize={ACTION_AREA_PANEL_DEFAULT_SIZE}
               minSize={PANEL_MIN_SIZE}
             >

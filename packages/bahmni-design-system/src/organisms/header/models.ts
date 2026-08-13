@@ -36,19 +36,17 @@ export interface HeaderGlobalAction {
  * Props for the Header component
  */
 export interface HeaderProps {
+  brandName?: string;
+  brandPrefix?: string;
+  brandHref?: string;
   breadcrumbItems?: HeaderBreadcrumbItem[];
   globalActions?: HeaderGlobalAction[];
+  globalFeatures?: ReactNode[];
   sideNavItems?: HeaderSideNavItem[];
   activeSideNavItemId?: string | null;
   onSideNavItemClick?: (itemId: string) => void;
   isRail?: boolean;
   ariaLabel?: string;
   extraContent?: ReactNode;
-  /**
-   * A self-contained component (e.g. the user menu) rendered directly in the
-   * header global bar, without the HeaderGlobalAction icon-button wrapper used
-   * for `globalActions`. Use this for elements that already manage their own
-   * button and menu.
-   */
   userMenu?: ReactNode;
 }

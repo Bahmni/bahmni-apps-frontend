@@ -7,9 +7,10 @@ import {
   formatGender,
   getFormattedAge,
   hasPrivilege,
+  resolveComboBoxItems,
   type UserPrivilege,
 } from '@bahmni/services';
-import { format } from 'date-fns';
+import { endOfDay, format } from 'date-fns';
 import jsonata from 'jsonata';
 import { v4 as uuidv4 } from 'uuid';
 import {
@@ -24,6 +25,7 @@ import {
   CriterionValue,
   FieldConfig,
   InputConfig,
+  LookupOption,
   ResolvedRow,
   ScalarValue,
   SearchCondition,
@@ -48,20 +50,42 @@ export const formatSearchResult = (
   return t(`COMMON_SEARCH_RESULT_${camelToScreamingSnakeCase(raw)}`);
 };
 
+const TRANSFORM_KEYS = {
+  formatDate: 'formatDate',
+  formatTime: 'formatTime',
+  formatDateTime: 'formatDateTime',
+  formatAge: 'formatAge',
+  formatGender: 'formatGender',
+  formatCountry: 'formatCountry',
+  formatSearchResult: 'formatSearchResult',
+} as const;
+
 export const resultTransforms: Record<string, ResultTransform> = {
-  formatDate: (value: unknown, t: (key: string) => string) =>
+  [TRANSFORM_KEYS.formatDate]: (value: unknown, t: (key: string) => string) =>
     formatDateTime(value as DateTimeValue, t).formattedResult,
-  formatTime: (value: unknown, t: (key: string) => string) =>
+  [TRANSFORM_KEYS.formatTime]: (value: unknown, t: (key: string) => string) =>
     formatDateTime(value as DateTimeValue, t, false, DEFAULT_TIME_FORMAT)
       .formattedResult,
-  formatDateTime: (value: unknown, t: (key: string) => string) =>
-    formatDateTime(value as DateTimeValue, t, true).formattedResult,
-  formatAge: (value: unknown, t: (key: string) => string) =>
+  [TRANSFORM_KEYS.formatDateTime]: (
+    value: unknown,
+    t: (key: string) => string,
+  ) => formatDateTime(value as DateTimeValue, t, true).formattedResult,
+  [TRANSFORM_KEYS.formatAge]: (value: unknown, t: (key: string) => string) =>
     getFormattedAge(value as string | number, t),
-  formatGender,
-  formatCountry,
-  formatSearchResult,
+  [TRANSFORM_KEYS.formatGender]: formatGender,
+  [TRANSFORM_KEYS.formatCountry]: formatCountry,
+  [TRANSFORM_KEYS.formatSearchResult]: formatSearchResult,
 };
+
+const DISPLAY_KEY_TRANSFORMS: string[] = [
+  TRANSFORM_KEYS.formatDate,
+  TRANSFORM_KEYS.formatTime,
+  TRANSFORM_KEYS.formatDateTime,
+  TRANSFORM_KEYS.formatAge,
+];
+
+export const needsDisplayKey = (transform?: string): boolean =>
+  !!transform && DISPLAY_KEY_TRANSFORMS.includes(transform);
 
 export const toSearchAuditEventType = (
   context: SearchContextConfig['context'],
@@ -221,8 +245,8 @@ const buildCondition = ({ field, value }: ResolvedRow): SearchCondition => {
     return {
       operator: 'AND',
       conditions: [
-        { field: field.key, comparator: 'gt', value: value.from.value! },
-        { field: field.key, comparator: 'lt', value: value.to!.value! },
+        { field: field.key, comparator: 'ge', value: value.from.value! },
+        { field: field.key, comparator: 'le', value: value.to!.value! },
       ],
     };
   }
@@ -246,8 +270,11 @@ const buildCondition = ({ field, value }: ResolvedRow): SearchCondition => {
   return { field: field.key, comparator: 'eq', value: value.value };
 };
 
-const toLocalIso = (v: string): string =>
-  format(new Date(v), LOCAL_ISO_DATE_FORMAT);
+const toLocalIso = (v: string, isEndOfDay = false): string =>
+  format(
+    isEndOfDay ? endOfDay(new Date(v)) : new Date(v),
+    LOCAL_ISO_DATE_FORMAT,
+  );
 
 const localizeDateTime = (value: CriterionValue): CriterionValue => {
   if (isScalarValue(value)) return { value: toLocalIso(value.value) };
@@ -259,11 +286,33 @@ const localizeDateTime = (value: CriterionValue): CriterionValue => {
     ...(value.to && {
       to: {
         ...value.to,
-        value: value.to.value ? toLocalIso(value.to.value) : null,
+        value: value.to.value ? toLocalIso(value.to.value, true) : null,
       },
     }),
   };
 };
+
+export function getLookupComboBoxItems(
+  inputValue: string | null,
+  options: LookupOption[],
+  isLoading: boolean,
+  isError: boolean,
+  messages: { loading: string; error: string; empty: string },
+): (LookupOption & { disabled?: boolean })[] {
+  if (!inputValue) return [];
+
+  const filtered = options.filter((option) =>
+    option.label.toLowerCase().includes(inputValue.toLowerCase()),
+  );
+
+  return resolveComboBoxItems<LookupOption>(
+    isLoading,
+    isError,
+    filtered,
+    (message) => ({ uuid: '', label: message }),
+    messages,
+  );
+}
 
 export const resolveRows = (
   rows: CriterionRow[],
