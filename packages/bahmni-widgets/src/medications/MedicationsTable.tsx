@@ -280,10 +280,12 @@ const MedicationsTable: React.FC<WidgetProps> = ({
           <>
             <div className={styles.medicationName}>
               <span>{row.name}</span>
-              {(row.note ?? row.cancellationNote) && (
+              {(!!row.note || !!row.cancellationNote) && (
                 <TooltipIcon
                   iconName="fa-file-lines"
-                  ariaLabel={row.note ?? row.cancellationNote ?? ''}
+                  ariaLabel={[row.cancellationNote, row.note]
+                    .filter(Boolean)
+                    .join(' | ')}
                   content={
                     <>
                       {row.cancellationNote && (

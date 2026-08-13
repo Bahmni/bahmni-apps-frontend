@@ -1,61 +1,32 @@
-import { get, post, findActiveEncounterInSession } from '@bahmni/services';
+import { get, createBundleEntry } from '@bahmni/services';
 import { Bundle, ValueSet } from 'fhir/r4';
-import { useEncounterDetailsStore } from '../../stores/encounterDetailsStore';
-import { createEncounterResource } from '../../utils/fhir/encounterResourceCreator';
-import { postEncounterBundle } from '../encounterBundleService';
-import { fetchStopReasons, stopMedication } from '../stopMedicationService';
+import {
+  fetchStopReasons,
+  createStopMedicationEntry,
+} from '../stopMedicationService';
 
 jest.mock('@bahmni/services', () => ({
   ...jest.requireActual('@bahmni/services'),
   get: jest.fn(),
-  post: jest.fn(),
-  createEncounterBundle: jest.fn((entries) => ({
-    resourceType: 'Bundle',
-    type: 'transaction',
-    entry: entries,
+  createBundleEntry: jest.fn((fullUrl, resource, method) => ({
+    fullUrl,
+    resource,
+    request: { method, url: resource.resourceType },
   })),
-  findActiveEncounterInSession: jest.fn(),
-}));
-
-jest.mock('../encounterBundleService', () => ({
-  postEncounterBundle: jest.fn(),
-  createEncounterBundleEntry: jest.fn((existing, resource) => ({ resource })),
-}));
-
-jest.mock('../../utils/fhir/encounterResourceCreator', () => ({
-  createEncounterResource: jest.fn(() => ({ resourceType: 'Encounter' })),
-}));
-
-jest.mock('../../stores/encounterDetailsStore', () => ({
-  useEncounterDetailsStore: {
-    getState: jest.fn(() => ({
-      selectedEncounterType: { uuid: 'enc-type-uuid', name: 'Consultation' },
-      patientUUID: 'patient-1',
-      practitioner: { uuid: 'practitioner-uuid' },
-      encounterParticipants: [],
-      activeVisit: { id: 'visit-uuid' },
-      selectedLocation: { uuid: 'location-uuid' },
-    })),
-  },
 }));
 
 const mockGet = get as jest.MockedFunction<typeof get>;
-const mockPost = post as jest.MockedFunction<typeof post>;
-const mockPostEncounterBundle = postEncounterBundle as jest.MockedFunction<
-  typeof postEncounterBundle
->;
-const mockFindActiveEncounterInSession =
-  findActiveEncounterInSession as jest.MockedFunction<
-    typeof findActiveEncounterInSession
-  >;
+
+const baseCtx = {
+  encounterReference: 'enc-uuid-1',
+  encounterSubject: { reference: 'Patient/patient-1' },
+  practitionerUUID: 'practitioner-uuid',
+  consultationDate: new Date('2025-06-10'),
+};
 
 describe('stopMedicationService', () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    mockFindActiveEncounterInSession.mockResolvedValue(null);
-    mockPostEncounterBundle.mockResolvedValue({
-      entry: [{ resource: { id: 'enc-uuid-1' } }],
-    } as any);
   });
 
   describe('fetchStopReasons', () => {
@@ -101,12 +72,11 @@ describe('stopMedicationService', () => {
     });
 
     it('should use custom concept set name when provided', async () => {
-      const searchBundle: Bundle = {
+      mockGet.mockResolvedValueOnce({
         resourceType: 'Bundle',
         type: 'searchset',
         entry: [],
-      };
-      mockGet.mockResolvedValueOnce(searchBundle);
+      });
 
       await fetchStopReasons('Custom Stop Reasons');
 
@@ -130,103 +100,59 @@ describe('stopMedicationService', () => {
     });
   });
 
-  describe('stopMedication', () => {
+  describe('createStopMedicationEntry', () => {
     const baseParams = {
       medicationRequestId: 'med-req-1',
       patientUuid: 'patient-1',
       reason: { uuid: 'reason-uuid-1', display: 'Refused To Take' },
-      effectiveDate: new Date('2025-06-10'),
+      effectiveDate: new Date(2025, 5, 10),
+      ctx: baseCtx,
     };
 
-    it('should create encounter then POST MedicationRequest with status=stopped', async () => {
-      mockPost.mockResolvedValueOnce({});
+    it('should build a stopped MedicationRequest bundle entry with encounter reference', () => {
+      createStopMedicationEntry(baseParams);
 
-      await stopMedication(baseParams);
-
-      expect(mockPostEncounterBundle).toHaveBeenCalledTimes(1);
-      expect(mockPost).toHaveBeenCalledWith(
-        expect.stringContaining('/MedicationRequest'),
-        expect.objectContaining({
-          status: 'stopped',
-          priorPrescription: { reference: 'MedicationRequest/med-req-1' },
-          encounter: { reference: 'Encounter/enc-uuid-1' },
-          statusReason: expect.objectContaining({ text: 'Refused To Take' }),
-        }),
-      );
-    });
-
-    it('should reuse existing session encounter when available', async () => {
-      mockFindActiveEncounterInSession.mockResolvedValue({
-        id: 'existing-enc-uuid',
-      } as any);
-      mockPost.mockResolvedValueOnce({});
-
-      await stopMedication(baseParams);
-
-      expect(mockPostEncounterBundle).not.toHaveBeenCalled();
-      expect(mockPost).toHaveBeenCalledWith(
-        expect.any(String),
-        expect.objectContaining({
-          encounter: { reference: 'Encounter/existing-enc-uuid' },
-        }),
-      );
-    });
-
-    it('should include cancellation note with note-category extension when note provided', async () => {
-      mockPost.mockResolvedValueOnce({});
-
-      await stopMedication({ ...baseParams, note: 'Patient refused' });
-
-      const body = mockPost.mock.calls[0][1] as any;
-      expect(body.note[0].text).toBe('Patient refused');
-      expect(body.note[0].extension[0].valueCode).toBe('cancellation-note');
-    });
-
-    it('should omit note field when note is not provided', async () => {
-      mockPost.mockResolvedValueOnce({});
-
-      await stopMedication(baseParams);
-
-      expect((mockPost.mock.calls[0][1] as any).note).toBeUndefined();
-    });
-
-    it('should include dateStopped extension with formatted date', async () => {
-      mockPost.mockResolvedValueOnce({});
-      const localMidnight = new Date(2025, 5, 10);
-
-      await stopMedication({ ...baseParams, effectiveDate: localMidnight });
-
-      const body = mockPost.mock.calls[0][1] as any;
-      expect(body.extension[0].valueDateTime).toBe('2025-06-10');
-    });
-
-    it('should use practitioner as encounter participant when encounterParticipants empty', async () => {
-      mockPost.mockResolvedValueOnce({});
-
-      await stopMedication(baseParams);
-
-      expect(createEncounterResource).toHaveBeenCalledWith(
-        expect.any(String),
-        expect.any(String),
-        'patient-1',
-        ['practitioner-uuid'],
-        expect.any(String),
-        [],
-        expect.any(String),
-        null,
-      );
-    });
-
-    it('should throw when missing session context', async () => {
-      (useEncounterDetailsStore.getState as jest.Mock).mockReturnValueOnce({
-        selectedEncounterType: null,
-        patientUUID: null,
-        activeVisit: null,
-        selectedLocation: null,
+      const resource = (createBundleEntry as jest.Mock).mock.calls[0][1];
+      expect(resource.status).toBe('stopped');
+      expect(resource.priorPrescription).toEqual({
+        reference: 'MedicationRequest/med-req-1',
       });
+      expect(resource.encounter).toEqual({ reference: 'enc-uuid-1' });
+      expect(resource.statusReason).toEqual({
+        coding: [{ code: 'reason-uuid-1', display: 'Refused To Take' }],
+        text: 'Refused To Take',
+      });
+    });
 
-      await expect(stopMedication(baseParams)).rejects.toThrow(
-        'Missing session context',
+    it('should include dateStopped extension with formatted date', () => {
+      createStopMedicationEntry(baseParams);
+
+      const resource = (createBundleEntry as jest.Mock).mock.calls[0][1];
+      expect(resource.extension[0].valueDateTime).toBe('2025-06-10');
+    });
+
+    it('should include cancellation note with note-category extension when note provided', () => {
+      createStopMedicationEntry({ ...baseParams, note: 'Patient refused' });
+
+      const resource = (createBundleEntry as jest.Mock).mock.calls[0][1];
+      expect(resource.note[0].text).toBe('Patient refused');
+      expect(resource.note[0].extension[0].valueCode).toBe('cancellation-note');
+    });
+
+    it('should omit note field when note is not provided', () => {
+      createStopMedicationEntry(baseParams);
+
+      const resource = (createBundleEntry as jest.Mock).mock.calls[0][1];
+      expect(resource.note).toBeUndefined();
+    });
+
+    it('should call createBundleEntry with POST method', () => {
+      createStopMedicationEntry(baseParams);
+
+      expect(createBundleEntry).toHaveBeenCalledWith(
+        'urn:uuid:stop-med-req-1',
+        expect.any(Object),
+        'POST',
       );
     });
   });

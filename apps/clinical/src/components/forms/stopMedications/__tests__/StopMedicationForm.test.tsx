@@ -6,10 +6,6 @@ import type { EncounterSessionStartContext } from '../../../../events/startConsu
 import { useStopMedicationStore } from '../../../../stores/stopMedicationsStore';
 import StopMedicationForm from '../StopMedicationForm';
 
-// ---------------------------------------------------------------------------
-// Module mocks
-// ---------------------------------------------------------------------------
-
 // Capture the onChange prop injected into the Dropdown so tests can invoke it
 // directly without relying on Carbon's internal DOM interactions.
 let capturedDropdownOnChange:
@@ -62,10 +58,6 @@ jest.mock('../styles/StopMedicationForm.module.scss', () => ({}), {
   virtual: true,
 });
 
-// ---------------------------------------------------------------------------
-// Test data
-// ---------------------------------------------------------------------------
-
 const mockMedicationRequest = {
   resourceType: 'MedicationRequest' as const,
   id: 'med-uuid-1',
@@ -85,10 +77,6 @@ const defaultFieldConfig = {
   stopReason: { isVisible: true, isMandatory: true },
   note: { isVisible: true, isMandatory: false },
 };
-
-// ---------------------------------------------------------------------------
-// Store mock factory
-// ---------------------------------------------------------------------------
 
 function makeStoreMock(
   overrides: Record<string, unknown> = {},
@@ -115,10 +103,6 @@ function buildStoreMock(overrides: Record<string, unknown> = {}) {
 const mockUseQuery = jest.mocked(useQuery);
 const mockUseStopMedicationStore = jest.mocked(useStopMedicationStore);
 
-// ---------------------------------------------------------------------------
-// Default query mock
-// ---------------------------------------------------------------------------
-
 const defaultQueryMock = ({ queryKey }: { queryKey: readonly unknown[] }) => {
   if (queryKey[0] === 'stopReasons') {
     return { data: mockStopReasons, isLoading: false, error: null };
@@ -130,10 +114,6 @@ const defaultQueryMock = ({ queryKey }: { queryKey: readonly unknown[] }) => {
   return { data: undefined, isLoading: false, error: null };
 };
 
-// ---------------------------------------------------------------------------
-// Render helper
-// ---------------------------------------------------------------------------
-
 const renderForm = (
   encounterSessionStartContext?: EncounterSessionStartContext,
 ) =>
@@ -143,10 +123,6 @@ const renderForm = (
     />,
   );
 
-// ---------------------------------------------------------------------------
-// Tests
-// ---------------------------------------------------------------------------
-
 describe('StopMedicationForm', () => {
   beforeEach(() => {
     jest.clearAllMocks();
@@ -155,9 +131,7 @@ describe('StopMedicationForm', () => {
     mockUseStopMedicationStore.mockReturnValue(makeStoreMock() as any);
   });
 
-  // -------------------------------------------------------------------------
   // 1. Returns null when no stopMedication in context
-  // -------------------------------------------------------------------------
   describe('when no stopMedication is provided', () => {
     it('returns null when encounterSessionStartContext is undefined', () => {
       const { container } = renderForm(undefined);
@@ -175,9 +149,7 @@ describe('StopMedicationForm', () => {
     });
   });
 
-  // -------------------------------------------------------------------------
   // 2. Renders medication name when stopMedication is provided
-  // -------------------------------------------------------------------------
   describe('when stopMedication is provided', () => {
     it('renders the medication name from medicationReference.display', async () => {
       await act(async () => {
@@ -203,9 +175,7 @@ describe('StopMedicationForm', () => {
     });
   });
 
-  // -------------------------------------------------------------------------
   // 3. Renders stop date picker, stop reason dropdown, note textarea
-  // -------------------------------------------------------------------------
   describe('field rendering with default field config', () => {
     it('renders the stop date picker input', async () => {
       await act(async () => {
@@ -252,9 +222,7 @@ describe('StopMedicationForm', () => {
     });
   });
 
-  // -------------------------------------------------------------------------
   // 4. Calls setMedicationToStop when stopMedication is provided
-  // -------------------------------------------------------------------------
   describe('setMedicationToStop side effect', () => {
     it('calls setMedicationToStop with the medication on mount', async () => {
       const setMedicationToStop = jest.fn();
@@ -284,9 +252,7 @@ describe('StopMedicationForm', () => {
     });
   });
 
-  // -------------------------------------------------------------------------
   // 5. Stop reason dropdown onChange - selecting a reason calls setStopReason
-  // -------------------------------------------------------------------------
   describe('stop reason dropdown onChange', () => {
     it('calls setStopReason with the selected reason display when a new item is chosen', async () => {
       const setStopReason = jest.fn();
@@ -325,9 +291,7 @@ describe('StopMedicationForm', () => {
     });
   });
 
-  // -------------------------------------------------------------------------
   // 6. Stop reason dropdown deselection - clicking same item sets null
-  // -------------------------------------------------------------------------
   describe('stop reason deselection', () => {
     it('calls setStopReason(null) when the already-selected reason is chosen again', async () => {
       const setStopReason = jest.fn();
@@ -376,9 +340,7 @@ describe('StopMedicationForm', () => {
     });
   });
 
-  // -------------------------------------------------------------------------
   // 7. Note textarea onChange - calls setNote
-  // -------------------------------------------------------------------------
   describe('note textarea onChange', () => {
     it('calls setNote when the textarea value changes within the 100-char limit', async () => {
       const setNote = jest.fn();
@@ -399,9 +361,7 @@ describe('StopMedicationForm', () => {
     });
   });
 
-  // -------------------------------------------------------------------------
   // 8. Note character limit enforced (no change beyond 100 chars)
-  // -------------------------------------------------------------------------
   describe('note character limit', () => {
     it('does not call setNote when the new value exceeds 100 characters', async () => {
       const setNote = jest.fn();
@@ -442,9 +402,7 @@ describe('StopMedicationForm', () => {
     });
   });
 
-  // -------------------------------------------------------------------------
   // 9. Note counter displays correct count
-  // -------------------------------------------------------------------------
   describe('note character counter', () => {
     it('displays "0/100" when note is empty', async () => {
       mockUseStopMedicationStore.mockReturnValue(
@@ -487,9 +445,7 @@ describe('StopMedicationForm', () => {
     });
   });
 
-  // -------------------------------------------------------------------------
   // 10. Date picker onChange calls setStopDate when a date is selected
-  // -------------------------------------------------------------------------
   describe('date picker onChange', () => {
     it('renders the date picker input mounted in jsdom', async () => {
       await act(async () => {
@@ -511,9 +467,7 @@ describe('StopMedicationForm', () => {
     });
   });
 
-  // -------------------------------------------------------------------------
   // 11. Shows error text when errors.stopDate is set
-  // -------------------------------------------------------------------------
   describe('stopDate error display', () => {
     it('shows the stopDate error text when errors.stopDate is set', async () => {
       mockUseStopMedicationStore.mockReturnValue(
@@ -544,9 +498,7 @@ describe('StopMedicationForm', () => {
     });
   });
 
-  // -------------------------------------------------------------------------
   // 12. Shows error text when errors.stopReason is set
-  // -------------------------------------------------------------------------
   describe('stopReason error display', () => {
     it('shows the stopReason error text when errors.stopReason is set', async () => {
       mockUseStopMedicationStore.mockReturnValue(
@@ -576,9 +528,7 @@ describe('StopMedicationForm', () => {
     });
   });
 
-  // -------------------------------------------------------------------------
   // 13. Hides stop date field when fieldConfig.stopDate.isVisible = false
-  // -------------------------------------------------------------------------
   describe('fieldConfig.stopDate visibility', () => {
     it('does not render the stop date picker when isVisible is false', async () => {
       mockUseStopMedicationStore.mockReturnValue(
@@ -610,9 +560,7 @@ describe('StopMedicationForm', () => {
     });
   });
 
-  // -------------------------------------------------------------------------
   // 14. Hides stop reason field when fieldConfig.stopReason.isVisible = false
-  // -------------------------------------------------------------------------
   describe('fieldConfig.stopReason visibility', () => {
     it('does not render the stop reason dropdown when isVisible is false', async () => {
       mockUseStopMedicationStore.mockReturnValue(
@@ -644,9 +592,7 @@ describe('StopMedicationForm', () => {
     });
   });
 
-  // -------------------------------------------------------------------------
   // 15. Hides note field when fieldConfig.note.isVisible = false
-  // -------------------------------------------------------------------------
   describe('fieldConfig.note visibility', () => {
     it('does not render the note textarea when isVisible is false', async () => {
       mockUseStopMedicationStore.mockReturnValue(
@@ -700,9 +646,7 @@ describe('StopMedicationForm', () => {
     });
   });
 
-  // -------------------------------------------------------------------------
   // Additional: all three fields hidden simultaneously
-  // -------------------------------------------------------------------------
   it('renders only the medication name and tile when all fields are hidden', async () => {
     mockUseStopMedicationStore.mockReturnValue(
       makeStoreMock({
@@ -730,10 +674,8 @@ describe('StopMedicationForm', () => {
     ).not.toBeInTheDocument();
   });
 
-  // -------------------------------------------------------------------------
   // Additional: setFieldConfig is called when medicationConfig has
   // stopMedicationFields
-  // -------------------------------------------------------------------------
   describe('setFieldConfig side effect', () => {
     it('calls setFieldConfig when medicationConfig provides stopMedicationFields', async () => {
       const setFieldConfig = jest.fn();
@@ -796,9 +738,7 @@ describe('StopMedicationForm', () => {
     });
   });
 
-  // -------------------------------------------------------------------------
   // Additional: stop reasons source selection
-  // -------------------------------------------------------------------------
   describe('stop reasons source', () => {
     it('uses concept-based stop reasons from API when available', async () => {
       const conceptReasons = [
@@ -844,6 +784,61 @@ describe('StopMedicationForm', () => {
       expect(
         screen.getByTestId('stop-medication-reason-dropdown'),
       ).toBeInTheDocument();
+    });
+  });
+
+  describe('mandatory note behavior', () => {
+    it('renders note textarea immediately when note is mandatory', async () => {
+      mockUseStopMedicationStore.mockReturnValue(
+        makeStoreMock({
+          fieldConfig: {
+            ...defaultFieldConfig,
+            note: { isVisible: true, isMandatory: true },
+          },
+          note: '',
+        }) as any,
+      );
+
+      await act(async () => {
+        renderForm({ stopMedication: mockMedicationRequest });
+      });
+
+      expect(
+        screen.getByPlaceholderText('STOP_MEDICATION_NOTE_PLACEHOLDER'),
+      ).toBeInTheDocument();
+    });
+
+    it('does not show Add Note link when note is mandatory', async () => {
+      mockUseStopMedicationStore.mockReturnValue(
+        makeStoreMock({
+          fieldConfig: {
+            ...defaultFieldConfig,
+            note: { isVisible: true, isMandatory: true },
+          },
+          note: '',
+        }) as any,
+      );
+
+      await act(async () => {
+        renderForm({ stopMedication: mockMedicationRequest });
+      });
+
+      expect(
+        screen.queryByTestId('stop-medication-add-note-link'),
+      ).not.toBeInTheDocument();
+    });
+  });
+
+  describe('date picker props', () => {
+    it('renders with placeholder dd/mm/yyyy', async () => {
+      await act(async () => {
+        renderForm({ stopMedication: mockMedicationRequest });
+      });
+
+      expect(screen.getByTestId('stop-medication-date-input')).toHaveAttribute(
+        'placeholder',
+        'dd/mm/yyyy',
+      );
     });
   });
 });
