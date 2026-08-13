@@ -31,7 +31,7 @@ export interface Person {
   dead: boolean;
   deathDate: string | null;
   causeOfDeath: string | null;
-  preferredName: PersonName;
+  preferredName: PersonName | null;
   voided: boolean;
   birthtime: string | null;
   deathdateEstimated: boolean;
