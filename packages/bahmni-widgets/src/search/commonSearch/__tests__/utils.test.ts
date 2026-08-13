@@ -69,6 +69,11 @@ jest.mock('date-fns', () => ({
     const shifted = new Date(_date.getTime() + IST_OFFSET_MS);
     return shifted.toISOString().slice(0, -1) + '+0530';
   },
+  endOfDay: (_date: Date) => {
+    const ist = new Date(_date.getTime() + IST_OFFSET_MS);
+    ist.setUTCHours(23, 59, 59, 999);
+    return new Date(ist.getTime() - IST_OFFSET_MS);
+  },
 }));
 
 jest.mock('@bahmni/services', () => ({
@@ -564,7 +569,7 @@ describe('resolveRows', () => {
       row: mockRowDateRange,
       expected: {
         from: { value: '2026-01-15T05:30:00.000+0530', comparator: null },
-        to: { value: '2026-07-24T05:29:59.000+0530', comparator: null },
+        to: { value: '2026-07-23T23:59:59.999+0530', comparator: null },
       },
     },
     {
@@ -634,7 +639,7 @@ describe('buildPayload', () => {
       },
     },
     {
-      label: 'range field → AND group with gt from and lt to',
+      label: 'range field → AND group with ge from and le to',
       resolvedRows: [mockResolvedRangeRow],
       entity: 'patient',
       expected: {
@@ -645,8 +650,8 @@ describe('buildPayload', () => {
             {
               operator: 'AND',
               conditions: [
-                { field: 'patient.age', comparator: 'gt', value: '20' },
-                { field: 'patient.age', comparator: 'lt', value: '50' },
+                { field: 'patient.age', comparator: 'ge', value: '20' },
+                { field: 'patient.age', comparator: 'le', value: '50' },
               ],
             },
             locationCondition,
