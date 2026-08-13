@@ -4,10 +4,17 @@ import {
   PROGRAM_DETAILS_URL,
   PATIENT_PROGRAMS_URL,
   PATIENT_PROGRAMS_PAGE_URL,
+  ALL_PROGRAMS_URL,
 } from '../constants';
-import { ProgramEnrollment, PatientProgramsResponse } from '../model';
+import {
+  ProgramEnrollment,
+  PatientProgramsResponse,
+  Program,
+  ProgramsResponse,
+} from '../model';
 import {
   extractAttributes,
+  getAllPrograms,
   getCurrentStateName,
   getPatientPrograms,
   getPatientProgramsPage,
@@ -294,6 +301,74 @@ describe('programService', () => {
       await expect(getPatientProgramsPage(patientUUID)).rejects.toThrow(
         'Network error',
       );
+    });
+  });
+
+  describe('getAllPrograms', () => {
+    const mockPrograms: Program[] = [
+      {
+        uuid: 'program-1',
+        name: 'HIV Program',
+        display: 'HIV Program',
+        retired: false,
+        concept: {
+          uuid: 'concept-1',
+          display: 'HIV Program Concept',
+          links: [],
+          resourceVersion: '1.0',
+        },
+        allWorkflows: [],
+        links: [],
+        resourceVersion: '1.0',
+      },
+      {
+        uuid: 'program-2',
+        name: 'TB Program',
+        display: 'TB Program',
+        retired: true,
+        concept: {
+          uuid: 'concept-2',
+          display: 'TB Program Concept',
+          links: [],
+          resourceVersion: '1.0',
+        },
+        allWorkflows: [],
+        links: [],
+        resourceVersion: '1.0',
+      },
+    ];
+
+    it('should call get with ALL_PROGRAMS_URL', async () => {
+      const mockResponse: ProgramsResponse = { results: mockPrograms };
+      (get as jest.Mock).mockResolvedValue(mockResponse);
+
+      await getAllPrograms();
+
+      expect(get).toHaveBeenCalledWith(ALL_PROGRAMS_URL);
+    });
+
+    it('should return the results from the response', async () => {
+      const mockResponse: ProgramsResponse = { results: mockPrograms };
+      (get as jest.Mock).mockResolvedValue(mockResponse);
+
+      const result = await getAllPrograms();
+
+      expect(result).toEqual(mockPrograms);
+    });
+
+    it('should return an empty array when no programs exist', async () => {
+      const mockResponse: ProgramsResponse = { results: [] };
+      (get as jest.Mock).mockResolvedValue(mockResponse);
+
+      const result = await getAllPrograms();
+
+      expect(result).toEqual([]);
+    });
+
+    it('should propagate API errors', async () => {
+      (get as jest.Mock).mockRejectedValue(new Error('Network error'));
+
+      await expect(getAllPrograms()).rejects.toThrow('Network error');
     });
   });
 });
