@@ -2,28 +2,6 @@ import { MEDICATIONS_INPUT_CONTROL_KEY } from '@bahmni/services';
 import { MedicationRequest } from 'fhir/r4';
 import { MedicationAction } from '../models';
 
-const handleCancelAction = (
-  action: MedicationAction,
-  fhirResource?: MedicationRequest,
-): void => {
-  if (!fhirResource) return;
-
-  const encounterUuid = fhirResource.encounter?.reference?.split('/').pop();
-
-  globalThis.dispatchEvent(
-    new CustomEvent('startConsultation', {
-      detail: {
-        encounterType: action.encounterType,
-        cancelVaccination: fhirResource,
-        editOnly: 'cancelVaccination',
-        editTitle: 'CANCEL_VACCINATION_FORM_TITLE',
-        editEncounterUuid: encounterUuid,
-        cancelReasonValueSetUuid: action.metadata?.cancelReasonValueSetUuid,
-      },
-    }),
-  );
-};
-
 const handleStopAction = (
   action: MedicationAction,
   fhirResource?: MedicationRequest,
@@ -33,6 +11,10 @@ const handleStopAction = (
 
   const encounterUuid = fhirResource.encounter?.reference?.split('/').pop();
 
+  const cancelReasonValueSetUuid = action.metadata?.cancelReasonValueSetUuid;
+  
+  const isCancelationMode = Boolean(cancelReasonValueSetUuid);
+
   globalThis.dispatchEvent(
     new CustomEvent('startConsultation', {
       detail: {
@@ -40,9 +22,11 @@ const handleStopAction = (
         stopMedication: fhirResource,
         stopMedicationStartDate: startDate,
         editOnly: 'stopMedications',
-        editTitle: 'STOP_MEDICATION_FORM_TITLE',
+        editTitle: isCancelationMode
+          ? 'CANCEL_VACCINATION_FORM_TITLE'
+          : 'STOP_MEDICATION_FORM_TITLE',
         editEncounterUuid: encounterUuid,
-        cancelReasonValueSetUuid: action.metadata?.cancelReasonValueSetUuid,
+        cancelReasonValueSetUuid,
       },
     }),
   );
@@ -55,11 +39,6 @@ export const handleAction = (
 ): void => {
   if (action.type === 'stop') {
     handleStopAction(action, fhirResource, startDate);
-    return;
-  }
-
-  if (action.type === 'cancel') {
-    handleCancelAction(action, fhirResource);
     return;
   }
 
