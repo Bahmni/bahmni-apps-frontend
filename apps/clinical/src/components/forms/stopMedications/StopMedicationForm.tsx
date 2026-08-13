@@ -219,9 +219,7 @@ const StopMedicationForm: React.FC<StopMedicationFormProps> = React.memo(
             data-testid="cancel-vaccination-medication-info"
           >
             <span className={styles.infoCardName}>{medicationName}</span>
-            {route && (
-              <span className={styles.medicationRoute}>[{route}]</span>
-            )}
+            {route && <span className={styles.medicationRoute}>[{route}]</span>}
           </div>
         ) : (
           <Grid condensed={false}>
@@ -268,7 +266,9 @@ const StopMedicationForm: React.FC<StopMedicationFormProps> = React.memo(
               sm={isCancelVaccinationMode ? 4 : 2}
               md={isCancelVaccinationMode ? 8 : 4}
               lg={isCancelVaccinationMode ? 16 : 8}
-              className={isCancelVaccinationMode ? styles.cancelField : styles.column}
+              className={
+                isCancelVaccinationMode ? styles.cancelField : styles.column
+              }
             >
               <Dropdown
                 id="stop-medication-reason"
@@ -313,37 +313,40 @@ const StopMedicationForm: React.FC<StopMedicationFormProps> = React.memo(
             </Column>
           )}
 
-          {isNoteVisible && (!isCancelVaccinationMode || isCancelNoteVisible) && (
-            <Column
-              sm={4}
-              md={8}
-              lg={16}
-              className={isCancelVaccinationMode ? styles.cancelField : styles.column}
-            >
-              <div className={styles.noteLabelRow}>
-                <label
-                  htmlFor="stop-medication-note"
-                  className={styles.fieldLabel}
-                >
-                  {noteLabelText}
-                </label>
-                <span className={styles.noteCounter}>{note.length}/100</span>
-              </div>
-              <TextArea
-                id="stop-medication-note"
-                data-testid="stop-medication-note"
-                labelText=""
-                placeholder={notePlaceholder}
-                value={note}
-                onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => {
-                  if (e.target.value.length <= 100) {
-                    setNote(e.target.value);
-                  }
-                }}
-                rows={3}
-              />
-            </Column>
-          )}
+          {isNoteVisible &&
+            (!isCancelVaccinationMode || isCancelNoteVisible) && (
+              <Column
+                sm={4}
+                md={8}
+                lg={16}
+                className={
+                  isCancelVaccinationMode ? styles.cancelField : styles.column
+                }
+              >
+                <div className={styles.noteLabelRow}>
+                  <label
+                    htmlFor="stop-medication-note"
+                    className={styles.fieldLabel}
+                  >
+                    {noteLabelText}
+                  </label>
+                  <span className={styles.noteCounter}>{note.length}/100</span>
+                </div>
+                <TextArea
+                  id="stop-medication-note"
+                  data-testid="stop-medication-note"
+                  labelText=""
+                  placeholder={notePlaceholder}
+                  value={note}
+                  onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => {
+                    if (e.target.value.length <= 100) {
+                      setNote(e.target.value);
+                    }
+                  }}
+                  rows={3}
+                />
+              </Column>
+            )}
         </Grid>
       </Tile>
     );

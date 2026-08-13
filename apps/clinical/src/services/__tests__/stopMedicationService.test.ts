@@ -163,7 +163,10 @@ describe('stopMedicationService', () => {
         {
           resourceType: 'Parameters',
           parameter: [
-            { name: 'reason', valueCodeableConcept: { text: 'Adverse reaction' } },
+            {
+              name: 'reason',
+              valueCodeableConcept: { text: 'Adverse reaction' },
+            },
             { name: 'effectiveDate', valueDate: '2025-06-10' },
             { name: 'note', valueString: 'Patient developed rash' },
           ],

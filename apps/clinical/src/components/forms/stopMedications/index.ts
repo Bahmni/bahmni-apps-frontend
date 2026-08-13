@@ -19,8 +19,9 @@ registerInputControl({
   onDirectSubmit: async () => {
     const state = useStopMedicationStore.getState();
     if (!state.medicationToStop?.id || !state.stopReason) return;
-    const encounterUuid =
-      state.medicationToStop.encounter?.reference?.split('/').pop();
+    const encounterUuid = state.medicationToStop.encounter?.reference
+      ?.split('/')
+      .pop();
     await stopMedication({
       medicationRequestId: state.medicationToStop.id,
       reason: state.stopReason,

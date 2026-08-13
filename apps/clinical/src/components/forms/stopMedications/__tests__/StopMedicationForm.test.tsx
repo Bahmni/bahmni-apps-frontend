@@ -727,7 +727,11 @@ describe('StopMedicationForm', () => {
 
       const queryMockWithFieldConfig = ({ queryKey }: any) => {
         if (queryKey[0] === 'medicationConfig') {
-          return { data: { stopMedicationFields }, isLoading: false, error: null };
+          return {
+            data: { stopMedicationFields },
+            isLoading: false,
+            error: null,
+          };
         }
         if (queryKey[0] === 'stopReasons') {
           return { data: mockStopReasons, isLoading: false, error: null };
@@ -751,7 +755,11 @@ describe('StopMedicationForm', () => {
 
       const queryMockNoFieldConfig: any = ({ queryKey }: any) => {
         if (queryKey[0] === 'medicationConfig') {
-          return { data: { stopReasons: ['Some reason'] }, isLoading: false, error: null };
+          return {
+            data: { stopReasons: ['Some reason'] },
+            isLoading: false,
+            error: null,
+          };
         }
         if (queryKey[0] === 'stopReasons') {
           return { data: mockStopReasons, isLoading: false, error: null };
