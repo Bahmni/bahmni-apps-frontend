@@ -96,7 +96,6 @@ const CommonSearchWidget = ({ extensionParams }: SearchWidgetProps) => {
       t('COMMON_SEARCH_CRITERION_REQUIRED'),
       t('COMMON_SEARCH_VALUE_REQUIRED'),
       t('COMMON_SEARCH_RANGE_ORDER_INVALID'),
-      t('COMMON_SEARCH_ADDITIONAL_CRITERION_REQUIRED'),
       t,
     );
     if (!validated.some((r) => r.validationError ?? r.rangeOrderError)) {

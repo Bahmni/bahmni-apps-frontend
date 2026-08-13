@@ -9,7 +9,6 @@ import {
   criteriaAvailableToAdd,
   initialRows,
   makeRow,
-  reconcileAdditionalCriterionErrors,
   updateRow,
 } from './utils';
 
@@ -49,45 +48,34 @@ const SearchForm = ({
     setRows(initialRows(selectedItem!));
   };
 
-  const reconcile = (nextRows: CriterionRow[]) =>
-    reconcileAdditionalCriterionErrors(
-      nextRows,
-      activeContext.criteria,
-      t('COMMON_SEARCH_ADDITIONAL_CRITERION_REQUIRED'),
-    );
-
   const handleCriterionChange = (rowId: string, criterionKey: string) => {
     setRows((prev) =>
-      reconcile(
-        updateRow(prev, rowId, () => ({
-          criterionKey,
-          value: null,
-          validationError: null,
-          rangeOrderError: null,
-        })),
-      ),
+      updateRow(prev, rowId, () => ({
+        criterionKey,
+        value: null,
+        validationError: null,
+        rangeOrderError: null,
+      })),
     );
   };
 
   const handleValueChange = (rowId: string, value: CriterionValue | null) => {
     setRows((prev) =>
-      reconcile(
-        updateRow(prev, rowId, (r) => {
-          const filled =
-            value != null &&
-            ('value' in value ? value.value != null : value.from.value != null);
-          return {
-            value,
-            validationError: filled ? null : r.validationError,
-            rangeOrderError: null,
-          };
-        }),
-      ),
+      updateRow(prev, rowId, (r) => {
+        const filled =
+          value != null &&
+          ('value' in value ? value.value != null : value.from.value != null);
+        return {
+          value,
+          validationError: filled ? null : r.validationError,
+          rangeOrderError: null,
+        };
+      }),
     );
   };
 
   const handleRemove = (rowId: string) => {
-    setRows((prev) => reconcile(prev.filter((r) => r.rowId !== rowId)));
+    setRows((prev) => prev.filter((r) => r.rowId !== rowId));
   };
 
   const availableCriteria = criteriaAvailableToAdd(
@@ -102,7 +90,7 @@ const SearchForm = ({
     const preselect = availableCriteria.some((c) => c.id === defaultKey)
       ? defaultKey
       : null;
-    setRows((prev) => reconcile([...prev, makeRow(preselect)]));
+    setRows((prev) => [...prev, makeRow(preselect)]);
   };
 
   return (

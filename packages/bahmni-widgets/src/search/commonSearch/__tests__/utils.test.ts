@@ -3,12 +3,7 @@ import {
   formatGender,
   resolveComboBoxItems,
 } from '@bahmni/services';
-import {
-  LookupOption,
-  CriterionConfig,
-  CriterionRow,
-  TextInput,
-} from '../models';
+import { LookupOption, TextInput } from '../models';
 import {
   formatSearchResult,
   getLookupComboBoxItems,
@@ -27,7 +22,6 @@ import {
   resolveNavigationURL,
   toSearchAuditEventType,
   needsDisplayKey,
-  reconcileAdditionalCriterionErrors,
 } from '../utils';
 import {
   mockContextMultipleDefaults,
@@ -456,7 +450,6 @@ describe('validateRows', () => {
         'CRITERION_ERR',
         'VALUE_ERR',
         'RANGE_ORDER_ERR',
-        'ADDITIONAL_CRITERION_ERR',
         t,
       );
       expect(result[0].validationError).toBe(expectedError);
@@ -471,102 +464,10 @@ describe('validateRows', () => {
       'CRITERION_ERR',
       'VALUE_ERR',
       'RANGE_ORDER_ERR',
-      'ADDITIONAL_CRITERION_ERR',
       mockT,
     );
     expect(result[0].validationError).toBe('CRITERION_ERR');
     expect(result[1].validationError).toBeNull();
-  });
-
-  describe('requiresAdditionalCriterion', () => {
-    const genderCriterion: CriterionConfig = {
-      id: 'patient.gender',
-      field: { key: 'patient.gender' },
-      translationKey: 'PATIENT_GENDER',
-      requiresAdditionalCriterion: true,
-      input: {
-        kind: 'options',
-        placeholderTranslationKey: 'PATIENT_GENDER_PLACEHOLDER',
-        options: [{ translationKey: 'MALE', value: 'M' }],
-      },
-    };
-    const genderRow: CriterionRow = {
-      rowId: 'row-gender',
-      criterionKey: 'patient.gender',
-      value: { value: 'M' },
-      validationError: null,
-      rangeOrderError: null,
-    };
-
-    it('blocks when it is the only active criterion', () => {
-      const result = validateRows(
-        [genderRow],
-        [genderCriterion],
-        'CRITERION_ERR',
-        'VALUE_ERR',
-        'RANGE_ORDER_ERR',
-        'ADDITIONAL_CRITERION_ERR',
-        mockT,
-      );
-      expect(result[0].validationError).toBe('ADDITIONAL_CRITERION_ERR');
-    });
-
-    it('does not block when another criterion is also active', () => {
-      const result = validateRows(
-        [genderRow, mockRowTextWithValue],
-        [genderCriterion, ...mockPatientContext.criteria],
-        'CRITERION_ERR',
-        'VALUE_ERR',
-        'RANGE_ORDER_ERR',
-        'ADDITIONAL_CRITERION_ERR',
-        mockT,
-      );
-      expect(result[0].validationError).toBeNull();
-    });
-
-    it('does not override an existing value error', () => {
-      const genderRowNoValue: CriterionRow = { ...genderRow, value: null };
-      const result = validateRows(
-        [genderRowNoValue],
-        [genderCriterion],
-        'CRITERION_ERR',
-        'VALUE_ERR',
-        'RANGE_ORDER_ERR',
-        'ADDITIONAL_CRITERION_ERR',
-        mockT,
-      );
-      expect(result[0].validationError).toBe('VALUE_ERR');
-    });
-  });
-});
-
-describe('reconcileAdditionalCriterionErrors', () => {
-  const stickyGenderRow: CriterionRow = {
-    rowId: 'row-gender',
-    criterionKey: 'patient.gender',
-    value: { value: 'M' },
-    validationError: 'ADDITIONAL_CRITERION_ERR',
-    rangeOrderError: null,
-  };
-  const genderCriterion: CriterionConfig = {
-    id: 'patient.gender',
-    field: { key: 'patient.gender' },
-    translationKey: 'PATIENT_GENDER',
-    requiresAdditionalCriterion: true,
-    input: {
-      kind: 'options',
-      placeholderTranslationKey: 'PATIENT_GENDER_PLACEHOLDER',
-      options: [{ translationKey: 'MALE', value: 'M' }],
-    },
-  };
-
-  it('clears the sticky error once another criterion becomes active', () => {
-    const result = reconcileAdditionalCriterionErrors(
-      [stickyGenderRow, mockRowTextWithValue],
-      [genderCriterion, ...mockPatientContext.criteria],
-      'ADDITIONAL_CRITERION_ERR',
-    );
-    expect(result[0].validationError).toBeNull();
   });
 });
 

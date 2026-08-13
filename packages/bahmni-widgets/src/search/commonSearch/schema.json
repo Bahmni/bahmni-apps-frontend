@@ -128,11 +128,7 @@
           "minLength": 1,
           "description": "i18n key for the criterion label"
         },
-        "input": { "$ref": "#/definitions/inputConfig" },
-        "requiresAdditionalCriterion": {
-          "type": "boolean",
-          "description": "When true, this criteria alone is not specific enough to search on its own — at least one other criterion must also be active."
-        }
+        "input": { "$ref": "#/definitions/inputConfig" }
       }
     },
     "fieldConfig": {

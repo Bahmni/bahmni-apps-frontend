@@ -83,7 +83,6 @@ export interface CriterionConfig {
   translationKey: string;
   default?: boolean;
   input: InputConfig;
-  requiresAdditionalCriterion?: boolean;
 }
 
 export type ResultFieldFilterType = 'text' | 'select' | 'dateRange' | 'numeric';
