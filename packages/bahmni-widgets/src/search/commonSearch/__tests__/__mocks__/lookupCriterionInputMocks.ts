@@ -1,4 +1,4 @@
-import { AppointmentService, UserLocation } from '@bahmni/services';
+import { AppointmentService, Provider, UserLocation } from '@bahmni/services';
 import { LookupInput, LookupOption, ScalarValue } from '../../models';
 
 export const mockLookupInput: LookupInput = {
@@ -54,3 +54,26 @@ export const mockOtherLocationAppointmentService: AppointmentService =
   );
 
 export const mockLookupScalarValue: ScalarValue = { value: 'service-uuid-1' };
+
+export const mockProviders = [
+  {
+    uuid: 'provider-uuid-1',
+    display: 'superman - Super Man',
+    person: { preferredName: { display: 'Super Man' }, display: 'Super Man' },
+  },
+  {
+    uuid: 'provider-uuid-2',
+    display: 'LABMANAGER - null',
+    person: { preferredName: null, display: 'Lab Manager' },
+  },
+  {
+    uuid: 'provider-uuid-3',
+    display: 'LABSYSTEM - null',
+    person: { preferredName: null, display: '' },
+  },
+  {
+    uuid: 'provider-uuid-4',
+    display: 'UNKNOWN - Unknown Provider',
+    person: null,
+  },
+] as unknown as Provider[];
