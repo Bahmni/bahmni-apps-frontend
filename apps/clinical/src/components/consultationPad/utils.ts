@@ -10,7 +10,7 @@ export function loadEncounterInputControls(
 ): InputControl[] {
   if (!config) return [];
   const registeredControls = getRegisteredInputControls();
-  return [...config.inputControls]
+  const configBasedControls = [...config.inputControls]
     .sort((a, b) => {
       if (a.type === ENCOUNTER_DETAILS_INPUT_CONTROL_KEY) return -1;
       if (b.type === ENCOUNTER_DETAILS_INPUT_CONTROL_KEY) return 1;
@@ -36,7 +36,14 @@ export function loadEncounterInputControls(
         },
       ];
     });
+  const configKeys = new Set(configBasedControls.map((c) => c.key));
+  const actionTriggeredControls = registeredControls.filter(
+    (e) => e.onActionTriggered && !configKeys.has(e.key),
+  );
+
+  return [...configBasedControls, ...actionTriggeredControls];
 }
+
 
 export function getActiveEntries(
   registry: InputControl[],
