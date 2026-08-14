@@ -1,4 +1,9 @@
-import { AppointmentService, Provider, UserLocation } from '@bahmni/services';
+import {
+  AppointmentService,
+  Provider,
+  Program,
+  UserLocation,
+} from '@bahmni/services';
 import { LookupInput, LookupOption, ScalarValue } from '../../models';
 
 export const mockLookupInput: LookupInput = {
@@ -77,3 +82,34 @@ export const mockProviders = [
     person: null,
   },
 ] as unknown as Provider[];
+
+const buildMockProgram = (
+  uuid: string,
+  name: string,
+  retired: boolean = false,
+): Program => ({
+  uuid,
+  name,
+  display: name,
+  retired,
+  concept: {
+    uuid: `concept-${uuid}`,
+    display: `${name} Concept`,
+    links: [],
+    resourceVersion: '1.0',
+  },
+  allWorkflows: [],
+  links: [],
+  resourceVersion: '1.0',
+});
+
+export const mockPrograms: Program[] = [
+  buildMockProgram('program-uuid-1', 'TB Program'),
+  buildMockProgram('program-uuid-2', 'HIV Program'),
+];
+
+export const mockRetiredProgram: Program = buildMockProgram(
+  'program-uuid-3',
+  'Retired Program',
+  true,
+);
