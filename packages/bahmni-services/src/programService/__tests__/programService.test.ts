@@ -1,5 +1,5 @@
 import { get, post } from '../../api';
-import { mockEnrollments, patientUUID } from '../__mocks__/mocks';
+import { mockEnrollments, patientUUID, mockPrograms } from '../__mocks__/mocks';
 import {
   PROGRAM_DETAILS_URL,
   PATIENT_PROGRAMS_URL,
@@ -9,7 +9,6 @@ import {
 import {
   ProgramEnrollment,
   PatientProgramsResponse,
-  Program,
   ProgramsResponse,
 } from '../model';
 import {
@@ -305,39 +304,6 @@ describe('programService', () => {
   });
 
   describe('getAllPrograms', () => {
-    const mockPrograms: Program[] = [
-      {
-        uuid: 'program-1',
-        name: 'HIV Program',
-        display: 'HIV Program',
-        retired: false,
-        concept: {
-          uuid: 'concept-1',
-          display: 'HIV Program Concept',
-          links: [],
-          resourceVersion: '1.0',
-        },
-        allWorkflows: [],
-        links: [],
-        resourceVersion: '1.0',
-      },
-      {
-        uuid: 'program-2',
-        name: 'TB Program',
-        display: 'TB Program',
-        retired: true,
-        concept: {
-          uuid: 'concept-2',
-          display: 'TB Program Concept',
-          links: [],
-          resourceVersion: '1.0',
-        },
-        allWorkflows: [],
-        links: [],
-        resourceVersion: '1.0',
-      },
-    ];
-
     it('should call get with ALL_PROGRAMS_URL', async () => {
       const mockResponse: ProgramsResponse = { results: mockPrograms };
       (get as jest.Mock).mockResolvedValue(mockResponse);
