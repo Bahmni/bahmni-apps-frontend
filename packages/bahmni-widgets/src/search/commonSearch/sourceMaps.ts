@@ -1,6 +1,7 @@
 import {
   getUserLoginLocation,
   getAllAppointmentServices,
+  getAllPrograms,
 } from '@bahmni/services';
 import { LookupLoader } from './models';
 
@@ -17,6 +18,12 @@ const appointmentServiceSource = async () => {
     }));
 };
 
+const programNameSource = async () =>
+  (await getAllPrograms())
+    .filter((p) => !p.retired)
+    .map((p) => ({ uuid: p.uuid, label: p.name }));
+
 export const LOOKUP_SOURCES: Record<string, LookupLoader | undefined> = {
   appointmentService: appointmentServiceSource,
+  programName: programNameSource,
 };
