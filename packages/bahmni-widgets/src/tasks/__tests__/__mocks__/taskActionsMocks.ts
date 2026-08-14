@@ -1,4 +1,8 @@
-import type { ObservationForm, UserPrivilege } from '@bahmni/services';
+import {
+  getPatientObservationsBundle,
+  type ObservationForm,
+  type UserPrivilege,
+} from '@bahmni/services';
 import type { Task } from 'fhir/r4';
 import { TaskActionType } from '../../constants';
 import type { TaskAction, TaskConfig, TaskViewModel } from '../../models';
@@ -325,3 +329,8 @@ export const mockFHIRCompletedTaskWithInput: Task = {
 export const mockTaskViewModelCompleted: TaskViewModel = createTaskViewModel(
   mockFHIRCompletedTaskWithInput,
 );
+
+export const mockGetPatientObservationsBundle =
+  getPatientObservationsBundle as jest.MockedFunction<
+    typeof getPatientObservationsBundle
+  >;

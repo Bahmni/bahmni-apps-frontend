@@ -1,11 +1,8 @@
-import {
-  fetchObservationForms,
-  getPatientObservationsBundle,
-  hasPrivilege,
-} from '@bahmni/services';
+import { fetchObservationForms, hasPrivilege } from '@bahmni/services';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { buildFormObservation } from '../../../observations/__mocks__/observationTestData';
 import {
   mockTaskConfig,
   mockTaskConfigWithEditForm,
@@ -16,6 +13,7 @@ import {
   mockUserPrivileges,
   mockLaunchFormAction,
   mockRestrictedAction,
+  mockGetPatientObservationsBundle,
   FILL_ENCOUNTER_UUID,
   SERVICE_REQUEST_UUID_COMPLETED,
   PATIENT_UUID_COMPLETED,
@@ -46,24 +44,6 @@ const mockFetchObservationForms = fetchObservationForms as jest.MockedFunction<
 const mockHasPrivilege = hasPrivilege as jest.MockedFunction<
   typeof hasPrivilege
 >;
-const mockGetPatientObservationsBundle =
-  getPatientObservationsBundle as jest.MockedFunction<
-    typeof getPatientObservationsBundle
-  >;
-
-const FORM_NAMESPACE_URL =
-  'http://fhir.bahmni.org/ext/observation/form-namespace-path';
-const buildFormObservation = (
-  id: string,
-  encounterUuid: string,
-  formFieldPath = 'Bahmni^Vitals.1/1-0',
-) => ({
-  resourceType: 'Observation' as const,
-  id,
-  status: 'final' as const,
-  encounter: { reference: `Encounter/${encounterUuid}` },
-  extension: [{ url: FORM_NAMESPACE_URL, valueString: formFieldPath }],
-});
 
 const createWrapper = () => {
   const queryClient = new QueryClient({
