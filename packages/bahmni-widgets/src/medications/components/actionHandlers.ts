@@ -10,6 +10,7 @@ const handleStopAction = (
   if (!fhirResource) return;
 
   const encounterUuid = fhirResource.encounter?.reference?.split('/').pop();
+  const stopMedicationReasonConceptSet = action?.metadata?.stopMedicationReasonConceptSet;
 
   globalThis.dispatchEvent(
     new CustomEvent('startConsultation', {
@@ -20,6 +21,7 @@ const handleStopAction = (
         editOnly: 'stopMedications',
         editTitle: 'STOP_MEDICATION_FORM_TITLE',
         editEncounterUuid: encounterUuid,
+        stopMedicationReasonConceptSet: stopMedicationReasonConceptSet,
       },
     }),
   );
