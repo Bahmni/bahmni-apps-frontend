@@ -5,8 +5,14 @@ import {
   PATIENT_PROGRAMS_PAGE_URL,
   PROGRAM_DETAILS_URL,
   PROGRAMS_URL,
+  ALL_PROGRAMS_URL,
 } from './constants';
-import { PatientProgramsResponse, ProgramEnrollment } from './model';
+import {
+  PatientProgramsResponse,
+  Program,
+  ProgramEnrollment,
+  ProgramsResponse,
+} from './model';
 
 /**
  * Fetches programs for a given patient UUID
@@ -153,3 +159,12 @@ export function extractAttributes(
 
   return attributesMap;
 }
+
+/**
+ * Fetches all programs configured across all locations
+ * @returns Promise resolving to a list of programs
+ */
+export const getAllPrograms = async (): Promise<Program[]> => {
+  const response = await get<ProgramsResponse>(ALL_PROGRAMS_URL);
+  return response.results;
+};
