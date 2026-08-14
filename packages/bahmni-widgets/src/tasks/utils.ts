@@ -51,7 +51,7 @@ export const canUserAccessForm = (
   });
 };
 
-export const hasLaunchFormActions = (
+export const hasFormActions = (
   taskConfig: TaskConfig[],
   taskCode: string,
 ): boolean => {
@@ -60,7 +60,9 @@ export const hasLaunchFormActions = (
   );
   return (
     matchingConfig?.actions?.some(
-      (action) => action.type === TaskActionType.LAUNCH_FORM,
+      (action) =>
+        action.type === TaskActionType.LAUNCH_FORM ||
+        action.type === TaskActionType.EDIT_FORM,
     ) ?? false
   );
 };
@@ -79,33 +81,38 @@ export const hasViewFormConfig = (
   );
 };
 
+const FORM_ACTION_STATUS_PREDICATE: Partial<
+  Record<TaskActionType, (status: string) => boolean>
+> = {
+  [TaskActionType.LAUNCH_FORM]: (status) => status !== 'completed',
+  [TaskActionType.EDIT_FORM]: (status) => status === 'completed',
+};
+
 export const isFormActionVisible = (
   action: TaskAction,
   task: TaskViewModel,
   allForms: ObservationForm[],
   userPrivileges: UserPrivilege[] | null,
 ): boolean => {
-  if (action.type === TaskActionType.LAUNCH_FORM) {
-    const formName = extractFormNameFromTask(
-      task,
-      action.handlerConfig.formInputCode as string,
-    );
+  const statusPredicate = FORM_ACTION_STATUS_PREDICATE[action.type];
+  if (!statusPredicate?.(task.status)) return false;
 
-    if (!formName) return false;
+  const formName = extractFormNameFromTask(
+    task,
+    action.handlerConfig.formInputCode as string,
+  );
+  if (!formName) return false;
 
-    const matchingForm = allForms.find(
-      (form) => form.name.toLowerCase() === formName.toLowerCase(),
-    );
-    return matchingForm
-      ? canUserAccessForm(
-          userPrivileges,
-          matchingForm,
-          FormPermissionType.EDITABLE,
-        )
-      : false;
-  }
-
-  return false;
+  const matchingForm = allForms.find(
+    (form) => form.name.toLowerCase() === formName.toLowerCase(),
+  );
+  return matchingForm
+    ? canUserAccessForm(
+        userPrivileges,
+        matchingForm,
+        FormPermissionType.EDITABLE,
+      )
+    : false;
 };
 
 export const isViewFormDataVisible = (

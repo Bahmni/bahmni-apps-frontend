@@ -230,7 +230,7 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
     }
   }, [sessionEncounter, sessionEncounterStatus]);
 
-  const encounterForSubmission = sessionEncounter;
+  const encounterForSubmission = activeEncounter;
 
   const episodeOfCareUuids = episodeOfCare.map((eoc) => eoc.uuid);
   const statDurationInMilliseconds =
