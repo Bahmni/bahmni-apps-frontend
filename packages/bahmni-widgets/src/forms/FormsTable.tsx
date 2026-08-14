@@ -388,7 +388,7 @@ const FormsTable: React.FC<WidgetProps> = ({
           editOnly: 'observationForms',
           editTitle: 'EDIT_OBSERVATION_FORM_TITLE',
           editEncounterUuid: record.encounterUuid,
-          editFormName: record.formName,
+          formName: record.formName,
           directFormMode: true,
         },
       }),
