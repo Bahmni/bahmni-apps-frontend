@@ -113,21 +113,23 @@ const SearchForm = ({
           onChange={handleContextChange}
         />
       </div>
-      <div className={styles.dropdownCol}>
-        <Dropdown
-          id="location-selector"
-          data-testid="location-selector-test-id"
-          titleText={t('COMMON_SEARCH_SELECT_LOCATION_LABEL')}
-          label=""
-          items={[location]}
-          selectedItem={location}
-          itemToString={(item: UserLocation | null) =>
-            item?.display ?? item?.name ?? ''
-          }
-          disabled
-          onChange={() => {}}
-        />
-      </div>
+      {activeContext.locationAware && (
+        <div className={styles.dropdownCol}>
+          <Dropdown
+            id="location-selector"
+            data-testid="location-selector-test-id"
+            titleText={t('COMMON_SEARCH_SELECT_LOCATION_LABEL')}
+            label=""
+            items={[location]}
+            selectedItem={location}
+            itemToString={(item: UserLocation | null) =>
+              item?.display ?? item?.name ?? ''
+            }
+            disabled
+            onChange={() => {}}
+          />
+        </div>
+      )}
       {rows.map((row) => (
         <div key={row.rowId} className={styles.fullWidthCol}>
           <CriterionRowComponent

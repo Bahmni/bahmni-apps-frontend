@@ -694,6 +694,13 @@ describe('buildPayload', () => {
         .entity,
     ).toBe('patientProgram');
   });
+
+  it('omits the location condition when locationUuid is not provided', () => {
+    const result = buildPayload([mockResolvedScalarRow], 'patient');
+    expect(result.criteria.conditions).toEqual([
+      { field: 'patient.givenName', comparator: 'eq', value: 'John' },
+    ]);
+  });
 });
 
 describe('criteriaAvailableToAdd', () => {

@@ -112,7 +112,7 @@ const CommonSearchWidget = ({ extensionParams }: SearchWidgetProps) => {
         buildPayload(
           resolveRows(validated, context.criteria),
           context.context,
-          location.uuid,
+          context.locationAware ? location?.uuid : undefined,
         ),
       )
         .then((data) => {
