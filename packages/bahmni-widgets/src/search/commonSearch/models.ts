@@ -115,7 +115,7 @@ export interface SearchContextConfig {
   context: 'patient' | 'appointment' | 'patientProgram';
   translationKey: string;
   requiredPrivileges: string[];
-  locationAware: 'loggedInLocation' | 'allowedLocation';
+  locationAware?: 'loggedInLocation' | 'allowedLocation';
   url: string;
   pageSize: number;
   criteria: CriterionConfig[];

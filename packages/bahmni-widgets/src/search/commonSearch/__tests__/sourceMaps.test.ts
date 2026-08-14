@@ -1,4 +1,5 @@
 import {
+  fetchAllProviders,
   getAllAppointmentServices,
   getAllPrograms,
   getUserLoginLocation,
@@ -9,6 +10,7 @@ import {
   mockOtherLocationAppointmentService,
   mockPrograms,
   mockRetiredProgram,
+  mockProviders,
   mockUserLoginLocation,
 } from './__mocks__/lookupCriterionInputMocks';
 
@@ -17,6 +19,7 @@ jest.mock('@bahmni/services', () => ({
   getAllAppointmentServices: jest.fn(),
   getUserLoginLocation: jest.fn(),
   getAllPrograms: jest.fn(),
+  fetchAllProviders: jest.fn(),
 }));
 
 const mockGetAllAppointmentServices =
@@ -28,6 +31,9 @@ const mockGetUserLoginLocation = getUserLoginLocation as jest.MockedFunction<
 >;
 const mockGetAllPrograms = getAllPrograms as jest.MockedFunction<
   typeof getAllPrograms
+>;
+const mockFetchAllProviders = fetchAllProviders as jest.MockedFunction<
+  typeof fetchAllProviders
 >;
 
 describe('appointmentService lookup source', () => {
@@ -121,5 +127,29 @@ describe('programName lookup source', () => {
     mockGetAllPrograms.mockRejectedValue(new Error('API Error'));
 
     await expect(LOOKUP_SOURCES.programName!()).rejects.toThrow('API Error');
+  });
+});
+
+describe('provider lookup source', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  it('maps providers using preferredName, falling back to person display then provider display, and excludes providers without a person', async () => {
+    mockFetchAllProviders.mockResolvedValue(mockProviders);
+
+    const options = await LOOKUP_SOURCES.provider!();
+
+    expect(options).toEqual([
+      { uuid: 'provider-uuid-1', label: 'Super Man' },
+      { uuid: 'provider-uuid-2', label: 'Lab Manager' },
+      { uuid: 'provider-uuid-3', label: 'LABSYSTEM - null' },
+    ]);
+  });
+
+  it('propagates errors from fetchAllProviders', async () => {
+    mockFetchAllProviders.mockRejectedValue(new Error('API Error'));
+
+    await expect(LOOKUP_SOURCES.provider!()).rejects.toThrow('API Error');
   });
 });
