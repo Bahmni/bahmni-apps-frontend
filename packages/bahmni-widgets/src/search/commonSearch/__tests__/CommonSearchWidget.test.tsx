@@ -18,6 +18,7 @@ import CommonSearchWidget from '../CommonSearchWidget';
 import { CriterionRow, SearchContextConfig } from '../models';
 import {
   mockCommonSearchWidgetConfig,
+  mockCommonSearchWidgetConfigWithoutLocationAware,
   mockCommonSearchWidgetConfigWithRange,
   mockMultiContextConfig,
   mockPrivilegeViewAppointments,
@@ -296,6 +297,37 @@ describe('CommonSearchWidget', () => {
           entity: mockCommonSearchWidgetConfig[0].context,
         }),
       );
+      const [, payload] = mockPost.mock.calls[0];
+      expect(payload.criteria.conditions).toContainEqual({
+        field: 'location.uuid',
+        comparator: 'eq',
+        value: mockWidgetLocation.uuid,
+      });
+    });
+
+    it('omits the location condition when the context has no locationAware', async () => {
+      (getConfig as jest.Mock).mockResolvedValueOnce(
+        mockCommonSearchWidgetConfigWithoutLocationAware,
+      );
+      render(
+        <CommonSearchWidget extensionParams={{ configUrl: '/api/config' }} />,
+        { wrapper },
+      );
+      await waitFor(() =>
+        expect(screen.getByTestId('search-form')).toBeInTheDocument(),
+      );
+      await act(async () => {
+        capturedOnSearch!(
+          [mockRowWithValidValue],
+          mockCommonSearchWidgetConfigWithoutLocationAware[0],
+        );
+      });
+      const [, payload] = mockPost.mock.calls[0];
+      expect(
+        payload.criteria.conditions.some(
+          (c: { field?: string }) => c.field === 'location.uuid',
+        ),
+      ).toBe(false);
     });
 
     it('does not call post when rows have validation errors', async () => {

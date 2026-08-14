@@ -213,6 +213,27 @@ export const mockPatientContextWithRegex: SearchContextConfig = {
   ],
 };
 
+export const mockPatientContextWithoutLocationAware: SearchContextConfig = {
+  context: 'patient',
+  translationKey: 'PATIENT_SEARCH',
+  requiredPrivileges: ['View Patients'],
+  url: '/openmrs/ws/rest/v1/patientSearch',
+  pageSize: 20,
+  resultFields: mockResultFields,
+  criteria: [
+    {
+      id: 'patient.name.given',
+      field: { key: 'patient.name.given' },
+      translationKey: 'PATIENT_GIVEN_NAME',
+      default: true,
+      input: {
+        kind: 'text',
+        placeholderTranslationKey: 'PATIENT_GIVEN_NAME_PLACEHOLDER',
+      },
+    },
+  ],
+};
+
 export const mockConfig = [mockPatientContext, mockAppointmentContext];
 
 export const mockSavedRows: CriterionRow[] = [
