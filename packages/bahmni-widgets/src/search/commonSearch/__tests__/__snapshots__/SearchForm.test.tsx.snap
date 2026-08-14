@@ -16,8 +16,8 @@ exports[`SearchForm Snapshot matches snapshot 1`] = `
       >
         <label
           class="cds--label"
-          for="downshift-_r_c4_-toggle-button"
-          id="downshift-_r_c4_-label"
+          for="downshift-_r_cc_-toggle-button"
+          id="downshift-_r_cc_-label"
         >
           COMMON_SEARCH_SELECT_CONTEXT_TITLE
         </label>
@@ -27,12 +27,12 @@ exports[`SearchForm Snapshot matches snapshot 1`] = `
         >
           <button
             aria-activedescendant=""
-            aria-controls="downshift-_r_c4_-menu"
+            aria-controls="downshift-_r_cc_-menu"
             aria-expanded="false"
             aria-haspopup="listbox"
-            aria-labelledby="downshift-_r_c4_-label"
+            aria-labelledby="downshift-_r_cc_-label"
             class="cds--list-box__field"
-            id="downshift-_r_c4_-toggle-button"
+            id="downshift-_r_cc_-toggle-button"
             role="combobox"
             tabindex="0"
             title="PATIENT_SEARCH"
@@ -68,9 +68,9 @@ exports[`SearchForm Snapshot matches snapshot 1`] = `
             </div>
           </button>
           <ul
-            aria-labelledby="downshift-_r_c4_-label"
+            aria-labelledby="downshift-_r_cc_-label"
             class="cds--list-box__menu"
-            id="downshift-_r_c4_-menu"
+            id="downshift-_r_cc_-menu"
             role="listbox"
           />
         </div>
@@ -85,8 +85,8 @@ exports[`SearchForm Snapshot matches snapshot 1`] = `
       >
         <label
           class="cds--label cds--label--disabled"
-          for="downshift-_r_c7_-toggle-button"
-          id="downshift-_r_c7_-label"
+          for="downshift-_r_cf_-toggle-button"
+          id="downshift-_r_cf_-label"
         >
           COMMON_SEARCH_SELECT_LOCATION_LABEL
         </label>
@@ -96,13 +96,13 @@ exports[`SearchForm Snapshot matches snapshot 1`] = `
         >
           <button
             aria-activedescendant=""
-            aria-controls="downshift-_r_c7_-menu"
+            aria-controls="downshift-_r_cf_-menu"
             aria-expanded="false"
             aria-haspopup="listbox"
-            aria-labelledby="downshift-_r_c7_-label"
+            aria-labelledby="downshift-_r_cf_-label"
             class="cds--list-box__field"
             disabled=""
-            id="downshift-_r_c7_-toggle-button"
+            id="downshift-_r_cf_-toggle-button"
             role="combobox"
             tabindex="0"
             title="Ward A"
@@ -138,9 +138,9 @@ exports[`SearchForm Snapshot matches snapshot 1`] = `
             </div>
           </button>
           <ul
-            aria-labelledby="downshift-_r_c7_-label"
+            aria-labelledby="downshift-_r_cf_-label"
             class="cds--list-box__menu"
-            id="downshift-_r_c7_-menu"
+            id="downshift-_r_cf_-menu"
             role="listbox"
           />
         </div>
@@ -162,8 +162,8 @@ exports[`SearchForm Snapshot matches snapshot 1`] = `
           >
             <label
               class="cds--label"
-              for="downshift-_r_ca_-toggle-button"
-              id="downshift-_r_ca_-label"
+              for="downshift-_r_ci_-toggle-button"
+              id="downshift-_r_ci_-label"
             >
               COMMON_SEARCH_SELECT_SEARCH_CRITERIA
             </label>
@@ -173,12 +173,12 @@ exports[`SearchForm Snapshot matches snapshot 1`] = `
             >
               <button
                 aria-activedescendant=""
-                aria-controls="downshift-_r_ca_-menu"
+                aria-controls="downshift-_r_ci_-menu"
                 aria-expanded="false"
                 aria-haspopup="listbox"
-                aria-labelledby="downshift-_r_ca_-label"
+                aria-labelledby="downshift-_r_ci_-label"
                 class="cds--list-box__field"
-                id="downshift-_r_ca_-toggle-button"
+                id="downshift-_r_ci_-toggle-button"
                 role="combobox"
                 tabindex="0"
                 title="PATIENT_GIVEN_NAME"
@@ -214,9 +214,9 @@ exports[`SearchForm Snapshot matches snapshot 1`] = `
                 </div>
               </button>
               <ul
-                aria-labelledby="downshift-_r_ca_-label"
+                aria-labelledby="downshift-_r_ci_-label"
                 class="cds--list-box__menu"
-                id="downshift-_r_ca_-menu"
+                id="downshift-_r_ci_-menu"
                 role="listbox"
               />
             </div>
