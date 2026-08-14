@@ -505,6 +505,51 @@ describe('ObservationFormsPanel', () => {
       });
     });
 
+    it('enriches stored observations with status and basedOn from the FHIR bundle', async () => {
+      const basedOnRef = { reference: 'ServiceRequest/sr-1' };
+      const mockBundle = {
+        entry: [
+          {
+            resource: {
+              resourceType: 'Observation',
+              id: 'obs-uuid-1',
+              status: 'final',
+              basedOn: [basedOnRef],
+            },
+          },
+        ],
+      };
+      jest
+        .mocked(getObservationsBundleByEncounterUuid)
+        .mockResolvedValue(mockBundle as never);
+      jest.mocked(getObservationsFromFhir).mockReturnValue([
+        {
+          concept: { uuid: 'concept-1' },
+          value: 42,
+          uuid: 'obs-uuid-1',
+          formFieldPath: 'Vitals.1/1-0',
+        },
+      ] as never);
+
+      render(
+        <ObservationFormsPanel
+          encounterSessionStartContext={{
+            editOnly: 'observationForms',
+            formName: 'Vitals',
+            editEncounterUuid: 'encounter-uuid-1',
+          }}
+        />,
+      );
+
+      await waitFor(() => expect(mockSetState).toHaveBeenCalled());
+
+      const updater = mockSetState.mock.calls[0][0];
+      const result = updater({ formsData: {} });
+      const stored = result.formsData['form-uuid-1'].observations;
+      expect(stored[0].status).toBe('final');
+      expect(stored[0].basedOn).toBe(basedOnRef);
+    });
+
     it('skips fetch when not in edit mode', async () => {
       render(<ObservationFormsPanel />);
 
