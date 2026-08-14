@@ -127,6 +127,32 @@ describe('createObservationEntries', () => {
       );
     });
 
+    it('echoes the preserved basedOn onto the PUT resource', () => {
+      const obsBasedOn = { reference: 'ServiceRequest/sr-original' };
+      const obs: Form2Observation = {
+        concept: { uuid: 'concept-1' },
+        value: 42,
+        uuid: 'obs-uuid',
+        status: 'amended',
+        basedOn: obsBasedOn,
+      };
+      (getFhirObservations as jest.Mock).mockReturnValue([
+        mockEntry('Observation/obs-uuid'),
+      ]);
+
+      const entries = createObservationEntries(
+        [obs],
+        subject,
+        encounter,
+        performer,
+      );
+
+      expect(entries[0].request?.method).toBe('PUT');
+      expect(
+        (entries[0].resource as { basedOn?: Reference[] }).basedOn,
+      ).toEqual([obsBasedOn]);
+    });
+
     it('returns empty array for empty input', () => {
       const entries = createObservationEntries(
         [],
@@ -248,6 +274,35 @@ describe('createObservationEntries', () => {
       expect((parentEntry?.resource as Record<string, unknown>).id).toBe(
         'parent-obs-uuid',
       );
+    });
+
+    it('echoes the preserved basedOn onto the parent obsGroup PUT resource', () => {
+      const parentBasedOn = { reference: 'ServiceRequest/sr-parent' };
+      const groupObs: Form2Observation = {
+        concept: { uuid: 'group-concept' },
+        value: null,
+        uuid: 'parent-obs-uuid',
+        status: 'final',
+        basedOn: parentBasedOn,
+        groupMembers: [{ concept: { uuid: 'child-concept' }, value: 10 }],
+      };
+      (getFhirObservations as jest.Mock)
+        .mockReturnValueOnce([mockEntry('urn:uuid:child')])
+        .mockReturnValueOnce([mockEntry('Observation/parent-obs-uuid')]);
+
+      const entries = createObservationEntries(
+        [groupObs],
+        subject,
+        encounter,
+        performer,
+      );
+
+      const parentEntry = entries.find(
+        (e) => e.fullUrl === 'Observation/parent-obs-uuid',
+      );
+      expect(
+        (parentEntry?.resource as { basedOn?: Reference[] }).basedOn,
+      ).toEqual([parentBasedOn]);
     });
 
     it('skips new parent obsGroup when getFhirObservations returns no entry for parent', () => {

@@ -495,7 +495,7 @@ describe('ObservationFormsContainer', () => {
         <ObservationFormsContainer
           {...defaultProps}
           viewingForm={mockForm}
-          // Seed with ABNORMAL interpretation to populate statusSourceRef.
+          // Seed with ABNORMAL interpretation to populate initialObservationsRef.
           existingObservations={[
             {
               concept: { uuid: 'c1' },
