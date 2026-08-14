@@ -116,6 +116,34 @@ describe('handleAction', () => {
             editOnly: 'stopMedications',
             editTitle: 'STOP_MEDICATION_FORM_TITLE',
             editEncounterUuid: 'enc-uuid-42',
+            isCancelVaccination: false,
+          }),
+        }),
+      );
+    });
+
+    it('dispatches CANCEL_VACCINATION_FORM_TITLE and isCancelVaccination true when action.metadata.isVaccine is set', () => {
+      const vaccineStopAction = {
+        ...stopAction,
+        metadata: {
+          isVaccine: true,
+          cancelReasonValueSetUuid: 'reason-set-uuid',
+        },
+      };
+      const medWithEncounter: FhirMedicationRequest = {
+        ...fhirMedicationRequestMock,
+        encounter: { reference: 'Encounter/enc-uuid-99' },
+      };
+
+      handleAction(vaccineStopAction, medWithEncounter);
+
+      expect(dispatchSpy).toHaveBeenCalledWith(
+        expect.objectContaining({
+          type: 'startConsultation',
+          detail: expect.objectContaining({
+            editTitle: 'CANCEL_VACCINATION_FORM_TITLE',
+            isCancelVaccination: true,
+            cancelReasonValueSetUuid: 'reason-set-uuid',
           }),
         }),
       );

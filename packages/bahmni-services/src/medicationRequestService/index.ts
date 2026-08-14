@@ -14,4 +14,4 @@ export {
   getVaccinations,
 } from './medicationRequestService';
 
-export { MEDICATIONS_INPUT_CONTROL_KEY } from './constants';
+export { MEDICATIONS_INPUT_CONTROL_KEY, CVX_CODE_SYSTEM } from './constants';

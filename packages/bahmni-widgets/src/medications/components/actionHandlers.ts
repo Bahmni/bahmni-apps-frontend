@@ -12,8 +12,8 @@ const handleStopAction = (
   const encounterUuid = fhirResource.encounter?.reference?.split('/').pop();
 
   const cancelReasonValueSetUuid = action.metadata?.cancelReasonValueSetUuid;
-  
-  const isCancelationMode = Boolean(cancelReasonValueSetUuid);
+
+  const isCancelationMode = Boolean(action.metadata?.isVaccine);
 
   globalThis.dispatchEvent(
     new CustomEvent('startConsultation', {
@@ -27,6 +27,7 @@ const handleStopAction = (
           : 'STOP_MEDICATION_FORM_TITLE',
         editEncounterUuid: encounterUuid,
         cancelReasonValueSetUuid,
+        isCancelVaccination: isCancelationMode,
       },
     }),
   );

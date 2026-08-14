@@ -828,4 +828,44 @@ describe('StopMedicationForm', () => {
       ).toBeInTheDocument();
     });
   });
+
+  describe('cancel vaccination mode', () => {
+    it('derives isCancelVaccinationMode from context.isCancelVaccination, not cancelReasonValueSetUuid presence alone', async () => {
+      const storeMock = makeStoreMock();
+      mockUseStopMedicationStore.mockReturnValue(storeMock as any);
+
+      await act(async () => {
+        renderForm({
+          stopMedication: mockMedicationRequest,
+          isCancelVaccination: true,
+          cancelReasonValueSetUuid: 'reason-set-uuid',
+        });
+      });
+
+      expect(storeMock.setIsCancelVaccination).toHaveBeenCalledWith(true);
+      expect(
+        screen.queryByText('STOP_MEDICATION_FORM_TITLE'),
+      ).not.toBeInTheDocument();
+      expect(
+        screen.getByTestId('cancel-vaccination-medication-info'),
+      ).toBeInTheDocument();
+    });
+
+    it('stays in stop-medication mode when cancelReasonValueSetUuid is set but isCancelVaccination is not true', async () => {
+      const storeMock = makeStoreMock();
+      mockUseStopMedicationStore.mockReturnValue(storeMock as any);
+
+      await act(async () => {
+        renderForm({
+          stopMedication: mockMedicationRequest,
+          cancelReasonValueSetUuid: 'reason-set-uuid',
+        });
+      });
+
+      expect(storeMock.setIsCancelVaccination).toHaveBeenCalledWith(false);
+      expect(
+        screen.getByText('STOP_MEDICATION_FORM_TITLE'),
+      ).toBeInTheDocument();
+    });
+  });
 });

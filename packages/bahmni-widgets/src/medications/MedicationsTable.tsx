@@ -21,6 +21,7 @@ import {
   useSubscribeConsultationSaved,
   ConsultationSavedEventPayload,
   getPatientMedications,
+  CVX_CODE_SYSTEM,
 } from '@bahmni/services';
 import { useQuery } from '@tanstack/react-query';
 import classNames from 'classnames';
@@ -104,7 +105,17 @@ const MedicationsTable: React.FC<WidgetProps> = ({
   const { addNotification } = useNotification();
   const { userPrivileges } = useUserPrivilege();
   const code = (config?.code as string[]) || [];
-  const actions = (config?.actions as MedicationAction[]) ?? [];
+  const isVaccine = code.some((c) => c.startsWith(CVX_CODE_SYSTEM));
+  const rawActions = (config?.actions as MedicationAction[]) ?? [];
+  const actions = useMemo(
+    () =>
+      rawActions.map((action) =>
+        action.type === 'stop'
+          ? { ...action, metadata: { ...action.metadata, isVaccine } }
+          : action,
+      ),
+    [rawActions, isVaccine],
+  );
   const permittedActions = useMemo(
     () =>
       actions.filter((action) =>

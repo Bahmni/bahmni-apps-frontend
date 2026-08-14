@@ -48,10 +48,11 @@ const StopMedicationForm: React.FC<StopMedicationFormProps> = React.memo(
         | string
         | undefined;
 
-    // When a cancelReasonValueSetUuid is provided via context, this form is being
-    // used to cancel a vaccination order — reusing the existing stop medication
-    // component rather than duplicating it.
-    const isCancelVaccinationMode = !!cancelReasonValueSetUuid;
+    // isCancelVaccination is set upstream from the treatment control's code
+    // config (CVX system => vaccine) — this form reuses the stop medication
+    // component rather than duplicating it for cancel vaccination.
+    const isCancelVaccinationMode =
+      !!encounterSessionStartContext?.isCancelVaccination;
 
     const {
       stopDate,

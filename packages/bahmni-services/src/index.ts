@@ -191,6 +191,7 @@ export {
   type Frequency as MedicationFrequency,
   type OrderAttribute,
   MEDICATIONS_INPUT_CONTROL_KEY,
+  CVX_CODE_SYSTEM,
 } from './medicationRequestService';
 export { getMedicationByUuid } from './medicationService';
 export {

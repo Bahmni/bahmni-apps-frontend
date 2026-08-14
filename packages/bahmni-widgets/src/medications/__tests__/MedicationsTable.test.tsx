@@ -800,6 +800,72 @@ describe('MedicationsTable', () => {
       expect(stopButton).toBeInTheDocument();
       expect(stopButton).not.toBeDisabled();
     });
+
+    it('marks the stop action as isVaccine when config.code contains the CVX system', async () => {
+      const vaccineStopConfig = {
+        code: ['http://hl7.org/fhir/sid/cvx|'],
+        actions: [
+          {
+            label: 'STOP_ACTION_LABEL',
+            type: 'stop',
+            encounterType: 'Consultation',
+            requiredPrivilege: ['Stop Orders'],
+          },
+        ],
+      };
+
+      mockUseUserPrivilege.mockReturnValue({
+        userPrivileges: [{ name: 'Stop Orders' }],
+      } as any);
+
+      mockFormatMedicationRequest.mockImplementation(
+        (med: MedicationRequest) => ({
+          id: med.id,
+          name: med.name,
+          dosage: `${med.dose?.value} ${med.dose?.unit}`,
+          dosageUnit: med.dose?.unit ?? '',
+          quantity: `${med.quantity.value} ${med.quantity.unit}`,
+          instruction: med.instructions,
+          startDate: med.startDate,
+          orderDate: med.orderDate,
+          orderedBy: med.orderedBy,
+          status: med.status,
+          priority: med.priority,
+          asNeeded: med.asNeeded,
+          isImmediate: med.isImmediate,
+          fhirResource: {
+            resourceType: 'MedicationRequest',
+            id: med.id,
+          },
+        }),
+      );
+
+      mockUseQuery.mockReturnValue({
+        data: [mockMedications[0]],
+        isLoading: false,
+        isError: false,
+        error: null,
+        refetch: jest.fn(),
+      } as any);
+
+      const dispatchSpy = jest.spyOn(globalThis, 'dispatchEvent');
+
+      render(<MedicationsTable config={vaccineStopConfig} />);
+
+      await userEvent.click(screen.getByTestId('medication-action-stop-1'));
+
+      expect(dispatchSpy).toHaveBeenCalledWith(
+        expect.objectContaining({
+          type: 'startConsultation',
+          detail: expect.objectContaining({
+            editTitle: 'CANCEL_VACCINATION_FORM_TITLE',
+            isCancelVaccination: true,
+          }),
+        }),
+      );
+
+      dispatchSpy.mockRestore();
+    });
   });
 
   describe('Consultation saved event subscription', () => {
