@@ -244,6 +244,10 @@ export {
   type EncounterGroup,
 } from './observationService';
 export {
+  getEpisodeGradingStatus,
+  type EpisodeGradingStatus,
+} from './episodeGradingService';
+export {
   getCurrentProvider,
   fetchAllProviders,
   getProviderLoginLocations,

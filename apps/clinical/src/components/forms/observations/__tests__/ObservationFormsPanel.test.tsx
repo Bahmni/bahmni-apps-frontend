@@ -12,6 +12,7 @@ import { useClinicalAppData } from '../../../../hooks/useClinicalAppData';
 import useObservationFormsSearch from '../../../../hooks/useObservationFormsSearch';
 import { usePinnedObservationForms } from '../../../../hooks/usePinnedObservationForms';
 import { useSubmittedEncounterForms } from '../../../../hooks/useSubmittedEncounterForms';
+import { useSubmittedEpisodeForms } from '../../../../hooks/useSubmittedEpisodeForms';
 import { useObservationFormsStore } from '../../../../stores/observationFormsStore';
 import ObservationForms from '../ObservationForms';
 import ObservationFormsPanel from '../ObservationFormsPanel';
@@ -56,6 +57,10 @@ jest.mock('../../../../hooks/usePinnedObservationForms', () => ({
 
 jest.mock('../../../../hooks/useSubmittedEncounterForms', () => ({
   useSubmittedEncounterForms: jest.fn(() => new Set<string>()),
+}));
+
+jest.mock('../../../../hooks/useSubmittedEpisodeForms', () => ({
+  useSubmittedEpisodeForms: jest.fn(() => new Set<string>()),
 }));
 
 jest.mock('../../../../stores/observationFormsStore', () => ({
@@ -156,7 +161,32 @@ describe('ObservationFormsPanel', () => {
     render(<ObservationFormsPanel />);
 
     const receivedProps = MockObservationForms.mock.calls[0][0];
-    expect(receivedProps.submittedFormUuids).toBe(mockSubmittedUuids);
+    expect(receivedProps.submittedFormUuids).toEqual(mockSubmittedUuids);
+  });
+
+  it('merges submittedFormUuids from both encounter-scoped and episode-scoped hooks', () => {
+    jest
+      .mocked(useSubmittedEncounterForms)
+      .mockReturnValue(new Set(['form-uuid-1']));
+    jest
+      .mocked(useSubmittedEpisodeForms)
+      .mockReturnValue(new Set(['form-uuid-2']));
+
+    render(<ObservationFormsPanel />);
+
+    const receivedProps = MockObservationForms.mock.calls[0][0];
+    expect(receivedProps.submittedFormUuids).toEqual(
+      new Set(['form-uuid-1', 'form-uuid-2']),
+    );
+  });
+
+  it('passes episodeOfCare UUIDs to useSubmittedEpisodeForms', () => {
+    render(<ObservationFormsPanel />);
+
+    expect(jest.mocked(useSubmittedEpisodeForms)).toHaveBeenCalledWith([
+      'eoc-uuid-1',
+      'eoc-uuid-2',
+    ]);
   });
 
   it('calls addForm when onFormSelect is invoked', () => {

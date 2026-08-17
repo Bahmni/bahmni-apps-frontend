@@ -7,12 +7,13 @@ import {
 } from '@bahmni/services';
 import { useActivePractitioner, usePatientUUID } from '@bahmni/widgets';
 import type { Bundle } from 'fhir/r4';
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useMemo, useRef } from 'react';
 import type { EncounterSessionStartContext } from '../../../events/startConsultation';
 import { useClinicalAppData } from '../../../hooks/useClinicalAppData';
 import useObservationFormsSearch from '../../../hooks/useObservationFormsSearch';
 import { usePinnedObservationForms } from '../../../hooks/usePinnedObservationForms';
 import { useSubmittedEncounterForms } from '../../../hooks/useSubmittedEncounterForms';
+import { useSubmittedEpisodeForms } from '../../../hooks/useSubmittedEpisodeForms';
 import { useObservationFormsStore } from '../../../stores/observationFormsStore';
 import ObservationForms from './ObservationForms';
 
@@ -60,7 +61,13 @@ const ObservationFormsPanel: React.FC<ObservationFormsPanelProps> = ({
   const { selectedForms, addForm, removeForm, viewingForm } =
     useObservationFormsStore();
 
-  const submittedFormUuids = useSubmittedEncounterForms(allForms);
+  const submittedEncounterFormUuids = useSubmittedEncounterForms(allForms);
+  const submittedEpisodeFormUuids = useSubmittedEpisodeForms(episodeOfCareUuids);
+  const submittedFormUuids = useMemo(
+    () =>
+      new Set([...submittedEncounterFormUuids, ...submittedEpisodeFormUuids]),
+    [submittedEncounterFormUuids, submittedEpisodeFormUuids],
+  );
 
   const prevViewingFormRef = useRef(viewingForm);
   useEffect(() => {
