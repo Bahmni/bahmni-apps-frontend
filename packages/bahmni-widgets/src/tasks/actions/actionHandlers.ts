@@ -63,6 +63,7 @@ const handleEditFormAction = async (
   globalThis.dispatchEvent(
     new CustomEvent('startConsultation', {
       detail: {
+        encounterType: action.handlerConfig.encounterType,
         editOnly: 'observationForms',
         editTitle: 'EDIT_OBSERVATION_FORM_TITLE',
         editEncounterUuid,

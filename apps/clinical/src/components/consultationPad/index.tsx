@@ -211,9 +211,23 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
     }
   }, [editEncounterError, addNotification, t]);
 
-  const activeEncounter = editEncounterUuid
-    ? (editEncounter ?? null)
-    : sessionEncounter;
+  const isCopyover: boolean | undefined = !editEncounterUuid
+    ? undefined
+    : sessionEncounterStatus === 'success'
+      ? sessionEncounter?.id !== editEncounterUuid
+      : sessionEncounterStatus === 'error'
+        ? false
+        : undefined;
+
+  const activeEncounter =
+    isCopyover !== true && editEncounterUuid
+      ? (editEncounter ?? null)
+      : sessionEncounter;
+
+  const effectiveContext = useMemo<EncounterSessionStartContext>(
+    () => ({ ...encounterSessionStartContext, isCopyover }),
+    [encounterSessionStartContext, isCopyover],
+  );
 
   useEffect(() => {
     const periodStart = sessionEncounter?.period?.start;
@@ -537,7 +551,7 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
             key={entry.key}
             entry={entry}
             encounterType={resolvedEncounterType!}
-            encounterSessionStartContext={encounterSessionStartContext}
+            encounterSessionStartContext={effectiveContext}
           />
         ))}
       </div>
@@ -593,7 +607,7 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
           directMode={directFormMode}
           onDirectModeSubmit={directFormMode ? handleSubmit : undefined}
           onDirectModeCancel={directFormMode ? handleCancel : undefined}
-          encounterSessionStartContext={encounterSessionStartContext}
+          encounterSessionStartContext={effectiveContext}
           isActionAreaExpanded={isActionAreaExpanded}
           onToggleActionAreaExpand={onToggleActionAreaExpand}
         />
