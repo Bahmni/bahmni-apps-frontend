@@ -98,11 +98,43 @@ describe('useSubmittedEpisodeForms', () => {
     expect(result.current.size).toBe(0);
   });
 
-  it('fails open (empty Set) when the fetch rejects', async () => {
+  it('defaults to an empty Set when called without arguments', () => {
+    const { result } = renderHook(() => useSubmittedEpisodeForms(), {
+      wrapper: createWrapper(),
+    });
+
+    expect(mockGetEpisodeGradingStatus).not.toHaveBeenCalled();
+    expect(result.current.size).toBe(0);
+  });
+
+  it('fails open (empty Set) and logs the error when the fetch rejects', async () => {
     const consoleErrorSpy = jest
       .spyOn(console, 'error')
       .mockImplementation(() => {});
-    mockGetEpisodeGradingStatus.mockRejectedValue(new Error('network error'));
+    const networkError = new Error('network error');
+    mockGetEpisodeGradingStatus.mockRejectedValue(networkError);
+
+    const { result } = renderHook(
+      () => useSubmittedEpisodeForms(['episode-uuid-1']),
+      { wrapper: createWrapper() },
+    );
+
+    await waitFor(() =>
+      expect(consoleErrorSpy).toHaveBeenCalledWith(
+        'Failed to fetch episode grading status',
+        expect.objectContaining({ message: 'network error' }),
+      ),
+    );
+
+    expect(result.current.size).toBe(0);
+    consoleErrorSpy.mockRestore();
+  });
+
+  it('does not add a formUuid when alreadySubmitted is true but formUuid is missing', async () => {
+    mockGetEpisodeGradingStatus.mockResolvedValue({
+      alreadySubmitted: true,
+      formUuid: null,
+    });
 
     const { result } = renderHook(
       () => useSubmittedEpisodeForms(['episode-uuid-1']),
@@ -114,6 +146,14 @@ describe('useSubmittedEpisodeForms', () => {
     );
 
     expect(result.current.size).toBe(0);
-    consoleErrorSpy.mockRestore();
+  });
+
+  it('skips fetching for a blank episode UUID', () => {
+    const { result } = renderHook(() => useSubmittedEpisodeForms(['']), {
+      wrapper: createWrapper(),
+    });
+
+    expect(mockGetEpisodeGradingStatus).not.toHaveBeenCalled();
+    expect(result.current.size).toBe(0);
   });
 });
