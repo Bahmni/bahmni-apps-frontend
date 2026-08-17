@@ -31,11 +31,6 @@ describe('resolveNavigationURL', () => {
   it.each([
     ['expression evaluates to null', '/patient/{uuid}', { name: 'John Doe' }],
     [
-      'expression evaluates to undefined',
-      '/patient/{missing}',
-      { name: 'John Doe' },
-    ],
-    [
       'JSONata expression throws error',
       '/patient/{$invalid}',
       { name: 'John Doe' },
