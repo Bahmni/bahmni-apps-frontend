@@ -1,6 +1,7 @@
 import {
   DEFAULT_DATE_FORMAT,
   DEFAULT_DATE_FORMAT_STORAGE_KEY,
+  formatDateTime,
 } from '@bahmni/services';
 import * as BahmniServices from '@bahmni/services';
 import {
@@ -25,7 +26,12 @@ jest.mock('@tanstack/react-query', () => ({
 jest.mock('@bahmni/services', () => ({
   ...jest.requireActual('@bahmni/services'),
   getPatientPrograms: jest.fn(),
+  formatDateTime: jest.fn(),
 }));
+
+const mockFormatDateTime = formatDateTime as jest.MockedFunction<
+  typeof formatDateTime
+>;
 
 describe('PatientProgramsTable', () => {
   const queryClient: QueryClient = new QueryClient({
@@ -39,6 +45,7 @@ describe('PatientProgramsTable', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     localStorage.setItem(DEFAULT_DATE_FORMAT_STORAGE_KEY, DEFAULT_DATE_FORMAT);
+    mockFormatDateTime.mockReturnValue({ formattedResult: '15/01/2023' });
   });
 
   afterEach(() => {
@@ -225,6 +232,86 @@ describe('PatientProgramsTable', () => {
       'program-uuid-2-Treatment Category-test-id',
     );
     expect(nullAttributeCell).toHaveTextContent('-');
+  });
+
+  describe('careManager', () => {
+    it('should render the care manager value when present', () => {
+      (useQuery as jest.Mock).mockReturnValue({
+        data: {
+          programs: [
+            {
+              id: 'program-1',
+              uuid: 'program-uuid-1',
+              programName: 'HIV Program',
+              dateEnrolled: '2023-01-15T10:30:00.000+00:00',
+              dateCompleted: null,
+              outcomeName: null,
+              outcomeDetails: null,
+              currentStateName: null,
+              careManagerDisplay: 'Dr. Test',
+              attributes: {},
+            },
+          ],
+          total: 1,
+        },
+        error: null,
+        isError: false,
+        isLoading: false,
+      });
+
+      render(
+        <QueryClientProvider client={queryClient}>
+          <PatientProgramsTable
+            config={{
+              fields: [{ name: 'programName' }, { name: 'careManager' }],
+            }}
+          />
+        </QueryClientProvider>,
+      );
+
+      expect(
+        screen.getByTestId('program-uuid-1-care-manager-test-id'),
+      ).toHaveTextContent('Dr. Test');
+    });
+
+    it("should render '-' when the care manager is null", () => {
+      (useQuery as jest.Mock).mockReturnValue({
+        data: {
+          programs: [
+            {
+              id: 'program-1',
+              uuid: 'program-uuid-1',
+              programName: 'HIV Program',
+              dateEnrolled: '2023-01-15T10:30:00.000+00:00',
+              dateCompleted: null,
+              outcomeName: null,
+              outcomeDetails: null,
+              currentStateName: null,
+              careManagerDisplay: null,
+              attributes: {},
+            },
+          ],
+          total: 1,
+        },
+        error: null,
+        isError: false,
+        isLoading: false,
+      });
+
+      render(
+        <QueryClientProvider client={queryClient}>
+          <PatientProgramsTable
+            config={{
+              fields: [{ name: 'programName' }, { name: 'careManager' }],
+            }}
+          />
+        </QueryClientProvider>,
+      );
+
+      expect(
+        screen.getByTestId('program-uuid-1-care-manager-test-id'),
+      ).toHaveTextContent('-');
+    });
   });
 
   describe('Pagination', () => {
@@ -419,6 +506,43 @@ describe('PatientProgramsTable', () => {
       ).toHaveTextContent('categoryI');
 
       useTranslationSpy.mockRestore();
+    });
+
+    it('should call formatDateTime and render the result when attribute value is of Date type', () => {
+      mockFormatDateTime.mockReturnValue({ formattedResult: '04/02/2026' });
+
+      (useQuery as jest.Mock).mockReturnValue({
+        data: {
+          programs: [
+            {
+              ...mockProgram,
+              attributes: {
+                treatmentDate: new Date('2026-02-04T00:00:00.000Z'),
+              },
+            },
+          ],
+          total: 1,
+        },
+        error: null,
+        isError: false,
+        isLoading: false,
+      });
+
+      render(
+        <QueryClientProvider client={queryClient}>
+          <PatientProgramsTable
+            config={{ fields: [{ name: 'treatmentDate' }] }}
+          />
+        </QueryClientProvider>,
+      );
+
+      expect(mockFormatDateTime).toHaveBeenCalledWith(
+        new Date('2026-02-04T00:00:00.000Z'),
+        expect.any(Function),
+      );
+      expect(
+        screen.getByTestId('program-uuid-1-treatmentDate-test-id'),
+      ).toHaveTextContent('04/02/2026');
     });
   });
 

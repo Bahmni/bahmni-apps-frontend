@@ -1,18 +1,25 @@
-import { BaseLayout, CodeSnippetSkeleton, Header } from '@bahmni/design-system';
+import {
+  BaseLayout,
+  CodeSnippetSkeleton,
+  Header,
+  Button,
+} from '@bahmni/design-system';
 import {
   BAHMNI_HOME_PATH,
   useTranslation,
   filterExtensionsByPrivileges,
   groupExtensionsByPoint,
 } from '@bahmni/services';
-import { useUserPrivilege } from '@bahmni/widgets';
+import { useUserPrivilege, UserGlobalAction } from '@bahmni/widgets';
 import { Suspense, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useRegistrationConfig } from '../../providers/registrationConfig';
 import { EXTENSION_HANDLERS } from './constants';
 import styles from './styles/index.module.scss';
 
 const RegistrationList = () => {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const { registrationConfig } = useRegistrationConfig();
   const { userPrivileges } = useUserPrivilege();
 
@@ -27,6 +34,10 @@ const RegistrationList = () => {
     ],
     [t],
   );
+
+  const handleCreateNewPatient = () => {
+    navigate('/registration/patient/new');
+  };
 
   const extensionsByPoint = useMemo(
     () => groupExtensionsByPoint(registrationConfig?.extensions ?? []),
@@ -47,7 +58,29 @@ const RegistrationList = () => {
 
   return (
     <BaseLayout
-      header={<Header breadcrumbItems={breadcrumbItems} />}
+      header={
+        <div
+          id="registration-list-page-header"
+          data-testid="registration-list-page-header-test-id"
+          aria-label="Registration List Page Header"
+        >
+          <Header
+            breadcrumbItems={breadcrumbItems}
+            globalFeatures={[
+              <Button
+                key="create-new-patient"
+                onClick={handleCreateNewPatient}
+                size="md"
+                className={styles.headerButton}
+                data-testid="create-new-patient-button"
+              >
+                {t('CREATE_PATIENT_BUTTON_TEXT')}
+              </Button>,
+            ]}
+            userMenu={<UserGlobalAction />}
+          />
+        </div>
+      }
       main={
         <div
           id="registration-list-page"

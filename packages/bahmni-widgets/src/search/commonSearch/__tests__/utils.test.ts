@@ -1,7 +1,17 @@
-import { formatCountry, formatGender } from '@bahmni/services';
-import { TextInput } from '../models';
+import {
+  formatCountry,
+  formatGender,
+  resolveComboBoxItems,
+} from '@bahmni/services';
+import {
+  CriterionConfig,
+  CriterionRow,
+  LookupOption,
+  TextInput,
+} from '../models';
 import {
   formatSearchResult,
+  getLookupComboBoxItems,
   initialRows,
   availableCriteriaForRow,
   criteriaAvailableToAdd,
@@ -10,12 +20,15 @@ import {
   getRangeOrderError,
   updateRow,
   validateRows,
+  reconcileAdditionalCriteriaErrors,
   resolveRows,
   buildPayload,
   resultTransforms,
   validateConfigForActions,
+  validateConfigForCriteria,
   resolveNavigationURL,
   toSearchAuditEventType,
+  needsDisplayKey,
 } from '../utils';
 import {
   mockContextMultipleDefaults,
@@ -63,7 +76,19 @@ jest.mock('date-fns', () => ({
     const shifted = new Date(_date.getTime() + IST_OFFSET_MS);
     return shifted.toISOString().slice(0, -1) + '+0530';
   },
+  endOfDay: (_date: Date) => {
+    const ist = new Date(_date.getTime() + IST_OFFSET_MS);
+    ist.setUTCHours(23, 59, 59, 999);
+    return new Date(ist.getTime() - IST_OFFSET_MS);
+  },
 }));
+
+jest.mock('@bahmni/services', () => ({
+  ...jest.requireActual('@bahmni/services'),
+  resolveComboBoxItems: jest.fn(),
+}));
+
+const mockResolveComboBoxItems = jest.mocked(resolveComboBoxItems);
 
 describe('processContextConfigs', () => {
   it.each([
@@ -456,6 +481,233 @@ describe('validateRows', () => {
     expect(result[0].validationError).toBe('CRITERION_ERR');
     expect(result[1].validationError).toBeNull();
   });
+
+  describe('additionalCriteria', () => {
+    const sexCriterion: CriterionConfig = {
+      id: 'sex',
+      field: { key: 'gender' },
+      translationKey: 'PATIENT_SEX',
+      additionalCriteria: ['givenName'],
+      input: {
+        kind: 'options',
+        placeholderTranslationKey: 'PATIENT_SEX_PLACEHOLDER',
+        options: [{ translationKey: 'MALE', value: 'M' }],
+      },
+    };
+    const givenNameCriterion: CriterionConfig = {
+      id: 'givenName',
+      field: { key: 'names.givenName' },
+      translationKey: 'PATIENT_GIVEN_NAME',
+      input: {
+        kind: 'text',
+        placeholderTranslationKey: 'PATIENT_GIVEN_NAME_PLACEHOLDER',
+      },
+    };
+    const otherCriterion: CriterionConfig = {
+      id: 'other',
+      field: { key: 'other' },
+      translationKey: 'PATIENT_OTHER',
+      input: {
+        kind: 'text',
+        placeholderTranslationKey: 'PATIENT_OTHER_PLACEHOLDER',
+      },
+    };
+    const sexRow: CriterionRow = {
+      rowId: 'row-sex',
+      criterionKey: 'sex',
+      value: { value: 'M' },
+      validationError: null,
+      rangeOrderError: null,
+    };
+    const givenNameRow: CriterionRow = {
+      rowId: 'row-given-name',
+      criterionKey: 'givenName',
+      value: { value: 'Rahul' },
+      validationError: null,
+      rangeOrderError: null,
+    };
+    const otherRow: CriterionRow = {
+      rowId: 'row-other',
+      criterionKey: 'other',
+      value: { value: 'x' },
+      validationError: null,
+      rangeOrderError: null,
+    };
+    const criteria = [sexCriterion, givenNameCriterion, otherCriterion];
+    const translateWithCriteriaList = (
+      key: string,
+      options?: { criteriaList?: string },
+    ) =>
+      key === 'COMMON_SEARCH_ADDITIONAL_CRITERIA_REQUIRED'
+        ? `Add another search criteria from one of the following: ${options?.criteriaList}`
+        : key;
+
+    it('blocks when the only active criterion is Sex, listing the configured criteria', () => {
+      const result = validateRows(
+        [sexRow],
+        criteria,
+        'CRITERION_ERR',
+        'VALUE_ERR',
+        'RANGE_ORDER_ERR',
+        translateWithCriteriaList,
+      );
+      expect(result[0].validationError).toBe(
+        'Add another search criteria from one of the following: PATIENT_GIVEN_NAME',
+      );
+    });
+
+    it('allows the search when paired with an allow-listed criterion', () => {
+      const result = validateRows(
+        [sexRow, givenNameRow],
+        criteria,
+        'CRITERION_ERR',
+        'VALUE_ERR',
+        'RANGE_ORDER_ERR',
+        translateWithCriteriaList,
+      );
+      expect(result[0].validationError).toBeNull();
+    });
+
+    it('still blocks when paired only with a criterion not on the allow-list', () => {
+      const result = validateRows(
+        [sexRow, otherRow],
+        criteria,
+        'CRITERION_ERR',
+        'VALUE_ERR',
+        'RANGE_ORDER_ERR',
+        translateWithCriteriaList,
+      );
+      expect(result[0].validationError).toBe(
+        'Add another search criteria from one of the following: PATIENT_GIVEN_NAME',
+      );
+    });
+  });
+});
+
+describe('reconcileAdditionalCriteriaErrors', () => {
+  const sexCriterion: CriterionConfig = {
+    id: 'sex',
+    field: { key: 'gender' },
+    translationKey: 'PATIENT_SEX',
+    additionalCriteria: ['givenName'],
+    input: {
+      kind: 'options',
+      placeholderTranslationKey: 'PATIENT_SEX_PLACEHOLDER',
+      options: [{ translationKey: 'MALE', value: 'M' }],
+    },
+  };
+  const givenNameCriterion: CriterionConfig = {
+    id: 'givenName',
+    field: { key: 'names.givenName' },
+    translationKey: 'PATIENT_GIVEN_NAME',
+    input: {
+      kind: 'text',
+      placeholderTranslationKey: 'PATIENT_GIVEN_NAME_PLACEHOLDER',
+    },
+  };
+  const stickySexRow: CriterionRow = {
+    rowId: 'row-sex',
+    criterionKey: 'sex',
+    value: { value: 'M' },
+    validationError:
+      'Add another search criteria from one of the following: PATIENT_GIVEN_NAME',
+    rangeOrderError: null,
+  };
+  const givenNameRow: CriterionRow = {
+    rowId: 'row-given-name',
+    criterionKey: 'givenName',
+    value: { value: 'Rahul' },
+    validationError: null,
+    rangeOrderError: null,
+  };
+
+  it('clears the sticky error once a qualifying partner criterion becomes active', () => {
+    const result = reconcileAdditionalCriteriaErrors(
+      [stickySexRow, givenNameRow],
+      [sexCriterion, givenNameCriterion],
+    );
+    expect(result[0].validationError).toBeNull();
+  });
+});
+
+describe('validateConfigForCriteria', () => {
+  const baseContext = {
+    context: 'patient' as const,
+    translationKey: 'CTX',
+    requiredPrivileges: ['View Patients'],
+    url: '/url',
+    pageSize: 20,
+    resultFields: [{ translationKey: 'RF', expression: 'x' }],
+  };
+
+  it('returns null when all criterion ids are unique and references are valid', () => {
+    const result = validateConfigForCriteria([
+      {
+        ...baseContext,
+        criteria: [
+          {
+            id: 'sex',
+            field: { key: 'gender' },
+            translationKey: 'SEX',
+            additionalCriteria: ['givenName'],
+            input: { kind: 'text', placeholderTranslationKey: 'PH' },
+          },
+          {
+            id: 'givenName',
+            field: { key: 'names.givenName' },
+            translationKey: 'GIVEN_NAME',
+            input: { kind: 'text', placeholderTranslationKey: 'PH' },
+          },
+        ],
+      },
+    ]);
+    expect(result).toBeNull();
+  });
+
+  it('flags duplicate criterion ids within a context', () => {
+    const result = validateConfigForCriteria([
+      {
+        ...baseContext,
+        criteria: [
+          {
+            id: 'sex',
+            field: { key: 'gender' },
+            translationKey: 'SEX',
+            input: { kind: 'text', placeholderTranslationKey: 'PH' },
+          },
+          {
+            id: 'sex',
+            field: { key: 'other' },
+            translationKey: 'OTHER',
+            input: { kind: 'text', placeholderTranslationKey: 'PH' },
+          },
+        ],
+      },
+    ]);
+    expect(result).toBe(
+      'COMMON_SEARCH_CONFIG_VALIDATION_DUPLICATE_CRITERION_ID',
+    );
+  });
+
+  it('flags an additionalCriteria entry that references an unknown id', () => {
+    const result = validateConfigForCriteria([
+      {
+        ...baseContext,
+        criteria: [
+          {
+            id: 'sex',
+            field: { key: 'gender' },
+            translationKey: 'SEX',
+            additionalCriteria: ['doesNotExist'],
+            input: { kind: 'text', placeholderTranslationKey: 'PH' },
+          },
+        ],
+      },
+    ]);
+    expect(result).toBe(
+      'COMMON_SEARCH_CONFIG_VALIDATION_UNKNOWN_ADDITIONAL_CRITERION',
+    );
+  });
 });
 
 describe('updateRow', () => {
@@ -551,7 +803,7 @@ describe('resolveRows', () => {
       row: mockRowDateRange,
       expected: {
         from: { value: '2026-01-15T05:30:00.000+0530', comparator: null },
-        to: { value: '2026-07-24T05:29:59.000+0530', comparator: null },
+        to: { value: '2026-07-23T23:59:59.999+0530', comparator: null },
       },
     },
     {
@@ -621,7 +873,7 @@ describe('buildPayload', () => {
       },
     },
     {
-      label: 'range field → AND group with gt from and lt to',
+      label: 'range field → AND group with ge from and le to',
       resolvedRows: [mockResolvedRangeRow],
       entity: 'patient',
       expected: {
@@ -632,8 +884,8 @@ describe('buildPayload', () => {
             {
               operator: 'AND',
               conditions: [
-                { field: 'patient.age', comparator: 'gt', value: '20' },
-                { field: 'patient.age', comparator: 'lt', value: '50' },
+                { field: 'patient.age', comparator: 'ge', value: '20' },
+                { field: 'patient.age', comparator: 'le', value: '50' },
               ],
             },
             locationCondition,
@@ -675,6 +927,13 @@ describe('buildPayload', () => {
       buildPayload([mockResolvedScalarRow], 'patientProgram', mockLocationUuid)
         .entity,
     ).toBe('patientProgram');
+  });
+
+  it('omits the location condition when locationUuid is not provided', () => {
+    const result = buildPayload([mockResolvedScalarRow], 'patient');
+    expect(result.criteria.conditions).toEqual([
+      { field: 'patient.givenName', comparator: 'eq', value: 'John' },
+    ]);
   });
 });
 
@@ -760,6 +1019,25 @@ describe('resultTransforms', () => {
       expect(resultTransforms[key](value, identityT)).toContain(contains);
     },
   );
+});
+
+describe('needsDisplayKey', () => {
+  it.each(['formatDate', 'formatTime', 'formatDateTime', 'formatAge'])(
+    'returns true for %s',
+    (transform) => {
+      expect(needsDisplayKey(transform)).toBe(true);
+    },
+  );
+
+  it.each([
+    undefined,
+    'formatGender',
+    'formatCountry',
+    'formatSearchResult',
+    'nonExistentTransform',
+  ])('returns false for %s', (transform) => {
+    expect(needsDisplayKey(transform)).toBe(false);
+  });
 });
 
 describe('formatSearchResult', () => {
@@ -885,5 +1163,48 @@ describe('resolveNavigationURL', () => {
   ])('returns null when %s', async (_description, template, rowData) => {
     const result = await resolveNavigationURL(template, rowData);
     expect(result).toBeNull();
+  });
+});
+
+describe('getLookupComboBoxItems', () => {
+  const messages = { loading: 'Loading', error: 'Error', empty: 'Empty' };
+  const options: LookupOption[] = [
+    { uuid: 'service-uuid-1', label: 'TB Program' },
+    { uuid: 'service-uuid-2', label: 'HIV Program' },
+  ];
+
+  beforeEach(() => {
+    mockResolveComboBoxItems.mockReturnValue([]);
+  });
+
+  it.each([
+    { label: 'null', inputValue: null },
+    { label: 'empty string', inputValue: '' },
+  ])(
+    'returns an empty array without calling resolveComboBoxItems when inputValue is $label',
+    ({ inputValue }) => {
+      const result = getLookupComboBoxItems(
+        inputValue,
+        options,
+        false,
+        false,
+        messages,
+      );
+
+      expect(result).toEqual([]);
+      expect(mockResolveComboBoxItems).not.toHaveBeenCalled();
+    },
+  );
+
+  it('passes only the substring-matching options to resolveComboBoxItems once the user types', () => {
+    getLookupComboBoxItems('tb', options, false, false, messages);
+
+    expect(mockResolveComboBoxItems).toHaveBeenCalledWith(
+      false,
+      false,
+      [options[0]],
+      expect.any(Function),
+      messages,
+    );
   });
 });

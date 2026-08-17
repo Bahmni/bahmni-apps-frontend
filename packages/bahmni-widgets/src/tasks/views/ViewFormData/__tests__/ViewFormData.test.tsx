@@ -2,7 +2,6 @@ import {
   formatDateTime,
   getEncounterByUuid,
   getObservationsBundleByEncounterUuid,
-  getPatientObservationsBundle,
 } from '@bahmni/services';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, screen, waitFor } from '@testing-library/react';
@@ -15,7 +14,10 @@ import {
   mockObservationsForVitals,
 } from '../../../../observations/__mocks__/observationTestData';
 import { mockViewFormView } from '../../../__tests__/__mocks__/configMocks';
-import { mockFHIRTaskWithInput } from '../../../__tests__/__mocks__/taskActionsMocks';
+import {
+  mockFHIRTaskWithInput,
+  mockGetPatientObservationsBundle,
+} from '../../../__tests__/__mocks__/taskActionsMocks';
 import type { TaskViewModel } from '../../../models';
 import ViewFormData from '../ViewFormData';
 
@@ -37,10 +39,6 @@ jest.mock('../../../../observationsRenderer', () => ({
   )),
 }));
 
-const mockGetPatientObservationsBundle =
-  getPatientObservationsBundle as jest.MockedFunction<
-    typeof getPatientObservationsBundle
-  >;
 const mockGetObservationsBundleByEncounterUuid =
   getObservationsBundleByEncounterUuid as jest.MockedFunction<
     typeof getObservationsBundleByEncounterUuid

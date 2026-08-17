@@ -31,7 +31,7 @@ import React, {
   useState,
 } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import ConsultationPad from '../components/consultationPad/';
+import ConsultationPadContainer from '../components/consultationPadContainer';
 import DashboardContainer from '../components/dashboardContainer/DashboardContainer';
 import PatientHeader from '../components/patientHeader/PatientHeader';
 import PatientSearch from '../components/patientSearch/PatientSearch';
@@ -82,6 +82,7 @@ const ConsultationPage: React.FC = () => {
   const { userPrivileges } = useUserPrivilege();
   const { addNotification } = useNotification();
   const [isActionAreaVisible, setIsActionAreaVisible] = useState(false);
+  const [isActionAreaExpanded, setIsActionAreaExpanded] = useState(false);
   const [encounterSessionStartContext, setEncounterSessionStartContext] =
     useState<EncounterSessionStartContext | null>(null);
 
@@ -89,6 +90,7 @@ const ConsultationPage: React.FC = () => {
     useCallback((event) => {
       setEncounterSessionStartContext(event);
       setIsActionAreaVisible(true);
+      setIsActionAreaExpanded(false);
     }, []),
   );
   const [isSearchOpen, setIsSearchOpen] = useState(false);
@@ -296,7 +298,7 @@ const ConsultationPage: React.FC = () => {
             breadcrumbItems={breadcrumbItems}
             globalActions={globalActions}
             userMenu={<UserGlobalAction />}
-            sideNavItems={sidebarItems}
+            sideNavItems={isActionAreaExpanded ? [] : sidebarItems}
             activeSideNavItemId={activeItemId}
             onSideNavItemClick={handleItemClick}
             isRail={isActionAreaVisible}
@@ -335,12 +337,20 @@ const ConsultationPage: React.FC = () => {
           </Suspense>
         }
         isActionAreaVisible={isActionAreaVisible}
+        isActionAreaExpanded={isActionAreaExpanded}
         layoutVariant={viewingForm ? 'extended' : 'default'}
         actionArea={
           encounterSessionStartContext && (
-            <ConsultationPad
+            <ConsultationPadContainer
               encounterSessionStartContext={encounterSessionStartContext}
-              onClose={() => setIsActionAreaVisible((prev) => !prev)}
+              onClose={() => {
+                setIsActionAreaVisible((prev) => !prev);
+                setIsActionAreaExpanded(false);
+              }}
+              isActionAreaExpanded={isActionAreaExpanded}
+              onToggleActionAreaExpand={() =>
+                setIsActionAreaExpanded((prev) => !prev)
+              }
             />
           )
         }

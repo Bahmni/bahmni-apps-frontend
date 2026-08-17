@@ -1,7 +1,7 @@
 import { registerDefaultActions } from '../index';
 
 describe('registerDefaultActions', () => {
-  it('should register logout action', () => {
+  it('should register change password and logout actions', () => {
     const mockRegisterAction = jest.fn();
     const mockRegistry = {
       registerAction: mockRegisterAction,
@@ -13,7 +13,14 @@ describe('registerDefaultActions', () => {
 
     registerDefaultActions(mockRegistry);
 
-    expect(mockRegisterAction).toHaveBeenCalledTimes(1);
+    expect(mockRegisterAction).toHaveBeenCalledTimes(2);
+    expect(mockRegisterAction).toHaveBeenCalledWith(
+      expect.objectContaining({
+        id: 'user-change-password-global-action',
+        label: 'USER_CHANGE_PASSWORD_GLOBAL_ACTION',
+        onClick: expect.any(Function),
+      }),
+    );
     expect(mockRegisterAction).toHaveBeenCalledWith(
       expect.objectContaining({
         id: 'user-logout-global-action',

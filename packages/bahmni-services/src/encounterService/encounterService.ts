@@ -4,6 +4,8 @@ import {
   FHIR_ENCOUNTER_CLASS_CODE_SYSTEM,
   FHIR_ENCOUNTER_TAG_SYSTEM,
 } from '../constants/fhir';
+import { getUserLoginLocation } from '../userService';
+import { getVisitLocationUUID } from '../visitService';
 import {
   PATIENT_VISITS_URL,
   PATIENT_ENCOUNTERS_URL,
@@ -83,21 +85,29 @@ export interface EncounterTypeRef {
 /**
  * Fetches visits for a given patient UUID from the FHIR R4 endpoint
  * @param patientUUID - The UUID of the patient
+ * @param locationUuid - Optional location UUID to filter visits server-side
  * @returns Promise resolving to a FhirEncounterBundle
  */
 export async function getPatientVisits(
   patientUUID: string,
+  locationUuid?: string,
 ): Promise<Bundle<Encounter>> {
-  return await get<Bundle<Encounter>>(PATIENT_VISITS_URL(patientUUID));
+  return await get<Bundle<Encounter>>(
+    PATIENT_VISITS_URL(patientUUID, locationUuid),
+  );
 }
 
 /**
  * Fetches and transforms visits for a given patient UUID
  * @param patientUUID - The UUID of the patient
+ * @param locationUuid - Optional location UUID to filter visits server-side
  * @returns Promise resolving to an array of FhirEncounter
  */
-export async function getVisits(patientUUID: string): Promise<Encounter[]> {
-  const fhirEncounterBundle = await getPatientVisits(patientUUID);
+export async function getVisits(
+  patientUUID: string,
+  locationUuid?: string,
+): Promise<Encounter[]> {
+  const fhirEncounterBundle = await getPatientVisits(patientUUID, locationUuid);
   return (
     fhirEncounterBundle.entry
       ?.map((entry) => entry.resource)
@@ -156,12 +166,15 @@ export async function getEncounterTypeByName(
 /**
  * Gets the active visit for a patient (encounter with no end date)
  * @param patientUUID - The UUID of the patient
+ * @param locationUuid - Optional location UUID to filter visits by location
  * @returns Promise resolving to the current FhirEncounter or null if not found
  */
 export async function getActiveVisit(
   patientUUID: string,
+  locationUuid?: string,
 ): Promise<Encounter | null> {
-  const encounters = await getVisits(patientUUID);
+  const encounters = await getVisits(patientUUID, locationUuid);
+
   return encounters.find((encounter) => !encounter.period?.end) ?? null;
 }
 
@@ -203,4 +216,21 @@ export async function updateFhirEncounter(
   encounter: Encounter,
 ): Promise<Encounter> {
   return await put<Encounter>(`${FHIR_ENCOUNTER_URL}/${uuid}`, encounter);
+}
+
+/**
+ * Gets the active visit for a patient at the user's login location. This function
+ * automatically resolves the user's current login location to a visit location and
+ * fetches the active visit (encounter with no end date) for the specified patient.
+ * @param patientUuid - The UUID of the patient
+ * @returns Promise resolving to the active FHIR Encounter at the login location, or null if not found
+ */
+export async function getActiveVisitAtLoginLocation(
+  patientUuid: string,
+): Promise<Encounter | null> {
+  const loginLocationUuid = getUserLoginLocation().uuid;
+  const visitLocationResponse = await getVisitLocationUUID(loginLocationUuid);
+  const visitLocationUuid = visitLocationResponse.uuid;
+
+  return getActiveVisit(patientUuid, visitLocationUuid);
 }

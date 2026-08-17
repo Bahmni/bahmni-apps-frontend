@@ -35,6 +35,7 @@ import {
   resolveRows,
   toSearchAuditEventType,
   validateConfigForActions,
+  validateConfigForCriteria,
   validateRows,
 } from './utils';
 
@@ -79,7 +80,11 @@ const CommonSearchWidget = ({ extensionParams }: SearchWidgetProps) => {
   });
 
   const configValidationError = useMemo(
-    () => (config ? validateConfigForActions(config) : null),
+    () =>
+      config
+        ? (validateConfigForActions(config) ??
+          validateConfigForCriteria(config))
+        : null,
     [config],
   );
 
@@ -112,7 +117,7 @@ const CommonSearchWidget = ({ extensionParams }: SearchWidgetProps) => {
         buildPayload(
           resolveRows(validated, context.criteria),
           context.context,
-          location.uuid,
+          context.locationAware ? location?.uuid : undefined,
         ),
       )
         .then((data) => {
