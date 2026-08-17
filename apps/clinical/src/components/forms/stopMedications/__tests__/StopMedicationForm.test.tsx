@@ -851,7 +851,9 @@ describe('StopMedicationForm', () => {
       await act(async () => {
         render(
           <StopMedicationForm
-            encounterSessionStartContext={{ stopMedication: mockMedicationRequest }}
+            encounterSessionStartContext={{
+              stopMedication: mockMedicationRequest,
+            }}
             inputControlConfig={inputControlConfig}
           />,
         );
@@ -900,7 +902,9 @@ describe('StopMedicationForm', () => {
       const { rerender } = await act(async () =>
         render(
           <StopMedicationForm
-            encounterSessionStartContext={{ stopMedication: mockMedicationRequest }}
+            encounterSessionStartContext={{
+              stopMedication: mockMedicationRequest,
+            }}
           />,
         ),
       );
@@ -927,8 +931,6 @@ describe('StopMedicationForm', () => {
     it('hides the note textarea and clears the note when onClose is called', async () => {
       // Capture the onClose prop from TextAreaWClose
       let capturedOnClose: (() => void) | null = null;
-      const { TextAreaWClose: OriginalTextAreaWClose } =
-        jest.requireActual('@bahmni/design-system');
 
       // Re-mock to intercept onClose
       const designSystem = jest.requireMock('@bahmni/design-system');

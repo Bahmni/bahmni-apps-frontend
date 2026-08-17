@@ -823,10 +823,19 @@ describe('MedicationsTable', () => {
     });
 
     it.each([
-      { statusValue: 'cancelled', expectedLabel: 'MEDICATIONS_STATUS_CANCELLED' },
-      { statusValue: 'completed', expectedLabel: 'MEDICATIONS_STATUS_COMPLETED' },
+      {
+        statusValue: 'cancelled',
+        expectedLabel: 'MEDICATIONS_STATUS_CANCELLED',
+      },
+      {
+        statusValue: 'completed',
+        expectedLabel: 'MEDICATIONS_STATUS_COMPLETED',
+      },
       { statusValue: 'draft', expectedLabel: 'MEDICATIONS_STATUS_UNKNOWN' },
-      { statusValue: 'entered-in-error', expectedLabel: 'MEDICATIONS_STATUS_UNKNOWN' },
+      {
+        statusValue: 'entered-in-error',
+        expectedLabel: 'MEDICATIONS_STATUS_UNKNOWN',
+      },
       { statusValue: 'unknown', expectedLabel: 'MEDICATIONS_STATUS_UNKNOWN' },
     ])(
       'renders "$expectedLabel" tag for status "$statusValue"',
@@ -906,7 +915,9 @@ describe('MedicationsTable', () => {
         cancellationNote: 'Patient refused',
       };
 
-      mockFormatMedicationRequest.mockReturnValue(medicationWithCancellationNote);
+      mockFormatMedicationRequest.mockReturnValue(
+        medicationWithCancellationNote,
+      );
 
       mockUseQuery.mockReturnValue({
         data: [mockMedications[0]],
@@ -964,7 +975,9 @@ describe('MedicationsTable', () => {
       await userEvent.click(allTab);
 
       // The accordion section should be rendered (grouped medication appears in All tab)
-      expect(screen.getAllByText('Grouped Medication').length).toBeGreaterThan(0);
+      expect(screen.getAllByText('Grouped Medication').length).toBeGreaterThan(
+        0,
+      );
     });
   });
 
@@ -1052,11 +1065,11 @@ describe('MedicationsTable', () => {
       const allTab = screen.getByRole('tab', { name: 'MEDICATIONS_TAB_ALL' });
       await userEvent.click(allTab);
 
-      expect(screen.getByText('MEDICATIONS_STATUS_CANCELLED')).toBeInTheDocument();
       expect(
-        screen.getByText((content) =>
-          content.includes('Patient discharged'),
-        ),
+        screen.getByText('MEDICATIONS_STATUS_CANCELLED'),
+      ).toBeInTheDocument();
+      expect(
+        screen.getByText((content) => content.includes('Patient discharged')),
       ).toBeInTheDocument();
     });
   });
@@ -1110,7 +1123,9 @@ describe('MedicationsTable', () => {
 
       render(<MedicationsTable config={stopConfig} />);
 
-      const stopButton = screen.getByTestId('medication-action-stop-active-action-med');
+      const stopButton = screen.getByTestId(
+        'medication-action-stop-active-action-med',
+      );
       expect(stopButton).toBeInTheDocument();
     });
   });
