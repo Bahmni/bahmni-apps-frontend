@@ -1,6 +1,7 @@
 import {
   DEFAULT_DATE_FORMAT,
   DEFAULT_DATE_FORMAT_STORAGE_KEY,
+  formatDateTime,
 } from '@bahmni/services';
 import * as BahmniServices from '@bahmni/services';
 import {
@@ -25,7 +26,12 @@ jest.mock('@tanstack/react-query', () => ({
 jest.mock('@bahmni/services', () => ({
   ...jest.requireActual('@bahmni/services'),
   getPatientPrograms: jest.fn(),
+  formatDateTime: jest.fn(),
 }));
+
+const mockFormatDateTime = formatDateTime as jest.MockedFunction<
+  typeof formatDateTime
+>;
 
 describe('PatientProgramsTable', () => {
   const queryClient: QueryClient = new QueryClient({
@@ -39,6 +45,7 @@ describe('PatientProgramsTable', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     localStorage.setItem(DEFAULT_DATE_FORMAT_STORAGE_KEY, DEFAULT_DATE_FORMAT);
+    mockFormatDateTime.mockReturnValue({ formattedResult: '15/01/2023' });
   });
 
   afterEach(() => {
@@ -499,6 +506,43 @@ describe('PatientProgramsTable', () => {
       ).toHaveTextContent('categoryI');
 
       useTranslationSpy.mockRestore();
+    });
+
+    it('should call formatDateTime and render the result when attribute value is of Date type', () => {
+      mockFormatDateTime.mockReturnValue({ formattedResult: '04/02/2026' });
+
+      (useQuery as jest.Mock).mockReturnValue({
+        data: {
+          programs: [
+            {
+              ...mockProgram,
+              attributes: {
+                treatmentDate: new Date('2026-02-04T00:00:00.000Z'),
+              },
+            },
+          ],
+          total: 1,
+        },
+        error: null,
+        isError: false,
+        isLoading: false,
+      });
+
+      render(
+        <QueryClientProvider client={queryClient}>
+          <PatientProgramsTable
+            config={{ fields: [{ name: 'treatmentDate' }] }}
+          />
+        </QueryClientProvider>,
+      );
+
+      expect(mockFormatDateTime).toHaveBeenCalledWith(
+        new Date('2026-02-04T00:00:00.000Z'),
+        expect.any(Function),
+      );
+      expect(
+        screen.getByTestId('program-uuid-1-treatmentDate-test-id'),
+      ).toHaveTextContent('04/02/2026');
     });
   });
 

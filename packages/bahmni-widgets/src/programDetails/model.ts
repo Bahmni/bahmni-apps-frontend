@@ -7,7 +7,7 @@ export interface ProgramDetailsViewModel {
   readonly outcomeName: string | null;
   readonly outcomeDetails: string | null;
   readonly currentStateName: string | null;
-  readonly attributes: Record<string, string | null>;
+  readonly attributes: Record<string, string | Date | null>;
   readonly careManagerDisplay?: string | null;
   readonly allowedStates: {
     uuid: string;

@@ -88,7 +88,7 @@ describe('programService', () => {
       expect(result).toEqual({
         ID_Number: '123145',
         'Patient Stage': 'Initial Stage',
-        'Treatment Date': '2026-02-04T00:00:00.000+0000',
+        'Treatment Date': new Date('2026-02-04T00:00:00.000+0000'),
       });
     });
 
@@ -104,6 +104,21 @@ describe('programService', () => {
       expect(result).toEqual({
         Non_Existent_Attribute: null,
       });
+    });
+
+    it('should convert ISO date string attribute values to Date objects', () => {
+      const result = extractAttributes(mockEnrollments[0], ['Treatment Date']);
+
+      expect(result['Treatment Date']).toBeInstanceOf(Date);
+      expect((result['Treatment Date'] as Date).toISOString()).toBe(
+        new Date('2026-02-04T00:00:00.000+0000').toISOString(),
+      );
+    });
+
+    it('should keep non-date string attribute values as strings', () => {
+      const result = extractAttributes(mockEnrollments[0], ['ID_Number']);
+
+      expect(result['ID_Number']).toBe('123145');
     });
   });
 

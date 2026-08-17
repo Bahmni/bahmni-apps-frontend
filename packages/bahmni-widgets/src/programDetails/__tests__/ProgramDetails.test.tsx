@@ -576,6 +576,41 @@ describe('ProgramDetails', () => {
       allowedStates: [],
     };
 
+    it('should call formatDateTime and render the result when attribute value is of Date type', () => {
+      mockFormatDateTime.mockReturnValue({ formattedResult: '04/02/2026' });
+
+      (useQuery as jest.Mock).mockReturnValue({
+        data: {
+          ...mockQueryData,
+          attributes: {
+            treatmentDate: new Date('2026-02-04T00:00:00.000Z'),
+          },
+        },
+        error: null,
+        isError: false,
+        isLoading: false,
+      });
+
+      render(
+        <QueryClientProvider client={queryClient}>
+          <ProgramDetails
+            programUUID="test-program-uuid"
+            config={{
+              fields: [{ name: 'treatmentDate' }],
+            }}
+          />
+        </QueryClientProvider>,
+      );
+
+      expect(mockFormatDateTime).toHaveBeenCalledWith(
+        new Date('2026-02-04T00:00:00.000Z'),
+        expect.any(Function),
+      );
+      expect(
+        screen.getByTestId('program-details-treatmentDate-value-test-id'),
+      ).toHaveTextContent('04/02/2026');
+    });
+
     it('should render raw attribute value when field is not in enableTranslation', () => {
       (useQuery as jest.Mock).mockReturnValue({
         data: mockQueryData,
