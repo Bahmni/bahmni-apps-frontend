@@ -89,7 +89,7 @@ const StopMedicationForm: React.FC<StopMedicationFormProps> = React.memo(
     });
 
     const stopReasonConceptSet = inputControlConfig?.metadata
-      ?.stopOrderedReasonConceptSet as string | undefined;
+      ?.stoppedOrderReasonConceptSet as string | undefined;
 
     const { data: conceptStopReasons } = useQuery({
       queryKey: ['stopReasons', stopReasonConceptSet],

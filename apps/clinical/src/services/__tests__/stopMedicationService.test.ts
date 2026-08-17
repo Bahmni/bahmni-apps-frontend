@@ -85,6 +85,28 @@ describe('stopMedicationService', () => {
       );
     });
 
+    it('should skip title search and call expand directly when a UUID is provided', async () => {
+      const uuid = 'd7380c43-5e07-11ef-8f7c-0242ac120002';
+      const expandedValueSet: ValueSet = {
+        resourceType: 'ValueSet',
+        id: uuid,
+        status: 'active',
+        expansion: {
+          timestamp: '2025-01-01',
+          contains: [{ code: 'r1', display: 'Reason One' }],
+        },
+      };
+      mockGet.mockResolvedValueOnce(expandedValueSet);
+
+      const result = await fetchStopReasons(uuid);
+
+      expect(mockGet).toHaveBeenCalledTimes(1);
+      expect(mockGet).toHaveBeenCalledWith(
+        expect.stringContaining(`/${uuid}/$expand`),
+      );
+      expect(result).toEqual([{ uuid: 'r1', display: 'Reason One' }]);
+    });
+
     it('should return empty array when ValueSet not found', async () => {
       mockGet.mockResolvedValueOnce({
         resourceType: 'Bundle',

@@ -20,19 +20,31 @@ export interface StopReason {
   display: string;
 }
 
+const UUID_REGEX =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 export async function fetchStopReasons(
-  conceptSetName?: string,
+  conceptSetNameOrUuid?: string,
 ): Promise<StopReason[]> {
   try {
-    const title = conceptSetName ?? STOP_REASON_VALUESET_TITLE;
-    const url = `${OPENMRS_FHIR_R4}/ValueSet?title=${encodeURIComponent(title)}`;
-    const searchBundle = await get<Bundle>(url);
-    const valueSetEntry = searchBundle.entry?.[0]?.resource as
-      | ValueSet
-      | undefined;
-    if (!valueSetEntry?.id) return [];
+    let valueSetId: string | undefined;
+
+    if (conceptSetNameOrUuid && UUID_REGEX.test(conceptSetNameOrUuid)) {
+      // UUID passed directly — skip title search, go straight to $expand
+      valueSetId = conceptSetNameOrUuid;
+    } else {
+      const title = conceptSetNameOrUuid ?? STOP_REASON_VALUESET_TITLE;
+      const url = `${OPENMRS_FHIR_R4}/ValueSet?title=${encodeURIComponent(title)}`;
+      const searchBundle = await get<Bundle>(url);
+      const valueSetEntry = searchBundle.entry?.[0]?.resource as
+        | ValueSet
+        | undefined;
+      valueSetId = valueSetEntry?.id;
+    }
+
+    if (!valueSetId) return [];
     const expanded = await get<ValueSet>(
-      STOP_REASON_VALUESET_EXPAND_URL(valueSetEntry.id),
+      STOP_REASON_VALUESET_EXPAND_URL(valueSetId),
     );
     const contains = expanded.expansion?.contains ?? [];
     return contains.map((c) => ({

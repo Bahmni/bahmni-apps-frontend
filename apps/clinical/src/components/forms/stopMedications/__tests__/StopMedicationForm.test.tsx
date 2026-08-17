@@ -842,10 +842,10 @@ describe('StopMedicationForm', () => {
     });
   });
 
-  describe('inputControlConfig.metadata.stopOrderedReasonConceptSet', () => {
-    it('passes stopOrderedReasonConceptSet to the stopReasons query when provided', async () => {
+  describe('inputControlConfig.metadata.stoppedOrderReasonConceptSet', () => {
+    it('passes stoppedOrderReasonConceptSet to the stopReasons query when provided', async () => {
       const inputControlConfig = {
-        metadata: { stopOrderedReasonConceptSet: 'Custom Stop Reasons' },
+        metadata: { stoppedOrderReasonConceptSet: 'Custom Stop Reasons' },
       } as any;
 
       await act(async () => {
