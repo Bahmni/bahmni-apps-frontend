@@ -593,7 +593,7 @@ describe('PatientProgramsTable', () => {
       mockResolveNavigationURL.mockReset();
     });
 
-    it('renders program name as a Link when navigationUrl matches', async () => {
+    it('renders program name as a Link when navigationURLmatches', async () => {
       mockResolveNavigationURL.mockResolvedValue(
         '/bahmni/hiv?patientUuid=test-patient-uuid&enrollmentUuid=program-uuid-1',
       );
@@ -605,7 +605,7 @@ describe('PatientProgramsTable', () => {
             <PatientProgramsTable
               config={{
                 fields: [{ name: 'programName' }],
-                navigationUrl:
+                navigationURL:
                   '/bahmni/hiv?patientUuid={patient.uuid}&enrollmentUuid={uuid}',
               }}
             />
@@ -622,7 +622,7 @@ describe('PatientProgramsTable', () => {
       expect(link).toHaveTextContent('HIV Program');
     });
 
-    it('renders program name as a Link using navigationUrlByProgram when program matches', async () => {
+    it('renders program name as a Link using navigationURLByProgram when program matches', async () => {
       mockResolveNavigationURL.mockResolvedValue(
         '/bahmni/hiv-specific?patientUuid=test-patient-uuid',
       );
@@ -634,8 +634,8 @@ describe('PatientProgramsTable', () => {
             <PatientProgramsTable
               config={{
                 fields: [{ name: 'programName' }],
-                navigationUrl: '/bahmni/default?patientUuid={patient.uuid}',
-                navigationUrlByProgram: [
+                navigationURL: '/bahmni/default?patientUuid={patient.uuid}',
+                navigationURLByProgram: [
                   {
                     program: 'HIV Program',
                     navigationURL:
@@ -656,7 +656,7 @@ describe('PatientProgramsTable', () => {
       );
     });
 
-    it('falls back to navigationUrl when program is not in navigationUrlByProgram', async () => {
+    it('falls back to navigationURLwhen program is not in navigationURLByProgram', async () => {
       mockResolveNavigationURL.mockResolvedValue(
         '/bahmni/default?patientUuid=test-patient-uuid',
       );
@@ -668,8 +668,8 @@ describe('PatientProgramsTable', () => {
             <PatientProgramsTable
               config={{
                 fields: [{ name: 'programName' }],
-                navigationUrl: '/bahmni/default?patientUuid={patient.uuid}',
-                navigationUrlByProgram: [
+                navigationURL: '/bahmni/default?patientUuid={patient.uuid}',
+                navigationURLByProgram: [
                   {
                     program: 'TB Program',
                     navigationURL: '/bahmni/tb?patientUuid={patient.uuid}',
@@ -713,7 +713,7 @@ describe('PatientProgramsTable', () => {
             <PatientProgramsTable
               config={{
                 fields: [{ name: 'programName' }],
-                navigationUrl: '/bahmni/clinical?bad={nonExistentField}',
+                navigationURL: '/bahmni/clinical?bad={nonExistentField}',
               }}
             />
           </QueryClientProvider>,
@@ -734,7 +734,7 @@ describe('PatientProgramsTable', () => {
             <PatientProgramsTable
               config={{
                 fields: [{ name: 'programName' }],
-                navigationUrl: '/bahmni/clinical?p={patient.uuid}',
+                navigationURL: '/bahmni/clinical?p={patient.uuid}',
               }}
             />
           </QueryClientProvider>,

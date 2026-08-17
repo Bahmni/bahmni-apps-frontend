@@ -21,5 +21,5 @@ export interface ProgramField {
 
 export interface ProgramNavigationConfigEntry {
   program: string;
-  navigationUrl: string;
+  navigationURL: string;
 }

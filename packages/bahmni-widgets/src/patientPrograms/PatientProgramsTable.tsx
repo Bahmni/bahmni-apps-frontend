@@ -38,10 +38,10 @@ const PatientProgramsTable: React.FC<WidgetProps> = ({ config }) => {
   const [selectedPageSize, setSelectedPageSize] = useState(configPageSize);
 
   const configFields = (config?.fields as ProgramField[] | undefined) ?? [];
-  const navigationUrlByProgram = config?.navigationUrlByProgram as
+  const navigationURLByProgram = config?.navigationURLByProgram as
     | ProgramNavigationConfigEntry[]
     | undefined;
-  const navigationUrl = config?.navigationUrl as string | undefined;
+  const navigationURL = config?.navigationURL as string | undefined;
 
   const programAttributes = useMemo(
     () => extractProgramAttributeNames(configFields),
@@ -144,16 +144,16 @@ const PatientProgramsTable: React.FC<WidgetProps> = ({ config }) => {
   );
 
   useEffect(() => {
-    if (!navigationUrl && !navigationUrlByProgram?.length) return;
+    if (!navigationURL && !navigationURLByProgram?.length) return;
 
     let cancelled = false;
     const resolve = async () => {
       const entries = await Promise.all(
         sortedPrograms.map(async (program) => {
           const template =
-            navigationUrlByProgram?.find(
+            navigationURLByProgram?.find(
               (e) => e.program === program.programName,
-            )?.navigationUrl ?? navigationUrl;
+            )?.navigationURL ?? navigationURL;
           if (!template) return null;
           const rawEnrollment = enrollmentMap.get(program.uuid);
           const url = await resolveNavigationURL(template, {
@@ -175,8 +175,8 @@ const PatientProgramsTable: React.FC<WidgetProps> = ({ config }) => {
   }, [
     sortedPrograms,
     enrollmentMap,
-    navigationUrlByProgram,
-    navigationUrl,
+    navigationURLByProgram,
+    navigationURL,
     patientUUID,
   ]);
 
