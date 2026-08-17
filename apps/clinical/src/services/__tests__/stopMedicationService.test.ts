@@ -98,6 +98,44 @@ describe('stopMedicationService', () => {
       mockGet.mockRejectedValueOnce(new Error('Network error'));
       expect(await fetchStopReasons()).toEqual([]);
     });
+
+    it('should return uuid="" and display="" for entries with null code and null display', async () => {
+      const searchBundle: Bundle = {
+        resourceType: 'Bundle',
+        type: 'searchset',
+        entry: [
+          {
+            resource: {
+              resourceType: 'ValueSet',
+              id: 'vs-uuid-null',
+              status: 'active',
+            } as ValueSet,
+          },
+        ],
+      };
+      const expandedValueSet: ValueSet = {
+        resourceType: 'ValueSet',
+        id: 'vs-uuid-null',
+        status: 'active',
+        expansion: {
+          timestamp: '2025-01-01',
+          contains: [
+            { code: undefined, display: undefined },
+            { code: 'reason-3', display: 'Valid Reason' },
+          ],
+        },
+      };
+      mockGet
+        .mockResolvedValueOnce(searchBundle)
+        .mockResolvedValueOnce(expandedValueSet);
+
+      const result = await fetchStopReasons();
+
+      expect(result).toEqual([
+        { uuid: '', display: '' },
+        { uuid: 'reason-3', display: 'Valid Reason' },
+      ]);
+    });
   });
 
   describe('createStopMedicationEntry', () => {

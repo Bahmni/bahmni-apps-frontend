@@ -841,4 +841,129 @@ describe('StopMedicationForm', () => {
       );
     });
   });
+
+  describe('inputControlConfig.metadata.stopOrderedReasonConceptSet', () => {
+    it('passes stopOrderedReasonConceptSet to the stopReasons query when provided', async () => {
+      const inputControlConfig = {
+        metadata: { stopOrderedReasonConceptSet: 'Custom Stop Reasons' },
+      } as any;
+
+      await act(async () => {
+        render(
+          <StopMedicationForm
+            encounterSessionStartContext={{ stopMedication: mockMedicationRequest }}
+            inputControlConfig={inputControlConfig}
+          />,
+        );
+      });
+
+      // The stopReasons query key should include the custom concept set name
+      expect(mockUseQuery).toHaveBeenCalledWith(
+        expect.objectContaining({
+          queryKey: ['stopReasons', 'Custom Stop Reasons'],
+        }),
+      );
+    });
+
+    it('passes undefined to stopReasons query when inputControlConfig has no metadata', async () => {
+      await act(async () => {
+        renderForm({ stopMedication: mockMedicationRequest });
+      });
+
+      expect(mockUseQuery).toHaveBeenCalledWith(
+        expect.objectContaining({
+          queryKey: ['stopReasons', undefined],
+        }),
+      );
+    });
+  });
+
+  describe('scheduled medication minStopDate', () => {
+    it('renders stop date picker for on-hold (scheduled) medication', async () => {
+      const scheduledMedication = {
+        ...mockMedicationRequest,
+        status: 'on-hold' as const,
+      };
+
+      await act(async () => {
+        renderForm({ stopMedication: scheduledMedication });
+      });
+
+      expect(
+        screen.getByTestId('stop-medication-date-input'),
+      ).toBeInTheDocument();
+    });
+  });
+
+  describe('prevMedicationIdRef — medication change', () => {
+    it('re-renders cleanly when a different medication is passed', async () => {
+      const { rerender } = await act(async () =>
+        render(
+          <StopMedicationForm
+            encounterSessionStartContext={{ stopMedication: mockMedicationRequest }}
+          />,
+        ),
+      );
+
+      const anotherMedication = {
+        ...mockMedicationRequest,
+        id: 'med-uuid-2',
+        medicationReference: { display: 'Metformin 500 mg' },
+      };
+
+      await act(async () => {
+        rerender(
+          <StopMedicationForm
+            encounterSessionStartContext={{ stopMedication: anotherMedication }}
+          />,
+        );
+      });
+
+      expect(screen.getByText('Metformin 500 mg')).toBeInTheDocument();
+    });
+  });
+
+  describe('note close (onClose) handler', () => {
+    it('hides the note textarea and clears the note when onClose is called', async () => {
+      // Capture the onClose prop from TextAreaWClose
+      let capturedOnClose: (() => void) | null = null;
+      const { TextAreaWClose: OriginalTextAreaWClose } =
+        jest.requireActual('@bahmni/design-system');
+
+      // Re-mock to intercept onClose
+      const designSystem = jest.requireMock('@bahmni/design-system');
+      const originalTextAreaWClose = designSystem.TextAreaWClose;
+      designSystem.TextAreaWClose = jest.fn((props: any) => {
+        capturedOnClose = props.onClose;
+        return (
+          <textarea
+            placeholder={props.placeholder}
+            value={props.value}
+            onChange={props.onChange}
+          />
+        );
+      });
+
+      const setNote = jest.fn();
+      mockUseStopMedicationStore.mockReturnValue(
+        makeStoreMock({ setNote, note: 'some note' }) as any,
+      );
+
+      await act(async () => {
+        renderForm({ stopMedication: mockMedicationRequest });
+      });
+
+      // TextAreaWClose is rendered when note is non-empty (hasNote=true)
+      expect(capturedOnClose).not.toBeNull();
+
+      await act(async () => {
+        capturedOnClose!();
+      });
+
+      expect(setNote).toHaveBeenCalledWith('');
+
+      // Restore original mock
+      designSystem.TextAreaWClose = originalTextAreaWClose;
+    });
+  });
 });
