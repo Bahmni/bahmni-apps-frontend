@@ -1,17 +1,23 @@
-import { SortableDataTable, Tag } from '@bahmni/design-system';
+import { Link, SortableDataTable, Tag } from '@bahmni/design-system';
 import {
   useTranslation,
   formatDateTime,
   getPatientProgramsPage,
   camelToScreamingSnakeCase,
   getEpisodeOfCare,
+  ProgramEnrollment,
 } from '@bahmni/services';
 import { useQuery } from '@tanstack/react-query';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { usePatientUUID } from '../hooks/usePatientUUID';
 import { WidgetProps } from '../registry/model';
+import { resolveNavigationURL } from '../search/commonSearch/utils';
 import { EPISODE_OF_CARE_FIELDS } from './constants';
-import { PatientProgramViewModel, ProgramField } from './model';
+import {
+  PatientProgramViewModel,
+  ProgramField,
+  ProgramNavigationConfigEntry,
+} from './model';
 import styles from './styles/PatientProgramsTable.module.scss';
 import {
   createProgramHeaders,
@@ -32,6 +38,10 @@ const PatientProgramsTable: React.FC<WidgetProps> = ({ config }) => {
   const [selectedPageSize, setSelectedPageSize] = useState(configPageSize);
 
   const configFields = (config?.fields as ProgramField[] | undefined) ?? [];
+  const navigationUrlByProgram = config?.navigationUrlByProgram as
+    | ProgramNavigationConfigEntry[]
+    | undefined;
+  const navigationUrl = config?.navigationUrl as string | undefined;
 
   const programAttributes = useMemo(
     () => extractProgramAttributeNames(configFields),
@@ -78,6 +88,7 @@ const PatientProgramsTable: React.FC<WidgetProps> = ({ config }) => {
 
       return {
         programs,
+        enrollments: page.programs,
         total: page.total,
       };
     },
@@ -122,6 +133,53 @@ const PatientProgramsTable: React.FC<WidgetProps> = ({ config }) => {
     });
   }, [data?.programs]);
 
+  const enrollmentMap = useMemo(() => {
+    const map = new Map<string, ProgramEnrollment>();
+    data?.enrollments?.forEach((e) => map.set(e.uuid, e));
+    return map;
+  }, [data?.enrollments]);
+
+  const [resolvedUrls, setResolvedUrls] = useState<Map<string, string>>(
+    new Map(),
+  );
+
+  useEffect(() => {
+    if (!navigationUrl && !navigationUrlByProgram?.length) return;
+
+    let cancelled = false;
+    const resolve = async () => {
+      const entries = await Promise.all(
+        sortedPrograms.map(async (program) => {
+          const template =
+            navigationUrlByProgram?.find(
+              (e) => e.program === program.programName,
+            )?.navigationUrl ?? navigationUrl;
+          if (!template) return null;
+          const rawEnrollment = enrollmentMap.get(program.uuid);
+          const url = await resolveNavigationURL(template, {
+            ...rawEnrollment,
+            patientUuid: patientUUID,
+          });
+          return url ? ([program.uuid, url] as const) : null;
+        }),
+      );
+      if (cancelled) return;
+      setResolvedUrls(
+        new Map(entries.filter((e): e is [string, string] => e !== null)),
+      );
+    };
+    resolve();
+    return () => {
+      cancelled = true;
+    };
+  }, [
+    sortedPrograms,
+    enrollmentMap,
+    navigationUrlByProgram,
+    navigationUrl,
+    patientUUID,
+  ]);
+
   const renderAttributeValue = (
     program: PatientProgramViewModel,
     field: string,
@@ -145,8 +203,17 @@ const PatientProgramsTable: React.FC<WidgetProps> = ({ config }) => {
 
   const renderCell = (program: PatientProgramViewModel, cellId: string) => {
     switch (cellId) {
-      case 'programName':
-        return (
+      case 'programName': {
+        const url = resolvedUrls.get(program.uuid);
+        return url ? (
+          <Link
+            id={`${program.uuid}-program-name`}
+            data-testid={`${program.uuid}-program-name-test-id`}
+            href={url}
+          >
+            {program.programName}
+          </Link>
+        ) : (
           <span
             id={`${program.uuid}-program-name`}
             data-testid={`${program.uuid}-program-name-test-id`}
@@ -154,6 +221,7 @@ const PatientProgramsTable: React.FC<WidgetProps> = ({ config }) => {
             {program.programName}
           </span>
         );
+      }
       case 'startDate':
         return (
           <span
