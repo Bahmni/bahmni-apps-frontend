@@ -23,6 +23,7 @@ import {
   MedicationConfig,
   MedicationJSONConfig,
 } from '../../../models/medicationConfig';
+import type { InputControl as ClinicalInputControlConfig } from '../../../providers/clinicalConfig/models';
 import {
   fetchStopReasons,
   StopReason,
@@ -34,10 +35,11 @@ import styles from './styles/StopMedicationForm.module.scss';
 
 interface StopMedicationFormProps {
   encounterSessionStartContext?: EncounterSessionStartContext;
+  inputControlConfig?: ClinicalInputControlConfig;
 }
 
 const StopMedicationForm: React.FC<StopMedicationFormProps> = React.memo(
-  ({ encounterSessionStartContext }) => {
+  ({ encounterSessionStartContext, inputControlConfig }) => {
     const { t } = useTranslation();
     const stopMedication = encounterSessionStartContext?.stopMedication as
       | MedicationRequest
@@ -86,11 +88,13 @@ const StopMedicationForm: React.FC<StopMedicationFormProps> = React.memo(
       },
     });
 
+    const stopReasonConceptSet = inputControlConfig?.metadata
+      ?.stopOrderedReasonConceptSet as string | undefined;
+
     const { data: conceptStopReasons } = useQuery({
-      queryKey: ['stopReasons', medicationConfig?.stopOrderedReasonConceptSet],
-      queryFn: () =>
-        fetchStopReasons(medicationConfig?.stopOrderedReasonConceptSet),
-      enabled: medicationConfig !== undefined,
+      queryKey: ['stopReasons', stopReasonConceptSet],
+      queryFn: () => fetchStopReasons(stopReasonConceptSet),
+      enabled: true,
     });
 
     useEffect(() => {
