@@ -3,8 +3,12 @@ import { post } from '../../api';
 import { ENCOUNTER_BUNDLE_URL } from '../../encounterBundle';
 import { getUserLoginLocation } from '../../userService';
 import { DOCUMENT_REFERENCE_URL } from '../constants';
-import { createDocumentReference, saveDocument } from '../documentWriteService';
-import { SaveDocumentInput } from '../models';
+import {
+  createDocumentReference,
+  saveDocument,
+  saveDocuments,
+} from '../documentWriteService';
+import { DocumentToSave, SaveDocumentInput } from '../models';
 
 jest.mock('../../api');
 jest.mock('../../userService');
@@ -156,6 +160,130 @@ describe('documentWriteService', () => {
     it('throws when neither encounterUuid nor createEncounterInVisit is provided', async () => {
       await expect(saveDocument(baseInput)).rejects.toThrow(
         'saveDocument requires either encounterUuid or createEncounterInVisit',
+      );
+      expect(mockedPost).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('saveDocuments', () => {
+    const documents: DocumentToSave[] = [
+      { url: '100/a__scan.png', contentType: 'image/png', title: 'scan.png' },
+      {
+        url: '100/b__report.pdf',
+        contentType: 'application/pdf',
+        title: 'report.pdf',
+      },
+    ];
+
+    it('POSTs one DocumentReference per document to an existing encounter', async () => {
+      const result = await saveDocuments({
+        patientUuid: PATIENT_UUID,
+        documents,
+        encounterUuid: 'enc-uuid',
+      });
+
+      expect(mockedPost).toHaveBeenCalledTimes(2);
+      expect(mockedPost.mock.calls.map(([url]) => url)).toEqual([
+        DOCUMENT_REFERENCE_URL,
+        DOCUMENT_REFERENCE_URL,
+      ]);
+      expect(result).toEqual({ savedIndices: [0, 1], failures: [] });
+    });
+
+    it('reports only the document that failed so the rest are not retried', async () => {
+      const error = new Error('Save rejected by server');
+      mockedPost.mockResolvedValueOnce({}).mockRejectedValueOnce(error);
+
+      const result = await saveDocuments({
+        patientUuid: PATIENT_UUID,
+        documents,
+        encounterUuid: 'enc-uuid',
+      });
+
+      expect(result.savedIndices).toEqual([0]);
+      expect(result.failures).toEqual([{ index: 1, error }]);
+    });
+
+    it('creates one encounter for the whole batch and attaches every document to it', async () => {
+      const result = await saveDocuments({
+        patientUuid: PATIENT_UUID,
+        documents,
+        authorPractitionerUuid: 'prac-uuid',
+        createEncounterInVisit: {
+          visitUuid: 'visit-uuid',
+          encounterTypeUuid: 'enc-type-uuid',
+          encounterTypeDisplay: 'Patient Document',
+        },
+      });
+
+      // One transaction, not one per file — otherwise each file would get its own encounter.
+      expect(mockedPost).toHaveBeenCalledTimes(1);
+      const [url, body] = mockedPost.mock.calls[0];
+      const bundle = body as {
+        entry: Array<{ fullUrl: string; resource: Record<string, unknown> }>;
+      };
+      expect(url).toBe(ENCOUNTER_BUNDLE_URL);
+      expect(bundle.entry).toHaveLength(3);
+
+      const [encounterEntry, ...docEntries] = bundle.entry;
+      expect(encounterEntry.resource.resourceType).toBe('Encounter');
+      expect(
+        docEntries.map(
+          (entry) =>
+            (entry.resource as unknown as DocumentReference).context
+              ?.encounter?.[0].reference,
+        ),
+      ).toEqual([encounterEntry.fullUrl, encounterEntry.fullUrl]);
+      expect(
+        docEntries.map(
+          (entry) =>
+            (entry.resource as unknown as DocumentReference).content?.[0]
+              .attachment.url,
+        ),
+      ).toEqual(['100/a__scan.png', '100/b__report.pdf']);
+      expect(result).toEqual({ savedIndices: [0, 1], failures: [] });
+    });
+
+    it('reports every document as failed when the bundle transaction is rejected', async () => {
+      const error = new Error('Transaction rolled back');
+      mockedPost.mockRejectedValueOnce(error);
+
+      const result = await saveDocuments({
+        patientUuid: PATIENT_UUID,
+        documents,
+        createEncounterInVisit: {
+          visitUuid: 'visit-uuid',
+          encounterTypeUuid: 'enc-type-uuid',
+        },
+      });
+
+      // The bundle is all-or-nothing, so no document may be reported as saved.
+      expect(result.savedIndices).toEqual([]);
+      expect(result.failures).toEqual([
+        { index: 0, error },
+        { index: 1, error },
+      ]);
+    });
+
+    it('does nothing when there are no documents to save', async () => {
+      const result = await saveDocuments({
+        patientUuid: PATIENT_UUID,
+        documents: [],
+        createEncounterInVisit: {
+          visitUuid: 'visit-uuid',
+          encounterTypeUuid: 'enc-type-uuid',
+        },
+      });
+
+      expect(mockedPost).not.toHaveBeenCalled();
+      expect(result).toEqual({ savedIndices: [], failures: [] });
+    });
+
+    it('throws when neither encounterUuid nor createEncounterInVisit is provided', async () => {
+      await expect(
+        saveDocuments({ patientUuid: PATIENT_UUID, documents }),
+      ).rejects.toThrow(
+        'saveDocuments requires either encounterUuid or createEncounterInVisit',
       );
       expect(mockedPost).not.toHaveBeenCalled();
     });

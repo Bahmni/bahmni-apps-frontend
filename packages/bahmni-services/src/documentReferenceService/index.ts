@@ -6,7 +6,11 @@ export {
   getDocumentUploadMaxSizeMb,
   type DocumentReferencePage,
 } from './documentReferenceService';
-export { createDocumentReference, saveDocument } from './documentWriteService';
+export {
+  createDocumentReference,
+  saveDocument,
+  saveDocuments,
+} from './documentWriteService';
 export type {
   DocumentViewModel,
   DocumentType,
@@ -14,5 +18,8 @@ export type {
   CreateEncounterInVisit,
   CreateDocumentReferenceInput,
   SaveDocumentInput,
+  DocumentToSave,
+  SaveDocumentsInput,
+  SaveDocumentsResult,
 } from './models';
 export type { DocumentReference } from 'fhir/r4';

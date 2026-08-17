@@ -1,23 +1,14 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import { DocumentsSection } from '../DocumentsSection';
-
-jest.mock('@bahmni/services', () => ({
-  ...jest.requireActual('@bahmni/services'),
-  getDocumentTypes: jest
-    .fn()
-    .mockResolvedValue([{ id: 'type-1', label: 'Prescription' }]),
-}));
-
-const mockAddNotification = jest.fn();
 
 // DocumentUpload has its own test suite; stub it here and expose the wiring we care about.
 jest.mock('@bahmni/widgets', () => ({
   ...jest.requireActual('@bahmni/widgets'),
-  useNotification: () => ({ addNotification: mockAddNotification }),
-  DocumentUpload: (props: { saveTarget: unknown }) => (
+  DocumentUpload: (props: { sourceId: string; saveTarget: unknown }) => (
     <div
       data-testid="document-upload"
+      data-sourceid={props.sourceId}
       data-savetarget={JSON.stringify(props.saveTarget)}
     />
   ),
@@ -89,7 +80,7 @@ const visitGroups = [
   },
 ];
 
-const renderSection = (topLevelConcept?: string | null) => {
+const renderSection = () => {
   const queryClient = new QueryClient({
     defaultOptions: { queries: { retry: false } },
   });
@@ -98,7 +89,6 @@ const renderSection = (topLevelConcept?: string | null) => {
       <DocumentsSection
         patientUuid="patient-uuid"
         documentEncounterType={documentEncounterType}
-        topLevelConcept={topLevelConcept}
       />
     </QueryClientProvider>,
   );
@@ -144,21 +134,6 @@ describe('DocumentsSection', () => {
     expect(screen.queryAllByTestId('document-upload')).toHaveLength(0);
   });
 
-  it('notifies when document types fail to load, without blocking upload', async () => {
-    const { getDocumentTypes } = jest.requireMock('@bahmni/services');
-    getDocumentTypes.mockRejectedValueOnce(new Error('types boom'));
-
-    renderSection('Patient Document');
-
-    await waitFor(() =>
-      expect(mockAddNotification).toHaveBeenCalledWith(
-        expect.objectContaining({ type: 'error' }),
-      ),
-    );
-    // Document type is optional, so upload widgets still render.
-    expect(screen.getAllByTestId('document-upload').length).toBeGreaterThan(0);
-  });
-
   it('renders nothing when the patient has no visits', () => {
     mockUseVisitDocuments.mockReturnValue({
       visitGroups: [],
@@ -185,6 +160,16 @@ describe('DocumentsSection', () => {
     expect(screen.getByText('Prescription')).toBeInTheDocument();
     expect(screen.getByText('Report')).toBeInTheDocument();
     expect(screen.getByDisplayValue('take twice daily')).toBeInTheDocument();
+  });
+
+  it('tags each upload widget with its own visit, so queued files stay under that visit', () => {
+    renderSection();
+
+    const sources = screen
+      .getAllByTestId('document-upload')
+      .map((node) => node.getAttribute('data-sourceid'));
+
+    expect(sources).toEqual(['visit-1', 'visit-2', 'visit-3']);
   });
 
   it('reuses an existing encounter as the save target when one exists, otherwise creates one', () => {
@@ -220,5 +205,68 @@ describe('DocumentsSection', () => {
     expect(mockUseVisitDocuments).toHaveBeenCalledWith('patient-uuid', [
       'doc-enc-type-uuid',
     ]);
+  });
+
+  // One visit per case so a label assertion cannot match a sibling visit's heading. Matched on the
+  // label prefix rather than a formatted date: formatDateTime resolves its pattern from the browser
+  // locale, so asserting an exact date string would be locale-dependent.
+  describe('visit labels', () => {
+    const renderVisit = (period?: { start?: string; end?: string }) => {
+      mockUseVisitDocuments.mockReturnValue({
+        visitGroups: [
+          {
+            visit: {
+              resourceType: 'Encounter',
+              id: 'visit-under-test',
+              period,
+            },
+            documents: [],
+          },
+        ],
+        isLoading: false,
+        refetch: mockRefetch,
+      });
+      renderSection();
+    };
+
+    it('reads "Visit on <date>" when the visit starts and ends on the same day', () => {
+      renderVisit({
+        start: '2026-06-29T09:00:00Z',
+        end: '2026-06-29T12:00:00Z',
+      });
+
+      expect(screen.getByText(/^Visit on \S+$/)).toBeInTheDocument();
+      expect(
+        screen.queryByText(/^Visit from .+ to .+$/),
+      ).not.toBeInTheDocument();
+    });
+
+    it('keeps the from/to range when the visit spans more than one day', () => {
+      renderVisit({
+        start: '2026-06-29T09:00:00Z',
+        end: '2026-07-02T12:00:00Z',
+      });
+
+      expect(screen.getByText(/^Visit from .+ to .+$/)).toBeInTheDocument();
+      expect(screen.queryByText(/^Visit on \S+$/)).not.toBeInTheDocument();
+    });
+
+    // An open visit has only a start, and visits here are single-day in practice, so it reads as
+    // "Visit on <start>" rather than an open-ended "Visit from <start>".
+    it('reads "Visit on <date>" for an open visit with no end date', () => {
+      renderVisit({ start: '2026-06-20T09:00:00Z' });
+
+      expect(screen.getByText(/^Visit on \S+$/)).toBeInTheDocument();
+      expect(
+        screen.queryByText(/^Visit from .+ to .+$/),
+      ).not.toBeInTheDocument();
+    });
+
+    it('falls back to a bare "Visit" when the visit has no period at all', () => {
+      renderVisit(undefined);
+
+      expect(screen.getByText('Visit')).toBeInTheDocument();
+      expect(screen.queryByText(/^Visit on \S+$/)).not.toBeInTheDocument();
+    });
   });
 });

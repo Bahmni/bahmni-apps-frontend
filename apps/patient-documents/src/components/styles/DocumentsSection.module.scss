@@ -3,9 +3,8 @@
 @use "@carbon/react/scss/type" as *;
 @use "@carbon/react/scss/breakpoint" as *;
 
-// Narrower and more indented than the patient banner.
+// Shares the page gutter so it lines up with the patient banner above it.
 .documents {
-  margin-inline: calc($spacing-13 + $spacing-04);
   background: $layer-02;
   box-shadow: 0 2px 6px $shadow;
 

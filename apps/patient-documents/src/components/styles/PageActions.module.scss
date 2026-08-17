@@ -1,0 +1,31 @@
+@use "@carbon/react/scss/spacing" as *;
+@use "@carbon/react/scss/theme" as *;
+
+// Fixed, not sticky: sticky only pins an element that would otherwise scroll away, so the bar rode
+// up with the content whenever the accordion was collapsed and the page grew shorter than the
+// viewport. Fixed keeps it on the bottom edge regardless of how tall the page is.
+.pageActions {
+  position: fixed;
+  inset-block-end: 0;
+
+  // Inset by the page gutter on both sides, so the bar is exactly as wide as the documents card
+  // and the patient banner above it.
+  inset-inline: calc($spacing-12 + $spacing-05);
+  display: flex;
+
+  // Navigation on the left, the commit action on the right.
+  justify-content: space-between;
+  align-items: center;
+  gap: $spacing-05;
+  background: $layer-02;
+
+  // A plain rule, not a card shadow: the bar is a page edge, not another raised surface.
+  border-block-start: 1px solid $border-subtle-01;
+
+  // Matches the card's inner padding so the button lines up with the Documents heading.
+  padding: $spacing-05 $spacing-06;
+
+  // Above the page content, but well below Carbon's modals (9000) so document previews still cover
+  // the bar.
+  z-index: 100;
+}

@@ -13,7 +13,12 @@ import {
 import { getUserLoginLocation } from '../userService';
 import { generateUUID } from '../utils/utils';
 import { DOCUMENT_REFERENCE_URL } from './constants';
-import { CreateDocumentReferenceInput, SaveDocumentInput } from './models';
+import {
+  CreateDocumentReferenceInput,
+  SaveDocumentInput,
+  SaveDocumentsInput,
+  SaveDocumentsResult,
+} from './models';
 
 // encounterReference is a concrete "Encounter/{uuid}" or a bundle-local "urn:uuid:..." placeholder.
 function buildDocumentReference(
@@ -156,4 +161,90 @@ export async function saveDocument(input: SaveDocumentInput): Promise<unknown> {
   ]);
 
   return post<unknown>(ENCOUNTER_BUNDLE_URL, bundle);
+}
+
+// Saves several documents against one target. Reports per-document outcomes instead of throwing so
+// a single rejection does not discard the documents that did save.
+export async function saveDocuments(
+  input: SaveDocumentsInput,
+): Promise<SaveDocumentsResult> {
+  const { documents, patientUuid, authorPractitionerUuid } = input;
+  if (documents.length === 0) {
+    return { savedIndices: [], failures: [] };
+  }
+
+  const allIndices = documents.map((_, index) => index);
+
+  // The encounter already exists, so each DocumentReference is an independent POST and one
+  // rejection does not hold back the others.
+  if (input.encounterUuid) {
+    const encounterUuid = input.encounterUuid;
+    const results = await Promise.allSettled(
+      documents.map((document) =>
+        createDocumentReference({
+          ...document,
+          patientUuid,
+          authorPractitionerUuid,
+          encounterUuid,
+        }),
+      ),
+    );
+
+    const savedIndices: number[] = [];
+    const failures: SaveDocumentsResult['failures'] = [];
+    results.forEach((result, index) => {
+      if (result.status === 'fulfilled') {
+        savedIndices.push(index);
+      } else {
+        failures.push({ index, error: result.reason });
+      }
+    });
+    return { savedIndices, failures };
+  }
+
+  if (!input.createEncounterInVisit) {
+    throw new Error(
+      'saveDocuments requires either encounterUuid or createEncounterInVisit',
+    );
+  }
+
+  // No document encounter yet: create it once and point every DocumentReference at that same
+  // bundle-local encounter. Saving the documents one at a time would instead create a duplicate
+  // document encounter per file, and only one of them would be found when reading them back.
+  const { visitUuid, encounterTypeUuid, encounterTypeDisplay } =
+    input.createEncounterInVisit;
+  const encounterPlaceholder = `urn:uuid:${generateUUID()}`;
+  const encounter = buildDocumentEncounter(
+    patientUuid,
+    visitUuid,
+    encounterTypeUuid,
+    getUserLoginLocation().uuid,
+    encounterTypeDisplay,
+    authorPractitionerUuid,
+  );
+
+  const bundle = createEncounterBundle([
+    createBundleEntry(encounterPlaceholder, encounter, 'POST'),
+    ...documents.map((document) =>
+      createBundleEntry(
+        `urn:uuid:${generateUUID()}`,
+        buildDocumentReference(
+          { ...document, patientUuid, authorPractitionerUuid },
+          encounterPlaceholder,
+        ),
+        'POST',
+      ),
+    ),
+  ]);
+
+  try {
+    await post<unknown>(ENCOUNTER_BUNDLE_URL, bundle);
+    return { savedIndices: allIndices, failures: [] };
+  } catch (error) {
+    // The bundle is a transaction: either every document was created or none were.
+    return {
+      savedIndices: [],
+      failures: allIndices.map((index) => ({ index, error })),
+    };
+  }
 }

@@ -6,17 +6,11 @@ import {
 import {
   DocumentViewModel,
   formatDateTime,
-  getDocumentTypes,
   getFormattedError,
 } from '@bahmni/services';
-import {
-  DocumentUpload,
-  renderDocumentTile,
-  useNotification,
-} from '@bahmni/widgets';
+import { DocumentUpload, renderDocumentTile } from '@bahmni/widgets';
 import { TextArea } from '@carbon/react';
-import { useQuery } from '@tanstack/react-query';
-import React, { useEffect } from 'react';
+import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { BAHMNI_PATIENT_DOCUMENTS_NAMESPACE } from '../constants/app';
 import { useVisitDocuments } from '../hooks/useVisitDocuments';
@@ -30,8 +24,6 @@ interface DocumentEncounterType {
 interface DocumentsSectionProps {
   patientUuid: string;
   documentEncounterType: DocumentEncounterType;
-  topLevelConcept?: string | null;
-  defaultOption?: string | null;
 }
 
 const renderTile = (document: DocumentViewModel) =>
@@ -45,30 +37,11 @@ const renderTile = (document: DocumentViewModel) =>
 export const DocumentsSection: React.FC<DocumentsSectionProps> = ({
   patientUuid,
   documentEncounterType,
-  topLevelConcept,
-  defaultOption,
 }) => {
   const { t } = useTranslation(BAHMNI_PATIENT_DOCUMENTS_NAMESPACE);
-  const { addNotification } = useNotification();
-  const { visitGroups, isLoading, error, refetch } = useVisitDocuments(
-    patientUuid,
-    [documentEncounterType.uuid],
-  );
-
-  const { data: documentTypes, error: documentTypesError } = useQuery({
-    queryKey: ['documentTypes', topLevelConcept],
-    queryFn: () => getDocumentTypes(topLevelConcept!),
-    enabled: !!topLevelConcept,
-  });
-
-  // Document types populate an optional dropdown, so a failure must not block upload — but the
-  // user should still be told the list could not be loaded rather than seeing an empty dropdown.
-  useEffect(() => {
-    if (documentTypesError) {
-      const { title, message } = getFormattedError(documentTypesError);
-      addNotification({ title, message, type: 'error' });
-    }
-  }, [documentTypesError, addNotification]);
+  const { visitGroups, isLoading, error } = useVisitDocuments(patientUuid, [
+    documentEncounterType.uuid,
+  ]);
 
   if (isLoading) {
     return (
@@ -107,12 +80,18 @@ export const DocumentsSection: React.FC<DocumentsSectionProps> = ({
             : '';
           let visitLabel = t('DOCUMENTS_VISIT');
           if (startDate && endDate) {
-            visitLabel = t('DOCUMENTS_VISIT_FROM_TO', {
-              start: startDate,
-              end: endDate,
-            });
+            // A visit that begins and ends on the same day reads better as "Visit on <date>" than
+            // as a range repeating one date twice. Compared on the formatted values rather than the
+            // raw timestamps, so the label can never disagree with the dates it would have shown.
+            visitLabel =
+              startDate === endDate
+                ? t('DOCUMENTS_VISIT_ON', { date: startDate })
+                : t('DOCUMENTS_VISIT_FROM_TO', {
+                    start: startDate,
+                    end: endDate,
+                  });
           } else if (startDate) {
-            visitLabel = t('DOCUMENTS_VISIT_FROM', { date: startDate });
+            visitLabel = t('DOCUMENTS_VISIT_ON', { date: startDate });
           }
           const saveTarget = group.documentEncounterUuid
             ? { encounterUuid: group.documentEncounterUuid }
@@ -170,12 +149,8 @@ export const DocumentsSection: React.FC<DocumentsSectionProps> = ({
                 </div>
               )}
               <DocumentUpload
-                patientUuid={patientUuid}
-                encounterTypeName={documentEncounterType.name}
+                sourceId={group.visit.id ?? ''}
                 saveTarget={saveTarget}
-                documentTypes={documentTypes}
-                defaultOption={defaultOption}
-                onSaved={refetch}
               />
             </AccordionItem>
           );

@@ -6,6 +6,10 @@ import {
 import { useQuery } from '@tanstack/react-query';
 import { Encounter } from 'fhir/r4';
 
+// Exported so a save elsewhere on the page can invalidate what this hook reads.
+export const PATIENT_ENCOUNTERS_QUERY_KEY = 'patientEncounters';
+export const PATIENT_DOCUMENTS_QUERY_KEY = 'patientDocuments';
+
 export interface VisitDocumentGroup {
   visit: Encounter;
   documents: DocumentViewModel[];
@@ -29,7 +33,7 @@ export const useVisitDocuments = (
   documentEncounterTypeUuid?: string[],
 ) => {
   const encountersQuery = useQuery({
-    queryKey: ['patientEncounters', patientUuid],
+    queryKey: [PATIENT_ENCOUNTERS_QUERY_KEY, patientUuid],
     queryFn: () => getPatientEncounters(patientUuid!),
     enabled: !!patientUuid,
   });
@@ -62,7 +66,7 @@ export const useVisitDocuments = (
 
   const documentsQuery = useQuery({
     queryKey: [
-      'patientDocuments',
+      PATIENT_DOCUMENTS_QUERY_KEY,
       patientUuid,
       documentEncounterTypeUuid,
       matchingEncounterInstanceUuids,

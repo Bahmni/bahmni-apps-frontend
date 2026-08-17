@@ -407,6 +407,7 @@ export {
   getDocumentUploadMaxSizeMb,
   createDocumentReference,
   saveDocument,
+  saveDocuments,
   type DocumentReferencePage,
   type DocumentViewModel,
   type DocumentType,
@@ -414,6 +415,9 @@ export {
   type CreateEncounterInVisit,
   type CreateDocumentReferenceInput,
   type SaveDocumentInput,
+  type DocumentToSave,
+  type SaveDocumentsInput,
+  type SaveDocumentsResult,
   type DocumentReference,
 } from './documentReferenceService';
 

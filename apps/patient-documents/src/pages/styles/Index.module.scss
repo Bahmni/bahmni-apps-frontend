@@ -1,11 +1,17 @@
 @use "@carbon/react/scss/spacing" as *;
 @use "@carbon/react/scss/theme" as *;
 
+// Height of the fixed action bar: a default-size button ($spacing-09 = 3rem) plus its block padding.
+$action-bar-block-size: calc($spacing-09 + $spacing-05 * 2);
+
 .page {
   display: flex;
   flex-direction: column;
   gap: $spacing-05;
-  padding-block: $spacing-06;
+
+  // Bottom padding reserves the strip the fixed action bar covers, so the last card can always be
+  // scrolled clear of it.
+  padding-block: $spacing-06 calc($action-bar-block-size + $spacing-05);
 
   // Patient banner side gutter (matches the Figma ~112px banner gutter).
   padding-inline: calc($spacing-12 + $spacing-05);
@@ -17,3 +23,6 @@
   padding: $spacing-05;
   padding-inline: $spacing-06;
 }
+
+// The action bar itself now lives in PageActions.module.scss, alongside the component that owns
+// that markup. $action-bar-block-size above still reserves the space for it here.

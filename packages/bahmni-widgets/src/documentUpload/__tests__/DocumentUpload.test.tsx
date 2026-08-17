@@ -1,12 +1,26 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import {
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+  within,
+} from '@testing-library/react';
 import { DocumentUpload } from '../DocumentUpload';
 import { DocumentSaveTarget } from '../models';
+import { PendingDocumentsProvider } from '../PendingDocumentsProvider';
+import { SaveDocumentsButton } from '../SaveDocumentsButton';
+
+// Mirrors the service: every requested document saves unless a test overrides it.
+const saveAll = async ({ documents }: { documents: unknown[] }) => ({
+  savedIndices: documents.map((_, index) => index),
+  failures: [],
+});
 
 jest.mock('@bahmni/services', () => ({
   ...jest.requireActual('@bahmni/services'),
   uploadDocument: jest.fn().mockResolvedValue({ url: 'patient/doc.png' }),
-  saveDocument: jest.fn().mockResolvedValue({}),
+  saveDocuments: jest.fn(),
   getDocumentUploadMaxSizeMb: jest.fn().mockResolvedValue(5),
   dispatchAuditEvent: jest.fn(),
 }));
@@ -29,7 +43,7 @@ jest.mock('../../activePractitioner', () => ({
 
 const {
   uploadDocument,
-  saveDocument,
+  saveDocuments,
   getDocumentUploadMaxSizeMb,
   dispatchAuditEvent,
 } = jest.requireMock('@bahmni/services');
@@ -52,32 +66,91 @@ const renderWidget = (
   });
   return render(
     <QueryClientProvider client={queryClient}>
-      <DocumentUpload
+      <PendingDocumentsProvider
         patientUuid="patient-uuid"
         encounterTypeName="Patient Document"
-        saveTarget={saveTarget}
         documentTypes={[{ id: 'type-1', label: 'Lab Report' }]}
         onSaved={onSaved}
-      />
+      >
+        <DocumentUpload sourceId="visit-1" saveTarget={saveTarget} />
+        <SaveDocumentsButton />
+      </PendingDocumentsProvider>
     </QueryClientProvider>,
   );
 };
 
+const makeFile = (name: string, mimeType: string, sizeInBytes: number) =>
+  new File([new Uint8Array(sizeInBytes)], name, { type: mimeType });
+
 const selectFile = (mimeType = 'image/png', sizeInBytes = 4) => {
   const input = screen.getByTestId('document-file-input');
-  const file = new File([new Uint8Array(sizeInBytes)], 'doc.png', {
-    type: mimeType,
+  fireEvent.change(input, {
+    target: { files: [makeFile('doc.png', mimeType, sizeInBytes)] },
   });
-  fireEvent.change(input, { target: { files: [file] } });
 };
 
+const selectFiles = (files: File[]) => {
+  const input = screen.getByTestId('document-file-input');
+  fireEvent.change(input, { target: { files } });
+};
+
+const clickSave = () => fireEvent.click(screen.getByTestId('save-documents'));
+
 describe('DocumentUpload', () => {
-  beforeEach(() => jest.clearAllMocks());
+  beforeEach(() => {
+    jest.clearAllMocks();
+    saveDocuments.mockImplementation(saveAll);
+    uploadDocument.mockResolvedValue({ url: 'patient/doc.png' });
+  });
 
   it('renders the upload section', () => {
     renderWidget();
     expect(screen.getByText('DOCUMENT_UPLOAD_TITLE')).toBeInTheDocument();
     expect(screen.getByText('DOCUMENT_UPLOAD_BUTTON')).toBeInTheDocument();
+  });
+
+  it('has no save button of its own — saving is a page-level action', () => {
+    renderWidget();
+    selectFile();
+
+    const uploadWidget = screen.getByText('DOCUMENT_UPLOAD_TITLE').parentElement
+      ?.parentElement as HTMLElement;
+    expect(
+      within(uploadWidget).queryByTestId('save-documents'),
+    ).not.toBeInTheDocument();
+  });
+
+  it('styles the save action like the upload button', () => {
+    renderWidget();
+
+    // Carbon encodes kind and size as classes; ignore the transient disabled state.
+    const kindAndSize = (element: HTMLElement) =>
+      Array.from(element.classList).filter(
+        (name) =>
+          name.startsWith('cds--btn--') && name !== 'cds--btn--disabled',
+      );
+    const upload = screen
+      .getByText('DOCUMENT_UPLOAD_BUTTON')
+      .closest('button') as HTMLElement;
+
+    // Guards against both lists being empty, which would make the match meaningless.
+    expect(kindAndSize(upload)).toEqual(
+      expect.arrayContaining([expect.stringMatching(/^cds--btn--/)]),
+    );
+    expect(kindAndSize(screen.getByTestId('save-documents'))).toEqual(
+      kindAndSize(upload),
+    );
+  });
+
+  it('keeps the save action disabled until a file is queued', async () => {
+    renderWidget();
+    expect(screen.getByTestId('save-documents')).toBeDisabled();
+
+    selectFile();
+
+    await waitFor(() =>
+      expect(screen.getByTestId('save-documents')).toBeEnabled(),
+    );
   });
 
   it('creates pending blob on file select and uploads on save', async () => {
@@ -88,7 +161,7 @@ describe('DocumentUpload', () => {
     ).toBeInTheDocument();
     expect(uploadDocument).not.toHaveBeenCalled();
 
-    fireEvent.click(screen.getByText('DOCUMENT_UPLOAD_SAVE'));
+    clickSave();
     await waitFor(() =>
       expect(uploadDocument).toHaveBeenCalledWith(
         expect.any(File),
@@ -113,14 +186,14 @@ describe('DocumentUpload', () => {
     selectFile();
     await screen.findByTestId('pending-document-row');
 
-    fireEvent.click(screen.getByText('DOCUMENT_UPLOAD_SAVE'));
+    clickSave();
 
     await waitFor(() =>
-      expect(saveDocument).toHaveBeenCalledWith(
+      expect(saveDocuments).toHaveBeenCalledWith(
         expect.objectContaining({
           patientUuid: 'patient-uuid',
-          url: 'patient/doc.png',
           encounterUuid: 'encounter-uuid',
+          documents: [expect.objectContaining({ url: 'patient/doc.png' })],
         }),
       ),
     );
@@ -132,7 +205,7 @@ describe('DocumentUpload', () => {
     selectFile();
     await screen.findByTestId('pending-document-row');
 
-    fireEvent.click(screen.getByText('DOCUMENT_UPLOAD_SAVE'));
+    clickSave();
 
     await waitFor(() =>
       expect(mockAddNotification).toHaveBeenCalledWith(
@@ -146,13 +219,12 @@ describe('DocumentUpload', () => {
     selectFile();
     await screen.findByTestId('pending-document-row');
 
-    fireEvent.click(screen.getByText('DOCUMENT_UPLOAD_SAVE'));
+    clickSave();
 
     await waitFor(() =>
-      expect(saveDocument).toHaveBeenCalledWith(
+      expect(saveDocuments).toHaveBeenCalledWith(
         expect.objectContaining({
           patientUuid: 'patient-uuid',
-          url: 'patient/doc.png',
           createEncounterInVisit: {
             visitUuid: 'visit-uuid',
             encounterTypeUuid: 'encounter-type-uuid',
@@ -185,7 +257,7 @@ describe('DocumentUpload', () => {
     selectFile('image/png', 8 * 1024 * 1024);
     await screen.findByTestId('pending-document-row');
 
-    fireEvent.click(screen.getByText('DOCUMENT_UPLOAD_SAVE'));
+    clickSave();
     await waitFor(() => expect(uploadDocument).toHaveBeenCalled());
   });
 
@@ -211,7 +283,7 @@ describe('DocumentUpload', () => {
     selectFile();
     await screen.findByTestId('pending-document-row');
 
-    fireEvent.click(screen.getByText('DOCUMENT_UPLOAD_SAVE'));
+    clickSave();
 
     await waitFor(() =>
       expect(mockAddNotification).toHaveBeenCalledWith(
@@ -230,14 +302,18 @@ describe('DocumentUpload', () => {
     await screen.findByTestId('pending-document-row');
 
     fireEvent.click(screen.getByText('DOCUMENT_UPLOAD_ADD_NOTE'));
-    fireEvent.change(screen.getByTestId('document-note'), {
+    fireEvent.change(screen.getByTestId('document-note-0'), {
       target: { value: 'follow up in 2 weeks' },
     });
-    fireEvent.click(screen.getByText('DOCUMENT_UPLOAD_SAVE'));
+    clickSave();
 
     await waitFor(() =>
-      expect(saveDocument).toHaveBeenCalledWith(
-        expect.objectContaining({ description: 'follow up in 2 weeks' }),
+      expect(saveDocuments).toHaveBeenCalledWith(
+        expect.objectContaining({
+          documents: [
+            expect.objectContaining({ description: 'follow up in 2 weeks' }),
+          ],
+        }),
       ),
     );
   });
@@ -250,13 +326,17 @@ describe('DocumentUpload', () => {
     expect(
       screen.queryByText('DOCUMENT_UPLOAD_CHOOSE_TYPE'),
     ).not.toBeInTheDocument();
-    fireEvent.click(screen.getByText('DOCUMENT_UPLOAD_SAVE'));
+    clickSave();
 
     await waitFor(() =>
-      expect(saveDocument).toHaveBeenCalledWith(
+      expect(saveDocuments).toHaveBeenCalledWith(
         expect.objectContaining({
-          typeCode: 'type-1',
-          typeDisplay: 'Lab Report',
+          documents: [
+            expect.objectContaining({
+              typeCode: 'type-1',
+              typeDisplay: 'Lab Report',
+            }),
+          ],
         }),
       ),
     );
@@ -272,17 +352,20 @@ describe('DocumentUpload', () => {
     expect(
       screen.queryByTestId('pending-document-row'),
     ).not.toBeInTheDocument();
-    expect(saveDocument).not.toHaveBeenCalled();
+    expect(saveDocuments).not.toHaveBeenCalled();
   });
 
   it('keeps the pending selection and shows the backend error on save failure', async () => {
-    saveDocument.mockRejectedValueOnce(new Error('Save rejected by server'));
+    saveDocuments.mockImplementation(async () => ({
+      savedIndices: [],
+      failures: [{ index: 0, error: new Error('Save rejected by server') }],
+    }));
     const onSaved = jest.fn();
     renderWidget(onSaved);
     selectFile();
     await screen.findByTestId('pending-document-row');
 
-    fireEvent.click(screen.getByText('DOCUMENT_UPLOAD_SAVE'));
+    clickSave();
 
     await waitFor(() =>
       expect(mockAddNotification).toHaveBeenCalledWith(
@@ -303,59 +386,51 @@ describe('DocumentUpload', () => {
       callOrder.push('upload');
       return { url: 'server/uploaded.png' };
     });
-    saveDocument.mockImplementation(async () => {
-      callOrder.push('save');
-      return {};
-    });
+    saveDocuments.mockImplementation(
+      async (input: { documents: unknown[] }) => {
+        callOrder.push('save');
+        return saveAll(input);
+      },
+    );
 
     renderWidget();
     selectFile();
     await screen.findByTestId('pending-document-row');
 
-    fireEvent.click(screen.getByText('DOCUMENT_UPLOAD_SAVE'));
+    clickSave();
 
     await waitFor(() => {
       expect(callOrder).toEqual(['upload', 'save']);
     });
   });
 
-  it('updates pending URL from blob to server URL after upload', async () => {
+  it('saves the server url returned by the upload, not the local blob url', async () => {
     uploadDocument.mockResolvedValueOnce({ url: 'server/new-url.png' });
     renderWidget();
     selectFile();
     await screen.findByTestId('pending-document-row');
 
-    fireEvent.click(screen.getByText('DOCUMENT_UPLOAD_SAVE'));
+    clickSave();
 
     await waitFor(() =>
-      expect(saveDocument).toHaveBeenCalledWith(
-        expect.objectContaining({ url: 'server/new-url.png' }),
+      expect(saveDocuments).toHaveBeenCalledWith(
+        expect.objectContaining({
+          documents: [expect.objectContaining({ url: 'server/new-url.png' })],
+        }),
       ),
     );
   });
 
-  it('does not call saveDocument if uploadDocument fails', async () => {
+  it('does not save metadata if every upload fails', async () => {
     uploadDocument.mockRejectedValueOnce(new Error('Upload failed'));
     renderWidget();
     selectFile();
     await screen.findByTestId('pending-document-row');
 
-    fireEvent.click(screen.getByText('DOCUMENT_UPLOAD_SAVE'));
+    clickSave();
 
     await waitFor(() => expect(uploadDocument).toHaveBeenCalled());
-    expect(saveDocument).not.toHaveBeenCalled();
-  });
-
-  it('clears pending document when discard is clicked after file selection', async () => {
-    renderWidget();
-    selectFile();
-    await screen.findByTestId('pending-document-row');
-
-    fireEvent.click(screen.getByLabelText('DOCUMENT_UPLOAD_DISCARD'));
-
-    expect(
-      screen.queryByTestId('pending-document-row'),
-    ).not.toBeInTheDocument();
+    expect(saveDocuments).not.toHaveBeenCalled();
   });
 
   it('dispatchs audit event with correct encounter type on successful save', async () => {
@@ -363,7 +438,7 @@ describe('DocumentUpload', () => {
     selectFile();
     await screen.findByTestId('pending-document-row');
 
-    fireEvent.click(screen.getByText('DOCUMENT_UPLOAD_SAVE'));
+    clickSave();
 
     await waitFor(() =>
       expect(dispatchAuditEvent).toHaveBeenCalledWith(
@@ -374,5 +449,180 @@ describe('DocumentUpload', () => {
         }),
       ),
     );
+  });
+
+  describe('multiple files', () => {
+    const threeFiles = () => [
+      makeFile('scan.png', 'image/png', 4),
+      makeFile('report.pdf', 'application/pdf', 4),
+      makeFile('clip.mp4', 'video/mp4', 4),
+    ];
+
+    it('adds a pending row per selected file', async () => {
+      renderWidget();
+      selectFiles(threeFiles());
+
+      expect(await screen.findAllByTestId('pending-document-row')).toHaveLength(
+        3,
+      );
+    });
+
+    it('appends files selected in a later batch to the existing rows', async () => {
+      renderWidget();
+      selectFiles([makeFile('first.png', 'image/png', 4)]);
+      await screen.findByTestId('pending-document-row');
+
+      selectFiles([makeFile('second.png', 'image/png', 4)]);
+
+      expect(await screen.findAllByTestId('pending-document-row')).toHaveLength(
+        2,
+      );
+    });
+
+    it('uploads every file and sends them all in one save call', async () => {
+      renderWidget();
+      selectFiles(threeFiles());
+      await screen.findAllByTestId('pending-document-row');
+
+      clickSave();
+
+      await waitFor(() => expect(uploadDocument).toHaveBeenCalledTimes(3));
+      // a single save keeps all three documents on one encounter
+      expect(saveDocuments).toHaveBeenCalledTimes(1);
+      expect(saveDocuments).toHaveBeenCalledWith(
+        expect.objectContaining({
+          documents: [
+            expect.objectContaining({ title: 'scan.png' }),
+            expect.objectContaining({ title: 'report.pdf' }),
+            expect.objectContaining({ title: 'clip.mp4' }),
+          ],
+        }),
+      );
+    });
+
+    it('clears every row and reports the count once all files save', async () => {
+      const onSaved = jest.fn();
+      renderWidget(onSaved);
+      selectFiles(threeFiles());
+      await screen.findAllByTestId('pending-document-row');
+
+      clickSave();
+
+      await waitFor(() =>
+        expect(screen.queryAllByTestId('pending-document-row')).toHaveLength(0),
+      );
+      expect(mockAddNotification).toHaveBeenCalledWith(
+        expect.objectContaining({
+          type: 'success',
+          message: 'DOCUMENT_UPLOAD_SAVE_SUCCESS_MESSAGE_MULTIPLE',
+        }),
+      );
+      expect(onSaved).toHaveBeenCalledTimes(1);
+    });
+
+    it('keeps only the rows that failed to save', async () => {
+      saveDocuments.mockImplementation(async () => ({
+        savedIndices: [0, 2],
+        failures: [{ index: 1, error: new Error('Save rejected by server') }],
+      }));
+      renderWidget();
+      selectFiles(threeFiles());
+      await screen.findAllByTestId('pending-document-row');
+
+      clickSave();
+
+      await waitFor(() =>
+        expect(screen.queryAllByTestId('pending-document-row')).toHaveLength(1),
+      );
+      expect(screen.getByText('report.pdf')).toBeInTheDocument();
+    });
+
+    it('skips unsupported files and keeps the valid ones in the list', async () => {
+      renderWidget();
+      selectFiles([
+        makeFile('scan.png', 'image/png', 4),
+        makeFile('notes.txt', 'text/plain', 4),
+      ]);
+
+      expect(await screen.findAllByTestId('pending-document-row')).toHaveLength(
+        1,
+      );
+      expect(mockAddNotification).toHaveBeenCalledWith(
+        expect.objectContaining({ type: 'error' }),
+      );
+    });
+
+    it('sends each row its own document type and note', async () => {
+      renderWidget();
+      selectFiles([
+        makeFile('scan.png', 'image/png', 4),
+        makeFile('report.pdf', 'application/pdf', 4),
+      ]);
+      await screen.findAllByTestId('pending-document-row');
+
+      fireEvent.click(screen.getAllByText('DOCUMENT_UPLOAD_ADD_NOTE')[1]);
+      fireEvent.change(screen.getByTestId('document-note-1'), {
+        target: { value: 'second file only' },
+      });
+      clickSave();
+
+      await waitFor(() =>
+        expect(saveDocuments).toHaveBeenCalledWith(
+          expect.objectContaining({
+            documents: [
+              expect.objectContaining({
+                title: 'scan.png',
+                description: undefined,
+              }),
+              expect.objectContaining({
+                title: 'report.pdf',
+                description: 'second file only',
+              }),
+            ],
+          }),
+        ),
+      );
+    });
+
+    it('discards only the row whose discard button was clicked', async () => {
+      renderWidget();
+      selectFiles([
+        makeFile('scan.png', 'image/png', 4),
+        makeFile('report.pdf', 'application/pdf', 4),
+      ]);
+      await screen.findAllByTestId('pending-document-row');
+
+      fireEvent.click(screen.getAllByLabelText('DOCUMENT_UPLOAD_DISCARD')[0]);
+
+      expect(screen.queryAllByTestId('pending-document-row')).toHaveLength(1);
+      expect(screen.getByText('report.pdf')).toBeInTheDocument();
+    });
+
+    it('still saves the files that uploaded when one upload fails', async () => {
+      uploadDocument
+        .mockResolvedValueOnce({ url: 'server/scan.png' })
+        .mockRejectedValueOnce(new Error('Upload failed'));
+      renderWidget();
+      selectFiles([
+        makeFile('scan.png', 'image/png', 4),
+        makeFile('report.pdf', 'application/pdf', 4),
+      ]);
+      await screen.findAllByTestId('pending-document-row');
+
+      clickSave();
+
+      await waitFor(() =>
+        expect(saveDocuments).toHaveBeenCalledWith(
+          expect.objectContaining({
+            documents: [expect.objectContaining({ title: 'scan.png' })],
+          }),
+        ),
+      );
+      // the file that failed to upload stays behind for a retry
+      await waitFor(() =>
+        expect(screen.queryAllByTestId('pending-document-row')).toHaveLength(1),
+      );
+      expect(screen.getByText('report.pdf')).toBeInTheDocument();
+    });
   });
 });

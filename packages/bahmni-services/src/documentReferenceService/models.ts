@@ -66,3 +66,29 @@ export interface SaveDocumentInput {
   encounterUuid?: string;
   createEncounterInVisit?: CreateEncounterInVisit;
 }
+
+/** One document within a batch save; url comes from the prior visitDocument upload call. */
+export interface DocumentToSave {
+  url: string;
+  contentType?: string;
+  title?: string;
+  typeCode?: string;
+  typeDisplay?: string;
+  description?: string;
+}
+
+/** Batch equivalent of SaveDocumentInput: the same target, applied to several documents. */
+export interface SaveDocumentsInput {
+  patientUuid: string;
+  documents: DocumentToSave[];
+  authorPractitionerUuid?: string;
+  encounterUuid?: string;
+  createEncounterInVisit?: CreateEncounterInVisit;
+}
+
+/** Per-document outcome, so callers can drop the documents that saved and retry only the rest. */
+export interface SaveDocumentsResult {
+  /** Indices into the requested `documents` that were saved. */
+  savedIndices: number[];
+  failures: Array<{ index: number; error: unknown }>;
+}

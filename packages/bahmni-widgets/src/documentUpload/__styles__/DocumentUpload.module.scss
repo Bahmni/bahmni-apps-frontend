@@ -12,6 +12,16 @@
   flex-direction: column;
 }
 
+.pendingItem {
+  display: flex;
+  flex-direction: column;
+
+  // Rule between stacked files so each tile, type and note read as one block.
+  & + & {
+    border-block-start: 1px solid $border-subtle-01;
+  }
+}
+
 // Grid matches the saved-docs table so tile, dropdown and actions line up under the headers.
 .pendingRow {
   display: grid;
@@ -22,7 +32,20 @@
 }
 
 .fileCell {
-  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: $spacing-03;
+
+  // Let the name ellipsis inside the column instead of pushing the grid wider.
+  min-inline-size: 0;
+}
+
+.fileName {
+  @include type-style("body-compact-01");
+  color: $text-primary;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .typeCell {
