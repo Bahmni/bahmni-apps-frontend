@@ -2,7 +2,7 @@ import jsonata from 'jsonata';
 
 export const resolveNavigationURL = async (
   template: string,
-  rowData: unknown,
+  evaluationData: unknown,
 ): Promise<string | null> => {
   try {
     const placeholders = [...template.matchAll(/\{([^}]+)\}/g)];
@@ -10,7 +10,7 @@ export const resolveNavigationURL = async (
 
     for (const [fullMatch, expression] of placeholders) {
       const compiled = jsonata(expression);
-      const value = await compiled.evaluate(rowData as Record<string, unknown>);
+      const value = await compiled.evaluate(evaluationData as Record<string, unknown>);
       if (value == null) return null;
       resolved = resolved.replace(fullMatch, encodeURIComponent(String(value)));
     }
