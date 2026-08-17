@@ -226,6 +226,10 @@ const ProgramDetails: React.FC<ProgramDetailsProps> = ({
     const raw = data?.attributes?.[field];
     if (!raw) return '-';
 
+    if (raw instanceof Date) {
+      return formatDateTime(raw, t).formattedResult;
+    }
+
     const fieldConfig = config?.fields?.find((f) => f.name === field);
     if (fieldConfig?.enableTranslation) {
       return t(
