@@ -6,10 +6,7 @@ import {
 } from '@bahmni/services';
 import { BundleEntry, MedicationRequest, ValueSet, Bundle } from 'fhir/r4';
 import type { EncounterContext } from '../components/forms/models';
-import {
-  STOP_REASON_VALUESET_TITLE,
-  STOP_REASON_VALUESET_EXPAND_URL,
-} from '../constants/app';
+import { STOP_REASON_VALUESET_EXPAND_URL } from '../constants/app';
 import { createEncounterReferenceFromString } from '../utils/fhir/referenceCreator';
 
 export const FHIR_EXT_MEDICATION_REQUEST_DATE_STOPPED =
@@ -24,17 +21,15 @@ const UUID_REGEX =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 export async function fetchStopReasons(
-  conceptSetNameOrUuid?: string,
+  conceptSetUuid: string,
 ): Promise<StopReason[]> {
   try {
     let valueSetId: string | undefined;
 
-    if (conceptSetNameOrUuid && UUID_REGEX.test(conceptSetNameOrUuid)) {
-      // UUID passed directly — skip title search, go straight to $expand
-      valueSetId = conceptSetNameOrUuid;
+    if (UUID_REGEX.test(conceptSetUuid)) {
+      valueSetId = conceptSetUuid;
     } else {
-      const title = conceptSetNameOrUuid ?? STOP_REASON_VALUESET_TITLE;
-      const url = `${OPENMRS_FHIR_R4}/ValueSet?title=${encodeURIComponent(title)}`;
+      const url = `${OPENMRS_FHIR_R4}/ValueSet?title=${encodeURIComponent(conceptSetUuid)}`;
       const searchBundle = await get<Bundle>(url);
       const valueSetEntry = searchBundle.entry?.[0]?.resource as
         | ValueSet

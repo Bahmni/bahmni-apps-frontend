@@ -867,14 +867,14 @@ describe('StopMedicationForm', () => {
       );
     });
 
-    it('passes undefined to stopReasons query when inputControlConfig has no metadata', async () => {
+    it('falls back to STOP_REASON_VALUESET_TITLE when inputControlConfig has no metadata', async () => {
       await act(async () => {
         renderForm({ stopMedication: mockMedicationRequest });
       });
 
       expect(mockUseQuery).toHaveBeenCalledWith(
         expect.objectContaining({
-          queryKey: ['stopReasons', undefined],
+          queryKey: ['stopReasons', 'Stopped Order Reason'],
         }),
       );
     });

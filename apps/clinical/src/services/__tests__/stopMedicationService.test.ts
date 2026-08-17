@@ -60,7 +60,7 @@ describe('stopMedicationService', () => {
         .mockResolvedValueOnce(searchBundle)
         .mockResolvedValueOnce(expandedValueSet);
 
-      const result = await fetchStopReasons();
+      const result = await fetchStopReasons('Stopped Order Reason');
 
       expect(result).toEqual([
         { uuid: 'reason-1', display: 'Adverse reaction' },
@@ -113,12 +113,12 @@ describe('stopMedicationService', () => {
         type: 'searchset',
         entry: [],
       });
-      expect(await fetchStopReasons()).toEqual([]);
+      expect(await fetchStopReasons('Stopped Order Reason')).toEqual([]);
     });
 
     it('should return empty array on API error', async () => {
       mockGet.mockRejectedValueOnce(new Error('Network error'));
-      expect(await fetchStopReasons()).toEqual([]);
+      expect(await fetchStopReasons('Stopped Order Reason')).toEqual([]);
     });
 
     it('should return uuid="" and display="" for entries with null code and null display', async () => {

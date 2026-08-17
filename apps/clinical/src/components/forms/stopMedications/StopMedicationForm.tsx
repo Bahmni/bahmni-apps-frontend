@@ -18,6 +18,7 @@ import { useQuery } from '@tanstack/react-query';
 import { MedicationRequest } from 'fhir/r4';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 
+import { STOP_REASON_VALUESET_TITLE } from '../../../constants/app';
 import type { EncounterSessionStartContext } from '../../../events/startConsultation';
 import {
   MedicationConfig,
@@ -88,12 +89,14 @@ const StopMedicationForm: React.FC<StopMedicationFormProps> = React.memo(
       },
     });
 
-    const stopReasonConceptSet = inputControlConfig?.metadata
-      ?.stoppedOrderReasonConceptSet as string | undefined;
+    const conceptSetUuid =
+      (inputControlConfig?.metadata?.stoppedOrderReasonConceptSet as
+        | string
+        | undefined) ?? STOP_REASON_VALUESET_TITLE;
 
     const { data: conceptStopReasons } = useQuery({
-      queryKey: ['stopReasons', stopReasonConceptSet],
-      queryFn: () => fetchStopReasons(stopReasonConceptSet),
+      queryKey: ['stopReasons', conceptSetUuid],
+      queryFn: () => fetchStopReasons(conceptSetUuid),
       enabled: true,
     });
 
