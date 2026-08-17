@@ -11,18 +11,18 @@ import {
 } from '@tanstack/react-query';
 import { render, screen, act } from '@testing-library/react';
 import { axe, toHaveNoViolations } from 'jest-axe';
-import * as CommonSearchUtils from '../../search/commonSearch/utils';
+import * as UrlUtils from '../../utils/urlUtils';
 import PatientProgramsTable from '../PatientProgramsTable';
 import { mockProgram } from './__mocks__/patientProgramMocks';
 
-jest.mock('../../search/commonSearch/utils', () => ({
-  ...jest.requireActual('../../search/commonSearch/utils'),
+jest.mock('../../utils/urlUtils', () => ({
+  ...jest.requireActual('../../utils/urlUtils'),
   resolveNavigationURL: jest.fn(),
 }));
 
 const mockResolveNavigationURL =
-  CommonSearchUtils.resolveNavigationURL as jest.MockedFunction<
-    typeof CommonSearchUtils.resolveNavigationURL
+  UrlUtils.resolveNavigationURL as jest.MockedFunction<
+    typeof UrlUtils.resolveNavigationURL
   >;
 
 expect.extend(toHaveNoViolations);
@@ -648,12 +648,11 @@ describe('PatientProgramsTable', () => {
         );
       });
 
-      expect(mockResolveNavigationURL).toHaveBeenCalledWith(
-        '/bahmni/hiv-specific?patientUuid={patient.uuid}',
-        expect.objectContaining({
-          uuid: 'program-uuid-1',
-          patientUuid: 'test-patient-uuid',
-        }),
+      const link = screen.getByTestId('program-uuid-1-program-name-test-id');
+      expect(link.tagName.toLowerCase()).toBe('a');
+      expect(link).toHaveAttribute(
+        'href',
+        '/bahmni/hiv-specific?patientUuid=test-patient-uuid',
       );
     });
 

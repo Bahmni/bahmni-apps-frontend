@@ -11,7 +11,6 @@ import {
   type UserPrivilege,
 } from '@bahmni/services';
 import { endOfDay, format } from 'date-fns';
-import jsonata from 'jsonata';
 import { v4 as uuidv4 } from 'uuid';
 import {
   KEY_TYPE_KIND_SUFFIX,
@@ -421,25 +420,4 @@ export const validateConfigForActions = (
     }
   }
   return null;
-};
-
-export const resolveNavigationURL = async (
-  template: string,
-  rowData: unknown,
-): Promise<string | null> => {
-  try {
-    const placeholders = [...template.matchAll(/\{([^}]+)\}/g)];
-    let resolved = template;
-
-    for (const [fullMatch, expression] of placeholders) {
-      const compiled = jsonata(expression);
-      const value = await compiled.evaluate(rowData as Record<string, unknown>);
-      if (value == null) return null;
-      resolved = resolved.replace(fullMatch, encodeURIComponent(String(value)));
-    }
-
-    return resolved;
-  } catch {
-    return null;
-  }
 };

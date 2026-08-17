@@ -11,7 +11,7 @@ import { useQuery } from '@tanstack/react-query';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { usePatientUUID } from '../hooks/usePatientUUID';
 import { WidgetProps } from '../registry/model';
-import { resolveNavigationURL } from '../search/commonSearch/utils';
+import { resolveNavigationURL } from '../utils/urlUtils';
 import { EPISODE_OF_CARE_FIELDS } from './constants';
 import {
   PatientProgramViewModel,
