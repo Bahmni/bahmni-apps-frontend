@@ -375,10 +375,12 @@ export { getServiceRequests } from './orderRequestService';
 export {
   getPatientPrograms,
   getPatientProgramsPage,
+  getAllPrograms,
   getProgramByUUID,
   getCurrentStateName,
   extractAttributes,
   updateProgramState,
+  type Program,
   type ProgramPage,
   type ProgramEnrollment,
   type PatientProgramsResponse,

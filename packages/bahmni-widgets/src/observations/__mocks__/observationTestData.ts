@@ -1,3 +1,4 @@
+import { FHIR_OBSERVATION_FORM_NAMESPACE_PATH_URL } from '@bahmni/services';
 import { Bundle, Observation, Encounter } from 'fhir/r4';
 
 export const mockBundleWithCorrectValues: Bundle<Observation> = {
@@ -946,3 +947,20 @@ export const mockEmptyObservationsBundle: Bundle<Observation> = {
   total: 0,
   entry: [],
 };
+
+export const buildFormObservation = (
+  id: string,
+  encounterUuid: string,
+  formFieldPath = 'Bahmni^Vitals.1/1-0',
+): Observation => ({
+  resourceType: 'Observation',
+  id,
+  status: 'final',
+  encounter: { reference: `Encounter/${encounterUuid}` },
+  extension: [
+    {
+      url: FHIR_OBSERVATION_FORM_NAMESPACE_PATH_URL,
+      valueString: formFieldPath,
+    },
+  ],
+});

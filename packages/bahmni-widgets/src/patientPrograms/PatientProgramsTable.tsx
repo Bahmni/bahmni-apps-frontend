@@ -129,6 +129,10 @@ const PatientProgramsTable: React.FC<WidgetProps> = ({ config }) => {
     const raw = program.attributes[field];
     if (!raw) return '-';
 
+    if (raw instanceof Date) {
+      return formatDateTime(raw, t).formattedResult;
+    }
+
     const fieldConfig = configFields.find((f) => f.name === field);
     if (fieldConfig?.enableTranslation) {
       return t(

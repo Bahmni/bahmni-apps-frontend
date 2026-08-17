@@ -1,5 +1,6 @@
 export enum TaskActionType {
   LAUNCH_FORM = 'launchForm',
+  EDIT_FORM = 'editForm',
 }
 
 export enum TaskViewType {
