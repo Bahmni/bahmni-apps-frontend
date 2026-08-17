@@ -9,5 +9,7 @@ export interface EpisodeGradingStatus {
 export async function getEpisodeGradingStatus(
   episodeUuid: string,
 ): Promise<EpisodeGradingStatus> {
-  return await get<EpisodeGradingStatus>(EPISODE_GRADING_STATUS_URL(episodeUuid));
+  return await get<EpisodeGradingStatus>(
+    EPISODE_GRADING_STATUS_URL(episodeUuid),
+  );
 }

@@ -9,9 +9,10 @@ jest.mock('@bahmni/services', () => ({
   getEpisodeGradingStatus: jest.fn(),
 }));
 
-const mockGetEpisodeGradingStatus = getEpisodeGradingStatus as jest.MockedFunction<
-  typeof getEpisodeGradingStatus
->;
+const mockGetEpisodeGradingStatus =
+  getEpisodeGradingStatus as jest.MockedFunction<
+    typeof getEpisodeGradingStatus
+  >;
 
 const createWrapper = () => {
   const queryClient = new QueryClient({

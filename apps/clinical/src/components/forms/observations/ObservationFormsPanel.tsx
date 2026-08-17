@@ -62,7 +62,8 @@ const ObservationFormsPanel: React.FC<ObservationFormsPanelProps> = ({
     useObservationFormsStore();
 
   const submittedEncounterFormUuids = useSubmittedEncounterForms(allForms);
-  const submittedEpisodeFormUuids = useSubmittedEpisodeForms(episodeOfCareUuids);
+  const submittedEpisodeFormUuids =
+    useSubmittedEpisodeForms(episodeOfCareUuids);
   const submittedFormUuids = useMemo(
     () =>
       new Set([...submittedEncounterFormUuids, ...submittedEpisodeFormUuids]),
