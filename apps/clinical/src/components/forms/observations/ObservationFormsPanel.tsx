@@ -7,7 +7,7 @@ import {
   fetchFormUuidByObservationDate,
 } from '@bahmni/services';
 import { useActivePractitioner, usePatientUUID } from '@bahmni/widgets';
-import type { Bundle } from 'fhir/r4';
+import type { Bundle, Task } from 'fhir/r4';
 import React, { useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { EncounterSessionStartContext } from '../../../events/startConsultation';
@@ -43,6 +43,9 @@ const ObservationFormsPanel: React.FC<ObservationFormsPanelProps> = ({
     | boolean
     | undefined;
   const editEncounterUuid = encounterSessionStartContext?.editEncounterUuid;
+  const task = encounterSessionStartContext?.task as Task | undefined;
+  const basedOnRef = task?.basedOn?.[0]?.reference;
+  const basedOnId = basedOnRef?.split('/').pop() ?? undefined;
   const isEditObservationFormsMode =
     encounterSessionStartContext?.editOnly === 'observationForms';
   const isEditMode = isEditObservationFormsMode && !!editEncounterUuid;
@@ -146,7 +149,7 @@ const ObservationFormsPanel: React.FC<ObservationFormsPanelProps> = ({
     if (editFetchSessionRef.current === sessionKey) return;
     editFetchSessionRef.current = sessionKey;
 
-    getObservationsBundleByEncounterUuid(editEncounterUuid)
+    getObservationsBundleByEncounterUuid(editEncounterUuid, basedOnId)
       .then(async (bundle) => {
         // getObservationsBundleByEncounterUuid fetches the WHOLE encounter's
         // observations — an encounter can carry multiple form submissions
@@ -242,6 +245,7 @@ const ObservationFormsPanel: React.FC<ObservationFormsPanelProps> = ({
     isEditObservationFormsMode,
     formName,
     editEncounterUuid,
+    basedOnId,
     isAllFormsLoading,
     allForms,
     addForm,

@@ -391,11 +391,47 @@ describe('ObservationFormsPanel', () => {
       await waitFor(() => {
         expect(getObservationsBundleByEncounterUuid).toHaveBeenCalledWith(
           'encounter-uuid-1',
+          undefined,
         );
       });
 
       await waitFor(() => {
         expect(mockAddForm).toHaveBeenCalledWith(mockForm1);
+      });
+    });
+
+    it('passes the ServiceRequest id extracted from task.basedOn to the encounter fetch', async () => {
+      const mockBundle = {
+        entry: [{ resource: { resourceType: 'Observation', id: 'obs-1' } }],
+      };
+      jest
+        .mocked(getObservationsBundleByEncounterUuid)
+        .mockResolvedValue(mockBundle as never);
+      jest
+        .mocked(getObservationsFromFhir)
+        .mockReturnValue([
+          { concept: { uuid: 'concept-1' }, value: 42 },
+        ] as never);
+
+      render(
+        <ObservationFormsPanel
+          encounterSessionStartContext={{
+            editOnly: 'observationForms',
+            formName: 'Vitals',
+            editEncounterUuid: 'encounter-uuid-1',
+            task: {
+              resourceType: 'Task',
+              basedOn: [{ reference: 'ServiceRequest/service-request-42' }],
+            },
+          }}
+        />,
+      );
+
+      await waitFor(() => {
+        expect(getObservationsBundleByEncounterUuid).toHaveBeenCalledWith(
+          'encounter-uuid-1',
+          'service-request-42',
+        );
       });
     });
 
