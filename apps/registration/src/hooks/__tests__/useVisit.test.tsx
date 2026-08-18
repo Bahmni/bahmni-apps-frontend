@@ -260,86 +260,28 @@ describe('useVisit', () => {
 
       expect(mockCreateVisitForPatient).not.toHaveBeenCalled();
     });
-
-    it('should not start a second createVisitForPatient call for the same patient while the first is still in flight, even from a separate hook instance (simulating a remount)', async () => {
-      let resolveCreateVisitForPatient: (value: unknown) => void;
-      mockCreateVisitForPatient.mockReturnValue(
-        new Promise((resolve) => {
-          resolveCreateVisitForPatient = resolve;
-        }),
-      );
-
-      const { result: firstInstance } = renderHook(() => useCreateVisit(), {
-        wrapper,
-      });
-      const firstCallPromise = firstInstance.current.createVisit(
-        patientUuid,
-        mockVisitType,
-      );
-
-      // A second hook instance sharing the same QueryClient (as would happen
-      // after RegistrationActions unmounts/remounts on a route change) must
-      // see the in-flight guard and refuse to start a duplicate call.
-      const { result: secondInstance } = renderHook(() => useCreateVisit(), {
-        wrapper,
-      });
-      await secondInstance.current.createVisit(patientUuid, mockVisitType);
-
-      expect(mockCreateVisitForPatient).toHaveBeenCalledTimes(1);
-
-      resolveCreateVisitForPatient!({});
-      await firstCallPromise;
-    });
   });
 
   describe('useIsCreatingVisit', () => {
     const wrapper = ({ children }: { children: React.ReactNode }) => (
-      <QueryClientProvider client={queryClient}>
-        <MemoryRouter initialEntries={[`/patient/${patientUuid}`]}>
-          {children}
-        </MemoryRouter>
-      </QueryClientProvider>
+      <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
     );
 
-    beforeEach(() => {
-      mockCheckIfActiveVisitExists.mockResolvedValue(false);
-      mockUseRegistrationEncounterTypeUuid.mockReturnValue(undefined);
-    });
+    it('should reflect the startVisitInProgress cache entry, updating automatically as it changes', async () => {
+      const { result } = renderHook(() => useIsCreatingVisit(), { wrapper });
 
-    it('should report true while createVisit is in flight and false once it settles, including from a separately mounted hook instance', async () => {
-      let resolveCreateVisitForPatient: (value: unknown) => void;
-      mockCreateVisitForPatient.mockReturnValue(
-        new Promise((resolve) => {
-          resolveCreateVisitForPatient = resolve;
-        }),
-      );
+      expect(result.current).toBe(false);
 
-      const { result: createVisitHook } = renderHook(() => useCreateVisit(), {
-        wrapper,
-      });
-      const { result: loadingStateHook, rerender } = renderHook(
-        () => useIsCreatingVisit(patientUuid),
-        { wrapper },
-      );
-
-      expect(loadingStateHook.current).toBe(false);
-
-      const createVisitPromise = createVisitHook.current.createVisit(
-        patientUuid,
-        mockVisitType,
-      );
+      queryClient.setQueryData(['startVisitInProgress'], true);
 
       await waitFor(() => {
-        rerender();
-        expect(loadingStateHook.current).toBe(true);
+        expect(result.current).toBe(true);
       });
 
-      resolveCreateVisitForPatient!({});
-      await createVisitPromise;
+      queryClient.setQueryData(['startVisitInProgress'], false);
 
       await waitFor(() => {
-        rerender();
-        expect(loadingStateHook.current).toBe(false);
+        expect(result.current).toBe(false);
       });
     });
   });

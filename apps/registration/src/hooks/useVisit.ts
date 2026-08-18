@@ -38,10 +38,12 @@ export const useActiveVisit = (patientUuid?: string) => {
 
 // Backed by the shared QueryClient cache (not component state) so the
 // in-flight flag survives the remount that happens when navigating from
-// the "new patient" route to the "existing patient" route mid-click.
-export const useIsCreatingVisit = (patientUuid?: string) => {
+// the "new patient" route to the "existing patient" route mid-click. Uses a
+// static key (not scoped to patientUuid) because the flag must be set by the
+// caller *before* the patient uuid is known (see RegistrationActions.tsx).
+export const useIsCreatingVisit = () => {
   const { data } = useQuery({
-    queryKey: ['isCreatingVisit', patientUuid],
+    queryKey: ['startVisitInProgress'],
     queryFn: () => false,
     enabled: false,
     initialData: false,
@@ -57,14 +59,10 @@ export const useCreateVisit = () => {
   const encounterTypeUuid = useRegistrationEncounterTypeUuid();
 
   const createVisit = async (patientUuid: string, visitType: VisitType) => {
-    if (
-      queryClient.getQueryData(['isCreatingVisit', patientUuid]) ||
-      queryClient.getQueryData(['hasActiveVisit', patientUuid])
-    ) {
+    if (queryClient.getQueryData(['hasActiveVisit', patientUuid])) {
       return;
     }
 
-    queryClient.setQueryData(['isCreatingVisit', patientUuid], true);
     try {
       const createdVisit = await createVisitForPatient(patientUuid, visitType);
       queryClient.setQueryData(['hasActiveVisit', patientUuid], true);
@@ -95,8 +93,6 @@ export const useCreateVisit = () => {
         type: 'error',
         timeout: 5000,
       });
-    } finally {
-      queryClient.setQueryData(['isCreatingVisit', patientUuid], false);
     }
   };
 
