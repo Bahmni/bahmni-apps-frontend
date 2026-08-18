@@ -547,6 +547,56 @@ describe('ConsultationPage', () => {
         expect.objectContaining({ message: 'Patient not found' }),
       );
     });
+
+    // A toast disappears, so the content area must state the reason itself
+    // rather than leaving the user with an unexplained empty region.
+    it('renders the reason in the content area when the patient is not found', async () => {
+      (usePatientUUID as jest.Mock).mockReturnValue('missing-patient-uuid');
+      (getFormattedPatientById as jest.Mock).mockRejectedValue(
+        new Error('ERROR_PATIENT_NOT_FOUND'),
+      );
+
+      renderWithProvider();
+
+      const errorState = await screen.findByTestId(
+        'error-loading-patient-test-id',
+      );
+      expect(errorState).toHaveTextContent('Patient not found');
+      expect(errorState).toHaveAttribute('role', 'alert');
+      expect(
+        screen.queryByTestId('dashboard-container'),
+      ).not.toBeInTheDocument();
+    });
+
+    it('renders the generic reason in the content area for a non-not-found error', async () => {
+      (usePatientUUID as jest.Mock).mockReturnValue('test-patient-uuid');
+      (getFormattedPatientById as jest.Mock).mockRejectedValue(
+        'Unauthorized: You are not authorized to perform this action. Please log in again.',
+      );
+
+      renderWithProvider();
+
+      const errorState = await screen.findByTestId(
+        'error-loading-patient-test-id',
+      );
+      expect(errorState).toHaveTextContent('Error fetching patient data');
+    });
+
+    it('does not render the patient error state when the patient loads', async () => {
+      (usePatientUUID as jest.Mock).mockReturnValue('valid-patient-uuid');
+      (getFormattedPatientById as jest.Mock).mockResolvedValue({
+        fullName: 'John Doe',
+      });
+
+      renderWithProvider();
+
+      await waitFor(() => {
+        expect(screen.getByTestId('dashboard-container')).toBeInTheDocument();
+      });
+      expect(
+        screen.queryByTestId('error-loading-patient-test-id'),
+      ).not.toBeInTheDocument();
+    });
   });
 
   describe('Accessibility', () => {

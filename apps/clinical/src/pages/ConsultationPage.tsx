@@ -157,9 +157,10 @@ const ConsultationPage: React.FC = () => {
   // once the patient is confirmed to exist. Those widgets each fetch data for
   // the UUID as soon as they mount and raise their own error toasts, so
   // rendering them for a missing patient would spam "Bad Request"/"Server Error"
-  // alongside the single "Patient not found" message. The header/breadcrumb/nav
-  // chrome always renders, so the screen is never blank. `patientUUID` is absent
-  // only outside the consultation route, where content should render as before.
+  // alongside the single "Patient not found" message. On failure the content
+  // area renders `error-loading-patient` instead, so the reason is stated in the
+  // page and not only in a toast that disappears. `patientUUID` is absent only
+  // outside the consultation route, where content should render as before.
   const shouldRenderPatientContent = !patientUUID || !!patient;
 
   const breadcrumbItems = useMemo(
@@ -372,6 +373,15 @@ const ConsultationPage: React.FC = () => {
                 description={t('LOADING_PATIENT_DATA')}
                 role="status"
               />
+            )}
+            {patientErrorMessageKey && (
+              <div
+                id="error-loading-patient"
+                data-testid="error-loading-patient-test-id"
+                role="alert"
+              >
+                {t(patientErrorMessageKey)}
+              </div>
             )}
             {shouldRenderPatientContent && (
               <>
