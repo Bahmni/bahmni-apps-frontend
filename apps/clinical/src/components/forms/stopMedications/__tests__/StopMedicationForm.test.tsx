@@ -1008,7 +1008,9 @@ describe('StopMedicationForm', () => {
         renderForm(vaccinationContext);
       });
 
-      expect(screen.getByText('VACCINATION_CANCEL_FORM_TITLE')).toBeInTheDocument();
+      expect(
+        screen.getByText('VACCINATION_CANCEL_FORM_TITLE'),
+      ).toBeInTheDocument();
       expect(
         screen.queryByText('STOP_MEDICATION_FORM_TITLE'),
       ).not.toBeInTheDocument();
