@@ -3,7 +3,7 @@ import {
   Icon,
   ICON_SIZE,
   InlineNotification,
-  SortableDataTable,
+  DataTable,
   MenuItemDivider,
 } from '@bahmni/design-system';
 import {
@@ -59,7 +59,7 @@ import { executeOnFormSaveEvent } from './utils/formEventExecutor';
 
 // Headers are never shown (the skeleton hides its header row) — only their
 // count matters, to size the number of skeleton columns rendered.
-const FORM_LOADING_SKELETON_HEADERS = [
+const FORM_LOADING_SKELETON_COLUMNS = [
   { key: 'field', header: '' },
   { key: 'value', header: '' },
 ];
@@ -605,8 +605,8 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
         data-testid="observation-form-content"
       >
         {isLoadingMetadata || isPatientLoading ? (
-          <SortableDataTable
-            headers={FORM_LOADING_SKELETON_HEADERS}
+          <DataTable
+            columns={FORM_LOADING_SKELETON_COLUMNS}
             rows={[]}
             loading
             ariaLabel={t('OBSERVATION_FORM_LOADING_METADATA')}

@@ -1,4 +1,4 @@
-import { Modal, SortableDataTable } from '@bahmni/design-system';
+import { DataTable, Modal } from '@bahmni/design-system';
 import {
   formatDateTime,
   getEncounterByUuid,
@@ -28,7 +28,7 @@ interface ViewFormDataProps {
 
 // Headers are never shown (the skeleton hides its header row) — only their
 // count matters, to size the number of skeleton columns rendered.
-const VIEW_FORM_LOADING_SKELETON_HEADERS = [
+const VIEW_FORM_LOADING_SKELETON_COLUMNS = [
   { key: 'field', header: '' },
   { key: 'value', header: '' },
 ];
@@ -175,8 +175,8 @@ const ViewFormData: React.FC<ViewFormDataProps> = ({
     >
       <Modal.Body>
         {isLoading && (
-          <SortableDataTable
-            headers={VIEW_FORM_LOADING_SKELETON_HEADERS}
+          <DataTable
+            columns={VIEW_FORM_LOADING_SKELETON_COLUMNS}
             rows={[]}
             loading
             ariaLabel={t('OBSERVATIONS_LOADING')}

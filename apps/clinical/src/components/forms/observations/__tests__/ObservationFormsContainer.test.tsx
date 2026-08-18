@@ -169,7 +169,7 @@ jest.mock('@bahmni/design-system', () => ({
       Icon
     </div>
   )),
-  SortableDataTable: jest.fn(({ loading, ariaLabel, dataTestId }) =>
+  DataTable: jest.fn(({ loading, ariaLabel, dataTestId }) =>
     loading ? (
       <div data-testid={`${dataTestId}-skeleton`} aria-label={ariaLabel} />
     ) : null,

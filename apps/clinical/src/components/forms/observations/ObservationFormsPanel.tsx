@@ -1,4 +1,4 @@
-import { SortableDataTable } from '@bahmni/design-system';
+import { DataTable } from '@bahmni/design-system';
 import { getObservationsFromFhir } from '@bahmni/form2-controls';
 import type { ObservationForm, Form2Observation } from '@bahmni/services';
 import {
@@ -24,7 +24,7 @@ interface ObservationFormsPanelProps {
 
 // Headers are never shown (the skeleton hides its header row) — only their
 // count matters, to size the number of skeleton columns rendered.
-const EDIT_FORM_LOADING_SKELETON_HEADERS = [
+const EDIT_FORM_LOADING_SKELETON_COLUMNS = [
   { key: 'field', header: '' },
   { key: 'value', header: '' },
 ];
@@ -259,8 +259,8 @@ const ObservationFormsPanel: React.FC<ObservationFormsPanelProps> = ({
   if (isEditObservationFormsMode) {
     if (!viewingForm) {
       return (
-        <SortableDataTable
-          headers={EDIT_FORM_LOADING_SKELETON_HEADERS}
+        <DataTable
+          columns={EDIT_FORM_LOADING_SKELETON_COLUMNS}
           rows={[]}
           loading
           ariaLabel={t('OBSERVATION_FORM_LOADING_METADATA')}
