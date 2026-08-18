@@ -1,3 +1,4 @@
+import { SortableDataTable } from '@bahmni/design-system';
 import { getObservationsFromFhir } from '@bahmni/form2-controls';
 import type { ObservationForm, Form2Observation } from '@bahmni/services';
 import {
@@ -8,6 +9,7 @@ import {
 import { useActivePractitioner, usePatientUUID } from '@bahmni/widgets';
 import type { Bundle } from 'fhir/r4';
 import React, { useEffect, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import type { EncounterSessionStartContext } from '../../../events/startConsultation';
 import { useClinicalAppData } from '../../../hooks/useClinicalAppData';
 import useObservationFormsSearch from '../../../hooks/useObservationFormsSearch';
@@ -20,9 +22,17 @@ interface ObservationFormsPanelProps {
   encounterSessionStartContext?: EncounterSessionStartContext;
 }
 
+// Headers are never shown (the skeleton hides its header row) — only their
+// count matters, to size the number of skeleton columns rendered.
+const EDIT_FORM_LOADING_SKELETON_HEADERS = [
+  { key: 'field', header: '' },
+  { key: 'value', header: '' },
+];
+
 const ObservationFormsPanel: React.FC<ObservationFormsPanelProps> = ({
   encounterSessionStartContext,
 }) => {
+  const { t } = useTranslation();
   const { user } = useActivePractitioner();
   const patientUUID = usePatientUUID();
   const { episodeOfCare } = useClinicalAppData();
@@ -238,10 +248,24 @@ const ObservationFormsPanel: React.FC<ObservationFormsPanelProps> = ({
     patientUUID,
   ]);
 
-  // In edit mode the add-form search panel must never appear.
-  // Return null while the FHIR fetch is in flight; once addForm() fires,
-  // ConsultationPad switches to ObservationFormsContainer directly.
-  if (isEditObservationFormsMode) return null;
+  // In edit mode the add-form search panel must never appear. Show a loading
+  // skeleton while addForm() hasn't fired yet — the fetch it waits on can
+  // take several seconds — then render nothing once it has: ConsultationPad
+  // switches to ObservationFormsContainer directly as soon as viewingForm is set.
+  if (isEditObservationFormsMode) {
+    if (!viewingForm) {
+      return (
+        <SortableDataTable
+          headers={EDIT_FORM_LOADING_SKELETON_HEADERS}
+          rows={[]}
+          loading
+          ariaLabel={t('OBSERVATION_FORM_LOADING_METADATA')}
+          dataTestId="edit-observation-form-loading"
+        />
+      );
+    }
+    return null;
+  }
 
   const handleFormSelect = (form: ObservationForm) => {
     addForm(form);

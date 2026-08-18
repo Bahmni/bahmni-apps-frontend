@@ -345,6 +345,26 @@ describe('ObservationFormsPanel', () => {
       ).setState = mockSetState;
     });
 
+    it('shows the table skeleton loader while the edit fetch is in flight (viewingForm not yet set)', () => {
+      jest
+        .mocked(getObservationsBundleByEncounterUuid)
+        .mockImplementation(() => new Promise(() => {}));
+
+      render(
+        <ObservationFormsPanel
+          encounterSessionStartContext={{
+            editOnly: 'observationForms',
+            editFormName: 'Vitals',
+            editEncounterUuid: 'encounter-uuid-1',
+          }}
+        />,
+      );
+
+      expect(
+        screen.getByTestId('edit-observation-form-loading-skeleton'),
+      ).toBeInTheDocument();
+    });
+
     it('fetches bundle and calls addForm when edit context is provided', async () => {
       const mockBundle = {
         entry: [{ resource: { resourceType: 'Observation', id: 'obs-1' } }],

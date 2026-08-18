@@ -3,7 +3,7 @@ import {
   Icon,
   ICON_SIZE,
   InlineNotification,
-  SkeletonText,
+  SortableDataTable,
   MenuItemDivider,
 } from '@bahmni/design-system';
 import {
@@ -56,6 +56,13 @@ import {
 import EncounterDetails from '../encounterDetails/EncounterDetails';
 import styles from './styles/ObservationFormsContainer.module.scss';
 import { executeOnFormSaveEvent } from './utils/formEventExecutor';
+
+// Headers are never shown (the skeleton hides its header row) — only their
+// count matters, to size the number of skeleton columns rendered.
+const FORM_LOADING_SKELETON_HEADERS = [
+  { key: 'field', header: '' },
+  { key: 'value', header: '' },
+];
 
 const AGE_DETAILS_DEFAULT: AgeDetails = {
   year: 0,
@@ -598,10 +605,12 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
         data-testid="observation-form-content"
       >
         {isLoadingMetadata || isPatientLoading ? (
-          <SkeletonText
-            width="100%"
-            lineCount={3}
-            data-testid="observation-form-loading"
+          <SortableDataTable
+            headers={FORM_LOADING_SKELETON_HEADERS}
+            rows={[]}
+            loading
+            ariaLabel={t('OBSERVATION_FORM_LOADING_METADATA')}
+            dataTestId="observation-form-loading"
           />
         ) : error ? (
           <div>{error.message}</div>
