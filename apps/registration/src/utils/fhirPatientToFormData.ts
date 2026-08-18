@@ -139,6 +139,7 @@ export function extractMetadata(
   patientIdentifier: string;
   patientName: string;
   registerDate: string;
+  isDead: boolean;
 } {
   const dateCreatedExt = patient.extension?.find(
     (e) => e.url === DATE_CREATED_EXT_URL,
@@ -156,11 +157,14 @@ export function extractMetadata(
     .filter(Boolean)
     .join(' ');
 
+  const isDead = patient.deceasedBoolean === true || !!patient.deceasedDateTime;
+
   return {
     patientUuid: patient.id ?? '',
     patientIdentifier: patient.identifier?.[0]?.value ?? '',
     patientName: displayName,
     registerDate,
+    isDead,
   };
 }
 

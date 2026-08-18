@@ -11,6 +11,7 @@ import { usePatientUUID } from '../hooks/usePatientUUID';
 import { GET_PATIENT_PHOTO_PRIVILEGE } from '../userPrivileges/patientPhotoPrivileges';
 import { useHasPrivilege } from '../userPrivileges/useHasPrivilege';
 import styles from './__styles__/PatientDetails.module.scss';
+import { DeceasedTag } from './DeceasedTag';
 import { createPatientDetailsViewModel } from './utils';
 
 const PatientDetails: React.FC = () => {
@@ -67,9 +68,12 @@ const PatientDetails: React.FC = () => {
         />
       ) : null}
       <div className={styles.header}>
-        <p data-testid="patient-name" className={styles.patientName}>
-          {fullName}
-        </p>
+        <div className={styles.patientNameWrapper}>
+          <p data-testid="patient-name" className={styles.patientName}>
+            {fullName}
+          </p>
+          <DeceasedTag isDead={patient.isDead} />
+        </div>
         <div className={styles.details}>
           <div className={styles.identifierAndGenderWrapper}>
             <p className={styles.detailsWithIcon}>

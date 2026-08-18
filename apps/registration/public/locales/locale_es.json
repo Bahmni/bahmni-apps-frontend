@@ -1,4 +1,5 @@
-{
+{ 
+  "PATIENT_STATUS_DECEASED": "Fallecido", 
   "ADDITIONAL_IDENTIFIERS_HEADER_TITLE": "Identificadores Adicionales",
   "COMMON_SEARCH_ADD_CRITERIA_BUTTON": "Agregar Criterios de Búsqueda",
   "COMMON_SEARCH_API_ERROR_MESSAGE": "Se produjo un error al obtener los resultados de búsqueda. Por favor, inténtelo de nuevo.",

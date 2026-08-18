@@ -190,6 +190,8 @@ export const formatPatientData = (patient: Patient): FormattedPatientData => {
       ? birthtimeRaw.replace(/^\d{4}-\d{2}-\d{2}/, patient.birthDate)
       : birthtimeRaw;
 
+  const isDead = patient.deceasedBoolean === true || !!patient.deceasedDateTime;
+
   return {
     id: patient.id ?? '',
     fullName: formatPatientName(patient),
@@ -203,6 +205,7 @@ export const formatPatientData = (patient: Patient): FormattedPatientData => {
     identifiers: identifierMap,
     identifier,
     photoUrl: patient.photo?.[0]?.url,
+    isDead,
   };
 };
 
@@ -260,6 +263,7 @@ export const searchPatientByCustomAttribute = async (
   fieldType: string,
   fieldsToSearch: string[],
   allSearchFields: PatientSearchField[],
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   t: (key: string) => string,
 ): Promise<PatientSearchResultBundle> => {
   const loginLocation = getUserLoginLocation();
