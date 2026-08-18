@@ -1,96 +1,17 @@
 import {
-  calculateAge,
-  fetchOrders,
   getCookieByName,
   getCurrentUser,
-  OrderResponseItem,
   User,
   fetchProvidersByTab,
   Provider,
 } from '@bahmni/services';
-import moment from 'moment';
 import { create } from 'zustand';
 import { ORDERS_SELECTED_TAB_STORAGE_KEY } from '../constants/app';
-import { FHIR_TASK_STATUS_TO_UI_STATUS } from '../constants/orderStatusMappings';
 import { PatientOrderRow } from '../models/orderFulfillment';
-import { ORDER_PRIORITY, OrderItem, OrderTab } from '../models/ordersConfig';
+import { OrderTab } from '../models/ordersConfig';
+import { fetchOrdersViaFhir } from '../services/fhirOrdersService';
 
 const USER_LOCATION_COOKIE = 'bahmni.user.location';
-
-export const transformOrderData = (
-  ordersInfo: OrderResponseItem[],
-  isCustomTab: boolean = false,
-): PatientOrderRow[] => {
-  return ordersInfo.map((order) => {
-    const { orders: ordersData = '' } = order;
-    let orders: OrderItem[] = [];
-
-    if (!isCustomTab && ordersData) {
-      try {
-        orders = JSON.parse(ordersData);
-      } catch {
-        try {
-          const sanitized = ordersData.replace(/\n/g, ' | ');
-          orders = JSON.parse(sanitized);
-        } catch {
-          orders = [];
-        }
-      }
-    }
-
-    let urgentOrders = 0;
-    let newOrders = 0;
-    const { birthdate } = order;
-    const age = calculateAge(moment(birthdate).format('YYYY-MM-DD'));
-    const { years, months, days } = age ?? { years: 0, months: 0, days: 0 };
-    const ordersDetails = orders.map((item) => {
-      if (item.priority === ORDER_PRIORITY.STAT) {
-        urgentOrders += 1;
-      }
-      if (
-        !item.taskStatus ||
-        item.taskStatus === 'draft' ||
-        item.taskStatus === 'unknown'
-      ) {
-        newOrders += 1;
-      }
-      return {
-        id: item.orderUuid,
-        patientUuid: order.uuid,
-        orderName: item.orderName,
-        priority: item.priority,
-        provider: item.providerName,
-        dateTime: moment(item.dateTime).format('DD MMM YY hh:mm A'),
-        providerComments: item.providerComments,
-        orderType: '',
-        status: item.taskStatus
-          ? (FHIR_TASK_STATUS_TO_UI_STATUS[item.taskStatus] ?? 'New')
-          : 'New',
-        note: item.notes ? item.notes.replaceAll(' | ', '\n') : '',
-        // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
-        owner: item.ownerName ? item.ownerName : null,
-        ownerUuid: item.ownerUuid ?? '',
-        patient: {
-          dateOfBirth: moment(order.birthdate).format('DD MMM YYYY'),
-          gender: order.gender,
-          name: order.name,
-          age: age ? `${years} years ${months} months ${days} days` : undefined,
-        },
-      };
-    });
-    return {
-      identifier: order.identifier,
-      id: order.uuid,
-      recentOrdersCount: newOrders,
-      totalOrdersCount: orders.length,
-      patientName: order.name,
-      urgentCount: urgentOrders,
-      isExpandable: true,
-      orders: ordersDetails,
-      hasBeenAdmitted: order.hasBeenAdmitted === 'true',
-    };
-  });
-};
 
 export interface OrdersStoreState {
   selectedIndex: number;
@@ -162,21 +83,17 @@ export const useOrdersStore = create<OrdersStoreState>((set, get) => ({
     const { tabs, currentLocation, currentUser, setIsLoading } = get();
     if (currentUser?.uuid && tabs[tabIndex] && currentLocation?.uuid) {
       setIsLoading(true);
-      const orders = await fetchOrders({
-        locationUuid: currentLocation.uuid,
-        providerUuid: currentUser.uuid ?? '',
-        q: tabs[tabIndex].searchHandler,
-      });
-      const isCustom = tabs[tabIndex].view
-        ? tabs[tabIndex].view.toLowerCase().includes('custom')
-        : false;
+      const ordersData = await fetchOrdersViaFhir(
+        tabs[tabIndex].searchHandler,
+        currentLocation.uuid,
+      );
       set((state) => ({
         ...state,
-        ordersData: transformOrderData(orders, isCustom),
+        ordersData,
         isLoading: false,
         tabCounts: {
           ...state.tabCounts,
-          [tabs[tabIndex].label]: orders.length,
+          [tabs[tabIndex].label]: ordersData.length,
         },
       }));
     }
@@ -191,13 +108,7 @@ export const useOrdersStore = create<OrdersStoreState>((set, get) => ({
         return;
       }
       const responses = await Promise.allSettled(
-        tabs.map((tab) =>
-          fetchOrders({
-            locationUuid,
-            providerUuid,
-            q: tab.searchHandler,
-          }),
-        ),
+        tabs.map((tab) => fetchOrdersViaFhir(tab.searchHandler, locationUuid)),
       );
       const { tabCounts } = responses.reduce<{
         tabCounts: Record<string, number>;
@@ -215,10 +126,7 @@ export const useOrdersStore = create<OrdersStoreState>((set, get) => ({
       );
       let res: PatientOrderRow[] = [];
       if (responses[0].status === 'fulfilled') {
-        const isCustom = tabs[0].view
-          ? tabs[0].view.toLowerCase().includes('custom')
-          : false;
-        res = transformOrderData(responses[0].value, isCustom);
+        res = responses[0].value;
       }
       const existingSelectedTabs = JSON.parse(
         localStorage.getItem(ORDERS_SELECTED_TAB_STORAGE_KEY) ?? '{}',

@@ -17,15 +17,16 @@ const createOrder = (
   patient?: PatientDetails,
 ): Order => ({
   id,
+  patientUuid: '',
   orderName,
-  orderType: 'Rehab Order',
   priority,
   status,
-  provider,
+  provider: provider ? { reference: '', display: provider } : null,
   dateTime,
-  owner,
+  owner: owner ? { reference: '', display: owner } : null,
   providerComments,
   patient,
+  note: [],
 });
 
 export const rehabOrdersMockData: PatientOrderRow[] = [

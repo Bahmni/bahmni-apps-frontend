@@ -51,10 +51,12 @@ export const ExpandedOrderRow: React.FC<ExpandedOrderRowProps> = ({
         <PriorityBadge priority={order.priority} />
       </TableCell>
       <TableCell className={styles.statusCell}>{order.status}</TableCell>
-      <TableCell className={styles.providerCell}>{order.provider}</TableCell>
+      <TableCell className={styles.providerCell}>
+        {order.provider?.display ?? '-'}
+      </TableCell>
       <TableCell className={styles.dateTimeCell}>{order.dateTime}</TableCell>
       <TableCell className={styles.ownerCell}>
-        {order.owner ?? (
+        {order.owner?.display ?? (
           <span className={styles.unassigned}>{t('UNASSIGNED')}</span>
         )}
       </TableCell>

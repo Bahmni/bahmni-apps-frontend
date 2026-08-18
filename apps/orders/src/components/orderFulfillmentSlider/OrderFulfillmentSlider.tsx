@@ -28,6 +28,9 @@ import useOrdersStore from '../../stores/ordersStore';
 import { parseAgeYears } from '../../utils/patientUtils';
 import styles from './styles/OrderFulfillmentSlider.module.scss';
 
+const referenceIdFrom = (reference: string): string =>
+  reference.split('/').pop() ?? '';
+
 interface OrderFulfillmentSliderProps {
   order: Order | null;
   onClose: () => void;
@@ -110,8 +113,10 @@ export const OrderFulfillmentSlider: React.FC<OrderFulfillmentSliderProps> = ({
           ? DEFAULT_STATUS_FOR_NEW_ORDER
           : (order.status ?? '');
       setStatus(initialStatus);
-      setOwner(order.ownerUuid ?? '');
-      setNotes(order?.note ?? '');
+      setOwner(
+        order.owner?.reference ? referenceIdFrom(order.owner.reference) : '',
+      );
+      setNotes(order?.note?.map((n) => n.text).join('\n') ?? '');
     } else if (!isOpen) {
       setNotes('');
       setStatus('');

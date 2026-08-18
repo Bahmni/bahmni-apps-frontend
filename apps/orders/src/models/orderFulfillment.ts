@@ -9,6 +9,7 @@ export interface OrderStatusConfig {
 export type OrderStatus = OrderStatusConfig['value'];
 
 export interface PatientDetails {
+  reference?: string;
   age?: string;
   dateOfBirth?: string;
   gender?: string;
@@ -16,20 +17,31 @@ export interface PatientDetails {
   phoneNumber?: string;
 }
 
+/** FHIR R4 Annotation (partial) - order/task notes carry text plus optional authorship. */
+export interface FhirAnnotation {
+  text: string;
+  authoredOn?: string;
+  authorReference?: string;
+}
+
+/** A FHIR Reference, trimmed to the two fields the UI actually renders/uses. */
+export interface FhirReference {
+  reference: string;
+  display: string;
+}
+
 export interface Order {
   id: string;
   patientUuid: string;
   orderName: string;
-  orderType: string;
   priority: ORDER_PRIORITY;
   status: OrderStatus;
-  provider: string;
+  provider: FhirReference | null;
   dateTime: string;
-  owner: string | null;
-  ownerUuid?: string;
+  owner: FhirReference | null;
   providerComments?: string;
   patient?: PatientDetails;
-  note?: string;
+  note: FhirAnnotation[];
 }
 
 export interface PatientOrderRow {
