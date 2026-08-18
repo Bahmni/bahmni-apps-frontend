@@ -1,29 +1,20 @@
-import {
-  calculateAge,
-  fetchOrders,
-  getCookieByName,
-  getCurrentUser,
-  OrderResponseItem,
-  User,
-} from '@bahmni/services';
+import { getCookieByName, getCurrentUser, User } from '@bahmni/services';
 import { renderHook, act } from '@testing-library/react';
 import { ORDERS_SELECTED_TAB_STORAGE_KEY } from '../../constants/app';
-import { ORDER_PRIORITY, OrderTab } from '../../models/ordersConfig';
-import useOrdersStore, { transformOrderData } from '../ordersStore';
+import { PatientOrderRow } from '../../models/orderFulfillment';
+import { OrderTab } from '../../models/ordersConfig';
+import { fetchOrdersViaFhir } from '../../services/fhirOrdersService';
+import useOrdersStore from '../ordersStore';
 
 jest.mock('@bahmni/services', () => ({
-  calculateAge: jest.fn(),
-  fetchOrders: jest.fn(),
   getCookieByName: jest.fn(),
   getCurrentUser: jest.fn(),
+  fetchProvidersByTab: jest.fn(),
 }));
 
-jest.mock('moment', () => {
-  const actualMoment = jest.requireActual('moment');
-  const mockMoment: any = (date?: any) => actualMoment(date);
-  Object.assign(mockMoment, actualMoment);
-  return mockMoment;
-});
+jest.mock('../../services/fhirOrdersService', () => ({
+  fetchOrdersViaFhir: jest.fn(),
+}));
 
 describe('ordersStore', () => {
   beforeEach(() => {
@@ -159,33 +150,22 @@ describe('ordersStore', () => {
       },
     ];
 
-    const mockOrdersResponse: OrderResponseItem[] = [
+    const mockOrdersData: PatientOrderRow[] = [
       {
-        uuid: 'patient-123',
+        id: 'patient-123',
+        patientName: 'John Doe',
         identifier: 'PAT001',
-        name: 'John Doe',
-        gender: 'Male',
-        birthdate: new Date('1990-01-15').getTime(),
-        orders: JSON.stringify([
-          {
-            orderUuid: 'order-1',
-            orderName: 'Blood Test',
-            priority: ORDER_PRIORITY.ROUTINE,
-            providerName: 'Dr. Smith',
-            dateTime: '2025-02-15T10:30:00',
-            providerComments: 'Fasting required',
-          },
-        ]),
+        recentOrdersCount: 1,
+        totalOrdersCount: 1,
+        urgentCount: 0,
+        isExpandable: true,
+        hasBeenAdmitted: false,
+        orders: [],
       },
     ];
 
     beforeEach(() => {
-      (calculateAge as jest.Mock).mockReturnValue({
-        years: 35,
-        months: 1,
-        days: 2,
-      });
-      (fetchOrders as jest.Mock).mockResolvedValue(mockOrdersResponse);
+      (fetchOrdersViaFhir as jest.Mock).mockResolvedValue(mockOrdersData);
     });
 
     it('should fetch orders for a specific tab', async () => {
@@ -203,11 +183,10 @@ describe('ordersStore', () => {
         await result.current.fetchOrdersForTab(0);
       });
 
-      expect(fetchOrders).toHaveBeenCalledWith({
-        locationUuid: 'location-123',
-        providerUuid: 'user-123',
-        q: 'pending',
-      });
+      expect(fetchOrdersViaFhir).toHaveBeenCalledWith(
+        'pending',
+        'location-123',
+      );
 
       expect(result.current.ordersData).toHaveLength(1);
       expect(result.current.ordersData[0].patientName).toBe('John Doe');
@@ -229,7 +208,7 @@ describe('ordersStore', () => {
         await result.current.fetchOrdersForTab(0);
       });
 
-      expect(fetchOrders).not.toHaveBeenCalled();
+      expect(fetchOrdersViaFhir).not.toHaveBeenCalled();
     });
 
     it('should not fetch if tab index is invalid', async () => {
@@ -247,7 +226,7 @@ describe('ordersStore', () => {
         await result.current.fetchOrdersForTab(999);
       });
 
-      expect(fetchOrders).not.toHaveBeenCalled();
+      expect(fetchOrdersViaFhir).not.toHaveBeenCalled();
     });
 
     it('should set loading state during fetch', async () => {
@@ -263,10 +242,10 @@ describe('ordersStore', () => {
 
       const loadingStateCaptures: boolean[] = [];
 
-      (fetchOrders as jest.Mock).mockImplementation(async () => {
+      (fetchOrdersViaFhir as jest.Mock).mockImplementation(async () => {
         await new Promise((resolve) => setTimeout(resolve, 10));
         loadingStateCaptures.push(useOrdersStore.getState().isLoading);
-        return mockOrdersResponse;
+        return mockOrdersData;
       });
 
       await act(async () => {
@@ -300,38 +279,24 @@ describe('ordersStore', () => {
       },
     ];
 
-    const mockOrdersResponse: OrderResponseItem[] = [
+    const mockOrdersData: PatientOrderRow[] = [
       {
-        uuid: 'patient-123',
+        id: 'patient-123',
+        patientName: 'John Doe',
         identifier: 'PAT001',
-        name: 'John Doe',
-        gender: 'Male',
-        birthdate: new Date('1990-01-15').getTime(),
-        orders: JSON.stringify([
-          {
-            orderUuid: 'order-1',
-            orderName: 'Blood Test',
-            priority: ORDER_PRIORITY.ROUTINE,
-            providerName: 'Dr. Smith',
-            dateTime: '2025-02-15T10:30:00',
-            providerComments: 'Fasting required',
-          },
-        ]),
+        recentOrdersCount: 1,
+        totalOrdersCount: 1,
+        urgentCount: 0,
+        isExpandable: true,
+        hasBeenAdmitted: false,
+        orders: [],
       },
     ];
 
-    beforeEach(() => {
-      (calculateAge as jest.Mock).mockReturnValue({
-        years: 35,
-        months: 1,
-        days: 2,
-      });
-    });
-
     it('should fetch orders for all tabs and update tab counts', async () => {
-      (fetchOrders as jest.Mock)
-        .mockResolvedValueOnce(mockOrdersResponse)
-        .mockResolvedValueOnce([mockOrdersResponse[0], mockOrdersResponse[0]]);
+      (fetchOrdersViaFhir as jest.Mock)
+        .mockResolvedValueOnce(mockOrdersData)
+        .mockResolvedValueOnce([mockOrdersData[0], mockOrdersData[0]]);
 
       const { result } = renderHook(() => useOrdersStore());
 
@@ -346,7 +311,7 @@ describe('ordersStore', () => {
         await result.current.fetchAllPendingOrders(mockTabs);
       });
 
-      expect(fetchOrders).toHaveBeenCalledTimes(2);
+      expect(fetchOrdersViaFhir).toHaveBeenCalledTimes(2);
       expect(result.current.tabCounts).toEqual({
         Pending: 1,
         InProgress: 2,
@@ -356,8 +321,8 @@ describe('ordersStore', () => {
     });
 
     it('should handle failed requests gracefully', async () => {
-      (fetchOrders as jest.Mock)
-        .mockResolvedValueOnce(mockOrdersResponse)
+      (fetchOrdersViaFhir as jest.Mock)
+        .mockResolvedValueOnce(mockOrdersData)
         .mockRejectedValueOnce(new Error('Network error'));
 
       const { result } = renderHook(() => useOrdersStore());
@@ -394,7 +359,7 @@ describe('ordersStore', () => {
         await result.current.fetchAllPendingOrders(mockTabs);
       });
 
-      expect(fetchOrders).not.toHaveBeenCalled();
+      expect(fetchOrdersViaFhir).not.toHaveBeenCalled();
       expect(result.current.isLoading).toBe(false);
     });
 
@@ -412,7 +377,7 @@ describe('ordersStore', () => {
         await result.current.fetchAllPendingOrders(mockTabs);
       });
 
-      expect(fetchOrders).not.toHaveBeenCalled();
+      expect(fetchOrdersViaFhir).not.toHaveBeenCalled();
     });
 
     it('should not fetch if tabs array is empty', async () => {
@@ -429,7 +394,7 @@ describe('ordersStore', () => {
         await result.current.fetchAllPendingOrders([]);
       });
 
-      expect(fetchOrders).not.toHaveBeenCalled();
+      expect(fetchOrdersViaFhir).not.toHaveBeenCalled();
     });
   });
 
@@ -580,12 +545,7 @@ describe('ordersStore', () => {
     ];
 
     beforeEach(() => {
-      (calculateAge as jest.Mock).mockReturnValue({
-        years: 30,
-        months: 0,
-        days: 0,
-      });
-      (fetchOrders as jest.Mock).mockResolvedValue([]);
+      (fetchOrdersViaFhir as jest.Mock).mockResolvedValue([]);
     });
 
     it('restores the saved tab index for the current provider', async () => {
@@ -699,322 +659,6 @@ describe('ordersStore', () => {
       });
 
       expect(result.current.selectedIndex).toBe(1);
-    });
-  });
-
-  describe('transformOrderData', () => {
-    beforeEach(() => {
-      (calculateAge as jest.Mock).mockReturnValue({
-        years: 35,
-        months: 1,
-        days: 2,
-      });
-    });
-
-    it('should transform order response to PatientOrderRow', () => {
-      const mockResponse: OrderResponseItem[] = [
-        {
-          uuid: 'patient-123',
-          identifier: 'PAT001',
-          name: 'John Doe',
-          gender: 'Male',
-          birthdate: new Date('1990-01-15').getTime(),
-          orders: JSON.stringify([
-            {
-              orderUuid: 'order-1',
-              orderName: 'Blood Test',
-              priority: ORDER_PRIORITY.ROUTINE,
-              providerName: 'Dr. Smith',
-              dateTime: '2025-02-15T10:30:00',
-              providerComments: 'Fasting required',
-            },
-            {
-              orderUuid: 'order-2',
-              orderName: 'X-Ray',
-              priority: ORDER_PRIORITY.STAT,
-              providerName: 'Dr. Jones',
-              dateTime: '2025-02-15T11:00:00',
-              providerComments: 'Urgent',
-            },
-          ]),
-        },
-      ];
-
-      const result = transformOrderData(mockResponse);
-
-      expect(result).toHaveLength(1);
-      expect(result[0]).toMatchObject({
-        identifier: 'PAT001',
-        id: 'patient-123',
-        patientName: 'John Doe',
-        totalOrdersCount: 2,
-        urgentCount: 1,
-        isExpandable: true,
-      });
-
-      expect(result[0].orders).toHaveLength(2);
-      expect(result[0].orders[0]).toMatchObject({
-        id: 'order-1',
-        orderName: 'Blood Test',
-        priority: ORDER_PRIORITY.ROUTINE,
-        provider: 'Dr. Smith',
-        providerComments: 'Fasting required',
-      });
-
-      expect(result[0].orders[0].patient).toEqual({
-        dateOfBirth: '15 Jan 1990',
-        gender: 'Male',
-        name: 'John Doe',
-        age: '35 years 1 months 2 days',
-      });
-    });
-
-    it('should handle empty orders string', () => {
-      const mockResponse: OrderResponseItem[] = [
-        {
-          uuid: 'patient-123',
-          identifier: 'PAT001',
-          name: 'John Doe',
-          gender: 'Male',
-          birthdate: new Date('1990-01-15').getTime(),
-          orders: '',
-        },
-      ];
-
-      const result = transformOrderData(mockResponse);
-
-      expect(result).toHaveLength(1);
-      expect(result[0].totalOrdersCount).toBe(0);
-      expect(result[0].urgentCount).toBe(0);
-      expect(result[0].orders).toHaveLength(0);
-    });
-
-    it('should handle orders with newlines in JSON', () => {
-      const mockResponse: OrderResponseItem[] = [
-        {
-          uuid: 'patient-123',
-          identifier: 'PAT001',
-          name: 'John Doe',
-          gender: 'Male',
-          birthdate: new Date('1990-01-15').getTime(),
-          orders: JSON.stringify([
-            {
-              orderUuid: 'order-1',
-              orderName: 'Blood Test',
-              priority: ORDER_PRIORITY.ROUTINE,
-              providerName: 'Dr. Smith',
-              dateTime: '2025-02-15T10:30:00',
-              providerComments: 'Line 1\nLine 2\nLine 3',
-            },
-          ]).replace(/\\n/g, '\n'),
-        },
-      ];
-
-      const result = transformOrderData(mockResponse);
-
-      expect(result).toHaveLength(1);
-      expect(result[0].orders[0].providerComments).toContain('Line 1');
-    });
-
-    it('should count urgent orders correctly', () => {
-      const mockResponse: OrderResponseItem[] = [
-        {
-          uuid: 'patient-123',
-          identifier: 'PAT001',
-          name: 'John Doe',
-          gender: 'Male',
-          birthdate: new Date('1990-01-15').getTime(),
-          orders: JSON.stringify([
-            {
-              orderUuid: 'order-1',
-              orderName: 'Test 1',
-              priority: ORDER_PRIORITY.STAT,
-              providerName: 'Dr. Smith',
-              dateTime: '2025-02-15T10:30:00',
-            },
-            {
-              orderUuid: 'order-2',
-              orderName: 'Test 2',
-              priority: ORDER_PRIORITY.STAT,
-              providerName: 'Dr. Smith',
-              dateTime: '2025-02-15T11:00:00',
-            },
-            {
-              orderUuid: 'order-3',
-              orderName: 'Test 3',
-              priority: ORDER_PRIORITY.ROUTINE,
-              providerName: 'Dr. Smith',
-              dateTime: '2025-02-15T12:00:00',
-            },
-          ]),
-        },
-      ];
-
-      const result = transformOrderData(mockResponse);
-
-      expect(result[0].urgentCount).toBe(2);
-      expect(result[0].totalOrdersCount).toBe(3);
-    });
-
-    it('should count orders with draft taskStatus as recent orders', () => {
-      const mockResponse: OrderResponseItem[] = [
-        {
-          uuid: 'patient-123',
-          identifier: 'PAT001',
-          name: 'John Doe',
-          gender: 'Male',
-          birthdate: new Date('1990-01-15').getTime(),
-          orders: JSON.stringify([
-            {
-              orderUuid: 'order-1',
-              orderName: 'Blood Test',
-              priority: ORDER_PRIORITY.ROUTINE,
-              providerName: 'Dr. Smith',
-              dateTime: '2025-02-15T10:30:00',
-              taskStatus: 'draft',
-            },
-            {
-              orderUuid: 'order-2',
-              orderName: 'X-Ray',
-              priority: ORDER_PRIORITY.STAT,
-              providerName: 'Dr. Jones',
-              dateTime: '2025-02-15T11:00:00',
-              taskStatus: 'accepted',
-            },
-          ]),
-        },
-      ];
-
-      const result = transformOrderData(mockResponse);
-
-      expect(result[0].recentOrdersCount).toBe(1);
-    });
-
-    it('should count orders with unknown taskStatus as recent orders (backward compat)', () => {
-      const mockResponse: OrderResponseItem[] = [
-        {
-          uuid: 'patient-123',
-          identifier: 'PAT001',
-          name: 'John Doe',
-          gender: 'Male',
-          birthdate: new Date('1990-01-15').getTime(),
-          orders: JSON.stringify([
-            {
-              orderUuid: 'order-1',
-              orderName: 'Blood Test',
-              priority: ORDER_PRIORITY.ROUTINE,
-              providerName: 'Dr. Smith',
-              dateTime: '2025-02-15T10:30:00',
-              taskStatus: 'unknown',
-            },
-            {
-              orderUuid: 'order-2',
-              orderName: 'X-Ray',
-              priority: ORDER_PRIORITY.STAT,
-              providerName: 'Dr. Jones',
-              dateTime: '2025-02-15T11:00:00',
-              taskStatus: 'accepted',
-            },
-          ]),
-        },
-      ];
-
-      const result = transformOrderData(mockResponse);
-
-      expect(result[0].recentOrdersCount).toBe(1);
-    });
-
-    it('should map draft taskStatus to New UI status', () => {
-      const mockResponse: OrderResponseItem[] = [
-        {
-          uuid: 'patient-123',
-          identifier: 'PAT001',
-          name: 'John Doe',
-          gender: 'Male',
-          birthdate: new Date('1990-01-15').getTime(),
-          orders: JSON.stringify([
-            {
-              orderUuid: 'order-1',
-              orderName: 'Blood Test',
-              priority: ORDER_PRIORITY.ROUTINE,
-              providerName: 'Dr. Smith',
-              dateTime: '2025-02-15T10:30:00',
-              taskStatus: 'draft',
-            },
-          ]),
-        },
-      ];
-
-      const result = transformOrderData(mockResponse);
-
-      expect(result[0].orders[0].status).toBe('New');
-    });
-
-    it('should count orders without a fulfiller status as recent orders', () => {
-      const mockResponse: OrderResponseItem[] = [
-        {
-          uuid: 'patient-123',
-          identifier: 'PAT001',
-          name: 'John Doe',
-          gender: 'Male',
-          birthdate: new Date('1990-01-15').getTime(),
-          orders: JSON.stringify([
-            {
-              orderUuid: 'order-1',
-              orderName: 'Blood Test',
-              priority: ORDER_PRIORITY.ROUTINE,
-              providerName: 'Dr. Smith',
-              dateTime: '2025-02-15T10:30:00',
-            },
-            {
-              orderUuid: 'order-2',
-              orderName: 'X-Ray',
-              priority: ORDER_PRIORITY.STAT,
-              providerName: 'Dr. Jones',
-              dateTime: '2025-02-15T11:00:00',
-              taskStatus: 'accepted',
-            },
-            {
-              orderUuid: 'order-3',
-              orderName: 'Rehab Therapy',
-              priority: ORDER_PRIORITY.ROUTINE,
-              providerName: 'Dr. Smith',
-              dateTime: '2025-02-15T12:00:00',
-            },
-          ]),
-        },
-      ];
-
-      const result = transformOrderData(mockResponse);
-
-      expect(result[0].recentOrdersCount).toBe(2);
-    });
-
-    it('should handle null age from calculateAge', () => {
-      (calculateAge as jest.Mock).mockReturnValue(null);
-
-      const mockResponse: OrderResponseItem[] = [
-        {
-          uuid: 'patient-123',
-          identifier: 'PAT001',
-          name: 'John Doe',
-          gender: 'Male',
-          birthdate: new Date('1990-01-15').getTime(),
-          orders: JSON.stringify([
-            {
-              orderUuid: 'order-1',
-              orderName: 'Blood Test',
-              priority: ORDER_PRIORITY.ROUTINE,
-              providerName: 'Dr. Smith',
-              dateTime: '2025-02-15T10:30:00',
-            },
-          ]),
-        },
-      ];
-
-      const result = transformOrderData(mockResponse);
-
-      expect(result[0].orders[0].patient?.age).toBeUndefined();
     });
   });
 });

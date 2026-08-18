@@ -82,9 +82,9 @@ const OrdersTabContent: React.FC<OrdersTabContentProps> = ({
 
       const matchingOrders = row.orders.filter((order) => {
         const matchesOwner =
-          order.owner?.toLowerCase().includes(searchTerm) ?? false;
+          order.owner?.display.toLowerCase().includes(searchTerm) ?? false;
         const matchesProvider =
-          order.provider?.toLowerCase().includes(searchTerm) ?? false;
+          order.provider?.display.toLowerCase().includes(searchTerm) ?? false;
         return matchesOwner || matchesProvider;
       });
 

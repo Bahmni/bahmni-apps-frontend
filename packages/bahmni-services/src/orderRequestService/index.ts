@@ -1,1 +1,4 @@
-export { getServiceRequests } from './orderRequestService';
+export {
+  getServiceRequests,
+  getServiceRequestsForWorklist,
+} from './orderRequestService';

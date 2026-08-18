@@ -1,6 +1,6 @@
-import { Bundle, Task } from 'fhir/r4';
+import type { Bundle, Resource, Task } from 'fhir/r4';
 import { get, post, put } from '../api';
-import { FHIR_TASK_URL, TASKS_URL } from './constants';
+import { FHIR_TASK_URL, TASKS_URL, TASKS_BY_BASED_ON_URL } from './constants';
 import { CreateTaskOptions, CreateTaskPayload } from './models';
 
 /**
@@ -148,4 +148,12 @@ export async function createOrUpdateTask(
   } else {
     await createTask(orderUuid, fhirStatus, options);
   }
+}
+export async function getTasksByBasedOn(
+  basedOnRefs: string[],
+): Promise<Bundle<Resource>> {
+  if (basedOnRefs.length === 0) {
+    return { resourceType: 'Bundle', type: 'searchset', entry: [] };
+  }
+  return await get<Bundle<Resource>>(TASKS_BY_BASED_ON_URL(basedOnRefs));
 }

@@ -11,24 +11,26 @@ jest.mock('@bahmni/services', () => ({
 
 const mockAssignedOrder: Order = {
   id: 'order-1',
+  patientUuid: 'patient-1',
   orderName: 'New Cast - Plaster',
-  orderType: 'Rehab Order',
   priority: 'Urgent',
   status: 'New',
-  provider: 'Mike Ronoh',
+  provider: { reference: 'Practitioner/provider-1', display: 'Mike Ronoh' },
   dateTime: '12 Nov 25 04:24 PM',
-  owner: 'Ted Okatch',
+  owner: { reference: 'Practitioner/owner-1', display: 'Ted Okatch' },
+  note: [],
 };
 
 const mockUnassignedOrder: Order = {
   id: 'order-2',
+  patientUuid: 'patient-2',
   orderName: 'Rehab Therapy - Limb',
-  orderType: 'Rehab Order',
   priority: 'Routine',
   status: 'In Progress',
-  provider: 'Sarah Kimani',
+  provider: { reference: 'Practitioner/provider-2', display: 'Sarah Kimani' },
   dateTime: '11 Nov 25 10:00 AM',
   owner: null,
+  note: [],
 };
 
 describe('ExpandedOrderRow', () => {
