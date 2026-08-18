@@ -752,7 +752,7 @@ describe('MedicationsTable', () => {
       const stopConfig = {
         actions: [
           {
-            label: 'STOP_ACTION_LABEL',
+            label: 'STOP_VACCINE_ACTION_LABEL',
             type: 'stop',
             encounterType: 'Consultation',
             requiredPrivilege: ['Stop Orders'],

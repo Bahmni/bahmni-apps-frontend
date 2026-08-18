@@ -859,7 +859,6 @@ describe('StopMedicationForm', () => {
         );
       });
 
-      // The stopReasons query key should include the custom concept set name
       expect(mockUseQuery).toHaveBeenCalledWith(
         expect.objectContaining({
           queryKey: ['stopReasons', 'Custom Stop Reasons'],
@@ -927,6 +926,45 @@ describe('StopMedicationForm', () => {
     });
   });
 
+  describe('vaccination cancellation mode — stale date reset', () => {
+    it('calls setStopDate with today when isVaccinationCancellation is true, clearing any stale stop-medication date', async () => {
+      const setStopDate = jest.fn();
+      // Simulate stale date from a prior stop-medication flow
+      const staleDate = new Date('2024-01-15');
+      mockUseStopMedicationStore.mockReturnValue(
+        makeStoreMock({ setStopDate, stopDate: staleDate }) as any,
+      );
+
+      const before = Date.now();
+      await act(async () => {
+        renderForm({
+          stopMedication: mockMedicationRequest,
+          isVaccinationCancellation: true,
+        });
+      });
+      const after = Date.now();
+
+      expect(setStopDate).toHaveBeenCalledTimes(1);
+      const calledWith: Date = setStopDate.mock.calls[0][0];
+      expect(calledWith).toBeInstanceOf(Date);
+      expect(calledWith.getTime()).toBeGreaterThanOrEqual(before);
+      expect(calledWith.getTime()).toBeLessThanOrEqual(after);
+    });
+
+    it('does not call setStopDate when isVaccinationCancellation is false', async () => {
+      const setStopDate = jest.fn();
+      mockUseStopMedicationStore.mockReturnValue(
+        makeStoreMock({ setStopDate }) as any,
+      );
+
+      await act(async () => {
+        renderForm({ stopMedication: mockMedicationRequest });
+      });
+
+      expect(setStopDate).not.toHaveBeenCalled();
+    });
+  });
+
   describe('vaccination cancellation mode', () => {
     const vaccinationContext = {
       stopMedication: mockMedicationRequest,
@@ -941,7 +979,6 @@ describe('StopMedicationForm', () => {
       capturedDatePickerInputProps = {};
       const designSystem = jest.requireMock('@bahmni/design-system');
 
-      // Mock DatePicker to avoid flatpickr side-effects on the DOM ref
       originalDatePicker = designSystem.DatePicker;
       designSystem.DatePicker = jest.fn(({ children }: any) => (
         <div data-testid="stop-medication-date-picker">{children}</div>
@@ -966,19 +1003,12 @@ describe('StopMedicationForm', () => {
       designSystem.DatePicker = originalDatePicker;
     });
 
-    it('renders "VACCINATION_CANCEL_FORM_TITLE" as form title', async () => {
+    it('shows "VACCINATION_CANCEL__FORM_TITLE" and hides "STOP_MEDICATION_FORM_TITLE" in vaccination mode', async () => {
       await act(async () => {
         renderForm(vaccinationContext);
       });
 
       expect(screen.getByText('VACCINATION_CANCEL_FORM_TITLE')).toBeInTheDocument();
-    });
-
-    it('does not render "STOP_MEDICATION_FORM_TITLE" in vaccination mode', async () => {
-      await act(async () => {
-        renderForm(vaccinationContext);
-      });
-
       expect(
         screen.queryByText('STOP_MEDICATION_FORM_TITLE'),
       ).not.toBeInTheDocument();
@@ -1049,10 +1079,8 @@ describe('StopMedicationForm', () => {
 
   describe('note close (onClose) handler', () => {
     it('hides the note textarea and clears the note when onClose is called', async () => {
-      // Capture the onClose prop from TextAreaWClose
       let capturedOnClose: (() => void) | null = null;
 
-      // Re-mock to intercept onClose
       const designSystem = jest.requireMock('@bahmni/design-system');
       const originalTextAreaWClose = designSystem.TextAreaWClose;
       designSystem.TextAreaWClose = jest.fn((props: any) => {
@@ -1075,7 +1103,6 @@ describe('StopMedicationForm', () => {
         renderForm({ stopMedication: mockMedicationRequest });
       });
 
-      // TextAreaWClose is rendered when note is non-empty (hasNote=true)
       expect(capturedOnClose).not.toBeNull();
 
       await act(async () => {
@@ -1084,7 +1111,6 @@ describe('StopMedicationForm', () => {
 
       expect(setNote).toHaveBeenCalledWith('');
 
-      // Restore original mock
       designSystem.TextAreaWClose = originalTextAreaWClose;
     });
   });

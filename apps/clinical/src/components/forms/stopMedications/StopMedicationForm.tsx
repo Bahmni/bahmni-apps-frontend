@@ -114,6 +114,12 @@ const StopMedicationForm: React.FC<StopMedicationFormProps> = React.memo(
       }
     }, [medicationConfig?.stopMedicationFields, setFieldConfig]);
 
+    useEffect(() => {
+      if (isVaccinationCancellation) {
+        setStopDate(new Date());
+      }
+    }, [isVaccinationCancellation, setStopDate]);
+
     const { data: orderDates } = useQuery({
       queryKey: ['orderDates', stopMedication?.id],
       queryFn: () =>
@@ -123,10 +129,6 @@ const StopMedicationForm: React.FC<StopMedicationFormProps> = React.memo(
       enabled: !!stopMedication?.id,
     });
 
-    // min = effectiveStartDate (medication start), max = today
-    // Scheduled (on-hold) meds: effectiveStartDate is future — cap min to today
-    // Memoized so the Date object references stay stable between re-renders and
-    // don't trigger unnecessary flatpickr minDate/maxDate updates.
     const isScheduled = stopMedication?.status === 'on-hold';
     const minStopDate = useMemo(() => {
       const today = new Date();
