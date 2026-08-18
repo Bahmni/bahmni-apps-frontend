@@ -30,7 +30,10 @@ import { useNotification } from '../notification';
 import { WidgetProps } from '../registry/model';
 import { useUserPrivilege } from '../userPrivileges/useUserPrivilege';
 import Actions from './components/Actions';
-import { MEDICATION_REQUEST_PRIORITY } from './constants';
+import {
+  MEDICATION_REQUEST_PRIORITY,
+  VACCINATION_CODE_PREFIX,
+} from './constants';
 import { FormattedMedicationRequest, MedicationAction } from './models';
 import styles from './styles/MedicationsTable.module.scss';
 import {
@@ -105,6 +108,9 @@ const MedicationsTable: React.FC<WidgetProps> = ({
   const { userPrivileges } = useUserPrivilege();
   const code = (config?.code as string[]) || [];
   const actions = (config?.actions as MedicationAction[]) ?? [];
+  const isVaccinationCancellation = code.some((c) =>
+    c.startsWith(VACCINATION_CODE_PREFIX),
+  );
   const permittedActions = useMemo(
     () =>
       actions.filter((action) =>
@@ -379,6 +385,7 @@ const MedicationsTable: React.FC<WidgetProps> = ({
             actions={actions}
             medication={row.fhirResource}
             startDate={row.startDate}
+            isVaccinationCancellation={isVaccinationCancellation}
             disabledActionTypes={[
               ...(isEditable(row) ? [] : ['edit']),
               ...(disableActions || !['active', 'on-hold'].includes(row.status)

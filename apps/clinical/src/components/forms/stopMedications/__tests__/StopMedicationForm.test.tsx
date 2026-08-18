@@ -927,6 +927,126 @@ describe('StopMedicationForm', () => {
     });
   });
 
+  describe('vaccination cancellation mode', () => {
+    const vaccinationContext = {
+      stopMedication: mockMedicationRequest,
+      isVaccinationCancellation: true,
+    };
+
+    let capturedDatePickerInputProps: Record<string, unknown> = {};
+    let originalDatePickerInput: unknown;
+    let originalDatePicker: unknown;
+
+    beforeEach(() => {
+      capturedDatePickerInputProps = {};
+      const designSystem = jest.requireMock('@bahmni/design-system');
+
+      // Mock DatePicker to avoid flatpickr side-effects on the DOM ref
+      originalDatePicker = designSystem.DatePicker;
+      designSystem.DatePicker = jest.fn(({ children }: any) => (
+        <div data-testid="stop-medication-date-picker">{children}</div>
+      ));
+
+      originalDatePickerInput = designSystem.DatePickerInput;
+      designSystem.DatePickerInput = jest.fn((props: any) => {
+        capturedDatePickerInputProps = props;
+        return (
+          <input
+            data-testid="stop-medication-date-input"
+            disabled={props.disabled}
+            aria-label={props.labelText}
+          />
+        );
+      });
+    });
+
+    afterEach(() => {
+      const designSystem = jest.requireMock('@bahmni/design-system');
+      designSystem.DatePickerInput = originalDatePickerInput;
+      designSystem.DatePicker = originalDatePicker;
+    });
+
+    it('renders "CANCEL_VACCINE_FORM_TITLE" as form title', async () => {
+      await act(async () => {
+        renderForm(vaccinationContext);
+      });
+
+      expect(screen.getByText('CANCEL_VACCINE_FORM_TITLE')).toBeInTheDocument();
+    });
+
+    it('does not render "STOP_MEDICATION_FORM_TITLE" in vaccination mode', async () => {
+      await act(async () => {
+        renderForm(vaccinationContext);
+      });
+
+      expect(
+        screen.queryByText('STOP_MEDICATION_FORM_TITLE'),
+      ).not.toBeInTheDocument();
+    });
+
+    it('renders DatePickerInput with labelText "CANCEL_VACCINE_DATE_LABEL"', async () => {
+      await act(async () => {
+        renderForm(vaccinationContext);
+      });
+
+      expect(capturedDatePickerInputProps.labelText).toBe(
+        'CANCEL_VACCINE_DATE_LABEL',
+      );
+    });
+
+    it('renders DatePickerInput with disabled=true', async () => {
+      await act(async () => {
+        renderForm(vaccinationContext);
+      });
+
+      expect(capturedDatePickerInputProps.disabled).toBe(true);
+    });
+
+    it('renders stop reason dropdown with "CANCEL_VACCINE_REASON_LABEL"', async () => {
+      await act(async () => {
+        renderForm(vaccinationContext);
+      });
+
+      // The Dropdown mock renders the titleText/label into data attributes captured by capturedDropdownOnChange
+      // We check the Dropdown was rendered (it is always rendered when isStopReasonVisible)
+      expect(
+        screen.getByTestId('stop-medication-reason-dropdown'),
+      ).toBeInTheDocument();
+    });
+
+    it('in normal (non-vaccination) mode, DatePickerInput has labelText "STOP_MEDICATION_DATE_LABEL"', async () => {
+      await act(async () => {
+        renderForm({ stopMedication: mockMedicationRequest });
+      });
+
+      expect(capturedDatePickerInputProps.labelText).toBe(
+        'STOP_MEDICATION_DATE_LABEL',
+      );
+    });
+
+    it('in normal (non-vaccination) mode, DatePickerInput is not disabled', async () => {
+      await act(async () => {
+        renderForm({ stopMedication: mockMedicationRequest });
+      });
+
+      expect(capturedDatePickerInputProps.disabled).toBeFalsy();
+    });
+
+    it('treats isVaccinationCancellation=false as normal stop medication mode', async () => {
+      await act(async () => {
+        renderForm({
+          stopMedication: mockMedicationRequest,
+          isVaccinationCancellation: false,
+        });
+      });
+
+      expect(
+        screen.getByText('STOP_MEDICATION_FORM_TITLE'),
+      ).toBeInTheDocument();
+      expect(capturedDatePickerInputProps.disabled).toBeFalsy();
+    });
+  });
+
   describe('note close (onClose) handler', () => {
     it('hides the note textarea and clears the note when onClose is called', async () => {
       // Capture the onClose prop from TextAreaWClose

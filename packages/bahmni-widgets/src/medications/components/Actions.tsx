@@ -21,6 +21,7 @@ type ActionsProps = {
   medication: MedicationRequest;
   startDate?: string;
   disabledActionTypes?: string[];
+  isVaccinationCancellation?: boolean;
 };
 
 const Actions: React.FC<ActionsProps> = ({
@@ -28,6 +29,7 @@ const Actions: React.FC<ActionsProps> = ({
   medication,
   startDate,
   disabledActionTypes = [],
+  isVaccinationCancellation = false,
 }) => {
   const { t } = useTranslation();
   const { userPrivileges } = useUserPrivilege();
@@ -59,7 +61,13 @@ const Actions: React.FC<ActionsProps> = ({
           size="sm"
           disabled={disabled}
           onClick={() =>
-            !disabled && handleAction(action, medication, startDate)
+            !disabled &&
+            handleAction(
+              action,
+              medication,
+              startDate,
+              isVaccinationCancellation,
+            )
           }
           testId={`medication-action-${action.type}-${medication.id}`}
         >
@@ -75,7 +83,9 @@ const Actions: React.FC<ActionsProps> = ({
         aria-label={t(action.label)}
         kind="ghost"
         disabled={disabled}
-        onClick={() => handleAction(action, medication, startDate)}
+        onClick={() =>
+          handleAction(action, medication, startDate, isVaccinationCancellation)
+        }
       >
         {t(action.label)}
       </Button>
@@ -98,7 +108,14 @@ const Actions: React.FC<ActionsProps> = ({
           itemText={t(action.label)}
           isDelete={false}
           disabled={isActionDisabled(action)}
-          onClick={() => handleAction(action, medication, startDate)}
+          onClick={() =>
+            handleAction(
+              action,
+              medication,
+              startDate,
+              isVaccinationCancellation,
+            )
+          }
         />
       ))}
     </OverflowMenu>

@@ -155,6 +155,7 @@ describe('Actions', () => {
       singleActionMock[0],
       fhirMedicationRequestMock,
       undefined,
+      false,
     );
   });
 
@@ -179,6 +180,7 @@ describe('Actions', () => {
       multipleActionsMock[0],
       fhirMedicationRequestMock,
       undefined,
+      false,
     );
   });
 

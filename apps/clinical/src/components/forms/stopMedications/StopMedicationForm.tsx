@@ -45,6 +45,8 @@ const StopMedicationForm: React.FC<StopMedicationFormProps> = React.memo(
     const stopMedication = encounterSessionStartContext?.stopMedication as
       | MedicationRequest
       | undefined;
+    const isVaccinationCancellation =
+      encounterSessionStartContext?.isVaccinationCancellation === true;
     const {
       stopDate,
       stopReason,
@@ -163,7 +165,11 @@ const StopMedicationForm: React.FC<StopMedicationFormProps> = React.memo(
         data-testid="stop-medication-form-tile"
       >
         <div className={styles.formTitle}>
-          {t('STOP_MEDICATION_FORM_TITLE')}
+          {t(
+            isVaccinationCancellation
+              ? 'CANCEL_VACCINE_FORM_TITLE'
+              : 'STOP_MEDICATION_FORM_TITLE',
+          )}
         </div>
 
         <Grid condensed={false}>
@@ -178,20 +184,27 @@ const StopMedicationForm: React.FC<StopMedicationFormProps> = React.memo(
                 datePickerType="single"
                 data-testid="stop-medication-date-picker"
                 value={initialStopDateRef.current}
-                minDate={minStopDate}
-                maxDate={maxStopDate}
-                onChange={(dates: Date[]) => {
-                  if (dates.length > 0) {
-                    setStopDate(dates[0]);
-                  }
-                }}
+                {...(!isVaccinationCancellation && {
+                  minDate: minStopDate,
+                  maxDate: maxStopDate,
+                  onChange: (dates: Date[]) => {
+                    if (dates.length > 0) {
+                      setStopDate(dates[0]);
+                    }
+                  },
+                })}
               >
                 <DatePickerInput
                   id="stop-medication-date"
                   data-testid="stop-medication-date-input"
-                  labelText={t('STOP_MEDICATION_DATE_LABEL')}
+                  labelText={t(
+                    isVaccinationCancellation
+                      ? 'CANCEL_VACCINE_DATE_LABEL'
+                      : 'STOP_MEDICATION_DATE_LABEL',
+                  )}
                   placeholder="dd/mm/yyyy"
                   size="sm"
+                  disabled={isVaccinationCancellation}
                   invalid={!!errors.stopDate}
                   invalidText={t(errors.stopDate ?? '')}
                 />
@@ -204,8 +217,16 @@ const StopMedicationForm: React.FC<StopMedicationFormProps> = React.memo(
               <Dropdown
                 id="stop-medication-reason"
                 data-testid="stop-medication-reason-dropdown"
-                titleText={t('STOP_MEDICATION_REASON_LABEL')}
-                label={t('STOP_MEDICATION_REASON_LABEL')}
+                titleText={t(
+                  isVaccinationCancellation
+                    ? 'CANCEL_VACCINE_REASON_LABEL'
+                    : 'STOP_MEDICATION_REASON_LABEL',
+                )}
+                label={t(
+                  isVaccinationCancellation
+                    ? 'CANCEL_VACCINE_REASON_LABEL'
+                    : 'STOP_MEDICATION_REASON_LABEL',
+                )}
                 items={stopReasons}
                 itemToString={(item: StopReason) => (item ? item.display : '')}
                 selectedItem={
