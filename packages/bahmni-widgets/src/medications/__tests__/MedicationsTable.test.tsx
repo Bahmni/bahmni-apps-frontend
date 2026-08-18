@@ -802,6 +802,334 @@ describe('MedicationsTable', () => {
     });
   });
 
+  describe('status class mapping for all statuses', () => {
+    const setupFormattedMedWithStatus = (
+      status: string,
+      id = 'test-med-id',
+    ) => ({
+      id,
+      name: 'Test Med',
+      dosage: '100 mg',
+      dosageUnit: 'mg',
+      quantity: '10 tablets',
+      instruction: '',
+      startDate: '2024-01-15T10:00:00Z',
+      orderDate: '2024-01-15T09:00:00Z',
+      orderedBy: 'Dr. Test',
+      status,
+      priority: 'routine',
+      asNeeded: false,
+      isImmediate: false,
+    });
+
+    it.each([
+      {
+        statusValue: 'cancelled',
+        expectedLabel: 'MEDICATIONS_STATUS_CANCELLED',
+      },
+      {
+        statusValue: 'completed',
+        expectedLabel: 'MEDICATIONS_STATUS_COMPLETED',
+      },
+      { statusValue: 'draft', expectedLabel: 'MEDICATIONS_STATUS_UNKNOWN' },
+      {
+        statusValue: 'entered-in-error',
+        expectedLabel: 'MEDICATIONS_STATUS_UNKNOWN',
+      },
+      { statusValue: 'unknown', expectedLabel: 'MEDICATIONS_STATUS_UNKNOWN' },
+    ])(
+      'renders "$expectedLabel" tag for status "$statusValue"',
+      async ({ statusValue, expectedLabel }) => {
+        const formatted = setupFormattedMedWithStatus(statusValue);
+        mockFormatMedicationRequest.mockReturnValue(formatted);
+        mockSortMedicationsByStatus.mockReturnValue([formatted]);
+        const medicationsByDate = [{ date: '15/01/2024', items: [formatted] }];
+        mockGroupByDate.mockReturnValue(medicationsByDate);
+
+        mockUseQuery.mockReturnValue({
+          data: [{ ...mockMedications[0], status: statusValue as any }],
+          isLoading: false,
+          isError: false,
+          error: null,
+          refetch: jest.fn(),
+        } as any);
+
+        render(<MedicationsTable />);
+
+        const allTab = screen.getByRole('tab', { name: 'MEDICATIONS_TAB_ALL' });
+        await userEvent.click(allTab);
+
+        expect(screen.getByText(expectedLabel)).toBeInTheDocument();
+      },
+    );
+  });
+
+  describe('note icon display (TooltipIcon for note/cancellationNote)', () => {
+    it('renders medication name when note is present on formatted medication', () => {
+      const medicationWithNote = {
+        id: 'note-med',
+        name: 'Aspirin 100mg',
+        dosage: '100 mg',
+        dosageUnit: 'mg',
+        quantity: '10 tablets',
+        instruction: '',
+        startDate: '2024-01-15T10:00:00Z',
+        orderDate: '2024-01-15T09:00:00Z',
+        orderedBy: 'Dr. Test',
+        status: 'active',
+        priority: 'routine',
+        asNeeded: false,
+        isImmediate: false,
+        note: 'Take with water',
+      };
+
+      mockFormatMedicationRequest.mockReturnValue(medicationWithNote);
+
+      mockUseQuery.mockReturnValue({
+        data: [mockMedications[0]],
+        isLoading: false,
+        isError: false,
+        error: null,
+        refetch: jest.fn(),
+      } as any);
+
+      render(<MedicationsTable />);
+      expect(screen.getByText('Aspirin 100mg')).toBeInTheDocument();
+    });
+
+    it('renders medication name when cancellationNote is present', () => {
+      const medicationWithCancellationNote = {
+        id: 'cancellation-note-med',
+        name: 'Metformin 500mg',
+        dosage: '500 mg',
+        dosageUnit: 'mg',
+        quantity: '30 tablets',
+        instruction: '',
+        startDate: '2024-01-15T10:00:00Z',
+        orderDate: '2024-01-15T09:00:00Z',
+        orderedBy: 'Dr. Test',
+        status: 'active',
+        priority: 'routine',
+        asNeeded: false,
+        isImmediate: false,
+        cancellationNote: 'Patient refused',
+      };
+
+      mockFormatMedicationRequest.mockReturnValue(
+        medicationWithCancellationNote,
+      );
+
+      mockUseQuery.mockReturnValue({
+        data: [mockMedications[0]],
+        isLoading: false,
+        isError: false,
+        error: null,
+        refetch: jest.fn(),
+      } as any);
+
+      render(<MedicationsTable />);
+      expect(screen.getByText('Metformin 500mg')).toBeInTheDocument();
+    });
+  });
+
+  describe('All tab accordion grouping', () => {
+    it('renders accordion with date-grouped medications in All tab', async () => {
+      const formattedMed = {
+        id: 'grouped-med',
+        name: 'Grouped Medication',
+        dosage: '200 mg',
+        dosageUnit: 'mg',
+        quantity: '14 tablets',
+        instruction: '',
+        startDate: '2024-01-15T10:00:00Z',
+        orderDate: '2024-01-15T09:00:00Z',
+        orderedBy: 'Dr. Group',
+        status: 'active',
+        priority: 'routine',
+        asNeeded: false,
+        isImmediate: false,
+      };
+
+      mockFormatMedicationRequest.mockReturnValue(formattedMed);
+      mockSortMedicationsByStatus.mockReturnValue([formattedMed]);
+
+      // processGroupedMedications calls groupByDate — return a non-empty group
+      mockGroupByDate.mockReturnValue([
+        {
+          date: '15/01/2024',
+          items: [formattedMed],
+        },
+      ]);
+
+      mockUseQuery.mockReturnValue({
+        data: [mockMedications[0]],
+        isLoading: false,
+        isError: false,
+        error: null,
+        refetch: jest.fn(),
+      } as any);
+
+      render(<MedicationsTable />);
+
+      const allTab = screen.getByRole('tab', { name: 'MEDICATIONS_TAB_ALL' });
+      await userEvent.click(allTab);
+
+      // The accordion section should be rendered (grouped medication appears in All tab)
+      expect(screen.getAllByText('Grouped Medication').length).toBeGreaterThan(
+        0,
+      );
+    });
+  });
+
+  describe('stopped/cancelled dateStopped display in status cell', () => {
+    it('renders dateStopped date when stopped medication has dateStopped', async () => {
+      const stoppedWithDate = {
+        id: 'stopped-with-date',
+        name: 'Stopped Med',
+        dosage: '100 mg',
+        dosageUnit: 'mg',
+        quantity: '10 tablets',
+        instruction: '',
+        startDate: '2024-01-10T10:00:00Z',
+        orderDate: '2024-01-10T09:00:00Z',
+        orderedBy: 'Dr. Test',
+        status: 'stopped',
+        priority: 'routine',
+        asNeeded: false,
+        isImmediate: false,
+        dateStopped: '2024-01-15',
+        stopReason: 'Adverse reaction',
+        fhirResource: fhirMedicationRequestMock,
+      };
+
+      mockFormatMedicationRequest.mockReturnValue(stoppedWithDate);
+      mockSortMedicationsByStatus.mockReturnValue([stoppedWithDate]);
+      mockGroupByDate.mockReturnValue([
+        { date: '15/01/2024', items: [stoppedWithDate] },
+      ]);
+
+      mockUseQuery.mockReturnValue({
+        data: [{ ...mockMedications[0], status: 'stopped' as any }],
+        isLoading: false,
+        isError: false,
+        error: null,
+        refetch: jest.fn(),
+      } as any);
+
+      render(<MedicationsTable />);
+      const allTab = screen.getByRole('tab', { name: 'MEDICATIONS_TAB_ALL' });
+      await userEvent.click(allTab);
+
+      expect(
+        screen.getByText((content) =>
+          content.includes('MEDICATIONS_STOPPED_ON'),
+        ),
+      ).toBeInTheDocument();
+    });
+
+    it('renders dateStopped and stopReason for cancelled medication', async () => {
+      const cancelledWithDate = {
+        id: 'cancelled-with-date',
+        name: 'Cancelled Med',
+        dosage: '50 mg',
+        dosageUnit: 'mg',
+        quantity: '5 tablets',
+        instruction: '',
+        startDate: '2024-01-05T10:00:00Z',
+        orderDate: '2024-01-05T09:00:00Z',
+        orderedBy: 'Dr. Cancel',
+        status: 'cancelled',
+        priority: 'routine',
+        asNeeded: false,
+        isImmediate: false,
+        dateStopped: '2024-01-12',
+        stopReason: 'Patient discharged',
+        fhirResource: fhirMedicationRequestMock,
+      };
+
+      mockFormatMedicationRequest.mockReturnValue(cancelledWithDate);
+      mockSortMedicationsByStatus.mockReturnValue([cancelledWithDate]);
+      mockGroupByDate.mockReturnValue([
+        { date: '05/01/2024', items: [cancelledWithDate] },
+      ]);
+
+      mockUseQuery.mockReturnValue({
+        data: [{ ...mockMedications[0], status: 'cancelled' as any }],
+        isLoading: false,
+        isError: false,
+        error: null,
+        refetch: jest.fn(),
+      } as any);
+
+      render(<MedicationsTable />);
+      const allTab = screen.getByRole('tab', { name: 'MEDICATIONS_TAB_ALL' });
+      await userEvent.click(allTab);
+
+      expect(
+        screen.getByText('MEDICATIONS_STATUS_CANCELLED'),
+      ).toBeInTheDocument();
+      expect(
+        screen.getByText((content) => content.includes('Patient discharged')),
+      ).toBeInTheDocument();
+    });
+  });
+
+  describe('actions cell rendering', () => {
+    it('renders the Actions component when actions config is provided and medication is active', () => {
+      const stopConfig = {
+        actions: [
+          {
+            label: 'Stop',
+            type: 'stop',
+            encounterType: 'Consultation',
+            requiredPrivilege: ['Stop Orders'],
+          },
+        ],
+      };
+
+      mockUseUserPrivilege.mockReturnValue({
+        userPrivileges: [{ name: 'Stop Orders' }],
+      } as any);
+
+      const activeMed = {
+        id: 'active-action-med',
+        name: 'Active Med for Actions',
+        dosage: '100 mg',
+        dosageUnit: 'mg',
+        quantity: '10 tablets',
+        instruction: '',
+        startDate: '2024-01-15T10:00:00Z',
+        orderDate: '2024-01-15T09:00:00Z',
+        orderedBy: 'Dr. Test',
+        status: 'active',
+        priority: 'routine',
+        asNeeded: false,
+        isImmediate: false,
+        fhirResource: {
+          resourceType: 'MedicationRequest',
+          id: 'active-action-med',
+        },
+      };
+
+      mockFormatMedicationRequest.mockReturnValue(activeMed);
+
+      mockUseQuery.mockReturnValue({
+        data: [mockMedications[0]],
+        isLoading: false,
+        isError: false,
+        error: null,
+        refetch: jest.fn(),
+      } as any);
+
+      render(<MedicationsTable config={stopConfig} />);
+
+      const stopButton = screen.getByTestId(
+        'medication-action-stop-active-action-med',
+      );
+      expect(stopButton).toBeInTheDocument();
+    });
+  });
+
   describe('Consultation saved event subscription', () => {
     it.each([
       {
