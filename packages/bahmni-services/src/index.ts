@@ -327,6 +327,7 @@ export {
   DATETIME_REGEX_PATTERN,
   INTERPRETATION_TO_CODE,
   FHIR_LAB_ORDER_CONCEPT_TYPE_EXTENSION_URL,
+  FHIR_EXT_MEDICATION_REQUEST_NOTE_CATEGORY,
 } from './constants/fhir';
 
 export {
@@ -375,10 +376,12 @@ export { getServiceRequests } from './orderRequestService';
 export {
   getPatientPrograms,
   getPatientProgramsPage,
+  getAllPrograms,
   getProgramByUUID,
   getCurrentStateName,
   extractAttributes,
   updateProgramState,
+  type Program,
   type ProgramPage,
   type ProgramEnrollment,
   type PatientProgramsResponse,
