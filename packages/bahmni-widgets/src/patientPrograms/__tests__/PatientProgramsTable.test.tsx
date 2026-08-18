@@ -9,7 +9,7 @@ import {
   QueryClientProvider,
   useQuery,
 } from '@tanstack/react-query';
-import { render, screen, act } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import { axe, toHaveNoViolations } from 'jest-axe';
 import * as UrlUtils from '../../utils/urlUtils';
 import PatientProgramsTable from '../PatientProgramsTable';
@@ -599,27 +599,27 @@ describe('PatientProgramsTable', () => {
       );
       (useQuery as jest.Mock).mockReturnValue(programWithEnrollment);
 
-      await act(async () => {
-        render(
-          <QueryClientProvider client={queryClient}>
-            <PatientProgramsTable
-              config={{
-                fields: [{ name: 'programName' }],
-                navigationURL:
-                  '/bahmni/hiv?patientUuid={patient.uuid}&enrollmentUuid={uuid}',
-              }}
-            />
-          </QueryClientProvider>,
-        );
-      });
-
-      const link = screen.getByTestId('program-uuid-1-program-name-test-id');
-      expect(link.tagName.toLowerCase()).toBe('a');
-      expect(link).toHaveAttribute(
-        'href',
-        '/bahmni/hiv?patientUuid=test-patient-uuid&enrollmentUuid=program-uuid-1',
+      render(
+        <QueryClientProvider client={queryClient}>
+          <PatientProgramsTable
+            config={{
+              fields: [{ name: 'programName' }],
+              navigationURL:
+                '/bahmni/hiv?patientUuid={patient.uuid}&enrollmentUuid={uuid}',
+            }}
+          />
+        </QueryClientProvider>,
       );
-      expect(link).toHaveTextContent('HIV Program');
+
+      await waitFor(() => {
+        const link = screen.getByTestId('program-uuid-1-program-name-test-id');
+        expect(link.tagName.toLowerCase()).toBe('a');
+        expect(link).toHaveAttribute(
+          'href',
+          '/bahmni/hiv?patientUuid=test-patient-uuid&enrollmentUuid=program-uuid-1',
+        );
+        expect(link).toHaveTextContent('HIV Program');
+      });
     });
 
     it('renders program name as a Link using navigationURLByProgram when program matches', async () => {
@@ -628,32 +628,32 @@ describe('PatientProgramsTable', () => {
       );
       (useQuery as jest.Mock).mockReturnValue(programWithEnrollment);
 
-      await act(async () => {
-        render(
-          <QueryClientProvider client={queryClient}>
-            <PatientProgramsTable
-              config={{
-                fields: [{ name: 'programName' }],
-                navigationURL: '/bahmni/default?patientUuid={patient.uuid}',
-                navigationURLByProgram: [
-                  {
-                    program: 'HIV Program',
-                    navigationURL:
-                      '/bahmni/hiv-specific?patientUuid={patient.uuid}',
-                  },
-                ],
-              }}
-            />
-          </QueryClientProvider>,
+      render(
+        <QueryClientProvider client={queryClient}>
+          <PatientProgramsTable
+            config={{
+              fields: [{ name: 'programName' }],
+              navigationURL: '/bahmni/default?patientUuid={patient.uuid}',
+              navigationURLByProgram: [
+                {
+                  program: 'HIV Program',
+                  navigationURL:
+                    '/bahmni/hiv-specific?patientUuid={patient.uuid}',
+                },
+              ],
+            }}
+          />
+        </QueryClientProvider>,
+      );
+
+      await waitFor(() => {
+        const link = screen.getByTestId('program-uuid-1-program-name-test-id');
+        expect(link.tagName.toLowerCase()).toBe('a');
+        expect(link).toHaveAttribute(
+          'href',
+          '/bahmni/hiv-specific?patientUuid=test-patient-uuid',
         );
       });
-
-      const link = screen.getByTestId('program-uuid-1-program-name-test-id');
-      expect(link.tagName.toLowerCase()).toBe('a');
-      expect(link).toHaveAttribute(
-        'href',
-        '/bahmni/hiv-specific?patientUuid=test-patient-uuid',
-      );
     });
 
     it('falls back to navigationURLwhen program is not in navigationURLByProgram', async () => {
@@ -662,28 +662,28 @@ describe('PatientProgramsTable', () => {
       );
       (useQuery as jest.Mock).mockReturnValue(programWithEnrollment);
 
-      await act(async () => {
-        render(
-          <QueryClientProvider client={queryClient}>
-            <PatientProgramsTable
-              config={{
-                fields: [{ name: 'programName' }],
-                navigationURL: '/bahmni/default?patientUuid={patient.uuid}',
-                navigationURLByProgram: [
-                  {
-                    program: 'TB Program',
-                    navigationURL: '/bahmni/tb?patientUuid={patient.uuid}',
-                  },
-                ],
-              }}
-            />
-          </QueryClientProvider>,
-        );
-      });
+      render(
+        <QueryClientProvider client={queryClient}>
+          <PatientProgramsTable
+            config={{
+              fields: [{ name: 'programName' }],
+              navigationURL: '/bahmni/default?patientUuid={patient.uuid}',
+              navigationURLByProgram: [
+                {
+                  program: 'TB Program',
+                  navigationURL: '/bahmni/tb?patientUuid={patient.uuid}',
+                },
+              ],
+            }}
+          />
+        </QueryClientProvider>,
+      );
 
-      expect(mockResolveNavigationURL).toHaveBeenCalledWith(
-        '/bahmni/default?patientUuid={patient.uuid}',
-        expect.objectContaining({ uuid: 'program-uuid-1' }),
+      await waitFor(() =>
+        expect(mockResolveNavigationURL).toHaveBeenCalledWith(
+          '/bahmni/default?patientUuid={patient.uuid}',
+          expect.objectContaining({ uuid: 'program-uuid-1' }),
+        ),
       );
     });
 
@@ -707,19 +707,18 @@ describe('PatientProgramsTable', () => {
       mockResolveNavigationURL.mockResolvedValue(null);
       (useQuery as jest.Mock).mockReturnValue(programWithEnrollment);
 
-      await act(async () => {
-        render(
-          <QueryClientProvider client={queryClient}>
-            <PatientProgramsTable
-              config={{
-                fields: [{ name: 'programName' }],
-                navigationURL: '/bahmni/clinical?bad={nonExistentField}',
-              }}
-            />
-          </QueryClientProvider>,
-        );
-      });
+      render(
+        <QueryClientProvider client={queryClient}>
+          <PatientProgramsTable
+            config={{
+              fields: [{ name: 'programName' }],
+              navigationURL: '/bahmni/clinical?bad={nonExistentField}',
+            }}
+          />
+        </QueryClientProvider>,
+      );
 
+      await waitFor(() => expect(mockResolveNavigationURL).toHaveBeenCalled());
       const cell = screen.getByTestId('program-uuid-1-program-name-test-id');
       expect(cell.tagName.toLowerCase()).toBe('span');
     });
@@ -728,25 +727,25 @@ describe('PatientProgramsTable', () => {
       mockResolveNavigationURL.mockResolvedValue('/resolved-url');
       (useQuery as jest.Mock).mockReturnValue(programWithEnrollment);
 
-      await act(async () => {
-        render(
-          <QueryClientProvider client={queryClient}>
-            <PatientProgramsTable
-              config={{
-                fields: [{ name: 'programName' }],
-                navigationURL: '/bahmni/clinical?p={patient.uuid}',
-              }}
-            />
-          </QueryClientProvider>,
-        );
-      });
+      render(
+        <QueryClientProvider client={queryClient}>
+          <PatientProgramsTable
+            config={{
+              fields: [{ name: 'programName' }],
+              navigationURL: '/bahmni/clinical?p={patient.uuid}',
+            }}
+          />
+        </QueryClientProvider>,
+      );
 
-      expect(mockResolveNavigationURL).toHaveBeenCalledWith(
-        '/bahmni/clinical?p={patient.uuid}',
-        {
-          ...mockEnrollment,
-          patientUuid: 'test-patient-uuid',
-        },
+      await waitFor(() =>
+        expect(mockResolveNavigationURL).toHaveBeenCalledWith(
+          '/bahmni/clinical?p={patient.uuid}',
+          {
+            ...mockEnrollment,
+            patientUuid: 'test-patient-uuid',
+          },
+        ),
       );
     });
   });
@@ -786,10 +785,8 @@ describe('PatientProgramsTable', () => {
         isLoading: false,
       });
       const { container } = render(wrapper);
-      await act(async () => {
-        const results = await axe(container);
-        expect(results).toHaveNoViolations();
-      });
+      const results = await axe(container);
+      expect(results).toHaveNoViolations();
     });
   });
 });
