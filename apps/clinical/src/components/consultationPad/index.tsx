@@ -436,8 +436,8 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
     try {
       setIsSubmitting(true);
 
-      // If any active entry has a direct submit handler (e.g., $stop operation),
-      // call it directly and skip the consultation bundle flow.
+      // If any active entry has a direct submit handler, call it directly
+      // and skip the consultation bundle flow.
       const directSubmitEntries = activeEntries.filter(
         (entry) => entry.hasData() && entry.onDirectSubmit,
       );
