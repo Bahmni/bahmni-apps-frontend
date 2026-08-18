@@ -28,11 +28,24 @@ const ObservationFormsPanel: React.FC<ObservationFormsPanelProps> = ({
   const { episodeOfCare } = useClinicalAppData();
   const episodeOfCareUuids = episodeOfCare.map((eoc) => eoc.uuid);
 
+  const formName = encounterSessionStartContext?.formName as string | undefined;
+  const directFormMode = encounterSessionStartContext?.directFormMode as
+    | boolean
+    | undefined;
+  const editEncounterUuid = encounterSessionStartContext?.editEncounterUuid;
+  const isEditObservationFormsMode =
+    encounterSessionStartContext?.editOnly === 'observationForms';
+  const isEditMode = isEditObservationFormsMode && !!editEncounterUuid;
+  const isTaskDirectMode = !!(formName && directFormMode);
+
   const {
     forms: allForms,
     isLoading: isAllFormsLoading,
     error: observationFormsError,
-  } = useObservationFormsSearch('', episodeOfCareUuids);
+  } = useObservationFormsSearch(
+    '',
+    isTaskDirectMode ? undefined : episodeOfCareUuids,
+  );
 
   const {
     pinnedForms,
@@ -57,30 +70,25 @@ const ObservationFormsPanel: React.FC<ObservationFormsPanelProps> = ({
     prevViewingFormRef.current = viewingForm;
   }, [viewingForm, refetchPinnedForms]);
 
-  const taskFormName = encounterSessionStartContext?.taskFormName as
-    | string
-    | undefined;
-  const directFormMode = encounterSessionStartContext?.directFormMode as
-    | boolean
-    | undefined;
-
   useEffect(() => {
-    if (taskFormName && directFormMode && !isAllFormsLoading) {
+    if (formName && directFormMode && !isAllFormsLoading && !isEditMode) {
       useObservationFormsStore.getState().reset();
       const matchingForm = allForms.find(
-        (form) => form.name.toLowerCase() === taskFormName.toLowerCase(),
+        (form) => form.name.toLowerCase() === formName.toLowerCase(),
       );
 
       if (matchingForm) {
         addForm(matchingForm);
       }
     }
-  }, [taskFormName, directFormMode, allForms, isAllFormsLoading, addForm]);
-
-  const editFormName = encounterSessionStartContext?.editFormName;
-  const editEncounterUuid = encounterSessionStartContext?.editEncounterUuid;
-  const isEditObservationFormsMode =
-    encounterSessionStartContext?.editOnly === 'observationForms';
+  }, [
+    formName,
+    directFormMode,
+    allForms,
+    isAllFormsLoading,
+    isEditMode,
+    addForm,
+  ]);
 
   // useObservationFormsStore is a session-wide singleton, not scoped to a single
   // edit session. Without this, `selectedForms` from a previous edit (or from the
@@ -90,16 +98,16 @@ const ObservationFormsPanel: React.FC<ObservationFormsPanelProps> = ({
   // pair so each edit session starts from a clean store.
   const editSessionKeyRef = useRef<string | null>(null);
   useEffect(() => {
-    if (!isEditObservationFormsMode || !editFormName || !editEncounterUuid) {
+    if (!isEditObservationFormsMode || !formName || !editEncounterUuid) {
       return;
     }
-    const sessionKey = `${editEncounterUuid}:${editFormName}`;
+    const sessionKey = `${editEncounterUuid}:${formName}`;
     if (editSessionKeyRef.current === sessionKey) {
       return;
     }
     editSessionKeyRef.current = sessionKey;
     useObservationFormsStore.getState().reset();
-  }, [isEditObservationFormsMode, editFormName, editEncounterUuid]);
+  }, [isEditObservationFormsMode, formName, editEncounterUuid]);
 
   // Latches once the fetch for a given (encounter, form) session actually
   // starts. Guarding on `selectedForms` instead (as before) breaks as soon as
@@ -113,18 +121,18 @@ const ObservationFormsPanel: React.FC<ObservationFormsPanelProps> = ({
   useEffect(() => {
     if (
       !isEditObservationFormsMode ||
-      !editFormName ||
+      !formName ||
       !editEncounterUuid ||
       isAllFormsLoading
     )
       return;
 
     const matchingForm = allForms.find(
-      (form) => form.name.toLowerCase() === editFormName.toLowerCase(),
+      (form) => form.name.toLowerCase() === formName.toLowerCase(),
     );
     if (!matchingForm) return;
 
-    const sessionKey = `${editEncounterUuid}:${editFormName}`;
+    const sessionKey = `${editEncounterUuid}:${formName}`;
     if (editFetchSessionRef.current === sessionKey) return;
     editFetchSessionRef.current = sessionKey;
 
@@ -141,7 +149,7 @@ const ObservationFormsPanel: React.FC<ObservationFormsPanelProps> = ({
           (obs) =>
             obs.formFieldPath
               ?.toLowerCase()
-              .startsWith(`${editFormName.toLowerCase()}.`),
+              .startsWith(`${formName.toLowerCase()}.`),
         );
 
         // Primary: read formUuid directly from the patient forms API —
@@ -166,7 +174,7 @@ const ObservationFormsPanel: React.FC<ObservationFormsPanelProps> = ({
           const encounterFormData = patientForms.find(
             (d) =>
               d.encounterUuid === editEncounterUuid &&
-              d.formName.toLowerCase() === editFormName.toLowerCase(),
+              d.formName.toLowerCase() === formName.toLowerCase(),
           );
           // Primary: formUuid from patient forms API (same as old Bahmni Angular).
           // Fallback: version-string or date-based lookup using formVersion and
@@ -175,7 +183,7 @@ const ObservationFormsPanel: React.FC<ObservationFormsPanelProps> = ({
           savedFormUuid =
             encounterFormData?.formUuid ??
             (await fetchFormUuidByObservationDate(
-              editFormName,
+              formName,
               encounterFormData?.formVersion,
               encounterFormData?.encounterDateTime,
             ).catch(() => null));
@@ -216,13 +224,13 @@ const ObservationFormsPanel: React.FC<ObservationFormsPanelProps> = ({
       })
       .catch((err) => {
         // eslint-disable-next-line no-console
-        console.error('[EditMode] FHIR fetch FAILED for', editFormName, err);
+        console.error('[EditMode] FHIR fetch FAILED for', formName, err);
         // Fetch failed — open the form blank so the user can re-enter data.
         addForm(matchingForm);
       });
   }, [
     isEditObservationFormsMode,
-    editFormName,
+    formName,
     editEncounterUuid,
     isAllFormsLoading,
     allForms,

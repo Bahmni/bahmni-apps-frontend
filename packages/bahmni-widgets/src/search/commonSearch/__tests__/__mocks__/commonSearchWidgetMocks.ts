@@ -83,6 +83,30 @@ export const mockMultiContextConfig: CommonSearchWidgetConfig = [
   },
 ];
 
+export const mockCommonSearchWidgetConfigWithoutLocationAware: CommonSearchWidgetConfig =
+  [
+    {
+      context: 'patient',
+      translationKey: 'PATIENT_SEARCH',
+      requiredPrivileges: ['View Patients'],
+      url: '/openmrs/ws/rest/v1/patientSearch',
+      pageSize: 20,
+      resultFields: mockResultFields,
+      criteria: [
+        {
+          id: 'patient.name.given',
+          field: { key: 'patient.name.given' },
+          translationKey: 'PATIENT_GIVEN_NAME',
+          default: true,
+          input: {
+            kind: 'text',
+            placeholderTranslationKey: 'PATIENT_GIVEN_NAME_PLACEHOLDER',
+          },
+        },
+      ],
+    },
+  ];
+
 export const mockPrivilegeViewPatients: UserPrivilege[] = [
   { uuid: 'priv-uuid-1', name: 'View Patients' },
 ];

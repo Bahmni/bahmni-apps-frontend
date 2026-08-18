@@ -1,4 +1,8 @@
-import type { ObservationForm, UserPrivilege } from '@bahmni/services';
+import {
+  getPatientObservationsBundle,
+  type ObservationForm,
+  type UserPrivilege,
+} from '@bahmni/services';
 import type { Task } from 'fhir/r4';
 import { TaskActionType } from '../../constants';
 import type { TaskAction, TaskConfig, TaskViewModel } from '../../models';
@@ -7,6 +11,8 @@ import {
   LAB_TESTS_TASK_CODE,
   FORM_NAME_INPUT_CODE,
 } from './taskListMocks';
+
+export const ENCOUNTER_UUID = 'encounter-uuid-1';
 
 export const mockUserPrivileges: UserPrivilege[] = [
   { name: 'Edit Vitals', retired: false },
@@ -85,11 +91,21 @@ export const mockObservationForms: ObservationForm[] = [
 export const mockLaunchFormAction: TaskAction = {
   label: 'Fill Form',
   type: TaskActionType.LAUNCH_FORM,
-  icon: 'edit',
+  icon: 'launch',
   requiredPrivileges: ['Edit Vitals'],
   handlerConfig: {
     formInputCode: FORM_NAME_INPUT_CODE,
     encounterType: 'consultation',
+  },
+};
+
+export const mockEditFormAction: TaskAction = {
+  label: 'Edit Form',
+  type: TaskActionType.EDIT_FORM,
+  icon: 'edit',
+  requiredPrivileges: ['Edit Vitals'],
+  handlerConfig: {
+    formInputCode: FORM_NAME_INPUT_CODE,
   },
 };
 
@@ -123,6 +139,13 @@ export const mockTaskConfig: TaskConfig[] = [
   {
     taskCode: LAB_TESTS_TASK_CODE,
     actions: [mockLaunchFormActionNoPrivileges],
+  },
+];
+
+export const mockTaskConfigWithEditForm: TaskConfig[] = [
+  {
+    taskCode: VITALS_TASK_CODE,
+    actions: [mockLaunchFormAction, mockEditFormAction],
   },
 ];
 
@@ -279,3 +302,35 @@ export const mockTaskViewModelWithCaseInsensitiveForm: TaskViewModel =
 
 export const mockTaskViewModelWithNonexistentForm: TaskViewModel =
   createTaskViewModel(mockFHIRTaskWithNonexistentForm);
+
+export const SERVICE_REQUEST_UUID_COMPLETED = 'service-request-completed';
+export const PATIENT_UUID_COMPLETED = 'patient-uuid-completed';
+export const FILL_ENCOUNTER_UUID = 'fill-encounter-completed';
+
+export const mockFHIRCompletedTaskWithInput: Task = {
+  ...createTaskWithFormInput(
+    'task-completed-with-input',
+    'Fill Vitals Form',
+    VITALS_TASK_CODE,
+    'Vitals Form Task',
+    'Vitals',
+  ),
+  status: 'completed',
+  for: {
+    reference: `Patient/${PATIENT_UUID_COMPLETED}`,
+  },
+  basedOn: [
+    {
+      reference: `ServiceRequest/${SERVICE_REQUEST_UUID_COMPLETED}`,
+    },
+  ],
+};
+
+export const mockTaskViewModelCompleted: TaskViewModel = createTaskViewModel(
+  mockFHIRCompletedTaskWithInput,
+);
+
+export const mockGetPatientObservationsBundle =
+  getPatientObservationsBundle as jest.MockedFunction<
+    typeof getPatientObservationsBundle
+  >;
