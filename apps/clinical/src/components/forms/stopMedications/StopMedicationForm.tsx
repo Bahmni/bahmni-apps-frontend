@@ -4,7 +4,8 @@ import {
   DatePickerInput,
   Dropdown,
   Grid,
-  TextArea,
+  Link,
+  TextAreaWClose,
   Tile,
 } from '@bahmni/design-system';
 import {
@@ -15,13 +16,15 @@ import {
 } from '@bahmni/services';
 import { useQuery } from '@tanstack/react-query';
 import { MedicationRequest } from 'fhir/r4';
-import React, { useEffect, useMemo, useRef } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 
+import { STOP_REASON_VALUESET_TITLE } from '../../../constants/app';
 import type { EncounterSessionStartContext } from '../../../events/startConsultation';
 import {
   MedicationConfig,
   MedicationJSONConfig,
 } from '../../../models/medicationConfig';
+import type { InputControl as ClinicalInputControlConfig } from '../../../providers/clinicalConfig/models';
 import {
   fetchStopReasons,
   StopReason,
@@ -33,10 +36,11 @@ import styles from './styles/StopMedicationForm.module.scss';
 
 interface StopMedicationFormProps {
   encounterSessionStartContext?: EncounterSessionStartContext;
+  inputControlConfig?: ClinicalInputControlConfig;
 }
 
 const StopMedicationForm: React.FC<StopMedicationFormProps> = React.memo(
-  ({ encounterSessionStartContext }) => {
+  ({ encounterSessionStartContext, inputControlConfig }) => {
     const { t } = useTranslation();
     const stopMedication = encounterSessionStartContext?.stopMedication as
       | MedicationRequest
@@ -54,6 +58,10 @@ const StopMedicationForm: React.FC<StopMedicationFormProps> = React.memo(
       setFieldConfig,
     } = useStopMedicationStore();
 
+    const [hasNote, setHasNote] = useState(
+      !!note || fieldConfig.note?.isMandatory === true,
+    );
+
     // Stable ref for the DatePicker `value` prop — prevents the controlled-value cycle
     // where Carbon calls fp.setDate(value) on every Zustand update and clears the input
     // when the user re-selects the same date that is already in the store.
@@ -68,6 +76,7 @@ const StopMedicationForm: React.FC<StopMedicationFormProps> = React.memo(
 
     const { data: medicationConfig } = useQuery({
       queryKey: ['medicationConfig'],
+      staleTime: 0,
       queryFn: async () => {
         const [jsonConfig, metadata] = await Promise.all([
           getConfig<MedicationJSONConfig>(
@@ -80,9 +89,15 @@ const StopMedicationForm: React.FC<StopMedicationFormProps> = React.memo(
       },
     });
 
+    const conceptSetUuid =
+      (inputControlConfig?.metadata?.stoppedOrderReasonConceptSet as
+        | string
+        | undefined) ?? STOP_REASON_VALUESET_TITLE;
+
     const { data: conceptStopReasons } = useQuery({
-      queryKey: ['stopReasons'],
-      queryFn: fetchStopReasons,
+      queryKey: ['stopReasons', conceptSetUuid],
+      queryFn: () => fetchStopReasons(conceptSetUuid),
+      enabled: true,
     });
 
     useEffect(() => {
@@ -194,7 +209,7 @@ const StopMedicationForm: React.FC<StopMedicationFormProps> = React.memo(
                 items={stopReasons}
                 itemToString={(item: StopReason) => (item ? item.display : '')}
                 selectedItem={
-                  stopReasons.find((r) => r.display === stopReason) ?? null
+                  stopReasons.find((r) => r.uuid === stopReason?.uuid) ?? null
                 }
                 onChange={({
                   selectedItem,
@@ -202,10 +217,10 @@ const StopMedicationForm: React.FC<StopMedicationFormProps> = React.memo(
                   selectedItem: StopReason | null;
                 }) => {
                   // Allow deselection if same item clicked
-                  if (selectedItem?.display === stopReason) {
+                  if (selectedItem?.uuid === stopReason?.uuid) {
                     setStopReason(null);
                   } else {
-                    setStopReason(selectedItem?.display ?? null);
+                    setStopReason(selectedItem ?? null);
                   }
                 }}
                 size="sm"
@@ -216,29 +231,39 @@ const StopMedicationForm: React.FC<StopMedicationFormProps> = React.memo(
           )}
 
           {isNoteVisible && (
-            <Column sm={4} md={8} lg={16} className={styles.column}>
-              <div className={styles.noteLabelRow}>
-                <label
-                  htmlFor="stop-medication-note"
-                  className={styles.fieldLabel}
+            <Column sm={4} md={8} lg={16} className={styles.noteColumn}>
+              {!hasNote && (
+                <Link
+                  href="#"
+                  data-testid="stop-medication-add-note-link"
+                  onClick={(e: React.MouseEvent) => {
+                    e.preventDefault();
+                    setHasNote(true);
+                  }}
                 >
-                  {t('STOP_MEDICATION_NOTE_LABEL')}
-                </label>
-                <span className={styles.noteCounter}>{note.length}/100</span>
-              </div>
-              <TextArea
-                id="stop-medication-note"
-                data-testid="stop-medication-note"
-                labelText=""
-                placeholder={t('STOP_MEDICATION_NOTE_PLACEHOLDER')}
-                value={note}
-                onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => {
-                  if (e.target.value.length <= 100) {
-                    setNote(e.target.value);
-                  }
-                }}
-                rows={3}
-              />
+                  {t('STOP_MEDICATION_ADD_NOTE')}
+                </Link>
+              )}
+              {hasNote && (
+                <TextAreaWClose
+                  id="stop-medication-note"
+                  data-testid="stop-medication-note"
+                  labelText={t('STOP_MEDICATION_NOTE_LABEL')}
+                  placeholder={t('STOP_MEDICATION_NOTE_PLACEHOLDER')}
+                  value={note}
+                  onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => {
+                    if (e.target.value.length <= 100) {
+                      setNote(e.target.value);
+                    }
+                  }}
+                  onClose={() => {
+                    setHasNote(false);
+                    setNote('');
+                  }}
+                  enableCounter
+                  maxCount={100}
+                />
+              )}
             </Column>
           )}
         </Grid>
