@@ -138,7 +138,7 @@ export const getRangeOrderError = (
   return new Date(fromVal) > new Date(toVal) ? errorMessage : null;
 };
 
-const getCriterionId = (field: FieldConfig): string =>
+export const getCriterionId = (field: FieldConfig): string =>
   field.keyType ? `${field.key}:${field.keyType}` : field.key;
 
 export const processContextConfigs = (
@@ -151,7 +151,7 @@ export const processContextConfigs = (
       ...ctx,
       criteria: ctx.criteria.map((c) => ({
         ...c,
-        id: getCriterionId(c.field),
+        id: c.id ?? getCriterionId(c.field),
       })),
     }));
 
@@ -206,11 +206,16 @@ export const updateRow = (
 ): CriterionRow[] =>
   rows.map((r) => (r.rowId === rowId ? { ...r, ...updater(r) } : r));
 
+type TranslateFn = (
+  key: string,
+  options?: { defaultValue?: string; criteriaList?: string },
+) => string;
+
 const validateByType = (
   value: CriterionValue | null,
   criterion: CriterionConfig,
   rangeOrderMessage: string,
-  t: (key: string, options?: { defaultValue?: string }) => string,
+  t: TranslateFn,
 ): { validationError: string | null; rangeOrderError: string | null } => {
   switch (criterion.input.kind) {
     case 'text':
@@ -355,13 +360,36 @@ export const buildPayload = (
   },
 });
 
+const hasQualifyingPartner = (
+  row: CriterionRow,
+  rows: CriterionRow[],
+  criterion: CriterionConfig,
+): boolean =>
+  rows.some(
+    (other) =>
+      other.rowId !== row.rowId &&
+      other.criterionKey !== null &&
+      criterion.additionalCriteria!.includes(other.criterionKey),
+  );
+
+const buildAdditionalCriteriaLabel = (
+  additionalCriteria: string[],
+  criteria: CriterionConfig[],
+  t: TranslateFn,
+): string =>
+  additionalCriteria
+    .map((id) => criteria.find((c) => c.id === id))
+    .filter((c): c is CriterionConfig => !!c)
+    .map((c) => t(c.translationKey))
+    .join(', ');
+
 export const validateRows = (
   rows: CriterionRow[],
   criteria: CriterionConfig[],
   criterionError: string,
   valueError: string,
   rangeOrderMessage: string,
-  t: (key: string, options?: { defaultValue?: string }) => string,
+  t: TranslateFn,
 ): CriterionRow[] =>
   rows.map((r) => {
     if (!r.criterionKey)
@@ -385,7 +413,38 @@ export const validateRows = (
       rangeOrderMessage,
       t,
     );
+    if (
+      !validationError &&
+      !rangeOrderError &&
+      criterion.additionalCriteria?.length &&
+      !hasQualifyingPartner(r, rows, criterion)
+    ) {
+      return {
+        ...r,
+        validationError: t('COMMON_SEARCH_ADDITIONAL_CRITERIA_REQUIRED', {
+          criteriaList: buildAdditionalCriteriaLabel(
+            criterion.additionalCriteria,
+            criteria,
+            t,
+          ),
+        }),
+        rangeOrderError: null,
+      };
+    }
     return { ...r, validationError, rangeOrderError };
+  });
+
+export const reconcileAdditionalCriteriaErrors = (
+  rows: CriterionRow[],
+  criteria: CriterionConfig[],
+): CriterionRow[] =>
+  rows.map((r) => {
+    if (!r.validationError || !r.criterionKey || !r.value) return r;
+    const criterion = criteria.find((c) => c.id === r.criterionKey);
+    if (!criterion?.additionalCriteria?.length) return r;
+    return hasQualifyingPartner(r, rows, criterion)
+      ? { ...r, validationError: null }
+      : r;
   });
 
 export const validateConfigForActions = (
@@ -421,3 +480,30 @@ export const validateConfigForActions = (
   }
   return null;
 };
+
+export const validateConfigForCriteria = (
+  contexts: SearchContextConfig[],
+): string | null => {
+  for (const context of contexts) {
+    const effectiveIds = context.criteria.map(
+      (c) => c.id ?? getCriterionId(c.field),
+    );
+    const duplicateIds = effectiveIds.filter(
+      (id, idx) => effectiveIds.indexOf(id) !== idx,
+    );
+    if (duplicateIds.length > 0) {
+      return 'COMMON_SEARCH_CONFIG_VALIDATION_DUPLICATE_CRITERION_ID';
+    }
+
+    const idSet = new Set(effectiveIds);
+    for (const criterion of context.criteria) {
+      for (const referencedId of criterion.additionalCriteria ?? []) {
+        if (!idSet.has(referencedId)) {
+          return 'COMMON_SEARCH_CONFIG_VALIDATION_UNKNOWN_ADDITIONAL_CRITERION';
+        }
+      }
+    }
+  }
+  return null;
+};
+
