@@ -21,7 +21,7 @@ const handleStopAction = (
         stopMedicationStartDate: startDate,
         editOnly: 'stopMedications',
         editTitle: isVaccinationCancellation
-          ? 'CANCEL_VACCINE_FORM_TITLE'
+          ? 'VACCINATION_CANCEL_FORM_TITLE'
           : 'STOP_MEDICATION_FORM_TITLE',
         editEncounterUuid: encounterUuid,
         isVaccinationCancellation: isVaccinationCancellation ?? false,

@@ -966,12 +966,12 @@ describe('StopMedicationForm', () => {
       designSystem.DatePicker = originalDatePicker;
     });
 
-    it('renders "CANCEL_VACCINE_FORM_TITLE" as form title', async () => {
+    it('renders "VACCINATION_CANCEL_FORM_TITLE" as form title', async () => {
       await act(async () => {
         renderForm(vaccinationContext);
       });
 
-      expect(screen.getByText('CANCEL_VACCINE_FORM_TITLE')).toBeInTheDocument();
+      expect(screen.getByText('VACCINATION_CANCEL_FORM_TITLE')).toBeInTheDocument();
     });
 
     it('does not render "STOP_MEDICATION_FORM_TITLE" in vaccination mode', async () => {
@@ -984,13 +984,13 @@ describe('StopMedicationForm', () => {
       ).not.toBeInTheDocument();
     });
 
-    it('renders DatePickerInput with labelText "CANCEL_VACCINE_DATE_LABEL"', async () => {
+    it('renders DatePickerInput with labelText "VACCINATION_CANCEL_DATE_LABEL"', async () => {
       await act(async () => {
         renderForm(vaccinationContext);
       });
 
       expect(capturedDatePickerInputProps.labelText).toBe(
-        'CANCEL_VACCINE_DATE_LABEL',
+        'VACCINATION_CANCEL_DATE_LABEL',
       );
     });
 
@@ -1002,7 +1002,7 @@ describe('StopMedicationForm', () => {
       expect(capturedDatePickerInputProps.disabled).toBe(true);
     });
 
-    it('renders stop reason dropdown with "CANCEL_VACCINE_REASON_LABEL"', async () => {
+    it('renders stop reason dropdown with "VACCINATION_CANCEL_REASON_LABEL"', async () => {
       await act(async () => {
         renderForm(vaccinationContext);
       });

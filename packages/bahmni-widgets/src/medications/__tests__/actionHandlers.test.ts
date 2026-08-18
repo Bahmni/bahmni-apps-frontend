@@ -155,12 +155,12 @@ describe('handleAction', () => {
       expect(event.detail.editTitle).toBe('STOP_MEDICATION_FORM_TITLE');
     });
 
-    it('sets isVaccinationCancellation true and uses CANCEL_VACCINE_FORM_TITLE when vaccination cancellation mode', () => {
+    it('sets isVaccinationCancellation true and uses VACCINATION_CANCEL_FORM_TITLE when vaccination cancellation mode', () => {
       handleAction(stopAction, fhirMedicationRequestMock, undefined, true);
 
       const event = dispatchSpy.mock.calls[0][0] as CustomEvent;
       expect(event.detail.isVaccinationCancellation).toBe(true);
-      expect(event.detail.editTitle).toBe('CANCEL_VACCINE_FORM_TITLE');
+      expect(event.detail.editTitle).toBe('VACCINATION_CANCEL_FORM_TITLE');
     });
 
     it('defaults isVaccinationCancellation to false when not provided', () => {

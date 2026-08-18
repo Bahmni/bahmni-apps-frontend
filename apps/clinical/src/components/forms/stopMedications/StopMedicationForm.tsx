@@ -167,7 +167,7 @@ const StopMedicationForm: React.FC<StopMedicationFormProps> = React.memo(
         <div className={styles.formTitle}>
           {t(
             isVaccinationCancellation
-              ? 'CANCEL_VACCINE_FORM_TITLE'
+              ? 'VACCINATION_CANCEL_FORM_TITLE'
               : 'STOP_MEDICATION_FORM_TITLE',
           )}
         </div>
@@ -199,7 +199,7 @@ const StopMedicationForm: React.FC<StopMedicationFormProps> = React.memo(
                   data-testid="stop-medication-date-input"
                   labelText={t(
                     isVaccinationCancellation
-                      ? 'CANCEL_VACCINE_DATE_LABEL'
+                      ? 'VACCINATION_CANCEL_DATE_LABEL'
                       : 'STOP_MEDICATION_DATE_LABEL',
                   )}
                   placeholder="dd/mm/yyyy"
@@ -219,12 +219,12 @@ const StopMedicationForm: React.FC<StopMedicationFormProps> = React.memo(
                 data-testid="stop-medication-reason-dropdown"
                 titleText={t(
                   isVaccinationCancellation
-                    ? 'CANCEL_VACCINE_REASON_LABEL'
+                    ? 'VACCINATION_CANCEL_REASON_LABEL'
                     : 'STOP_MEDICATION_REASON_LABEL',
                 )}
                 label={t(
                   isVaccinationCancellation
-                    ? 'CANCEL_VACCINE_REASON_LABEL'
+                    ? 'VACCINATION_CANCEL_REASON_LABEL'
                     : 'STOP_MEDICATION_REASON_LABEL',
                 )}
                 items={stopReasons}
