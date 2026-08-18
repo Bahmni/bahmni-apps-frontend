@@ -506,4 +506,3 @@ export const validateConfigForCriteria = (
   }
   return null;
 };
-
