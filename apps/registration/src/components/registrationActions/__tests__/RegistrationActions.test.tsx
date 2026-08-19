@@ -5,19 +5,22 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import { BrowserRouter } from 'react-router-dom';
 import { useFilteredExtensions } from '../../../hooks/useFilteredExtensions';
-import { useCreateVisit } from '../../../hooks/useVisit';
 import { AppExtensionConfig } from '../../../providers/registrationConfig';
 import * as extensionNavigation from '../../../utils/extensionNavigation';
 import { RegistrationActions } from '../RegistrationActions';
 
-jest.mock('../../../hooks/useFilteredExtensions');
-jest.mock('../../../hooks/useVisit');
-jest.mock('../../../utils/extensionNavigation');
-
 const mockCreateVisit = jest.fn();
-const mockUseCreateVisit = useCreateVisit as jest.MockedFunction<
-  typeof useCreateVisit
->;
+
+jest.mock('../../../hooks/useFilteredExtensions');
+// useIsCreatingVisit is kept real (backed by the actual QueryClient cache)
+// so tests can verify the startVisitInProgress guard set in
+// RegistrationActions.handleVisitTypeSelect is actually observed reactively
+// -- only useCreateVisit is stubbed so we can assert on/control its calls.
+jest.mock('../../../hooks/useVisit', () => ({
+  ...jest.requireActual('../../../hooks/useVisit'),
+  useCreateVisit: () => ({ createVisit: mockCreateVisit }),
+}));
+jest.mock('../../../utils/extensionNavigation');
 
 jest.mock('../../../pages/PatientRegister/visitTypeSelector', () => ({
   VisitTypeSelector: ({
@@ -25,11 +28,13 @@ jest.mock('../../../pages/PatientRegister/visitTypeSelector', () => ({
     activeVisitLabel,
     onActiveVisitClick,
     disabled,
+    isLoading,
   }: {
     onVisitTypeSelect: (visitType: VisitType) => void;
     activeVisitLabel?: string;
     onActiveVisitClick?: () => void;
     disabled?: boolean;
+    isLoading?: boolean;
   }) => (
     <div data-testid="visit-type-selector">
       <button
@@ -39,7 +44,7 @@ jest.mock('../../../pages/PatientRegister/visitTypeSelector', () => ({
           onVisitTypeSelect({ name: 'OPD', uuid: 'opd-visit-type-uuid' })
         }
       >
-        Select Visit Type
+        {isLoading ? 'Loading' : 'Select Visit Type'}
       </button>
       {onActiveVisitClick && (
         <button data-testid="active-visit-button" onClick={onActiveVisitClick}>
@@ -54,8 +59,8 @@ const mockUseFilteredExtensions = useFilteredExtensions as jest.MockedFunction<
   typeof useFilteredExtensions
 >;
 
-const renderWithRouter = (component: React.ReactElement) => {
-  const queryClient = new QueryClient({
+const createTestQueryClient = () =>
+  new QueryClient({
     defaultOptions: {
       queries: {
         retry: false,
@@ -63,13 +68,20 @@ const renderWithRouter = (component: React.ReactElement) => {
     },
   });
 
-  return render(
-    <QueryClientProvider client={queryClient}>
-      <NotificationProvider>
-        <BrowserRouter>{component}</BrowserRouter>
-      </NotificationProvider>
-    </QueryClientProvider>,
-  );
+const renderWithRouter = (
+  component: React.ReactElement,
+  queryClient: QueryClient = createTestQueryClient(),
+) => {
+  return {
+    ...render(
+      <QueryClientProvider client={queryClient}>
+        <NotificationProvider>
+          <BrowserRouter>{component}</BrowserRouter>
+        </NotificationProvider>
+      </QueryClientProvider>,
+    ),
+    queryClient,
+  };
 };
 
 describe('RegistrationActions', () => {
@@ -97,9 +109,6 @@ describe('RegistrationActions', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    mockUseCreateVisit.mockReturnValue({
-      createVisit: mockCreateVisit,
-    });
   });
 
   it('should render nothing while loading', () => {
@@ -532,6 +541,143 @@ describe('RegistrationActions', () => {
 
       expect(mockCreateVisit).not.toHaveBeenCalled();
       expect(mockHandleExtensionNavigation).not.toHaveBeenCalled();
+    });
+
+    it('should disable the button and show the loading state when startVisitInProgress is already true in the cache', () => {
+      const queryClient = createTestQueryClient();
+      queryClient.setQueryData(['startVisitInProgress'], true);
+
+      mockUseFilteredExtensions.mockReturnValue({
+        filteredExtensions: [startVisitExtension],
+        isLoading: false,
+      });
+
+      renderWithRouter(
+        <RegistrationActions
+          extensionPointId="org.bahmni.registration.navigation"
+          onBeforeNavigate={jest.fn().mockResolvedValue('patient-uuid-123')}
+        />,
+        queryClient,
+      );
+
+      const selectButton = screen.getByTestId('select-visit-type-button');
+      expect(selectButton).toBeDisabled();
+      expect(selectButton).toHaveTextContent('Loading');
+    });
+
+    it('should not disable the button or show the loading state when startVisitInProgress is false', () => {
+      mockUseFilteredExtensions.mockReturnValue({
+        filteredExtensions: [startVisitExtension],
+        isLoading: false,
+      });
+
+      renderWithRouter(
+        <RegistrationActions
+          extensionPointId="org.bahmni.registration.navigation"
+          onBeforeNavigate={jest.fn().mockResolvedValue('patient-uuid-123')}
+        />,
+      );
+
+      const selectButton = screen.getByTestId('select-visit-type-button');
+      expect(selectButton).not.toBeDisabled();
+      expect(selectButton).toHaveTextContent('Select Visit Type');
+    });
+
+    it('sets the in-progress flag synchronously before the first await, so a remounted instance sees it immediately on its first render (regression: BAH-4923 flicker)', async () => {
+      const queryClient = createTestQueryClient();
+      let resolveOnBeforeNavigate: (uuid: string) => void;
+      const onBeforeNavigate = jest.fn(
+        () =>
+          new Promise<string>((resolve) => {
+            resolveOnBeforeNavigate = resolve;
+          }),
+      );
+
+      mockUseFilteredExtensions.mockReturnValue({
+        filteredExtensions: [startVisitExtension],
+        isLoading: false,
+      });
+
+      const { unmount } = renderWithRouter(
+        <RegistrationActions
+          extensionPointId="org.bahmni.registration.navigation"
+          onBeforeNavigate={onBeforeNavigate}
+        />,
+        queryClient,
+      );
+
+      fireEvent.click(screen.getByTestId('select-visit-type-button'));
+
+      await waitFor(() => expect(onBeforeNavigate).toHaveBeenCalled());
+
+      // Simulate the route-change remount that happens mid-click for a
+      // brand-new patient: the old instance is torn down while
+      // onBeforeNavigate (and the navigate() call inside it) is still
+      // pending.
+      unmount();
+
+      // A fresh instance mounts on the new route, sharing the same
+      // QueryClient. Its very first render must already show the button
+      // as disabled -- this is exactly what the original bug got wrong
+      // (the flag used to be set only inside createVisit, which runs
+      // *after* onBeforeNavigate resolves and the remount has already
+      // happened, leaving a window where the button flickered back to
+      // enabled).
+      renderWithRouter(
+        <RegistrationActions
+          extensionPointId="org.bahmni.registration.navigation"
+          onBeforeNavigate={onBeforeNavigate}
+        />,
+        queryClient,
+      );
+
+      expect(screen.getByTestId('select-visit-type-button')).toBeDisabled();
+
+      resolveOnBeforeNavigate!('new-patient-uuid');
+
+      await waitFor(() => {
+        expect(
+          screen.getByTestId('select-visit-type-button'),
+        ).not.toBeDisabled();
+      });
+    });
+
+    it('should not call onBeforeNavigate a second time while the first call is still in flight (double-click guard)', async () => {
+      const queryClient = createTestQueryClient();
+      let resolveOnBeforeNavigate: (uuid: string) => void;
+      const onBeforeNavigate = jest.fn(
+        () =>
+          new Promise<string>((resolve) => {
+            resolveOnBeforeNavigate = resolve;
+          }),
+      );
+
+      mockUseFilteredExtensions.mockReturnValue({
+        filteredExtensions: [startVisitExtension],
+        isLoading: false,
+      });
+
+      renderWithRouter(
+        <RegistrationActions
+          extensionPointId="org.bahmni.registration.navigation"
+          onBeforeNavigate={onBeforeNavigate}
+        />,
+        queryClient,
+      );
+
+      const selectButton = screen.getByTestId('select-visit-type-button');
+      fireEvent.click(selectButton);
+      fireEvent.click(selectButton);
+
+      await waitFor(() => {
+        expect(onBeforeNavigate).toHaveBeenCalledTimes(1);
+      });
+
+      resolveOnBeforeNavigate!('patient-uuid-123');
+
+      await waitFor(() => {
+        expect(mockCreateVisit).toHaveBeenCalledTimes(1);
+      });
     });
   });
 });
