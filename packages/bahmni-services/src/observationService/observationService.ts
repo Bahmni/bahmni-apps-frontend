@@ -42,9 +42,10 @@ export async function getPatientObservations(
 
 export async function getObservationsBundleByEncounterUuid(
   encounterUUID: string,
+  basedOn?: string,
 ): Promise<Bundle<Observation>> {
   return await get<Bundle<Observation>>(
-    FHIR_OBSERVATIONS_BY_ENCOUNTER_URL(encounterUUID),
+    FHIR_OBSERVATIONS_BY_ENCOUNTER_URL(encounterUUID, basedOn),
   );
 }
 export interface EncounterGroup {
