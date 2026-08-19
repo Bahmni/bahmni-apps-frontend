@@ -235,6 +235,17 @@ describe('observationService', () => {
         getObservationsBundleByEncounterUuid(encounterUUID),
       ).rejects.toThrow('Network failure');
     });
+
+    it('should call API with based-on query param when basedOn is provided', async () => {
+      const basedOn = 'service-request-123';
+      (api.get as jest.Mock).mockResolvedValueOnce(mockFormsEncounter);
+
+      await getObservationsBundleByEncounterUuid(encounterUUID, basedOn);
+
+      expect(api.get).toHaveBeenCalledWith(
+        FHIR_OBSERVATIONS_BY_ENCOUNTER_URL(encounterUUID, basedOn),
+      );
+    });
   });
 
   describe('groupObservationsByEncounter', () => {
