@@ -3,7 +3,7 @@ import {
   Icon,
   ICON_SIZE,
   InlineNotification,
-  SkeletonText,
+  Loading,
   MenuItemDivider,
 } from '@bahmni/design-system';
 import {
@@ -598,11 +598,14 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
         data-testid="observation-form-content"
       >
         {isLoadingMetadata || isPatientLoading ? (
-          <SkeletonText
-            width="100%"
-            lineCount={3}
-            data-testid="observation-form-loading"
-          />
+          <div className={styles.loadingWrapper}>
+            <Loading
+              description={t('OBSERVATION_FORM_LOADING_METADATA')}
+              role="status"
+              testId="observation-form-loading"
+              withOverlay={false}
+            />
+          </div>
         ) : error ? (
           <div>{error.message}</div>
         ) : formMetadata && patientUUID && patientContext ? (
