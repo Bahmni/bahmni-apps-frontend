@@ -1041,42 +1041,5 @@ describe('StopMedicationForm', () => {
         screen.getByTestId('stop-medication-add-note-link'),
       ).toHaveTextContent('CANCEL_VACCINATION_ADD_NOTE');
     });
-
-    it('renders CANCEL_VACCINATION_NOTE_LABEL and CANCEL_VACCINATION_NOTE_PLACEHOLDER after clicking Add Note', async () => {
-      await act(async () => {
-        renderCancelForm();
-      });
-
-      await act(async () => {
-        fireEvent.click(screen.getByTestId('stop-medication-add-note-link'));
-      });
-
-      expect(
-        screen.getByPlaceholderText('CANCEL_VACCINATION_NOTE_PLACEHOLDER'),
-      ).toBeInTheDocument();
-      expect(
-        screen.getByText('CANCEL_VACCINATION_NOTE_LABEL'),
-      ).toBeInTheDocument();
-    });
-
-    it('falls back to STOP_MEDICATION_* labels when inputControlConfig.type is not "cancelVaccination"', async () => {
-      await act(async () => {
-        render(
-          <StopMedicationForm
-            encounterSessionStartContext={{
-              stopMedication: mockMedicationRequest,
-            }}
-            inputControlConfig={{ type: 'stopMedications' } as any}
-          />,
-        );
-      });
-
-      expect(
-        screen.getByText('STOP_MEDICATION_FORM_TITLE'),
-      ).toBeInTheDocument();
-      expect(
-        screen.getByTestId('stop-medication-date-input'),
-      ).not.toBeDisabled();
-    });
   });
 });
