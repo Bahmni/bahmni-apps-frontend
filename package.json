@@ -117,7 +117,7 @@
   "resolutions": {
     "path-to-regexp": "0.1.13",
     "picomatch": "4.0.4",
-    "fast-uri": "3.1.5",
+    "fast-uri": "3.1.4",
     "immutable": "4.3.9"
   },
   "workspaces": [
