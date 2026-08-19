@@ -331,6 +331,55 @@ describe('getActiveEntries', () => {
     expect(result.find((e) => e.key === 'stopMedications')).toBeDefined();
     expect(result).toHaveLength(2); // stopMedications + encounterDetails
   });
+
+  it('excludes the cancelVaccination onActionTriggered control from normal consultation', () => {
+    const registryWithTriggered = [
+      ...registry,
+      {
+        key: 'cancelVaccination',
+        onActionTriggered: true,
+        component: () => null,
+        reset: jest.fn(),
+        validate: jest.fn().mockReturnValue(true),
+        hasData: jest.fn().mockReturnValue(false),
+        subscribe: jest.fn().mockReturnValue(jest.fn()),
+      },
+    ];
+    const result = getActiveEntries(registryWithTriggered, 'Consultation');
+    expect(result.find((e) => e.key === 'cancelVaccination')).toBeUndefined();
+  });
+
+  it('includes the cancelVaccination control when it is the editOnly target, alongside encounterDetails only', () => {
+    const registryWithTriggered = [
+      ...registry,
+      {
+        key: 'stopMedications',
+        onActionTriggered: true,
+        component: () => null,
+        reset: jest.fn(),
+        validate: jest.fn().mockReturnValue(true),
+        hasData: jest.fn().mockReturnValue(false),
+        subscribe: jest.fn().mockReturnValue(jest.fn()),
+      },
+      {
+        key: 'cancelVaccination',
+        onActionTriggered: true,
+        component: () => null,
+        reset: jest.fn(),
+        validate: jest.fn().mockReturnValue(true),
+        hasData: jest.fn().mockReturnValue(false),
+        subscribe: jest.fn().mockReturnValue(jest.fn()),
+      },
+    ];
+    const result = getActiveEntries(
+      registryWithTriggered,
+      'Consultation',
+      'cancelVaccination',
+    );
+    expect(result.find((e) => e.key === 'cancelVaccination')).toBeDefined();
+    expect(result.find((e) => e.key === 'stopMedications')).toBeUndefined();
+    expect(result).toHaveLength(2); // cancelVaccination + encounterDetails
+  });
 });
 
 describe('captureUpdatedResources', () => {
@@ -392,6 +441,33 @@ describe('captureUpdatedResources', () => {
     ];
 
     expect(captureUpdatedResources(entries).medications).toBe(true);
+  });
+
+  it('flags immunizationHistory but not medications when cancelVaccination hasData', () => {
+    const entries = [
+      makeMockEntry('cancelVaccination', {
+        hasData: jest.fn().mockReturnValue(true),
+      }),
+    ];
+
+    expect(captureUpdatedResources(entries)).toEqual({
+      conditions: false,
+      allergies: false,
+      medications: false,
+      immunizationHistory: true,
+      observationFormsWithBasedOn: undefined,
+      serviceRequests: {},
+    });
+  });
+
+  it('does not flag immunizationHistory when cancelVaccination hasData is false', () => {
+    const entries = [
+      makeMockEntry('cancelVaccination', {
+        hasData: jest.fn().mockReturnValue(false),
+      }),
+    ];
+
+    expect(captureUpdatedResources(entries).immunizationHistory).toBe(false);
   });
 
   it('maps selected service request categories to lowercase boolean flags', () => {

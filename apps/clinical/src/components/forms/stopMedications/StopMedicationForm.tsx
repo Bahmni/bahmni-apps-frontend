@@ -31,15 +31,14 @@ import {
 } from '../../../services/stopMedicationService';
 import { useStopMedicationStore } from '../../../stores/stopMedicationsStore';
 import { MEDICATIONS_CONFIG_URL } from '../medicationRequest/constants';
-import { CANCEL_VACCINATION_INPUT_CONTROL_KEY } from './constants';
 import medicationConfigSchema from '../medicationRequest/schema.json';
+import { CANCEL_VACCINATION_INPUT_CONTROL_KEY } from './constants';
 import styles from './styles/StopMedicationForm.module.scss';
 
 interface StopMedicationFormProps {
   encounterSessionStartContext?: EncounterSessionStartContext;
   inputControlConfig?: ClinicalInputControlConfig;
 }
-
 
 const StopMedicationForm: React.FC<StopMedicationFormProps> = React.memo(
   ({ encounterSessionStartContext, inputControlConfig }) => {
