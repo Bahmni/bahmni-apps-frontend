@@ -410,6 +410,7 @@ export {
   getDocumentUploadMaxSizeMb,
   createDocumentReference,
   saveDocument,
+  saveDocuments,
   type DocumentReferencePage,
   type DocumentViewModel,
   type DocumentType,

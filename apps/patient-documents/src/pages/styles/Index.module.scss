@@ -5,7 +5,10 @@
   display: flex;
   flex-direction: column;
   gap: $spacing-05;
-  padding-block: $spacing-06;
+
+  // Extra space at the end clears the fixed documents footer, so scrolling to the bottom still
+  // shows the last row rather than tucking it behind the bar.
+  padding-block: $spacing-06 calc($spacing-06 + $spacing-11);
 
   // Patient banner side gutter (matches the Figma ~112px banner gutter).
   padding-inline: calc($spacing-12 + $spacing-05);

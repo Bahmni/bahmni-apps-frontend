@@ -121,39 +121,62 @@ export async function createDocumentReference(
   return post<DocumentReference>(DOCUMENT_REFERENCE_URL, documentReference);
 }
 
-// With encounterUuid, POST a single DocumentReference. Otherwise create the document encounter and
-// the DocumentReference together in one atomic EncounterBundle transaction.
-export async function saveDocument(input: SaveDocumentInput): Promise<unknown> {
-  if (input.encounterUuid) {
-    return createDocumentReference({
-      ...input,
-      encounterUuid: input.encounterUuid,
-    });
+// Saves a batch of documents that share one target, taken from the first input.
+// With encounterUuid, each document is an independent DocumentReference POST. Otherwise the new
+// document encounter and every DocumentReference go into a single atomic EncounterBundle
+// transaction — one encounter for the whole batch, since only one document encounter per visit is
+// read back when the documents are listed.
+export async function saveDocuments(
+  inputs: SaveDocumentInput[],
+): Promise<unknown> {
+  const [first] = inputs;
+  if (!first) {
+    return [];
   }
 
-  if (!input.createEncounterInVisit) {
+  const { encounterUuid } = first;
+  if (encounterUuid) {
+    return Promise.all(
+      inputs.map((input) =>
+        createDocumentReference({ ...input, encounterUuid }),
+      ),
+    );
+  }
+
+  if (!first.createEncounterInVisit) {
     throw new Error(
       'saveDocument requires either encounterUuid or createEncounterInVisit',
     );
   }
 
   const { visitUuid, encounterTypeUuid, encounterTypeDisplay } =
-    input.createEncounterInVisit;
+    first.createEncounterInVisit;
   const encounterPlaceholder = `urn:uuid:${generateUUID()}`;
   const encounter = buildDocumentEncounter(
-    input.patientUuid,
+    first.patientUuid,
     visitUuid,
     encounterTypeUuid,
     getUserLoginLocation().uuid,
     encounterTypeDisplay,
-    input.authorPractitionerUuid,
+    first.authorPractitionerUuid,
   );
-  const documentReference = buildDocumentReference(input, encounterPlaceholder);
 
   const bundle = createEncounterBundle([
     createBundleEntry(encounterPlaceholder, encounter, 'POST'),
-    createBundleEntry(`urn:uuid:${generateUUID()}`, documentReference, 'POST'),
+    ...inputs.map((input) =>
+      createBundleEntry(
+        `urn:uuid:${generateUUID()}`,
+        buildDocumentReference(input, encounterPlaceholder),
+        'POST',
+      ),
+    ),
   ]);
 
   return post<unknown>(ENCOUNTER_BUNDLE_URL, bundle);
+}
+
+// With encounterUuid, POST a single DocumentReference. Otherwise create the document encounter and
+// the DocumentReference together in one atomic EncounterBundle transaction.
+export async function saveDocument(input: SaveDocumentInput): Promise<unknown> {
+  return saveDocuments([input]);
 }

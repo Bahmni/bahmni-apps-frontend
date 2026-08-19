@@ -3,7 +3,11 @@ import { post } from '../../api';
 import { ENCOUNTER_BUNDLE_URL } from '../../encounterBundle';
 import { getUserLoginLocation } from '../../userService';
 import { DOCUMENT_REFERENCE_URL } from '../constants';
-import { createDocumentReference, saveDocument } from '../documentWriteService';
+import {
+  createDocumentReference,
+  saveDocument,
+  saveDocuments,
+} from '../documentWriteService';
 import { SaveDocumentInput } from '../models';
 
 jest.mock('../../api');
@@ -157,6 +161,76 @@ describe('documentWriteService', () => {
       await expect(saveDocument(baseInput)).rejects.toThrow(
         'saveDocument requires either encounterUuid or createEncounterInVisit',
       );
+      expect(mockedPost).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('saveDocuments', () => {
+    const secondInput: SaveDocumentInput = {
+      ...baseInput,
+      url: '100/doc-uuid__scan.png',
+      contentType: 'image/png',
+      title: 'scan.png',
+    };
+
+    it('POSTs one DocumentReference per document against an existing encounter', async () => {
+      await saveDocuments([
+        { ...baseInput, encounterUuid: 'enc-uuid' },
+        { ...secondInput, encounterUuid: 'enc-uuid' },
+      ]);
+
+      expect(mockedPost).toHaveBeenCalledTimes(2);
+      const urls = mockedPost.mock.calls.map(([url]) => url);
+      const titles = mockedPost.mock.calls.map(
+        ([, body]) => (body as DocumentReference).content?.[0].attachment.title,
+      );
+      expect(urls).toEqual([DOCUMENT_REFERENCE_URL, DOCUMENT_REFERENCE_URL]);
+      expect(titles).toEqual(['file.pdf', 'scan.png']);
+    });
+
+    it('creates a single encounter for the whole batch when the visit has none yet', async () => {
+      const createEncounterInVisit = {
+        visitUuid: 'visit-uuid',
+        encounterTypeUuid: 'enc-type-uuid',
+        encounterTypeDisplay: 'Patient Document',
+      };
+
+      await saveDocuments([
+        { ...baseInput, createEncounterInVisit },
+        { ...secondInput, createEncounterInVisit },
+      ]);
+
+      // One transaction: the encounter plus a DocumentReference per document, all pointing at the
+      // same bundle-local encounter placeholder. Several encounters in one visit would hide all but
+      // one of them from the documents list.
+      expect(mockedPost).toHaveBeenCalledTimes(1);
+      const [url, body] = mockedPost.mock.calls[0];
+      const bundle = body as {
+        entry: Array<{ fullUrl: string; resource: Record<string, unknown> }>;
+      };
+      expect(url).toBe(ENCOUNTER_BUNDLE_URL);
+      expect(bundle.entry).toHaveLength(3);
+
+      const [encounterEntry, ...documentEntries] = bundle.entry;
+      expect(encounterEntry.resource.resourceType).toBe('Encounter');
+      expect(
+        documentEntries.map(
+          (entry) =>
+            (entry.resource as unknown as DocumentReference).context
+              ?.encounter?.[0].reference,
+        ),
+      ).toEqual([encounterEntry.fullUrl, encounterEntry.fullUrl]);
+      expect(
+        documentEntries.map(
+          (entry) =>
+            (entry.resource as unknown as DocumentReference).content?.[0]
+              .attachment.title,
+        ),
+      ).toEqual(['file.pdf', 'scan.png']);
+    });
+
+    it('posts nothing for an empty batch', async () => {
+      await expect(saveDocuments([])).resolves.toEqual([]);
       expect(mockedPost).not.toHaveBeenCalled();
     });
   });

@@ -3,9 +3,8 @@
 @use "@carbon/react/scss/type" as *;
 @use "@carbon/react/scss/breakpoint" as *;
 
-// Narrower and more indented than the patient banner.
+// Shares the page gutter so it lines up with the patient banner above it.
 .documents {
-  margin-inline: calc($spacing-13 + $spacing-04);
   background: $layer-02;
   box-shadow: 0 2px 6px $shadow;
 
@@ -88,6 +87,32 @@
   .documents {
     margin-inline: 0;
   }
+}
+
+// Back to search on one end, Save on the other. Fixed rather than sticky so the bar sits on the
+// bottom edge of the screen whether or not the visit list is long enough to scroll; the page
+// reserves matching space at its end (see .page) so nothing hides behind it. Deliberately flat —
+// a top rule only, no card shadow.
+.footer {
+  position: fixed;
+  inset-block-end: 0;
+
+  // Held inside the page gutter so the bar — and the rule across its top — is exactly as wide as
+  // the upload widget above it, rather than running the full width of the window.
+  inset-inline: calc($spacing-12 + $spacing-05);
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: $spacing-05;
+
+  // Same inset as the rows, so the buttons line up with the content above them.
+  padding: $spacing-05 $spacing-06;
+
+  // No card treatment — a single rule separates it from the content scrolling behind it. The
+  // background stays opaque only so that content does not show through the bar.
+  background: $layer-02;
+  border-block-start: 1px solid $border-subtle-01;
 }
 
 .skeleton {

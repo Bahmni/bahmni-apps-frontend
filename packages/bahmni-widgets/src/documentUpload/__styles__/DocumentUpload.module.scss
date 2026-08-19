@@ -12,6 +12,16 @@
   flex-direction: column;
 }
 
+// A pending document is its row plus an optional note; a rule keeps consecutive ones apart.
+.pendingDocument {
+  display: flex;
+  flex-direction: column;
+
+  & + & {
+    border-block-start: 1px solid $border-subtle-01;
+  }
+}
+
 // Grid matches the saved-docs table so tile, dropdown and actions line up under the headers.
 .pendingRow {
   display: grid;
