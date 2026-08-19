@@ -65,6 +65,16 @@ export const useCreateVisit = () => {
 
     try {
       const createdVisit = await createVisitForPatient(patientUuid, visitType);
+
+      // A remount mid-click (see useIsCreatingVisit above) mounts a fresh
+      // useActiveVisit(patientUuid) query, firing its own
+      // checkIfActiveVisitExists GET. On a higher-latency backend that GET
+      // can resolve *after* this point and silently overwrite the "true" we
+      // set below with its stale "false". Cancelling it first guarantees
+      // our write always wins.
+      await queryClient.cancelQueries({
+        queryKey: ['hasActiveVisit', patientUuid],
+      });
       queryClient.setQueryData(['hasActiveVisit', patientUuid], true);
 
       if (encounterTypeUuid) {

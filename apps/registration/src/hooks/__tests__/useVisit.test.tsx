@@ -1,6 +1,6 @@
 import type { VisitType } from '@bahmni/services';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { renderHook, waitFor } from '@testing-library/react';
+import { act, renderHook, waitFor } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import {
   useActiveVisit,
@@ -259,6 +259,44 @@ describe('useVisit', () => {
       await result.current.createVisit(patientUuid, mockVisitType);
 
       expect(mockCreateVisitForPatient).not.toHaveBeenCalled();
+    });
+
+    it('should not let a stale checkIfActiveVisitExists response overwrite hasActiveVisit after createVisit has already set it to true', async () => {
+      let resolveCheckIfActiveVisitExists: (value: boolean) => void;
+      mockCheckIfActiveVisitExists.mockReturnValue(
+        new Promise((resolve) => {
+          resolveCheckIfActiveVisitExists = resolve;
+        }),
+      );
+
+      // Simulates the remounted VisitTypeSelector's useActiveVisit query,
+      // which starts fetching as soon as it mounts -- concurrently with
+      // createVisit below, exactly like the real remount scenario.
+      const { result: activeVisitResult } = renderHook(
+        () => useActiveVisit(patientUuid),
+        { wrapper },
+      );
+
+      const { result: createVisitResult } = renderHook(() => useCreateVisit(), {
+        wrapper,
+      });
+      await createVisitResult.current.createVisit(patientUuid, mockVisitType);
+
+      expect(queryClient.getQueryData(['hasActiveVisit', patientUuid])).toBe(
+        true,
+      );
+
+      // The stale GET -- fired before createVisit ran, on a slower
+      // backend -- resolves late with its now-outdated "false".
+      await act(async () => {
+        resolveCheckIfActiveVisitExists!(false);
+        await new Promise((resolve) => setTimeout(resolve, 0));
+      });
+
+      expect(queryClient.getQueryData(['hasActiveVisit', patientUuid])).toBe(
+        true,
+      );
+      expect(activeVisitResult.current.hasActiveVisit).toBe(true);
     });
   });
 
