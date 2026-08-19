@@ -420,6 +420,7 @@ describe('ObservationFormsPanel', () => {
             editOnly: 'observationForms',
             formName: 'Vitals',
             editEncounterUuid: 'encounter-uuid-1',
+            isCopyover: false,
             task: {
               resourceType: 'Task',
               basedOn: [{ reference: 'ServiceRequest/service-request-42' }],
