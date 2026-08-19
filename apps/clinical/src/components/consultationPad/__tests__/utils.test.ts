@@ -394,7 +394,7 @@ describe('captureUpdatedResources', () => {
     expect(captureUpdatedResources(entries).medications).toBe(true);
   });
 
-  it('flags immunizationHistory but not medications when cancelVaccination hasData', () => {
+  it('flags medications when cancelVaccination hasData', () => {
     const entries = [
       makeMockEntry('cancelVaccination', {
         hasData: jest.fn().mockReturnValue(true),
@@ -404,8 +404,8 @@ describe('captureUpdatedResources', () => {
     expect(captureUpdatedResources(entries)).toEqual({
       conditions: false,
       allergies: false,
-      medications: false,
-      immunizationHistory: true,
+      medications: true,
+      immunizationHistory: false,
       observationFormsWithBasedOn: undefined,
       serviceRequests: {},
     });
