@@ -179,7 +179,7 @@ export const UserGlobalAction = () => {
       >
         <UserAvatar id="user-icon" data-testid="user-icon-button-test-id" />
         {user?.display && (
-          <span className={styles.greeting}>
+          <span className={styles.greeting} title={user.display}>
             {t('USER_GLOBAL_ACTION_GREETING', {
               name: getFirstName(user.display),
             })}

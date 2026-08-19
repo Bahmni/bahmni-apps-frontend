@@ -5,8 +5,15 @@ import {
   AUDIT_LOG_EVENT_DETAILS,
   AuditEventType,
   dispatchAuditEvent,
+  hasPrivilege,
 } from '@bahmni/services';
-import { useNotification, UserGlobalAction } from '@bahmni/widgets';
+import {
+  useNotification,
+  UserGlobalAction,
+  useUserPrivilege,
+  DocumentPrintButton,
+  type PrintOption,
+} from '@bahmni/widgets';
 import { useRef, useState, useEffect, useMemo } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { AdditionalIdentifiersRef } from '../../components/forms/additionalIdentifiers/AdditionalIdentifiers';
@@ -39,13 +46,28 @@ const PatientRegister = () => {
     patientUuid: string;
   }>();
 
-  const [patientUuid, setPatientUuid] = useState<string | null>(
-    patientUuidFromUrl ?? null,
-  );
+  // Tracks a patient saved during this session, i.e. the /patient/new flow before
+  // its redirect lands. On /patient/:patientUuid the URL is authoritative and wins,
+  // so navigating between patients can never render the previous patient's uuid —
+  // not even for the render before effects flush.
+  const [savedPatientUuid, setSavedPatientUuid] = useState<string | null>(null);
+  const patientUuid = patientUuidFromUrl ?? savedPatientUuid;
 
   const { shouldShowAdditionalIdentifiers } = useAdditionalIdentifiers();
   const { relationshipTypes } = useRelationshipValidation();
   const { registrationConfig } = useRegistrationConfig();
+  const { userPrivileges, isLoading: privilegesLoading } = useUserPrivilege();
+
+  const filteredPrintOptions = useMemo<PrintOption[]>(() => {
+    if (privilegesLoading || !registrationConfig?.printOptions) return [];
+    // An option without `privileges` is unrestricted, so it must stay visible
+    // even when the user has no privileges at all (mirrors useFilteredExtensions).
+    return registrationConfig.printOptions.filter(
+      (option) =>
+        !option.privileges?.length ||
+        hasPrivilege(userPrivileges, option.privileges),
+    );
+  }, [registrationConfig, userPrivileges, privilegesLoading]);
 
   const patientProfileRef = useRef<ProfileRef>(null);
   const patientAddressRef = useRef<AddressInfoRef>(null);
@@ -67,10 +89,20 @@ const PatientRegister = () => {
     patientUuid: patientUuidFromUrl,
   });
 
-  const [metadata, setMetadata] = useState(initialMetadata);
+  const [metadata, setMetadata] = useState<typeof initialMetadata | undefined>(
+    initialMetadata,
+  );
 
   const photoUrl = patientDetails?.photo?.[0]?.url;
   const { patientPhoto } = usePatientPhoto({ photoUrl });
+
+  // The route element is keyed by path, not by patientUuid, so navigating from one
+  // patient to another reuses this component instance. Clear patient-scoped state
+  // on that change so the previous patient's details cannot linger on screen.
+  useEffect(() => {
+    setSavedPatientUuid(null);
+    setMetadata(undefined);
+  }, [patientUuidFromUrl]);
 
   useEffect(() => {
     if (initialMetadata) {
@@ -80,7 +112,7 @@ const PatientRegister = () => {
 
   useEffect(() => {
     if (metadata?.patientUuid) {
-      setPatientUuid(metadata.patientUuid);
+      setSavedPatientUuid(metadata.patientUuid);
     }
   }, [metadata]);
 
@@ -205,17 +237,16 @@ const PatientRegister = () => {
             [response.name?.[0]?.given?.join(' '), response.name?.[0]?.family]
               .filter(Boolean)
               .join(' ') || '';
-          setMetadata({
-            ...metadata,
-            patientName: displayName,
-          });
+          setMetadata(
+            (previous) => previous && { ...previous, patientName: displayName },
+          );
           patientRelationshipsRef.current?.removeDeletedRelationships();
           return response.id;
         }
       } else {
         const response = await createPatientMutation.mutateAsync(formData);
         if (response?.id) {
-          setPatientUuid(response.id);
+          setSavedPatientUuid(response.id);
           navigate(getPatientUrl(response.id));
           return response.id;
         }
@@ -226,7 +257,8 @@ const PatientRegister = () => {
     }
   };
 
-  const shouldShowActions = metadata?.patientUuid || patientUuidFromUrl == null;
+  const shouldShowActions =
+    Boolean(metadata?.patientUuid) || patientUuidFromUrl == null;
   const refs = useMemo<FormControlRefs>(
     () => ({
       profileRef: patientProfileRef,
@@ -356,6 +388,17 @@ const PatientRegister = () => {
                 >
                   {t('CREATE_PATIENT_SAVE')}
                 </Button>
+                {patientUuid && (
+                  <DocumentPrintButton
+                    printOptions={filteredPrintOptions}
+                    renderContext={{
+                      patientUuid,
+                      patientUUID: patientUuid,
+                    }}
+                    disabled={isSaving}
+                    data-testid="print-registration-card"
+                  />
+                )}
                 <RegistrationActions
                   extensionPointId="org.bahmni.registration.navigation"
                   onBeforeNavigate={handleSave}
