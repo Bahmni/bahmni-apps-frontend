@@ -86,8 +86,10 @@ export function captureUpdatedResources(entries: InputControl[]) {
     medications:
       hasData('medication') ||
       hasData('vaccination') ||
-      hasData('stopMedications'),
+      hasData('stopMedications') ||
+      hasData('cancelVaccination'),
     immunizationHistory:
+     hasData('cancelVaccination')||
       hasData('immunizationHistory') ||
       hasData('immunizationAdministration') ||
       hasData('immunizationWaiver'),

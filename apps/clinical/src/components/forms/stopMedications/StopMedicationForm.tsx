@@ -31,6 +31,7 @@ import {
 } from '../../../services/stopMedicationService';
 import { useStopMedicationStore } from '../../../stores/stopMedicationsStore';
 import { MEDICATIONS_CONFIG_URL } from '../medicationRequest/constants';
+import { CANCEL_VACCINATION_INPUT_CONTROL_KEY } from './constants';
 import medicationConfigSchema from '../medicationRequest/schema.json';
 import styles from './styles/StopMedicationForm.module.scss';
 
@@ -39,9 +40,12 @@ interface StopMedicationFormProps {
   inputControlConfig?: ClinicalInputControlConfig;
 }
 
+
 const StopMedicationForm: React.FC<StopMedicationFormProps> = React.memo(
   ({ encounterSessionStartContext, inputControlConfig }) => {
     const { t } = useTranslation();
+    const isCancelVaccination =
+      inputControlConfig?.type === CANCEL_VACCINATION_INPUT_CONTROL_KEY;
     const stopMedication = encounterSessionStartContext?.stopMedication as
       | MedicationRequest
       | undefined;
@@ -121,10 +125,6 @@ const StopMedicationForm: React.FC<StopMedicationFormProps> = React.memo(
       enabled: !!stopMedication?.id,
     });
 
-    // min = effectiveStartDate (medication start), max = today
-    // Scheduled (on-hold) meds: effectiveStartDate is future — cap min to today
-    // Memoized so the Date object references stay stable between re-renders and
-    // don't trigger unnecessary flatpickr minDate/maxDate updates.
     const isScheduled = stopMedication?.status === 'on-hold';
     const minStopDate = useMemo(() => {
       const today = new Date();
@@ -163,7 +163,11 @@ const StopMedicationForm: React.FC<StopMedicationFormProps> = React.memo(
         data-testid="stop-medication-form-tile"
       >
         <div className={styles.formTitle}>
-          {t('STOP_MEDICATION_FORM_TITLE')}
+          {t(
+            isCancelVaccination
+              ? 'CANCEL_VACCINATION_FORM_TITLE'
+              : 'STOP_MEDICATION_FORM_TITLE',
+          )}
         </div>
 
         <Grid condensed={false}>
@@ -189,8 +193,13 @@ const StopMedicationForm: React.FC<StopMedicationFormProps> = React.memo(
                 <DatePickerInput
                   id="stop-medication-date"
                   data-testid="stop-medication-date-input"
-                  labelText={t('STOP_MEDICATION_DATE_LABEL')}
+                  labelText={t(
+                    isCancelVaccination
+                      ? 'CANCEL_VACCINATION_DATE_LABEL'
+                      : 'STOP_MEDICATION_DATE_LABEL',
+                  )}
                   placeholder="dd/mm/yyyy"
+                  disabled={isCancelVaccination}
                   size="sm"
                   invalid={!!errors.stopDate}
                   invalidText={t(errors.stopDate ?? '')}
@@ -204,8 +213,16 @@ const StopMedicationForm: React.FC<StopMedicationFormProps> = React.memo(
               <Dropdown
                 id="stop-medication-reason"
                 data-testid="stop-medication-reason-dropdown"
-                titleText={t('STOP_MEDICATION_REASON_LABEL')}
-                label={t('STOP_MEDICATION_REASON_LABEL')}
+                titleText={t(
+                  isCancelVaccination
+                    ? 'CANCEL_VACCINATION_REASON_LABEL'
+                    : 'STOP_MEDICATION_REASON_LABEL',
+                )}
+                label={t(
+                  isCancelVaccination
+                    ? 'CANCEL_VACCINATION_REASON_LABEL'
+                    : 'STOP_MEDICATION_REASON_LABEL',
+                )}
                 items={stopReasons}
                 itemToString={(item: StopReason) => (item ? item.display : '')}
                 selectedItem={
@@ -241,15 +258,27 @@ const StopMedicationForm: React.FC<StopMedicationFormProps> = React.memo(
                     setHasNote(true);
                   }}
                 >
-                  {t('STOP_MEDICATION_ADD_NOTE')}
+                  {t(
+                    isCancelVaccination
+                      ? 'CANCEL_VACCINATION_ADD_NOTE'
+                      : 'STOP_MEDICATION_ADD_NOTE',
+                  )}
                 </Link>
               )}
               {hasNote && (
                 <TextAreaWClose
                   id="stop-medication-note"
                   data-testid="stop-medication-note"
-                  labelText={t('STOP_MEDICATION_NOTE_LABEL')}
-                  placeholder={t('STOP_MEDICATION_NOTE_PLACEHOLDER')}
+                  labelText={t(
+                    isCancelVaccination
+                      ? 'CANCEL_VACCINATION_NOTE_LABEL'
+                      : 'STOP_MEDICATION_NOTE_LABEL',
+                  )}
+                  placeholder={t(
+                    isCancelVaccination
+                      ? 'CANCEL_VACCINATION_NOTE_PLACEHOLDER'
+                      : 'STOP_MEDICATION_NOTE_PLACEHOLDER',
+                  )}
                   value={note}
                   onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => {
                     if (e.target.value.length <= 100) {
