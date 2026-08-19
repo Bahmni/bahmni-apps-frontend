@@ -85,27 +85,33 @@ export const useStopMedicationStore = create<StopMedicationState>(
       const cfg = state.fieldConfig;
       let isValid = true;
 
-      if (cfg.stopDate?.isVisible !== false && cfg.stopDate?.isMandatory) {
-        if (!state.stopDate) {
-          errors.stopDate = 'STOP_MEDICATION_DATE_REQUIRED';
-          isValid = false;
-        }
+      if (
+        cfg.stopDate?.isVisible !== false &&
+        cfg.stopDate?.isMandatory &&
+        !state.stopDate
+      ) {
+        errors.stopDate = 'STOP_MEDICATION_DATE_REQUIRED';
+        isValid = false;
       }
 
-      if (cfg.stopReason?.isVisible !== false && cfg.stopReason?.isMandatory) {
-        if (!state.stopReason) {
-          errors.stopReason = isCancelVaccination
-            ? 'CANCEL_VACCINATION_REASON_REQUIRED'
-            : 'STOP_MEDICATION_REASON_REQUIRED';
-          isValid = false;
-        }
+      if (
+        cfg.stopReason?.isVisible !== false &&
+        cfg.stopReason?.isMandatory &&
+        !state.stopReason
+      ) {
+        errors.stopReason = isCancelVaccination
+          ? 'CANCEL_VACCINATION_REASON_REQUIRED'
+          : 'STOP_MEDICATION_REASON_REQUIRED';
+        isValid = false;
       }
 
-      if (cfg.note?.isVisible !== false && cfg.note?.isMandatory) {
-        if (!state.note) {
-          errors.note = 'STOP_MEDICATION_NOTE_REQUIRED';
-          isValid = false;
-        }
+      if (
+        cfg.note?.isVisible !== false &&
+        cfg.note?.isMandatory &&
+        !state.note
+      ) {
+        errors.note = 'STOP_MEDICATION_NOTE_REQUIRED';
+        isValid = false;
       }
 
       set({ errors });

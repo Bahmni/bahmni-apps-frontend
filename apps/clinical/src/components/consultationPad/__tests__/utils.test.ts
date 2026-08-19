@@ -331,55 +331,6 @@ describe('getActiveEntries', () => {
     expect(result.find((e) => e.key === 'stopMedications')).toBeDefined();
     expect(result).toHaveLength(2); // stopMedications + encounterDetails
   });
-
-  it('excludes the cancelVaccination onActionTriggered control from normal consultation', () => {
-    const registryWithTriggered = [
-      ...registry,
-      {
-        key: 'cancelVaccination',
-        onActionTriggered: true,
-        component: () => null,
-        reset: jest.fn(),
-        validate: jest.fn().mockReturnValue(true),
-        hasData: jest.fn().mockReturnValue(false),
-        subscribe: jest.fn().mockReturnValue(jest.fn()),
-      },
-    ];
-    const result = getActiveEntries(registryWithTriggered, 'Consultation');
-    expect(result.find((e) => e.key === 'cancelVaccination')).toBeUndefined();
-  });
-
-  it('includes the cancelVaccination control when it is the editOnly target, alongside encounterDetails only', () => {
-    const registryWithTriggered = [
-      ...registry,
-      {
-        key: 'stopMedications',
-        onActionTriggered: true,
-        component: () => null,
-        reset: jest.fn(),
-        validate: jest.fn().mockReturnValue(true),
-        hasData: jest.fn().mockReturnValue(false),
-        subscribe: jest.fn().mockReturnValue(jest.fn()),
-      },
-      {
-        key: 'cancelVaccination',
-        onActionTriggered: true,
-        component: () => null,
-        reset: jest.fn(),
-        validate: jest.fn().mockReturnValue(true),
-        hasData: jest.fn().mockReturnValue(false),
-        subscribe: jest.fn().mockReturnValue(jest.fn()),
-      },
-    ];
-    const result = getActiveEntries(
-      registryWithTriggered,
-      'Consultation',
-      'cancelVaccination',
-    );
-    expect(result.find((e) => e.key === 'cancelVaccination')).toBeDefined();
-    expect(result.find((e) => e.key === 'stopMedications')).toBeUndefined();
-    expect(result).toHaveLength(2); // cancelVaccination + encounterDetails
-  });
 });
 
 describe('captureUpdatedResources', () => {

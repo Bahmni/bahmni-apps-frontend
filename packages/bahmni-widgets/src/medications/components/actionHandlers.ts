@@ -1,8 +1,7 @@
 import { MEDICATIONS_INPUT_CONTROL_KEY } from '@bahmni/services';
 import { MedicationRequest } from 'fhir/r4';
+import { CANCEL_VACCINATION_INPUT_CONTROL_KEY } from '../constants';
 import { MedicationAction } from '../models';
-
-const CANCEL_VACCINATION_INPUT_CONTROL_KEY = 'cancelVaccination';
 
 const handleStopAction = (
   action: MedicationAction,
