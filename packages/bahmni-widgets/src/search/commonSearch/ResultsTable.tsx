@@ -10,13 +10,10 @@ import {
   useState,
 } from 'react';
 import { useUserPrivilege } from '../../userPrivileges/useUserPrivilege';
+import { resolveNavigationURL } from '../../utils/urlUtils';
 import { ActionConfig, ResultFieldConfig } from './models';
 import styles from './styles/CommonSearchWidget.module.scss';
-import {
-  needsDisplayKey,
-  resolveNavigationURL,
-  resultTransforms,
-} from './utils';
+import { needsDisplayKey, resultTransforms } from './utils';
 
 interface ResultsTableProps {
   resultFields: ResultFieldConfig[];

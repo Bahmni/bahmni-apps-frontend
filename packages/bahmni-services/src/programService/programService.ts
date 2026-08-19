@@ -1,5 +1,6 @@
 import { get, post } from '../api';
 import { getDisplayNameForConcept } from '../conceptService';
+import { isDate } from '../date/date';
 import {
   PATIENT_PROGRAMS_URL,
   PATIENT_PROGRAMS_PAGE_URL,
@@ -135,12 +136,12 @@ export function getCurrentStateName(
 export function extractAttributes(
   enrollment: ProgramEnrollment,
   programAttributes: string[],
-): Record<string, string | null> {
+): Record<string, string | Date | null> {
   if (programAttributes.length === 0) {
     return {};
   }
 
-  const attributesMap: Record<string, string | null> = {};
+  const attributesMap: Record<string, string | Date | null> = {};
 
   for (const attributeName of programAttributes) {
     const foundAttribute = enrollment.attributes.find(
@@ -148,7 +149,11 @@ export function extractAttributes(
     );
     if (foundAttribute) {
       if (typeof foundAttribute.value === 'string') {
-        attributesMap[attributeName] = foundAttribute.value;
+        if (isDate(foundAttribute.value)) {
+          attributesMap[attributeName] = new Date(foundAttribute.value);
+        } else {
+          attributesMap[attributeName] = foundAttribute.value;
+        }
       } else {
         attributesMap[attributeName] = foundAttribute.value.name!.name;
       }
