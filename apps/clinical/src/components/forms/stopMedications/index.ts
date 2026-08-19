@@ -53,7 +53,7 @@ registerInputControl({
   onActionTriggered: true,
   component: StopMedicationForm,
   reset: () => useStopMedicationStore.getState().reset(),
-  validate: () => useStopMedicationStore.getState().validate(),
+  validate: () => useStopMedicationStore.getState().validate(true),
   hasData: () => useStopMedicationStore.getState().hasData(),
   subscribe: (cb) => useStopMedicationStore.subscribe(cb),
   createBundleEntries: createBundleEntriesForStopFlow,

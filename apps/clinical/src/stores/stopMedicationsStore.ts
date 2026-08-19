@@ -16,7 +16,7 @@ export interface StopMedicationState {
   setNote: (note: string) => void;
   setMedicationToStop: (medication: MedicationRequest | null) => void;
   setFieldConfig: (config: StopMedicationConfig) => void;
-  validate: () => boolean;
+  validate: (isCancelVaccination?: boolean) => boolean;
   hasData: () => boolean;
   reset: () => void;
 }
@@ -77,7 +77,7 @@ export const useStopMedicationStore = create<StopMedicationState>(
       });
     },
 
-    validate: () => {
+    validate: (isCancelVaccination = false) => {
       const state = get();
       if (!state.medicationToStop) return true;
 
@@ -94,7 +94,9 @@ export const useStopMedicationStore = create<StopMedicationState>(
 
       if (cfg.stopReason?.isVisible !== false && cfg.stopReason?.isMandatory) {
         if (!state.stopReason) {
-          errors.stopReason = 'STOP_MEDICATION_REASON_REQUIRED';
+          errors.stopReason = isCancelVaccination
+            ? 'CANCEL_VACCINATION_REASON_REQUIRED'
+            : 'STOP_MEDICATION_REASON_REQUIRED';
           isValid = false;
         }
       }

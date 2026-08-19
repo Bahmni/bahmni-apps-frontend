@@ -81,6 +81,24 @@ describe('stopMedications input control', () => {
     expect(getStopMedicationsControl()!.validate()).toBe(false);
   });
 
+  it('validate() sets STOP_MEDICATION_*_REQUIRED error keys', () => {
+    const store = useStopMedicationStore.getState();
+    store.setMedicationToStop({
+      resourceType: 'MedicationRequest',
+      id: 'med-1',
+      status: 'active',
+      intent: 'order',
+      subject: { reference: 'Patient/p-1' },
+    });
+    store.setStopDate(null as unknown as Date);
+
+    getStopMedicationsControl()!.validate();
+
+    const { errors } = useStopMedicationStore.getState();
+    expect(errors.stopDate).toBe('STOP_MEDICATION_DATE_REQUIRED');
+    expect(errors.stopReason).toBe('STOP_MEDICATION_REASON_REQUIRED');
+  });
+
   it('hasData() returns true when medicationToStop is set', () => {
     useStopMedicationStore.getState().setMedicationToStop({
       resourceType: 'MedicationRequest',
@@ -279,6 +297,21 @@ describe('cancelVaccination input control', () => {
       subject: { reference: 'Patient/p-1' },
     });
     expect(getCancelVaccinationControl()!.validate()).toBe(false);
+  });
+
+  it('validate() sets CANCEL_VACCINATION_REASON_REQUIRED, not STOP_MEDICATION_REASON_REQUIRED', () => {
+    useStopMedicationStore.getState().setMedicationToStop({
+      resourceType: 'MedicationRequest',
+      id: 'med-1',
+      status: 'active',
+      intent: 'order',
+      subject: { reference: 'Patient/p-1' },
+    });
+
+    getCancelVaccinationControl()!.validate();
+
+    const { errors } = useStopMedicationStore.getState();
+    expect(errors.stopReason).toBe('CANCEL_VACCINATION_REASON_REQUIRED');
   });
 
   it('hasData() returns true when medicationToStop is set', () => {
