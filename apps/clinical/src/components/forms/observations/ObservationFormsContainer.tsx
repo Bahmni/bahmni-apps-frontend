@@ -3,7 +3,7 @@ import {
   Icon,
   ICON_SIZE,
   InlineNotification,
-  DataTable,
+  Loading,
   MenuItemDivider,
 } from '@bahmni/design-system';
 import {
@@ -56,13 +56,6 @@ import {
 import EncounterDetails from '../encounterDetails/EncounterDetails';
 import styles from './styles/ObservationFormsContainer.module.scss';
 import { executeOnFormSaveEvent } from './utils/formEventExecutor';
-
-// Headers are never shown (the skeleton hides its header row) — only their
-// count matters, to size the number of skeleton columns rendered.
-const FORM_LOADING_SKELETON_COLUMNS = [
-  { key: 'field', header: '' },
-  { key: 'value', header: '' },
-];
 
 const AGE_DETAILS_DEFAULT: AgeDetails = {
   year: 0,
@@ -605,13 +598,14 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
         data-testid="observation-form-content"
       >
         {isLoadingMetadata || isPatientLoading ? (
-          <DataTable
-            columns={FORM_LOADING_SKELETON_COLUMNS}
-            rows={[]}
-            loading
-            ariaLabel={t('OBSERVATION_FORM_LOADING_METADATA')}
-            dataTestId="observation-form-loading"
-          />
+          <div className={styles.loadingWrapper}>
+            <Loading
+              description={t('OBSERVATION_FORM_LOADING_METADATA')}
+              role="status"
+              testId="observation-form-loading"
+              withOverlay={false}
+            />
+          </div>
         ) : error ? (
           <div>{error.message}</div>
         ) : formMetadata && patientUUID && patientContext ? (

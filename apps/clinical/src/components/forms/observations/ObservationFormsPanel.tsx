@@ -1,4 +1,4 @@
-import { DataTable } from '@bahmni/design-system';
+import { Loading } from '@bahmni/design-system';
 import { getObservationsFromFhir } from '@bahmni/form2-controls';
 import type { ObservationForm, Form2Observation } from '@bahmni/services';
 import {
@@ -17,17 +17,11 @@ import { usePinnedObservationForms } from '../../../hooks/usePinnedObservationFo
 import { useSubmittedEncounterForms } from '../../../hooks/useSubmittedEncounterForms';
 import { useObservationFormsStore } from '../../../stores/observationFormsStore';
 import ObservationForms from './ObservationForms';
+import styles from './styles/ObservationFormsContainer.module.scss';
 
 interface ObservationFormsPanelProps {
   encounterSessionStartContext?: EncounterSessionStartContext;
 }
-
-// Headers are never shown (the skeleton hides its header row) — only their
-// count matters, to size the number of skeleton columns rendered.
-const EDIT_FORM_LOADING_SKELETON_COLUMNS = [
-  { key: 'field', header: '' },
-  { key: 'value', header: '' },
-];
 
 const ObservationFormsPanel: React.FC<ObservationFormsPanelProps> = ({
   encounterSessionStartContext,
@@ -253,19 +247,20 @@ const ObservationFormsPanel: React.FC<ObservationFormsPanelProps> = ({
   ]);
 
   // In edit mode the add-form search panel must never appear. Show a loading
-  // skeleton while addForm() hasn't fired yet — the fetch it waits on can
+  // indicator while addForm() hasn't fired yet — the fetch it waits on can
   // take several seconds — then render nothing once it has: ConsultationPad
   // switches to ObservationFormsContainer directly as soon as viewingForm is set.
   if (isEditObservationFormsMode) {
     if (!viewingForm) {
       return (
-        <DataTable
-          columns={EDIT_FORM_LOADING_SKELETON_COLUMNS}
-          rows={[]}
-          loading
-          ariaLabel={t('OBSERVATION_FORM_LOADING_METADATA')}
-          dataTestId="edit-observation-form-loading"
-        />
+        <div className={styles.loadingWrapper}>
+          <Loading
+            description={t('OBSERVATION_FORM_LOADING_METADATA')}
+            role="status"
+            testId="edit-observation-form-loading"
+            withOverlay={false}
+          />
+        </div>
       );
     }
     return null;

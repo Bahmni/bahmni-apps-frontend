@@ -345,7 +345,7 @@ describe('ObservationFormsPanel', () => {
       ).setState = mockSetState;
     });
 
-    it('shows the table skeleton loader while the edit fetch is in flight (viewingForm not yet set)', () => {
+    it('shows the loading indicator while the edit fetch is in flight (viewingForm not yet set)', () => {
       jest
         .mocked(getObservationsBundleByEncounterUuid)
         .mockImplementation(() => new Promise(() => {}));
@@ -361,7 +361,7 @@ describe('ObservationFormsPanel', () => {
       );
 
       expect(
-        screen.getByTestId('edit-observation-form-loading-skeleton'),
+        screen.getByTestId('edit-observation-form-loading'),
       ).toBeInTheDocument();
     });
 

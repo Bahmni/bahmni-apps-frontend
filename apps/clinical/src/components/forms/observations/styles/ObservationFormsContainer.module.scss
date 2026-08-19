@@ -24,6 +24,15 @@
   width: 100%;
 }
 
+.loadingWrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  width: 100%;
+  padding: $spacing-08;
+}
+
 // Custom button spacing for form view
 .formViewActionArea {
   :global(.buttonSet) {

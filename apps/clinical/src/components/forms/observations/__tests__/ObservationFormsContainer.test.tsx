@@ -169,11 +169,9 @@ jest.mock('@bahmni/design-system', () => ({
       Icon
     </div>
   )),
-  DataTable: jest.fn(({ loading, ariaLabel, dataTestId }) =>
-    loading ? (
-      <div data-testid={`${dataTestId}-skeleton`} aria-label={ariaLabel} />
-    ) : null,
-  ),
+  Loading: jest.fn(({ description, testId }) => (
+    <div data-testid={testId} aria-label={description} />
+  )),
   InlineNotification: jest.fn(
     ({ kind, title, subtitle, onClose, hideCloseButton }) => (
       <div
@@ -672,7 +670,7 @@ describe('ObservationFormsContainer', () => {
       expect(screen.getByTestId('form2-container')).toBeInTheDocument();
     });
 
-    it('should show the table skeleton loader while metadata is loading, instead of the form container', () => {
+    it('should show the loading indicator while metadata is loading, instead of the form container', () => {
       mockUseObservationFormData.mockReturnValue({
         observations: [],
         handleFormDataChange: jest.fn(),
@@ -687,7 +685,7 @@ describe('ObservationFormsContainer', () => {
       );
 
       expect(
-        screen.getByTestId('observation-form-loading-skeleton'),
+        screen.getByTestId('observation-form-loading'),
       ).toBeInTheDocument();
       expect(screen.queryByTestId('form2-container')).not.toBeInTheDocument();
     });
