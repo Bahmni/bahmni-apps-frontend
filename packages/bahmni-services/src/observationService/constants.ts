@@ -24,5 +24,13 @@ export const FHIR_OBSERVATION_URL = (
   return url;
 };
 
-export const FHIR_OBSERVATIONS_BY_ENCOUNTER_URL = (encounterUUID: string) =>
-  `${OPENMRS_FHIR_R4}/Observation/$fetch-all?encounter=${encounterUUID}`;
+export const FHIR_OBSERVATIONS_BY_ENCOUNTER_URL = (
+  encounterUUID: string,
+  basedOn?: string,
+) => {
+  let url = `${OPENMRS_FHIR_R4}/Observation/$fetch-all?encounter=${encounterUUID}`;
+  if (basedOn) {
+    url += `&based-on=${basedOn}`;
+  }
+  return url;
+};

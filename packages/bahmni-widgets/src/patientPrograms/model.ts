@@ -18,3 +18,8 @@ export interface ProgramField {
   name: string;
   enableTranslation?: boolean;
 }
+
+export interface ProgramNavigationConfigEntry {
+  program: string;
+  navigationURL: string;
+}

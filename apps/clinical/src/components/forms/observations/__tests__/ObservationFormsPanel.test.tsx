@@ -345,6 +345,26 @@ describe('ObservationFormsPanel', () => {
       ).setState = mockSetState;
     });
 
+    it('shows the loading indicator while the edit fetch is in flight (viewingForm not yet set)', () => {
+      jest
+        .mocked(getObservationsBundleByEncounterUuid)
+        .mockImplementation(() => new Promise(() => {}));
+
+      render(
+        <ObservationFormsPanel
+          encounterSessionStartContext={{
+            editOnly: 'observationForms',
+            editFormName: 'Vitals',
+            editEncounterUuid: 'encounter-uuid-1',
+          }}
+        />,
+      );
+
+      expect(
+        screen.getByTestId('edit-observation-form-loading'),
+      ).toBeInTheDocument();
+    });
+
     it('fetches bundle and calls addForm when edit context is provided', async () => {
       const mockBundle = {
         entry: [{ resource: { resourceType: 'Observation', id: 'obs-1' } }],
@@ -372,11 +392,47 @@ describe('ObservationFormsPanel', () => {
       await waitFor(() => {
         expect(getObservationsBundleByEncounterUuid).toHaveBeenCalledWith(
           'encounter-uuid-1',
+          undefined,
         );
       });
 
       await waitFor(() => {
         expect(mockAddForm).toHaveBeenCalledWith(mockForm1);
+      });
+    });
+
+    it('passes the ServiceRequest id extracted from task.basedOn to the encounter fetch', async () => {
+      const mockBundle = {
+        entry: [{ resource: { resourceType: 'Observation', id: 'obs-1' } }],
+      };
+      jest
+        .mocked(getObservationsBundleByEncounterUuid)
+        .mockResolvedValue(mockBundle as never);
+      jest
+        .mocked(getObservationsFromFhir)
+        .mockReturnValue([
+          { concept: { uuid: 'concept-1' }, value: 42 },
+        ] as never);
+
+      render(
+        <ObservationFormsPanel
+          encounterSessionStartContext={{
+            editOnly: 'observationForms',
+            formName: 'Vitals',
+            editEncounterUuid: 'encounter-uuid-1',
+            task: {
+              resourceType: 'Task',
+              basedOn: [{ reference: 'ServiceRequest/service-request-42' }],
+            },
+          }}
+        />,
+      );
+
+      await waitFor(() => {
+        expect(getObservationsBundleByEncounterUuid).toHaveBeenCalledWith(
+          'encounter-uuid-1',
+          'service-request-42',
+        );
       });
     });
 

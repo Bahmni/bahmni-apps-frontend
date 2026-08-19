@@ -1,3 +1,4 @@
+import { Loading } from '@bahmni/design-system';
 import { getObservationsFromFhir } from '@bahmni/form2-controls';
 import type { ObservationForm, Form2Observation } from '@bahmni/services';
 import {
@@ -6,8 +7,9 @@ import {
   fetchFormUuidByObservationDate,
 } from '@bahmni/services';
 import { useActivePractitioner, usePatientUUID } from '@bahmni/widgets';
-import type { Bundle } from 'fhir/r4';
+import type { Bundle, Task } from 'fhir/r4';
 import React, { useEffect, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import type { EncounterSessionStartContext } from '../../../events/startConsultation';
 import { useClinicalAppData } from '../../../hooks/useClinicalAppData';
 import useObservationFormsSearch from '../../../hooks/useObservationFormsSearch';
@@ -15,6 +17,7 @@ import { usePinnedObservationForms } from '../../../hooks/usePinnedObservationFo
 import { useSubmittedEncounterForms } from '../../../hooks/useSubmittedEncounterForms';
 import { useObservationFormsStore } from '../../../stores/observationFormsStore';
 import ObservationForms from './ObservationForms';
+import styles from './styles/ObservationFormsContainer.module.scss';
 
 interface ObservationFormsPanelProps {
   encounterSessionStartContext?: EncounterSessionStartContext;
@@ -23,6 +26,7 @@ interface ObservationFormsPanelProps {
 const ObservationFormsPanel: React.FC<ObservationFormsPanelProps> = ({
   encounterSessionStartContext,
 }) => {
+  const { t } = useTranslation();
   const { user } = useActivePractitioner();
   const patientUUID = usePatientUUID();
   const { episodeOfCare } = useClinicalAppData();
@@ -36,6 +40,9 @@ const ObservationFormsPanel: React.FC<ObservationFormsPanelProps> = ({
   const isCopyover = encounterSessionStartContext?.isCopyover as
     | boolean
     | undefined;
+  const task = encounterSessionStartContext?.task as Task | undefined;
+  const basedOnRef = task?.basedOn?.[0]?.reference;
+  const basedOnId = basedOnRef?.split('/').pop() ?? undefined;
   const isEditObservationFormsMode =
     encounterSessionStartContext?.editOnly === 'observationForms';
   const isEditMode =
@@ -149,7 +156,7 @@ const ObservationFormsPanel: React.FC<ObservationFormsPanelProps> = ({
     if (editFetchSessionRef.current === sessionKey) return;
     editFetchSessionRef.current = sessionKey;
 
-    getObservationsBundleByEncounterUuid(editEncounterUuid)
+    getObservationsBundleByEncounterUuid(editEncounterUuid, basedOnId)
       .then(async (bundle) => {
         // getObservationsBundleByEncounterUuid fetches the WHOLE encounter's
         // observations — an encounter can carry multiple form submissions
@@ -252,6 +259,7 @@ const ObservationFormsPanel: React.FC<ObservationFormsPanelProps> = ({
     isEditObservationFormsMode,
     formName,
     editEncounterUuid,
+    basedOnId,
     isAllFormsLoading,
     isEditMode,
     isCopyoverMode,
@@ -260,10 +268,25 @@ const ObservationFormsPanel: React.FC<ObservationFormsPanelProps> = ({
     patientUUID,
   ]);
 
-  // In edit mode the add-form search panel must never appear.
-  // Return null while the FHIR fetch is in flight; once addForm() fires,
-  // ConsultationPad switches to ObservationFormsContainer directly.
-  if (isEditObservationFormsMode) return null;
+  // In edit mode the add-form search panel must never appear. Show a loading
+  // indicator while addForm() hasn't fired yet — the fetch it waits on can
+  // take several seconds — then render nothing once it has: ConsultationPad
+  // switches to ObservationFormsContainer directly as soon as viewingForm is set.
+  if (isEditObservationFormsMode) {
+    if (!viewingForm) {
+      return (
+        <div className={styles.loadingWrapper}>
+          <Loading
+            description={t('OBSERVATION_FORM_LOADING_METADATA')}
+            role="status"
+            testId="edit-observation-form-loading"
+            withOverlay={false}
+          />
+        </div>
+      );
+    }
+    return null;
+  }
 
   const handleFormSelect = (form: ObservationForm) => {
     addForm(form);

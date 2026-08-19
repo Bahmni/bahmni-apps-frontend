@@ -1,4 +1,4 @@
-import { Modal, SkeletonPlaceholder } from '@bahmni/design-system';
+import { DataTable, Modal } from '@bahmni/design-system';
 import {
   formatDateTime,
   getEncounterByUuid,
@@ -25,6 +25,13 @@ interface ViewFormDataProps {
   patientUuid: string;
   onClose: () => void;
 }
+
+// Headers are never shown (the skeleton hides its header row) — only their
+// count matters, to size the number of skeleton columns rendered.
+const VIEW_FORM_LOADING_SKELETON_COLUMNS = [
+  { key: 'field', header: '' },
+  { key: 'value', header: '' },
+];
 
 const ViewFormData: React.FC<ViewFormDataProps> = ({
   open,
@@ -168,7 +175,15 @@ const ViewFormData: React.FC<ViewFormDataProps> = ({
       testId="view-form-modal"
     >
       <Modal.Body>
-        {isLoading && <SkeletonPlaceholder className={styles.loader} />}
+        {isLoading && (
+          <DataTable
+            columns={VIEW_FORM_LOADING_SKELETON_COLUMNS}
+            rows={[]}
+            loading
+            ariaLabel={t('OBSERVATIONS_LOADING')}
+            dataTestId="view-form-loading"
+          />
+        )}
         {error && <div>{t('ERROR_LOADING_OBSERVATIONS')}</div>}
         {!isLoading && !error && encounterGroups.length === 0 && (
           <div>{t('NO_OBSERVATIONS_FOR_TASK')}</div>
