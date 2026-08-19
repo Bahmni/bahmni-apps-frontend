@@ -6,6 +6,6 @@ export const EXTENSION_HANDLERS: Record<
   LazyExoticComponent<ComponentType<{ extensions: SearchExtension[] }>>
 > = {
   'org.bahmni.registration.v2.search': lazy(
-    () => import('./extensions/searchHandler'),
+    () => import('./extensions/searchView'),
   ),
 };
