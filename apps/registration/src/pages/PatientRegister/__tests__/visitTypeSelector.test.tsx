@@ -105,6 +105,7 @@ describe('VisitTypeSelector', () => {
       activeVisitLabel?: string;
       onActiveVisitClick?: () => void;
       disabled?: boolean;
+      isLoading?: boolean;
     },
   ) => {
     const initialEntries = patientUuid
@@ -335,5 +336,32 @@ describe('VisitTypeSelector', () => {
 
     expect(button).toBeDisabled();
     expect(trigger).toBeDisabled();
+  });
+
+  it('disables the button and dropdown and shows a full-page loading overlay when isLoading prop is true', async () => {
+    renderComponent(undefined, { isLoading: true });
+
+    const button = await screen.findByRole('button', {
+      name: /Start OPD visit/i,
+    });
+    const trigger = await screen.findByRole('button', {
+      name: /Additional actions/i,
+    });
+
+    expect(button).toBeDisabled();
+    expect(trigger).toBeDisabled();
+    expect(
+      screen.getByTestId('start-visit-loading-overlay-test-id'),
+    ).toBeInTheDocument();
+  });
+
+  it('does not show the loading overlay when isLoading prop is false', async () => {
+    renderComponent();
+
+    await waitFor(() => expect(mockGetVisitTypes).toHaveBeenCalled());
+
+    expect(
+      screen.queryByTestId('start-visit-loading-overlay-test-id'),
+    ).not.toBeInTheDocument();
   });
 });
