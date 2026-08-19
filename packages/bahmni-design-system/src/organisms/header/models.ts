@@ -36,12 +36,17 @@ export interface HeaderGlobalAction {
  * Props for the Header component
  */
 export interface HeaderProps {
+  brandName?: string;
+  brandPrefix?: string;
+  brandHref?: string;
   breadcrumbItems?: HeaderBreadcrumbItem[];
   globalActions?: HeaderGlobalAction[];
+  globalFeatures?: ReactNode[];
   sideNavItems?: HeaderSideNavItem[];
   activeSideNavItemId?: string | null;
   onSideNavItemClick?: (itemId: string) => void;
   isRail?: boolean;
   ariaLabel?: string;
-  extraContent?: React.ReactNode;
+  extraContent?: ReactNode;
+  userMenu?: ReactNode;
 }

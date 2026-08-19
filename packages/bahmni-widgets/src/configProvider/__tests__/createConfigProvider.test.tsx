@@ -68,7 +68,6 @@ describe('createConfigProvider', () => {
       setup: () => mockQueryFn.mockResolvedValueOnce({ value: 'test' }),
       syncVisibleIds: [] as string[],
       expectedVisibleId: 'test-child',
-      expectedHiddenIds: [] as string[],
     },
     {
       description: 'shows loading state when config is being fetched',
@@ -81,11 +80,10 @@ describe('createConfigProvider', () => {
         ),
       syncVisibleIds: ['test-config-loader-test-id'],
       expectedVisibleId: 'test-child',
-      expectedHiddenIds: [] as string[],
     },
   ])(
     'should $description',
-    async ({ setup, syncVisibleIds, expectedVisibleId, expectedHiddenIds }) => {
+    async ({ setup, syncVisibleIds, expectedVisibleId }) => {
       setup();
 
       render(
@@ -101,14 +99,10 @@ describe('createConfigProvider', () => {
       await waitFor(() => {
         expect(screen.getByTestId(expectedVisibleId)).toBeInTheDocument();
       });
-
-      for (const id of expectedHiddenIds) {
-        expect(screen.queryByTestId(id)).not.toBeInTheDocument();
-      }
     },
   );
 
-  it('should show error UI and hide children when fetch fails', async () => {
+  it('should show error UI and trigger notification when fetch fails', async () => {
     mockQueryFn.mockRejectedValueOnce(new Error('Failed to fetch config'));
 
     render(
@@ -125,29 +119,16 @@ describe('createConfigProvider', () => {
       expect(
         screen.getByText('ERROR_CONFIG_GENERIC_MESSAGE'),
       ).toBeInTheDocument();
-    });
-    expect(screen.queryByTestId('test-child')).not.toBeInTheDocument();
-    expect(screen.getByTestId('test-config-error-test-id')).toHaveAttribute(
-      'aria-label',
-      'ERROR_CONFIG_TITLE',
-    );
-  });
-
-  it('should trigger error notification with config name when fetch fails', async () => {
-    mockQueryFn.mockRejectedValueOnce(new Error('Failed to fetch config'));
-
-    render(
-      <TestWrapper>
-        <TestChild />
-      </TestWrapper>,
-    );
-
-    await waitFor(() => {
       expect(mockAddNotification).toHaveBeenCalledWith({
         type: 'error',
         title: 'ERROR_CONFIG_TITLE',
         message: 'Failed to fetch config',
       });
     });
+    expect(screen.queryByTestId('test-child')).not.toBeInTheDocument();
+    expect(screen.getByTestId('test-config-error-test-id')).toHaveAttribute(
+      'aria-label',
+      'ERROR_CONFIG_TITLE',
+    );
   });
 });

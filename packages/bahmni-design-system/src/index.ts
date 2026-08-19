@@ -6,7 +6,7 @@ export {
   type BahmniThemeConfig,
 } from './utils/applyTheme';
 
-export { Close, Edit, TrashCan, Printer } from '@carbon/icons-react';
+export { Add, Close, Edit, TrashCan, Printer } from '@carbon/icons-react';
 
 export { ArrowRight, type ArrowRightProps } from './atoms/arrowRight';
 
@@ -146,6 +146,7 @@ export { ImageTile, type ImageTileProps } from './molecules/imageTile';
 export { FileTile, type FileTileProps } from './molecules/fileTile';
 export { VideoTile, type VideoTileProps } from './molecules/videoTile';
 export { ActionArea, type ActionAreaProps } from './molecules/actionArea';
+export { Menu } from './atoms/menu';
 export { MenuItem, type MenuItemProps } from './atoms/menuItem';
 export {
   MenuItemDivider,

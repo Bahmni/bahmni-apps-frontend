@@ -6,22 +6,30 @@ import {
   Column,
   SkeletonText,
 } from '@bahmni/design-system';
-import {
-  useTranslation,
-  formatDateTime,
-  type Provider,
-} from '@bahmni/services';
+import { useTranslation, type Provider } from '@bahmni/services';
 import { useActivePractitioner, usePatientUUID } from '@bahmni/widgets';
 import React, { useEffect, useMemo, useState } from 'react';
+import type { EncounterSessionStartContext } from '../../../events/startConsultation';
 import { useEncounterConcepts } from '../../../hooks/useEncounterConcepts';
 import { useLocations } from '../../../hooks/useLocations';
 import { usePatientVisit } from '../../../hooks/usePatientVisit';
 import { Concept } from '../../../models/encounterConcepts';
 import { OpenMRSLocation } from '../../../models/location';
+import type { InputControl as ClinicalInputControlConfig } from '../../../providers/clinicalConfig/models';
 import { useEncounterDetailsStore } from '../../../stores';
 import styles from './styles/EncounterDetails.module.scss';
 
-const EncounterDetails: React.FC = () => {
+export interface EncounterDetailsProps {
+  encounterSessionStartContext?: EncounterSessionStartContext;
+  inputControlConfig?: ClinicalInputControlConfig;
+}
+
+const EncounterDetails: React.FC<EncounterDetailsProps> = ({
+  encounterSessionStartContext,
+  inputControlConfig,
+}) => {
+  const isVisitActive =
+    (encounterSessionStartContext?.isVisitActive as boolean) ?? true;
   const { t } = useTranslation();
   const practitionerState = useActivePractitioner();
 
@@ -31,7 +39,7 @@ const EncounterDetails: React.FC = () => {
     activeVisit,
     loading: loadingActiveVisit,
     error: activeVisitError,
-  } = usePatientVisit(patientUUID);
+  } = usePatientVisit(isVisitActive ? patientUUID : null);
   const {
     locations,
     loading: loadingLocations,
@@ -56,6 +64,7 @@ const EncounterDetails: React.FC = () => {
     selectedVisitType,
     encounterParticipants,
     consultationDate,
+    isConsultationDateReady,
     requestedEncounterType,
     isError,
     setSelectedLocation,
@@ -78,19 +87,32 @@ const EncounterDetails: React.FC = () => {
     [practitioner],
   );
 
-  const formattedDate = useMemo(
-    () => formatDateTime(consultationDate, t),
-    [consultationDate],
-  );
+  const filteredVisitTypes = useMemo(() => {
+    const allowedVisitTypes =
+      (inputControlConfig?.metadata?.allowedVisitTypes as string[]) ?? [];
+
+    if (isVisitActive || !allowedVisitTypes?.length) {
+      return encounterConcepts?.visitTypes ?? [];
+    }
+    return (
+      encounterConcepts?.visitTypes?.filter((v) =>
+        allowedVisitTypes.includes(v.name),
+      ) ?? []
+    );
+  }, [isVisitActive, inputControlConfig, encounterConcepts?.visitTypes]);
 
   const allLoadingStates = useMemo(
-    () => ({
-      loadingLocations,
-      loadingEncounterConcepts,
-      loadingPractitioner,
-      loadingActiveVisit,
-    }),
+    () =>
+      isVisitActive
+        ? {
+            loadingLocations,
+            loadingEncounterConcepts,
+            loadingPractitioner,
+            loadingActiveVisit,
+          }
+        : { loadingLocations, loadingEncounterConcepts, loadingPractitioner },
     [
+      isVisitActive,
       loadingLocations,
       loadingEncounterConcepts,
       loadingPractitioner,
@@ -117,33 +139,41 @@ const EncounterDetails: React.FC = () => {
       : undefined;
 
     if (targetName && !match) {
-      setIsEncounterTypeNotFound(true);
+      if (isVisitActive) setIsEncounterTypeNotFound(true);
       return;
     }
 
     setIsEncounterTypeNotFound(false);
     setSelectedEncounterType(match ?? encounterConcepts.encounterTypes[0]);
   }, [
+    isVisitActive,
     encounterConcepts?.encounterTypes,
     selectedEncounterType,
     requestedEncounterType,
     setSelectedEncounterType,
   ]);
 
-  // Initialize visit type from active visit
   useEffect(() => {
-    if (encounterConcepts?.visitTypes && activeVisit && !selectedVisitType) {
-      const activeVisitId = activeVisit.type?.[0]?.coding?.[0]?.code;
-      if (activeVisitId) {
-        const visitType = encounterConcepts.visitTypes.find(
-          (item) => item.uuid === activeVisitId,
-        );
-        if (visitType) {
-          setSelectedVisitType(visitType);
+    if (isVisitActive) {
+      if (encounterConcepts?.visitTypes && activeVisit && !selectedVisitType) {
+        const activeVisitId = activeVisit.type?.[0]?.coding?.[0]?.code;
+        if (activeVisitId) {
+          const visitType = encounterConcepts.visitTypes.find(
+            (item) => item.uuid === activeVisitId,
+          );
+          if (visitType) {
+            setSelectedVisitType(visitType);
+          }
         }
       }
+      return;
+    }
+    if (filteredVisitTypes.length > 0 && !selectedVisitType) {
+      setSelectedVisitType(filteredVisitTypes[0]);
     }
   }, [
+    isVisitActive,
+    filteredVisitTypes,
     encounterConcepts?.visitTypes,
     activeVisit,
     selectedVisitType,
@@ -157,11 +187,18 @@ const EncounterDetails: React.FC = () => {
     }
   }, [practitioner, encounterParticipants.length, setEncounterParticipants]);
 
-  // Update store with activeVisit and error
   useEffect(() => {
-    setActiveVisit(activeVisit ?? null);
-    setActiveVisitError(activeVisitError ?? null);
-  }, [activeVisit, activeVisitError, setActiveVisit, setActiveVisitError]);
+    if (isVisitActive) {
+      setActiveVisit(activeVisit ?? null);
+      setActiveVisitError(activeVisitError ?? null);
+    }
+  }, [
+    isVisitActive,
+    activeVisit,
+    activeVisitError,
+    setActiveVisit,
+    setActiveVisitError,
+  ]);
 
   /**
    * Updates the form ready state based on multiple criteria.
@@ -178,6 +215,7 @@ const EncounterDetails: React.FC = () => {
    *    - encounterParticipants (at least one)
    */
   useEffect(() => {
+    if (!isVisitActive) return;
     // Check all loading states are false
     const isAllDataLoaded = Object.values(allLoadingStates).every(
       (loading) => !loading,
@@ -201,6 +239,7 @@ const EncounterDetails: React.FC = () => {
 
     setEncounterDetailsFormReady(isFormReady);
   }, [
+    isVisitActive,
     allLoadingStates,
     isError,
     selectedLocation,
@@ -234,10 +273,11 @@ const EncounterDetails: React.FC = () => {
       !!locationsError ||
         !!encounterConceptsError ||
         !!practitionerError ||
-        !!activeVisitError ||
+        (isVisitActive && !!activeVisitError) ||
         isEncounterTypeNotFound,
     );
   }, [
+    isVisitActive,
     setIsError,
     locationsError,
     encounterConceptsError,
@@ -296,10 +336,18 @@ const EncounterDetails: React.FC = () => {
             data-testid="visit-type-dropdown"
             titleText={t('VISIT_TYPE')}
             label={t('SELECT_VISIT_TYPE')}
-            items={encounterConcepts?.visitTypes ?? []}
+            items={filteredVisitTypes}
             itemToString={(item: Concept) => item?.name ?? ''}
-            initialSelectedItem={selectedVisitType}
-            disabled
+            selectedItem={isVisitActive ? undefined : selectedVisitType}
+            initialSelectedItem={isVisitActive ? selectedVisitType : undefined}
+            onChange={
+              isVisitActive
+                ? undefined
+                : ({ selectedItem }: { selectedItem: Concept | null }) => {
+                    if (selectedItem) setSelectedVisitType(selectedItem);
+                  }
+            }
+            disabled={isVisitActive}
             size="md"
           />
         </FormField>
@@ -327,16 +375,24 @@ const EncounterDetails: React.FC = () => {
       </Column>
 
       <Column sm={4} md={8} lg={5} className={styles.column}>
-        <DatePicker datePickerType="single" data-testid="encounter-date-picker">
-          <DatePickerInput
-            id="encounter-date-picker-input"
-            data-testid="encounter-date-picker-input"
-            title={t('ENCOUNTER_DATE')}
-            labelText={t('ENCOUNTER_DATE')}
-            defaultValue={formattedDate.formattedResult}
-            disabled
-          />
-        </DatePicker>
+        <FormField
+          isLoading={!isConsultationDateReady}
+          placeholder={<DropdownPlaceholder />}
+        >
+          <DatePicker
+            datePickerType="single"
+            data-testid="encounter-date-picker"
+            value={consultationDate}
+          >
+            <DatePickerInput
+              id="encounter-date-picker-input"
+              data-testid="encounter-date-picker-input"
+              title={t('ENCOUNTER_DATE')}
+              labelText={t('ENCOUNTER_DATE')}
+              disabled
+            />
+          </DatePicker>
+        </FormField>
       </Column>
     </Grid>
   );

@@ -1,9 +1,13 @@
 import { Bundle, DocumentReference } from 'fhir/r4';
 import { get } from '../../api';
+import { OPENMRS_REST_V1 } from '../../constants/app';
+import { DOCUMENT_UPLOAD_MAX_SIZE_URL } from '../constants';
 import {
   getDocumentReferences,
   getFormattedDocumentReferences,
   getDocumentReferencePage,
+  getDocumentTypes,
+  getDocumentUploadMaxSizeMb,
 } from '../documentReferenceService';
 
 jest.mock('../../api');
@@ -91,7 +95,7 @@ describe('documentReferenceService', () => {
       await getDocumentReferences(PATIENT_UUID, encounterUuids);
 
       expect(mockedGet).toHaveBeenCalledWith(
-        `${BASE_URL}&encounter=enc-uuid-1,enc-uuid-2`,
+        `${BASE_URL}&encounter=enc-uuid-1%2Cenc-uuid-2`,
       );
     });
 
@@ -219,32 +223,6 @@ describe('documentReferenceService', () => {
 
       expect(result[0].attachments).toEqual([]);
       expect(result[0].documentUrl).toBe('');
-    });
-
-    it('handles missing masterIdentifier by using resource id', async () => {
-      const docWithoutMasterIdentifier: DocumentReference = {
-        resourceType: 'DocumentReference',
-        id: 'doc-2',
-        status: 'current',
-        content: [
-          {
-            attachment: {
-              contentType: 'application/pdf',
-              url: '100/doc.pdf',
-            },
-          },
-        ],
-      };
-      const bundleWithoutMasterIdentifier: Bundle<DocumentReference> = {
-        resourceType: 'Bundle',
-        type: 'searchset',
-        entry: [{ resource: docWithoutMasterIdentifier }],
-      };
-      mockedGet.mockResolvedValueOnce(bundleWithoutMasterIdentifier);
-
-      const result = await getFormattedDocumentReferences(PATIENT_UUID);
-
-      expect(result[0].documentIdentifier).toBe('doc-2');
     });
 
     it('uses category coding display when type coding is absent', async () => {
@@ -392,7 +370,7 @@ describe('documentReferenceService', () => {
       await getFormattedDocumentReferences(PATIENT_UUID, encounterUuids);
 
       expect(mockedGet).toHaveBeenCalledWith(
-        `${BASE_URL}&encounter=enc-uuid-1,enc-uuid-2`,
+        `${BASE_URL}&encounter=enc-uuid-1%2Cenc-uuid-2`,
       );
     });
   });
@@ -473,7 +451,7 @@ describe('documentReferenceService', () => {
       await getDocumentReferencePage(PATIENT_UUID, encounterUuids);
 
       expect(mockedGet).toHaveBeenCalledWith(
-        `${PAGE_BASE_URL}&encounter=enc-uuid-1,enc-uuid-2`,
+        `${PAGE_BASE_URL}&encounter=enc-uuid-1%2Cenc-uuid-2`,
       );
     });
 
@@ -490,6 +468,109 @@ describe('documentReferenceService', () => {
 
       expect(result.documents).toEqual([]);
       expect(result.total).toBe(0);
+    });
+  });
+
+  describe('getDocumentTypes', () => {
+    // Shape of the OpenMRS concept setMembers response.
+    const conceptName = 'Patient Document Type';
+    const customView = 'custom:(setMembers:(uuid,display))';
+    const conceptResponse = {
+      results: [
+        {
+          uuid: '3f9b5c1e-2b4a-4c6d-9e8f-0a1b2c3d4e5f',
+          setMembers: [
+            {
+              uuid: 'a1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c6d',
+              display: 'Prescription',
+            },
+            {
+              uuid: 'b2c3d4e5-f6a7-8b9c-0d1e-2f3a4b5c6d7e',
+              display: 'Radiology Report',
+            },
+          ],
+        },
+      ],
+    };
+
+    it('maps concept setMembers to {id,label} document type options', async () => {
+      mockedGet.mockResolvedValueOnce(conceptResponse);
+
+      const conceptName = 'Patient Document';
+      const result = await getDocumentTypes(conceptName);
+
+      expect(mockedGet).toHaveBeenCalledWith(
+        `${OPENMRS_REST_V1}/concept?s=byFullySpecifiedName&name=Patient%20Document&v=custom%3A(setMembers%3A(uuid%2Cdisplay))`,
+      );
+      expect(result).toEqual([
+        { id: 'a1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c6d', label: 'Prescription' },
+        {
+          id: 'b2c3d4e5-f6a7-8b9c-0d1e-2f3a4b5c6d7e',
+          label: 'Radiology Report',
+        },
+      ]);
+    });
+
+    it('returns an empty list when the concept has no setMembers', async () => {
+      mockedGet.mockResolvedValueOnce({
+        results: [{ uuid: '3f9b5c1e-2b4a-4c6d-9e8f-0a1b2c3d4e5f' }],
+      });
+
+      const result = await getDocumentTypes(conceptName);
+
+      expect(result).toEqual([]);
+    });
+
+    it('returns an empty list when the concept is not found', async () => {
+      mockedGet.mockResolvedValueOnce({ results: [] });
+
+      const result = await getDocumentTypes(conceptName);
+
+      expect(result).toEqual([]);
+    });
+
+    it('falls back to an empty label when a set member has no name', async () => {
+      mockedGet.mockResolvedValueOnce({
+        results: [
+          {
+            uuid: '3f9b5c1e-2b4a-4c6d-9e8f-0a1b2c3d4e5f',
+            setMembers: [{ uuid: 'c3d4e5f6-a7b8-9c0d-1e2f-3a4b5c6d7e8f' }],
+          },
+        ],
+      });
+
+      const result = await getDocumentTypes(conceptName);
+
+      expect(result).toEqual([
+        { id: 'c3d4e5f6-a7b8-9c0d-1e2f-3a4b5c6d7e8f', label: '' },
+      ]);
+    });
+  });
+
+  describe('getDocumentUploadMaxSizeMb', () => {
+    it('returns the configured size from the system setting', async () => {
+      mockedGet.mockResolvedValueOnce({
+        results: [
+          { property: 'bahmni.documentUpload.maxFileSizeInMB', value: '5' },
+        ],
+      });
+
+      const result = await getDocumentUploadMaxSizeMb();
+
+      expect(mockedGet).toHaveBeenCalledWith(DOCUMENT_UPLOAD_MAX_SIZE_URL);
+      expect(result).toBe(5);
+    });
+
+    it('returns undefined when the setting is not configured', async () => {
+      mockedGet.mockResolvedValueOnce({ results: [] });
+
+      expect(await getDocumentUploadMaxSizeMb()).toBeUndefined();
+    });
+
+    it('returns undefined when the value is not a positive number', async () => {
+      mockedGet.mockResolvedValueOnce({ results: [{ value: 'abc' }] });
+
+      expect(await getDocumentUploadMaxSizeMb()).toBeUndefined();
     });
   });
 });

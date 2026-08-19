@@ -122,7 +122,19 @@
               "type": "array",
               "description": "List of fields to display in program details",
               "items": {
-                "type": "string"
+                "type": "object",
+                "required": ["name"],
+                "additionalProperties": false,
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "description": "Field name to display"
+                  },
+                  "enableTranslation": {
+                    "type": "boolean",
+                    "description": "Whether to translate the value of this field"
+                  }
+                }
               }
             }
           }
@@ -211,6 +223,33 @@
         }
       }
     },
+    "extensions": {
+      "type": "array",
+      "description": "List of app-specific extension configurations",
+      "items": {
+        "type": "object",
+        "required": ["id", "extensionPointId", "translationKey"],
+        "additionalProperties": true,
+        "properties": {
+          "id": { "type": "string" },
+          "extensionPointId": { "type": "string" },
+          "translationKey": { "type": "string" },
+          "icon": { "type": "string" },
+          "requiredPrivileges": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "extensionParams": {
+            "type": "object",
+            "additionalProperties": true,
+            "properties": {
+              "searchHandler": { "type": "string" },
+              "configUrl": { "type": "string" }
+            }
+          }
+        }
+      }
+    },
     "consultationPad": {
       "type": "object",
       "description": "Configuration for consultation pad forms",
@@ -249,6 +288,13 @@
         "statDurationInMilliseconds": {
           "type": "number",
           "description": "Duration in milliseconds for which a STAT order is valid"
+        },
+        "allowedVisitTypes": {
+          "type": "array",
+          "description": "List of visit type names the user can choose from when starting a visit",
+          "items": {
+            "type": "string"
+          }
         },
         "inputControls": {
           "type": "array",

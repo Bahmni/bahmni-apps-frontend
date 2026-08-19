@@ -1,4 +1,5 @@
 import { updateProgramState, formatDateTime } from '@bahmni/services';
+import * as BahmniServices from '@bahmni/services';
 import {
   QueryClient,
   QueryClientProvider,
@@ -62,7 +63,13 @@ describe('ProgramDetails', () => {
       <ProgramDetails
         programUUID="test-program-uuid"
         config={{
-          fields: ['programName', 'startDate', 'endDate', 'state', 'outcome'],
+          fields: [
+            { name: 'programName' },
+            { name: 'startDate' },
+            { name: 'endDate' },
+            { name: 'state' },
+            { name: 'outcome' },
+          ],
         }}
       />
     </QueryClientProvider>
@@ -104,11 +111,11 @@ describe('ProgramDetails', () => {
           programUUID=""
           config={{
             fields: [
-              'programName',
-              'Registration Number',
-              'Treatment Category',
-              'startDate',
-              'state',
+              { name: 'programName' },
+              { name: 'Registration Number' },
+              { name: 'Treatment Category' },
+              { name: 'startDate' },
+              { name: 'state' },
             ],
           }}
         />
@@ -166,11 +173,11 @@ describe('ProgramDetails', () => {
           programUUID="test-program-uuid"
           config={{
             fields: [
-              'programName',
-              'Registration Number',
-              'Treatment Category',
-              'startDate',
-              'state',
+              { name: 'programName' },
+              { name: 'Registration Number' },
+              { name: 'Treatment Category' },
+              { name: 'startDate' },
+              { name: 'state' },
             ],
           }}
         />
@@ -207,6 +214,42 @@ describe('ProgramDetails', () => {
     expect(
       screen.getByTestId('program-details-Treatment Category-value-test-id'),
     ).toHaveTextContent('-');
+  });
+
+  it('should render the care manager value when present', () => {
+    (useQuery as jest.Mock).mockReturnValue({
+      data: {
+        id: 'program-1',
+        uuid: 'program-uuid-1',
+        programName: 'TB Program',
+        dateEnrolled: '2023-01-15T10:30:00.000+00:00',
+        dateCompleted: null,
+        outcomeName: null,
+        outcomeDetails: null,
+        currentStateName: null,
+        careManagerDisplay: 'Dr. Test',
+        attributes: {},
+        allowedStates: [],
+      },
+      error: null,
+      isError: false,
+      isLoading: false,
+    });
+
+    render(
+      <QueryClientProvider client={queryClient}>
+        <ProgramDetails
+          programUUID="test-program-uuid"
+          config={{
+            fields: [{ name: 'programName' }, { name: 'careManager' }],
+          }}
+        />
+      </QueryClientProvider>,
+    );
+
+    expect(
+      screen.getByTestId('program-details-careManager-value-test-id'),
+    ).toHaveTextContent('Dr. Test');
   });
 
   it('should not render description items when config fields is undefined', () => {
@@ -448,7 +491,10 @@ describe('ProgramDetails', () => {
     await userEvent.click(button);
 
     expect(
-      screen.getByTestId('patient-programs-table-loading-test-id'),
+      screen.getByTestId('program-details-loading-overlay-test-id'),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByTestId('patient-programs-tile-test-id'),
     ).toBeInTheDocument();
 
     await waitFor(() => {
@@ -511,6 +557,141 @@ describe('ProgramDetails', () => {
         title: 'PROGRAM_DETAILS_STATE_CHANGE_ERROR_TITLE',
         message: 'PROGRAM_DETAILS_ERROR_UPDATING_STATE',
       });
+    });
+  });
+
+  describe('renderAttributeValue', () => {
+    const mockQueryData = {
+      id: 'program-1',
+      uuid: 'program-uuid-1',
+      programName: 'TB Program',
+      dateEnrolled: '2023-01-15T10:30:00.000+00:00',
+      dateCompleted: null,
+      outcomeName: null,
+      outcomeDetails: null,
+      currentStateName: 'Treatment Phase',
+      attributes: {
+        treatmentCategory: 'categoryI',
+      },
+      allowedStates: [],
+    };
+
+    it('should call formatDateTime and render the result when attribute value is of Date type', () => {
+      mockFormatDateTime.mockReturnValue({ formattedResult: '04/02/2026' });
+
+      (useQuery as jest.Mock).mockReturnValue({
+        data: {
+          ...mockQueryData,
+          attributes: {
+            treatmentDate: new Date('2026-02-04T00:00:00.000Z'),
+          },
+        },
+        error: null,
+        isError: false,
+        isLoading: false,
+      });
+
+      render(
+        <QueryClientProvider client={queryClient}>
+          <ProgramDetails
+            programUUID="test-program-uuid"
+            config={{
+              fields: [{ name: 'treatmentDate' }],
+            }}
+          />
+        </QueryClientProvider>,
+      );
+
+      expect(mockFormatDateTime).toHaveBeenCalledWith(
+        new Date('2026-02-04T00:00:00.000Z'),
+        expect.any(Function),
+      );
+      expect(
+        screen.getByTestId('program-details-treatmentDate-value-test-id'),
+      ).toHaveTextContent('04/02/2026');
+    });
+
+    it('should render raw attribute value when field is not in enableTranslation', () => {
+      (useQuery as jest.Mock).mockReturnValue({
+        data: mockQueryData,
+        error: null,
+        isError: false,
+        isLoading: false,
+      });
+
+      render(
+        <QueryClientProvider client={queryClient}>
+          <ProgramDetails
+            programUUID="test-program-uuid"
+            config={{
+              fields: [{ name: 'treatmentCategory' }],
+            }}
+          />
+        </QueryClientProvider>,
+      );
+
+      expect(
+        screen.getByTestId('program-details-treatmentCategory-value-test-id'),
+      ).toHaveTextContent('categoryI');
+    });
+
+    it('should return "-" for missing attribute when field is in enableTranslation', () => {
+      (useQuery as jest.Mock).mockReturnValue({
+        data: mockQueryData,
+        error: null,
+        isError: false,
+        isLoading: false,
+      });
+
+      render(
+        <QueryClientProvider client={queryClient}>
+          <ProgramDetails
+            programUUID="test-program-uuid"
+            config={{
+              fields: [{ name: 'missingField', enableTranslation: true }],
+            }}
+          />
+        </QueryClientProvider>,
+      );
+
+      expect(
+        screen.getByTestId('program-details-missingField-value-test-id'),
+      ).toHaveTextContent('-');
+    });
+
+    it('should call t() with correct EOC key and render translated value when field is in enableTranslation', () => {
+      const mockT = jest.fn((key: string, fallback: string) => fallback);
+      const useTranslationSpy = jest
+        .spyOn(BahmniServices, 'useTranslation')
+        .mockReturnValue({ t: mockT });
+
+      (useQuery as jest.Mock).mockReturnValue({
+        data: mockQueryData,
+        error: null,
+        isError: false,
+        isLoading: false,
+      });
+
+      render(
+        <QueryClientProvider client={queryClient}>
+          <ProgramDetails
+            programUUID="test-program-uuid"
+            config={{
+              fields: [{ name: 'treatmentCategory', enableTranslation: true }],
+            }}
+          />
+        </QueryClientProvider>,
+      );
+
+      expect(mockT).toHaveBeenCalledWith(
+        'PROGRAM_ATTRIBUTE_VALUE_TREATMENT_CATEGORY_CATEGORY_I',
+        'categoryI',
+      );
+      expect(
+        screen.getByTestId('program-details-treatmentCategory-value-test-id'),
+      ).toHaveTextContent('categoryI');
+
+      useTranslationSpy.mockRestore();
     });
   });
 

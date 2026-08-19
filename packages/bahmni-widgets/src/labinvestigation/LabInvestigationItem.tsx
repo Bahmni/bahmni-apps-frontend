@@ -17,31 +17,40 @@ interface LabInvestigationItemProps {
   test: FormattedLabInvestigations;
   isOpen: boolean;
   hasProcessedReport: boolean;
-  reportId?: string;
 }
 const LabInvestigationItem: React.FC<LabInvestigationItemProps> = ({
   test,
   isOpen,
   hasProcessedReport,
-  reportId,
 }) => {
   const { t } = useTranslation();
   const [isAttachmentsModalOpen, setIsAttachmentsModalOpen] = useState(false);
 
+  const reportIds = test.reportIds ?? [];
   const {
-    data: diagnosticReportBundle,
+    data: diagnosticReportBundles,
     isLoading,
     isError,
   } = useQuery({
-    queryKey: ['diagnosticReportBundle', reportId],
-    queryFn: () => getDiagnosticReportBundle(reportId!),
-    enabled: isOpen && hasProcessedReport && !!reportId,
+    queryKey: ['diagnosticReportBundles', reportIds],
+    queryFn: async () => {
+      const bundles = await Promise.all(
+        reportIds.map((reportId) => getDiagnosticReportBundle(reportId)),
+      );
+      return bundles;
+    },
+    enabled: isOpen && hasProcessedReport && reportIds.length > 0,
   });
 
   const testResults = useMemo(() => {
-    if (!diagnosticReportBundle) return undefined;
-    return mapDiagnosticReportBundleToTestResults(diagnosticReportBundle, t);
-  }, [diagnosticReportBundle, t]);
+    if (!diagnosticReportBundles || diagnosticReportBundles.length === 0) {
+      return undefined;
+    }
+    const allResults = diagnosticReportBundles.flatMap(
+      (bundle) => mapDiagnosticReportBundleToTestResults(bundle, t) ?? [],
+    );
+    return allResults;
+  }, [diagnosticReportBundles, t]);
 
   const hasResults = Array.isArray(testResults) && testResults.length > 0;
 
@@ -122,7 +131,7 @@ const LabInvestigationItem: React.FC<LabInvestigationItemProps> = ({
 
   const viewAttachmentText =
     test.attachments &&
-    t('LAB_TEST_VIEW_ATTACHMENT', { count: test.attachments!.length });
+    t('LAB_TEST_VIEW_ATTACHMENT', { count: test.attachments.length });
 
   return (
     <div className={styles.labTest}>
@@ -174,7 +183,7 @@ const LabInvestigationItem: React.FC<LabInvestigationItemProps> = ({
         >
           <Modal.Body>
             <div className={styles.attachmentsContainer}>
-              {test.attachments!.map((attachment, index) => (
+              {test.attachments.map((attachment, index) => (
                 <AttachmentViewer
                   key={attachment.id || index}
                   attachment={attachment}

@@ -1,5 +1,11 @@
 import { Bundle, Task } from 'fhir/r4';
+import { TaskActionType } from '../../constants';
 import { TaskViewModel } from '../../models';
+
+// Shared task code constants
+export const VITALS_TASK_CODE = '6501d0f9-98da-44be-afc9-e2319453f0d6';
+export const LAB_TESTS_TASK_CODE = '7601d0f9-98da-44be-afc9-e2319453f0d7';
+export const FORM_NAME_INPUT_CODE = 'form-name-input-type';
 
 export const mockFHIRTasks: Task[] = [
   {
@@ -12,7 +18,7 @@ export const mockFHIRTasks: Task[] = [
       text: 'Record Vitals',
       coding: [
         {
-          code: '6501d0f9-98da-44be-afc9-e2319453f0d6',
+          code: VITALS_TASK_CODE,
           display: 'Vitals Form Task',
         },
       ],
@@ -40,7 +46,7 @@ export const mockFHIRTasks: Task[] = [
       text: 'Perform Physical Examination',
       coding: [
         {
-          code: '7601d0f9-98da-44be-afc9-e2319453f0d7',
+          code: LAB_TESTS_TASK_CODE,
           display: 'Physical Exam Task',
         },
       ],
@@ -149,6 +155,7 @@ export const mockTaskViewModels: TaskViewModel[] = mockFHIRTasks.map(
       task.partOf
         ?.map((ref) => ref.reference)
         .filter((ref): ref is string => !!ref) ?? [],
+    fhirResource: task,
   }),
 );
 
@@ -160,14 +167,34 @@ export const mockLeafTasks: TaskViewModel[] = [
 
 export const mockTasksControlConfig = {
   showOnlyLeafTasks: true,
-  taskTypes: [
-    '6501d0f9-98da-44be-afc9-e2319453f0d6',
-    '7601d0f9-98da-44be-afc9-e2319453f0d7',
-  ],
+  taskTypes: [VITALS_TASK_CODE, LAB_TESTS_TASK_CODE],
 };
 
 export const mockTasksControlConfigNoFitlers = {
   showOnlyLeafTasks: false,
+};
+
+export const mockTaskConfig = [
+  {
+    taskCode: VITALS_TASK_CODE,
+    actions: [
+      {
+        label: 'Fill Form',
+        type: TaskActionType.LAUNCH_FORM,
+        icon: 'edit',
+        requiredPrivileges: ['Edit Vitals'],
+        handlerConfig: {
+          formInputCode: FORM_NAME_INPUT_CODE,
+          encounterType: 'consultation',
+        },
+      },
+    ],
+  },
+];
+
+export const mockTasksControlConfigWithActions = {
+  showOnlyLeafTasks: false,
+  taskConfig: mockTaskConfig,
 };
 
 export const mockError = new Error('Failed to fetch tasks');

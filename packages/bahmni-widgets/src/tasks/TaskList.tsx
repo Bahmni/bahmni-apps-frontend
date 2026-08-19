@@ -5,14 +5,17 @@ import {
   getTasks,
   formatDateTime,
   camelToScreamingSnakeCase,
+  useSubscribeConsultationSaved,
 } from '@bahmni/services';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Task } from 'fhir/r4';
 import React, { useMemo, useCallback } from 'react';
 import { usePatientUUID } from '../hooks/usePatientUUID';
 import { WidgetProps } from '../registry';
+import TaskActions from './actions/TaskActions';
 import { TaskViewModel, TaskListConfig } from './models';
 import styles from './TaskList.module.scss';
+import TaskViewResults from './views/TaskViewResults';
 
 interface TaskListProps extends WidgetProps {
   orderReference?: string;
@@ -36,6 +39,7 @@ const mapTaskToViewModel = (
       task.partOf
         ?.map((ref) => ref.reference)
         .filter((ref): ref is string => !!ref) ?? [],
+    fhirResource: task,
   };
 };
 
@@ -106,6 +110,7 @@ const TaskList: React.FC<TaskListProps> = ({
 }) => {
   const { t } = useTranslation();
   const patientUuid = usePatientUUID();
+  const queryClient = useQueryClient();
 
   const taskListConfig = config as TaskListConfig | undefined;
   const showOnlyLeafTasks = taskListConfig?.showOnlyLeafTasks ?? false;
@@ -116,11 +121,26 @@ const TaskList: React.FC<TaskListProps> = ({
     encounterUuids,
   );
 
-  const { data, isLoading, error } = useQuery({
+  const { data, isLoading, error, refetch } = useQuery({
     queryKey: ['tasks', patientUuid, orderReference, encounterUuids],
     queryFn: () => fetchAndTransformTasks(t, patientUuid ?? '', orderReference),
     enabled: !!patientUuid && !emptyEncounterFilter,
   });
+
+  useSubscribeConsultationSaved(
+    (payload) => {
+      if (
+        payload.patientUUID === patientUuid &&
+        payload.updatedResources.observationFormsWithBasedOn === orderReference
+      ) {
+        refetch();
+        queryClient.removeQueries({
+          queryKey: ['observationsByServiceRequest', orderReference],
+        });
+      }
+    },
+    [patientUuid, refetch],
+  );
 
   const filteredTasks = useMemo(() => {
     if (!data || data.length === 0) {
@@ -141,15 +161,32 @@ const TaskList: React.FC<TaskListProps> = ({
     return tasks;
   }, [data, taskTypes, showOnlyLeafTasks]);
 
-  const columns = useMemo(
-    () => [
+  const columns = useMemo(() => {
+    const baseColumns = [
       { key: 'name', header: t('TASK_NAME') },
       { key: 'completedBy', header: t('TASK_COMPLETED_BY') },
       { key: 'completedOn', header: t('TASK_COMPLETED_ON') },
       { key: 'status', header: t('TASK_STATUS') },
-    ],
-    [t],
-  );
+    ];
+
+    const hasViews = taskListConfig?.taskConfig?.some(
+      (config) => config.views && config.views.length > 0,
+    );
+
+    if (hasViews) {
+      baseColumns.push({ key: 'results', header: t('TASK_RESULTS') });
+    }
+
+    const hasActions = taskListConfig?.taskConfig?.some(
+      (config) => config.actions && config.actions.length > 0,
+    );
+
+    if (hasActions) {
+      baseColumns.push({ key: 'actions', header: t('TASK_ACTIONS') });
+    }
+
+    return baseColumns;
+  }, [t, taskListConfig?.taskConfig]);
 
   const renderCell = useCallback(
     (task: TaskViewModel, columnKey: string) => {
@@ -168,11 +205,26 @@ const TaskList: React.FC<TaskListProps> = ({
               testId={`task-status-${task.id}`}
             />
           );
+        case 'results':
+          return (
+            taskListConfig?.taskConfig && (
+              <TaskViewResults
+                task={task}
+                taskConfig={taskListConfig.taskConfig}
+              />
+            )
+          );
+        case 'actions':
+          return (
+            taskListConfig?.taskConfig && (
+              <TaskActions task={task} taskConfig={taskListConfig.taskConfig} />
+            )
+          );
         default:
           return null;
       }
     },
-    [t],
+    [t, taskListConfig?.taskConfig],
   );
 
   if (emptyEncounterFilter) {

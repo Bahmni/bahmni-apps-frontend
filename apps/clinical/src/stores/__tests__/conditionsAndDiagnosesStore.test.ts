@@ -677,6 +677,32 @@ describe('useConditionsAndDiagnosesStore', () => {
       expect(result.current.selectedDiagnoses).toHaveLength(1);
     });
 
+    test('should carry conceptSystem through addDiagnosis and markAsCondition', () => {
+      const conceptWithSystem: ConceptSearch = {
+        conceptUuid: 'snomed-concept-1',
+        conceptName: 'Fracture',
+        matchedName: 'Fracture',
+        conceptSystem: 'http://snomed.info/sct',
+      };
+      const { result } = renderHook(() => useConditionsAndDiagnosesStore());
+
+      act(() => {
+        result.current.addDiagnosis(conceptWithSystem);
+      });
+
+      expect(result.current.selectedDiagnoses[0].conceptSystem).toBe(
+        'http://snomed.info/sct',
+      );
+
+      act(() => {
+        result.current.markAsCondition(conceptWithSystem.conceptUuid);
+      });
+
+      expect(result.current.selectedConditions[0].conceptSystem).toBe(
+        'http://snomed.info/sct',
+      );
+    });
+
     test('should return false with invalid diagnosis ID', () => {
       const { result } = renderHook(() => useConditionsAndDiagnosesStore());
 
