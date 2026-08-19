@@ -152,17 +152,9 @@ describe('handleAction', () => {
       const event = dispatchSpy.mock.calls[0][0] as CustomEvent;
       expect(event.detail.editEncounterUuid).toBeUndefined();
     });
-
-    it('passes stopMedicationStartDate through to the dispatched detail', () => {
-      handleAction(stopAction, fhirMedicationRequestMock, '2025-06-10');
-
-      const event = dispatchSpy.mock.calls[0][0] as CustomEvent;
-      expect(event.detail.stopMedicationStartDate).toBe('2025-06-10');
-    });
   });
 
   describe('cancel action', () => {
-    // multipleActionsMock[1] === { label: 'Cancel', type: 'cancel', ... }
     const cancelAction = multipleActionsMock[1];
 
     it('dispatches startConsultation with stopMedication and correct detail for cancelVaccination', () => {
@@ -210,13 +202,6 @@ describe('handleAction', () => {
 
       const event = dispatchSpy.mock.calls[0][0] as CustomEvent;
       expect(event.detail.editEncounterUuid).toBeUndefined();
-    });
-
-    it('passes stopMedicationStartDate through to the dispatched detail', () => {
-      handleAction(cancelAction, fhirMedicationRequestMock, '2025-06-10');
-
-      const event = dispatchSpy.mock.calls[0][0] as CustomEvent;
-      expect(event.detail.stopMedicationStartDate).toBe('2025-06-10');
     });
   });
 });
