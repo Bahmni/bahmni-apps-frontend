@@ -1,12 +1,12 @@
 import { Button, Close, Dropdown } from '@bahmni/design-system';
 import { useTranslation } from '@bahmni/services';
-import { CriterionInput } from './inputs';
+import { CriterionInput } from '../components';
 import {
   CriterionConfig,
   CriterionRow as CriterionRowState,
   CriterionValue,
-} from './models';
-import styles from './styles/CommonSearchWidget.module.scss';
+} from '../models';
+import styles from '../styles/CommonSearchWidget.module.scss';
 
 interface Props {
   row: CriterionRowState;

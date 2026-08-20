@@ -1,13 +1,13 @@
 import { act, render, screen } from '@testing-library/react';
-import DateCriterionInput from '../inputs/DateCriterionInput';
-import { RangeValue } from '../models';
+import DateCriterionInput from '../../components/DateCriterionInput';
+import { RangeValue } from '../../models';
 import {
   mockDateInput,
   mockFromValue,
   mockInvalidOrderRangeValue,
   mockRangeDateInput,
   mockRangeValue,
-} from './__mocks__/dateCriterionInputMocks';
+} from '../__mocks__/dateCriterionInputMocks';
 
 const mockOnChange = jest.fn();
 
