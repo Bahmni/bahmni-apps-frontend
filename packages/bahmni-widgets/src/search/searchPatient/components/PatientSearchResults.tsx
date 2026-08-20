@@ -16,15 +16,15 @@ import {
   useTranslation,
 } from '@bahmni/services';
 import { useNavigate } from 'react-router-dom';
-import { useNotification } from '../../notification';
-import { useUserPrivilege } from '../../userPrivileges/useUserPrivilege';
+import { useNotification } from '../../../notification';
+import { useUserPrivilege } from '../../../userPrivileges/useUserPrivilege';
 import {
   getAppointmentStatusClassName,
   handleActionButtonClick,
   shouldRenderActionButton,
-} from './appointmentSearchResultActionHandler';
-import styles from './styles/SearchPatient.module.scss';
-import { PatientSearchViewModel, formatPatientSearchResult } from './utils';
+} from '../actions/appointmentSearchResultActionHandler';
+import styles from '../styles/SearchPatient.module.scss';
+import { PatientSearchViewModel, formatPatientSearchResult } from '../utils';
 
 const CELL_IDS = {
   IDENTIFIER: 'identifier',

@@ -11,7 +11,7 @@ import {
 } from '@bahmni/services';
 import { isSameDay, isBefore, isAfter } from 'date-fns';
 import { NavigateFunction } from 'react-router-dom';
-import { PatientSearchViewModel } from './utils';
+import { PatientSearchViewModel } from '../utils';
 
 export const getAppointmentStatusClassName = (status: string): string => {
   switch (status?.toLowerCase()) {
