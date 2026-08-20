@@ -588,6 +588,50 @@ describe('TaskActions', () => {
         expect.objectContaining({ type: 'startConsultation' }),
       );
     });
+
+    it('shows the full-viewport loading overlay while the edit fetch is in flight, and clears it when done', async () => {
+      let resolveFetch: (value: never) => void = () => {};
+      mockGetPatientObservationsBundle.mockImplementation(
+        () =>
+          new Promise((resolve) => {
+            resolveFetch = resolve as (value: never) => void;
+          }),
+      );
+      const user = userEvent.setup();
+
+      render(
+        <TaskActions
+          task={mockTaskViewModelCompleted}
+          taskConfig={mockTaskConfigWithEditForm}
+        />,
+        { wrapper: createWrapper() },
+      );
+
+      await waitFor(() => {
+        expect(
+          screen.getByRole('button', { name: 'Edit Form' }),
+        ).toBeInTheDocument();
+      });
+
+      await user.click(screen.getByRole('button', { name: 'Edit Form' }));
+
+      const overlayTestId = `task-action-loading-overlay-${mockTaskViewModelCompleted.id}`;
+      await waitFor(() => {
+        expect(screen.getByTestId(overlayTestId)).toBeInTheDocument();
+      });
+
+      resolveFetch({
+        resourceType: 'Bundle',
+        type: 'searchset',
+        entry: [
+          { resource: buildFormObservation('obs-newest', FILL_ENCOUNTER_UUID) },
+        ],
+      } as never);
+
+      await waitFor(() => {
+        expect(screen.queryByTestId(overlayTestId)).not.toBeInTheDocument();
+      });
+    });
   });
 
   describe('Action Icons', () => {
