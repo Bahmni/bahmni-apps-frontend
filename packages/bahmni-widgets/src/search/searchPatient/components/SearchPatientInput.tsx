@@ -1,6 +1,6 @@
 import { Button, Dropdown, Search, Tag } from '@bahmni/design-system';
 import { useTranslation } from '@bahmni/services';
-import styles from './styles/SearchPatient.module.scss';
+import styles from '../styles/SearchPatient.module.scss';
 
 interface SearchPatientInputProps {
   buttonTitle: string;
