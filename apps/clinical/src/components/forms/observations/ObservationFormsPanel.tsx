@@ -88,8 +88,7 @@ const ObservationFormsPanel: React.FC<ObservationFormsPanelProps> = ({
       formName &&
       directFormMode &&
       !isAllFormsLoading &&
-      !isEditMode &&
-      !isCopyoverMode
+      !editEncounterUuid
     ) {
       useObservationFormsStore.getState().reset();
       const matchingForm = allForms.find(
@@ -105,7 +104,7 @@ const ObservationFormsPanel: React.FC<ObservationFormsPanelProps> = ({
     directFormMode,
     allForms,
     isAllFormsLoading,
-    isEditMode,
+    editEncounterUuid,
     addForm,
   ]);
 
