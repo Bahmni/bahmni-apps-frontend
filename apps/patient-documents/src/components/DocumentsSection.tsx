@@ -36,7 +36,6 @@ interface DocumentsSectionProps {
   documentEncounterType: DocumentEncounterType;
   topLevelConcept?: string | null;
   defaultOption?: string | null;
-  // Where the footer's back button goes; the patient search lives in another Bahmni app.
   searchHref?: string;
 }
 
@@ -62,23 +61,16 @@ export const DocumentsSection: React.FC<DocumentsSectionProps> = ({
     [documentEncounterType.uuid],
   );
 
-  // Each visit has its own upload widget; the footer Save drives them, so it needs a handle on
-  // every one of them plus a note of which ones actually hold a file waiting to be saved.
   const uploadHandles = useRef(new Map<string, DocumentUploadHandle>());
   const [visitsWithPendingDocument, setVisitsWithPendingDocument] = useState<
     string[]
   >([]);
   const [isSaving, setIsSaving] = useState(false);
   const [isLeaveConfirmationOpen, setIsLeaveConfirmationOpen] = useState(false);
-  // Set when the user has already confirmed they want to leave, so the guard below does not ask a
-  // second time — as the browser's own prompt — for a navigation we started ourselves.
   const isLeavingIntentionally = useRef(false);
 
   const hasUnsavedDocuments = visitsWithPendingDocument.length > 0;
 
-  // Every exit other than the footer's own back button — a breadcrumb, a reload, closing the tab —
-  // is handled by the browser, which allows nothing but its native prompt: once unloading starts a
-  // modal of ours can no longer be shown, let alone waited on.
   useEffect(() => {
     if (!hasUnsavedDocuments) {
       return;
@@ -88,15 +80,12 @@ export const DocumentsSection: React.FC<DocumentsSectionProps> = ({
         return;
       }
       event.preventDefault();
-      // Legacy browsers need a returnValue set to raise the prompt at all.
       event.returnValue = '';
     };
     window.addEventListener('beforeunload', confirmUnload);
     return () => window.removeEventListener('beforeunload', confirmUnload);
   }, [hasUnsavedDocuments]);
 
-  // The back button stays a real link (so it can be opened in a new tab); with unsaved documents
-  // the navigation is held back until the user confirms.
   const handleBackToSearch = (event: React.MouseEvent) => {
     if (!hasUnsavedDocuments) {
       return;
@@ -131,11 +120,6 @@ export const DocumentsSection: React.FC<DocumentsSectionProps> = ({
     (group, index) => group.visit.id ?? `visit-${index}`,
   );
 
-  // A visit that is no longer on the page cannot be holding anything unsaved, and a key left behind
-  // would arm the leave guard for good while making Save a silent no-op for it. Reconciled against
-  // the rendered visits rather than off the widget's ref being detached: the ref is rebuilt on every
-  // render (useImperativeHandle there is intentionally dependency-free), so a detach says nothing
-  // about whether the widget is really gone.
   const renderedVisitKeys = visitKeys.join('|');
   useEffect(() => {
     const stillRendered = new Set(renderedVisitKeys.split('|'));
@@ -145,8 +129,6 @@ export const DocumentsSection: React.FC<DocumentsSectionProps> = ({
     });
   }, [renderedVisitKeys]);
 
-  // Exactly one notification per Save, whatever it covered: every document of every visit, saved
-  // or failed, is counted into a single message rather than each upload announcing itself.
   const notifySaveOutcome = (summaries: DocumentSaveSummary[]) => {
     const savedCount = summaries.reduce(
       (total, summary) => total + summary.savedCount,
@@ -186,8 +168,6 @@ export const DocumentsSection: React.FC<DocumentsSectionProps> = ({
 
     addNotification({
       title: t('DOCUMENT_UPLOAD_SAVE_FAILED_TITLE'),
-      // A single failure shows the server's reason verbatim; a batch is only counted, since one
-      // message cannot carry a reason per file.
       message:
         failures.length === 1
           ? failures[0].message
@@ -201,8 +181,6 @@ export const DocumentsSection: React.FC<DocumentsSectionProps> = ({
   const handleSave = async () => {
     setIsSaving(true);
     try {
-      // save() never rejects — it reports per-document outcomes — so one failing visit cannot stop
-      // the others from being saved.
       const summaries = await Promise.all(
         visitsWithPendingDocument.map((visitKey) =>
           uploadHandles.current.get(visitKey)?.save(),
@@ -213,10 +191,6 @@ export const DocumentsSection: React.FC<DocumentsSectionProps> = ({
           (summary): summary is DocumentSaveSummary => !!summary,
         ),
       );
-      // One refresh for the whole save, and awaited before Save becomes available again: a visit
-      // whose document encounter was just created still reports none until the encounters are
-      // re-read, and saving into it again meanwhile would create a second encounter — of which only
-      // one is ever read back, hiding the documents attached to the other.
       await refetch();
     } finally {
       setIsSaving(false);

@@ -19,8 +19,6 @@ jest.mock('@bahmni/services', () => ({
 const mockAddNotification = jest.fn();
 const mockSave = jest.fn().mockResolvedValue({ savedCount: 1, failures: [] });
 
-// DocumentUpload has its own test suite; stub it here and expose the wiring we care about — the
-// save handle the footer calls and the pending flag that enables it.
 jest.mock('@bahmni/widgets', () => ({
   ...jest.requireActual('@bahmni/widgets'),
   useNotification: () => ({ addNotification: mockAddNotification }),
@@ -33,7 +31,6 @@ jest.mock('@bahmni/widgets', () => ({
     onPendingChange: (hasPendingDocument: boolean) => void;
     ref: Ref<{ save: () => Promise<unknown> }>;
   }) => {
-    // jest.mock factories cannot close over imports, so reach for the hook here instead.
     const { useImperativeHandle } = jest.requireActual('react');
     useImperativeHandle(ref, () => ({ save: mockSave }));
     return (
@@ -313,8 +310,6 @@ describe('DocumentsSection', () => {
   });
 
   it('keeps save unavailable until the refresh that updates the save target has landed', async () => {
-    // A visit whose document encounter was just created still reports none until the encounters are
-    // re-read; saving again in that window would create a second encounter and hide documents.
     let finishRefresh: () => void = () => {};
     mockRefetch.mockImplementationOnce(
       () =>
@@ -497,7 +492,6 @@ describe('DocumentsSection', () => {
     it('follows the back link straight away when nothing is unsaved', () => {
       renderSection();
 
-      // Not cancelled, so the browser is left to follow the href.
       expect(clickBackToSearch()).toBe(true);
       expect(isModalShown()).toBe(false);
     });
@@ -546,8 +540,6 @@ describe('DocumentsSection', () => {
 
       fireEvent.click(screen.getByText('Leave'));
 
-      // The browser fires beforeunload for the navigation we just started. Cancelling it here is
-      // what raises the native "Leave site?" prompt on top of the modal the user already answered.
       const unload = new Event('beforeunload', { cancelable: true });
       window.dispatchEvent(unload);
       expect(unload.defaultPrevented).toBe(false);
@@ -569,12 +561,10 @@ describe('DocumentsSection', () => {
         [];
       expect(confirmUnload).toBeDefined();
 
-      // A cancelled beforeunload is what makes the browser show its own prompt.
       const event = new Event('beforeunload', { cancelable: true });
       window.dispatchEvent(event);
       expect(event.defaultPrevented).toBe(true);
 
-      // Saving everything clears the guard again.
       fireEvent.click(screen.getAllByTestId('discard-file')[0]);
       expect(removeEventListener).toHaveBeenCalledWith(
         'beforeunload',

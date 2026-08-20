@@ -12,7 +12,6 @@
   flex-direction: column;
 }
 
-// A pending document is its row plus an optional note; a rule keeps consecutive ones apart.
 .pendingDocument {
   display: flex;
   flex-direction: column;

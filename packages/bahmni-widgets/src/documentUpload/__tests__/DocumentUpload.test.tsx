@@ -58,9 +58,6 @@ const CREATE_ENCOUNTER_TARGET = {
 
 const mockPendingChange = jest.fn();
 
-// Saving is driven by the consumer through the widget's ref, so the harness stands in for it: it
-// offers the save trigger the tests click and renders back the summary save() returned, which is
-// where the widget now reports outcomes instead of notifying.
 const Harness = ({
   onSaved,
   saveTarget,
@@ -223,7 +220,6 @@ describe('DocumentUpload', () => {
     fireEvent.click(screen.getByTestId('harness-save'));
 
     expect(await savedSummary()).toEqual({ savedCount: 1, failures: [] });
-    // The consumer aggregates one notification for the whole save; the widget stays quiet.
     expect(mockAddNotification).not.toHaveBeenCalled();
   });
 
@@ -449,7 +445,6 @@ describe('DocumentUpload', () => {
       expect(await screen.findAllByTestId('pending-document-row')).toHaveLength(
         3,
       );
-      // Nothing is uploaded until the consumer saves.
       expect(uploadDocument).not.toHaveBeenCalled();
     });
 
@@ -458,7 +453,6 @@ describe('DocumentUpload', () => {
       selectFiles(fileOf('scan.png'), fileOf('report.pdf', 'application/pdf'));
       await screen.findAllByTestId('pending-document-row');
 
-      // The second row's note must land on the second document only.
       fireEvent.click(screen.getAllByText('DOCUMENT_UPLOAD_ADD_NOTE')[1]);
       fireEvent.change(screen.getByTestId('document-note'), {
         target: { value: 'second file only' },
@@ -514,7 +508,6 @@ describe('DocumentUpload', () => {
         savedCount: 1,
         failures: [{ fileName: 'report.pdf', message: 'Upload rejected' }],
       });
-      // The saved one is gone from the list, the failed one stays for a retry.
       expect(screen.getAllByTestId('pending-document-row')).toHaveLength(1);
       expect(onSaved).toHaveBeenCalledTimes(1);
     });
@@ -575,7 +568,6 @@ describe('DocumentUpload', () => {
 
       fireEvent.click(screen.getByTestId('harness-save'));
 
-      // The payload is built when the save starts, so an edit accepted now would never be sent.
       await waitFor(() =>
         expect(screen.getByTestId('document-note')).toBeDisabled(),
       );
@@ -588,8 +580,6 @@ describe('DocumentUpload', () => {
     });
 
     it('reuses the stored bytes when retrying a failed save instead of uploading again', async () => {
-      // Set explicitly: an earlier test installs a mockImplementation that clearAllMocks leaves in
-      // place, so the default resolved value cannot be relied on here.
       uploadDocument.mockResolvedValue({ url: 'patient/stored-once.png' });
       saveDocument.mockRejectedValueOnce(new Error('Save rejected'));
       renderWidget();
@@ -603,7 +593,6 @@ describe('DocumentUpload', () => {
       });
       expect(uploadDocument).toHaveBeenCalledTimes(1);
 
-      // Retry: the bytes are already stored, so uploading again would just orphan the first copy.
       fireEvent.click(screen.getByTestId('harness-save'));
 
       await waitFor(() => expect(saveDocument).toHaveBeenCalledTimes(2));

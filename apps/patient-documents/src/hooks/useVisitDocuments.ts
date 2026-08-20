@@ -111,8 +111,6 @@ export const useVisitDocuments = (
       : undefined,
   }));
 
-  // Awaitable: a caller that has just created a document encounter must be able to wait until the
-  // encounters are re-read, because the save target for the next save is derived from them.
   const refetch = async () => {
     await Promise.all([encountersQuery.refetch(), documentsQuery.refetch()]);
   };

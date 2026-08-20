@@ -121,14 +121,6 @@ export async function createDocumentReference(
   return post<DocumentReference>(DOCUMENT_REFERENCE_URL, documentReference);
 }
 
-// Saves a batch of documents that share one patient and one target, both read from the first input
-// and enforced across the rest.
-// With encounterUuid the documents are POSTed as independent DocumentReferences, but the call is
-// all-or-nothing: it rejects as soon as one fails and does not report which of the others got
-// through, so a caller that needs per-document outcomes should call saveDocument per document
-// instead. Without encounterUuid the new document encounter and every DocumentReference go into a
-// single atomic EncounterBundle transaction — one encounter for the whole batch, since only one
-// document encounter per visit is read back when the documents are listed.
 export async function saveDocuments(
   inputs: SaveDocumentInput[],
 ): Promise<unknown> {
@@ -137,7 +129,6 @@ export async function saveDocuments(
     return [];
   }
 
-  // Silently attributing a document to another patient or encounter would be far worse than failing.
   const sharesTargetWithFirst = (input: SaveDocumentInput) =>
     input.patientUuid === first.patientUuid &&
     input.encounterUuid === first.encounterUuid &&
@@ -190,8 +181,6 @@ export async function saveDocuments(
   return post<unknown>(ENCOUNTER_BUNDLE_URL, bundle);
 }
 
-// With encounterUuid, POST a single DocumentReference. Otherwise create the document encounter and
-// the DocumentReference together in one atomic EncounterBundle transaction.
 export async function saveDocument(input: SaveDocumentInput): Promise<unknown> {
   return saveDocuments([input]);
 }

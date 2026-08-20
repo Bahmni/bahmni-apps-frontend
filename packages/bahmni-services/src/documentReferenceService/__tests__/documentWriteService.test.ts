@@ -200,9 +200,6 @@ describe('documentWriteService', () => {
         { ...secondInput, createEncounterInVisit },
       ]);
 
-      // One transaction: the encounter plus a DocumentReference per document, all pointing at the
-      // same bundle-local encounter placeholder. Several encounters in one visit would hide all but
-      // one of them from the documents list.
       expect(mockedPost).toHaveBeenCalledTimes(1);
       const [url, body] = mockedPost.mock.calls[0];
       const bundle = body as {
@@ -235,8 +232,6 @@ describe('documentWriteService', () => {
     });
 
     it('refuses a batch whose documents do not share one patient and target', async () => {
-      // Attributing a document to the wrong patient or encounter must fail loudly, not silently:
-      // the batch applies the first input's target to every document.
       await expect(
         saveDocuments([
           { ...baseInput, encounterUuid: 'enc-uuid' },

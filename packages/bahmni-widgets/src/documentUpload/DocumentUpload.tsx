@@ -35,7 +35,6 @@ import {
 import { renderDocumentTile } from './renderDocumentTile';
 import { isAcceptedFileType } from './utils';
 
-// An uploaded file (bytes stored, url returned) waiting for its DocumentReference.
 interface UploadedDocument {
   document: PendingDocument;
   url: string;
@@ -44,8 +43,6 @@ interface UploadedDocument {
 const messageOf = (error: unknown): string =>
   error instanceof Error ? error.message : String(error);
 
-// forwardRef rather than React 19's ref-as-prop: this package's peer range allows React 18, where a
-// `ref` prop never reaches a function component and the handle would silently stay empty.
 export const DocumentUpload = forwardRef<
   DocumentUploadHandle,
   DocumentUploadProps
@@ -77,8 +74,6 @@ export const DocumentUpload = forwardRef<
     [],
   );
   const [isSaving, setIsSaving] = useState(false);
-  // Own counter rather than the blob URL or the file name: the same file can be picked twice, and
-  // rows must stay tellable apart while they are edited, saved and removed.
   const nextPendingId = useRef(0);
 
   const defaultDocumentType =
@@ -94,8 +89,6 @@ export const DocumentUpload = forwardRef<
   const typeOf = (document: PendingDocument): DocumentType | null =>
     document.documentType ?? defaultDocumentType;
 
-  // Every mutation goes through a functional update, so a change that lands while a save is in
-  // flight is never clobbered by a list captured before the await.
   const updatePending = (id: string, patch: Partial<PendingDocument>) =>
     setPendingDocuments((current) =>
       current.map((document) =>
@@ -118,8 +111,6 @@ export const DocumentUpload = forwardRef<
     });
   };
 
-  // Reported from an effect keyed on the flag itself: the consumer hears about a transition once,
-  // and never re-renders us into a loop however it declares its callback.
   const hasPendingDocuments = pendingDocuments.length > 0;
   const onPendingChangeRef = useRef(onPendingChange);
   useEffect(() => {
@@ -129,8 +120,6 @@ export const DocumentUpload = forwardRef<
     onPendingChangeRef.current?.(hasPendingDocuments);
   }, [hasPendingDocuments]);
 
-  // Previews left over when the widget goes away (a visit dropping out of the list, say) would
-  // otherwise hold their blobs until the page is closed.
   const pendingDocumentsRef = useRef(pendingDocuments);
   useEffect(() => {
     pendingDocumentsRef.current = pendingDocuments;
@@ -177,7 +166,6 @@ export const DocumentUpload = forwardRef<
       });
     });
 
-    // One notification per reason, no matter how many files a selection got rejected for.
     if (unsupported.length > 0) {
       addNotification({
         title: t('DOCUMENT_UPLOAD_INVALID_TYPE_TITLE'),
@@ -215,10 +203,6 @@ export const DocumentUpload = forwardRef<
     } satisfies SaveDocumentInput;
   };
 
-  // With an existing encounter every document is an independent POST, so they are saved one by one
-  // and only the ones that really failed stay pending — a retry cannot duplicate the rest. A visit
-  // with no document encounter yet must instead go in a single transaction (one encounter for the
-  // batch), which is atomic: either all of its documents are saved or none are.
   const saveUploaded = async (
     uploaded: UploadedDocument[],
   ): Promise<Array<{ uploaded: UploadedDocument; error?: unknown }>> => {
@@ -254,8 +238,6 @@ export const DocumentUpload = forwardRef<
 
       const uploads = await Promise.allSettled(
         documents.map((document) =>
-          // A retry after a failed save reuses the bytes already stored, rather than uploading the
-          // file again and orphaning the first copy.
           document.uploadedUrl
             ? Promise.resolve({ url: document.uploadedUrl })
             : uploadDocument(document.file, encounterTypeName, patientUuid),
@@ -304,9 +286,6 @@ export const DocumentUpload = forwardRef<
       });
 
       if (savedIds.size > 0) {
-        // Dropped from the live list rather than from the snapshot taken before the await, so
-        // anything the user changed meanwhile survives. Whatever failed stays listed, preview
-        // intact, ready for a retry.
         setPendingDocuments((current) => {
           current
             .filter((document) => savedIds.has(document.id))
@@ -322,8 +301,6 @@ export const DocumentUpload = forwardRef<
     }
   };
 
-  // No deps: the handle is rebuilt every render so save() always closes over the current pending
-  // documents.
   useImperativeHandle(ref, () => ({ save: handleSave }));
 
   return (
@@ -347,16 +324,12 @@ export const DocumentUpload = forwardRef<
                 </div>
                 <div className={styles.typeCell}>
                   <Dropdown
-                    // Keyed on the row's own id, not its position, so discarding one row does not
-                    // renumber the ids of the rows React keeps.
                     id={`document-type-${document.id}`}
                     testId="document-type-dropdown"
                     titleText=""
                     aria-label={t('DOCUMENT_UPLOAD_CHOOSE_TYPE')}
                     label={t('DOCUMENT_UPLOAD_CHOOSE_TYPE')}
                     items={documentTypes}
-                    // Locked while saving: the payload is built when the save starts, so a change
-                    // made after that would be accepted on screen and never reach the server.
                     disabled={isSaving}
                     selectedItem={typeOf(document)}
                     itemToString={(item: DocumentType | null) =>
