@@ -16,6 +16,9 @@ jest.mock('@bahmni/services', () => ({
 jest.mock('../../hooks/usePatientPhoto', () => ({
   usePatientPhoto: jest.fn(),
 }));
+jest.mock('../../notification', () => ({
+  useNotification: jest.fn(() => ({ addNotification: jest.fn() })),
+}));
 
 const mockedGetFormattedPatientById =
   getFormattedPatientById as jest.MockedFunction<
@@ -50,6 +53,7 @@ describe('PatientDetails Integration', () => {
     mockedUsePatientPhoto.mockReturnValue({
       patientPhoto: 'data:image/jpeg;base64,/9j/photo==',
       isLoading: false,
+      error: null,
     });
   });
 
@@ -90,6 +94,7 @@ describe('PatientDetails Integration', () => {
     mockedUsePatientPhoto.mockReturnValue({
       patientPhoto: undefined,
       isLoading: false,
+      error: null,
     });
 
     renderPatientDetails(queryClient);

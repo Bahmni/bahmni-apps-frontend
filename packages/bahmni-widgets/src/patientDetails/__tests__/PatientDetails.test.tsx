@@ -14,7 +14,11 @@ jest.mock('../../hooks/usePatientPhoto', () => ({
   usePatientPhoto: jest.fn(() => ({
     patientPhoto: undefined,
     isLoading: false,
+    error: null,
   })),
+}));
+jest.mock('../../notification', () => ({
+  useNotification: jest.fn(() => ({ addNotification: jest.fn() })),
 }));
 jest.mock('@tanstack/react-query', () => ({
   ...jest.requireActual('@tanstack/react-query'),
@@ -63,6 +67,7 @@ describe('PatientDetails Component', () => {
     mockedUsePatientPhoto.mockReturnValue({
       patientPhoto: undefined,
       isLoading: false,
+      error: null,
     });
   });
 
@@ -105,6 +110,7 @@ describe('PatientDetails Component', () => {
       mockedUsePatientPhoto.mockReturnValue({
         patientPhoto: photoDataUrl,
         isLoading: false,
+        error: null,
       });
       mockPatientQuery({
         data: createMockPatient(),
