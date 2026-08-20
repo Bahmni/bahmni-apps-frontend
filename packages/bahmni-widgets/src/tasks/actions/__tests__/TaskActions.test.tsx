@@ -510,7 +510,7 @@ describe('TaskActions', () => {
       ).not.toBeInTheDocument();
     });
 
-    it('resolves editEncounterUuid from the newest observation matching the task ServiceRequest', async () => {
+    it('resolves sourceEncounterUuid from the newest observation matching the task ServiceRequest', async () => {
       const user = userEvent.setup();
 
       render(
@@ -543,7 +543,7 @@ describe('TaskActions', () => {
             type: 'startConsultation',
             detail: expect.objectContaining({
               editOnly: 'observationForms',
-              editEncounterUuid: FILL_ENCOUNTER_UUID,
+              sourceEncounterUuid: FILL_ENCOUNTER_UUID,
               formName: 'Vitals',
               directFormMode: true,
               task: mockTaskViewModelCompleted.fhirResource,

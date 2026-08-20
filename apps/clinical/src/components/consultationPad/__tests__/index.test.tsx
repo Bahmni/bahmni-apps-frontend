@@ -312,7 +312,7 @@ describe('ConsultationPad', () => {
         viewingForm: { uuid: 'form-uuid', name: 'Vitals' } as any,
       } as any);
 
-    it('isCopyover is false when sessionEncounter.id matches editEncounterUuid (edit mode)', async () => {
+    it('isCopyover is false when sessionEncounter.id matches sourceEncounterUuid (edit mode)', async () => {
       jest.mocked(useActivePractitioner).mockReturnValue({
         practitioner: { uuid: 'prac-uuid' },
       } as any);
@@ -328,7 +328,7 @@ describe('ConsultationPad', () => {
         encounterSessionStartContext: {
           encounterType: 'Consultation',
           editOnly: 'observationForms',
-          editEncounterUuid: EDIT_ENCOUNTER_UUID,
+          sourceEncounterUuid: EDIT_ENCOUNTER_UUID,
         },
       });
 
@@ -344,7 +344,7 @@ describe('ConsultationPad', () => {
       });
     });
 
-    it('isCopyover is true when sessionEncounter.id differs from editEncounterUuid (copyover)', async () => {
+    it('isCopyover is true when sessionEncounter.id differs from sourceEncounterUuid (copyover)', async () => {
       jest.mocked(useActivePractitioner).mockReturnValue({
         practitioner: { uuid: 'prac-uuid' },
       } as any);
@@ -360,7 +360,7 @@ describe('ConsultationPad', () => {
         encounterSessionStartContext: {
           encounterType: 'Consultation',
           editOnly: 'observationForms',
-          editEncounterUuid: EDIT_ENCOUNTER_UUID,
+          sourceEncounterUuid: EDIT_ENCOUNTER_UUID,
         },
       });
 
@@ -392,7 +392,7 @@ describe('ConsultationPad', () => {
         encounterSessionStartContext: {
           encounterType: 'Consultation',
           editOnly: 'observationForms',
-          editEncounterUuid: EDIT_ENCOUNTER_UUID,
+          sourceEncounterUuid: EDIT_ENCOUNTER_UUID,
         },
       });
 
@@ -534,7 +534,7 @@ describe('ConsultationPad', () => {
       );
     });
 
-    it('falls back to current date when editEncounter fetch fails (edit mode)', async () => {
+    it('falls back to current date when sourceEncounter fetch fails (edit mode)', async () => {
       const mockSetConsultationDate = jest.fn();
       jest
         .mocked(findActiveEncounterInSession)
@@ -566,7 +566,7 @@ describe('ConsultationPad', () => {
       renderComponent({
         encounterSessionStartContext: {
           encounterType: 'Consultation',
-          editEncounterUuid: 'missing-uuid',
+          sourceEncounterUuid: 'missing-uuid',
         },
       });
 
@@ -614,7 +614,7 @@ describe('ConsultationPad', () => {
       renderComponent({
         encounterSessionStartContext: {
           encounterType: 'Consultation',
-          editEncounterUuid: 'existing-uuid',
+          sourceEncounterUuid: 'existing-uuid',
         },
       });
 

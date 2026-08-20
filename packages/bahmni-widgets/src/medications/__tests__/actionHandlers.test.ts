@@ -58,7 +58,7 @@ describe('handleAction', () => {
           editMedications: [medWithEncounter],
           editOnly: 'medication',
           editTitle: 'MEDICATIONS_EDIT_FORM_TITLE',
-          editEncounterUuid: 'enc-uuid-1',
+          sourceEncounterUuid: 'enc-uuid-1',
         }),
       }),
     );
@@ -75,7 +75,7 @@ describe('handleAction', () => {
     handleAction(editAction, fhirMedicationRequestMock);
 
     const event = dispatchSpy.mock.calls[0][0] as CustomEvent;
-    expect(event.detail.editEncounterUuid).toBeUndefined();
+    expect(event.detail.sourceEncounterUuid).toBeUndefined();
   });
 
   it('does not dispatch edit event without fhirResource', () => {
@@ -115,7 +115,7 @@ describe('handleAction', () => {
             stopMedication: medWithEncounter,
             editOnly: 'stopMedications',
             editTitle: 'STOP_MEDICATION_FORM_TITLE',
-            editEncounterUuid: 'enc-uuid-42',
+            sourceEncounterUuid: 'enc-uuid-42',
           }),
         }),
       );
@@ -130,7 +130,7 @@ describe('handleAction', () => {
       handleAction(stopAction, medWithEncounter);
 
       const event = dispatchSpy.mock.calls[0][0] as CustomEvent;
-      expect(event.detail.editEncounterUuid).toBe('my-encounter-uuid');
+      expect(event.detail.sourceEncounterUuid).toBe('my-encounter-uuid');
     });
 
     it('does not dispatch stop event without fhirResource', () => {
@@ -143,7 +143,7 @@ describe('handleAction', () => {
       handleAction(stopAction, fhirMedicationRequestMock);
 
       const event = dispatchSpy.mock.calls[0][0] as CustomEvent;
-      expect(event.detail.editEncounterUuid).toBeUndefined();
+      expect(event.detail.sourceEncounterUuid).toBeUndefined();
     });
   });
 });

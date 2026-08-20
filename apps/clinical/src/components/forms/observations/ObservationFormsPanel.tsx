@@ -36,7 +36,7 @@ const ObservationFormsPanel: React.FC<ObservationFormsPanelProps> = ({
   const directFormMode = encounterSessionStartContext?.directFormMode as
     | boolean
     | undefined;
-  const editEncounterUuid = encounterSessionStartContext?.editEncounterUuid;
+  const sourceEncounterUuid = encounterSessionStartContext?.sourceEncounterUuid;
   const isCopyover = encounterSessionStartContext?.isCopyover as
     | boolean
     | undefined;
@@ -46,9 +46,9 @@ const ObservationFormsPanel: React.FC<ObservationFormsPanelProps> = ({
   const isEditObservationFormsMode =
     encounterSessionStartContext?.editOnly === 'observationForms';
   const isEditMode =
-    isEditObservationFormsMode && !!editEncounterUuid && isCopyover === false;
+    isEditObservationFormsMode && !!sourceEncounterUuid && isCopyover === false;
   const isCopyoverMode =
-    isEditObservationFormsMode && !!editEncounterUuid && isCopyover === true;
+    isEditObservationFormsMode && !!sourceEncounterUuid && isCopyover === true;
   const isTaskDirectMode = !!(formName && directFormMode);
 
   const {
@@ -88,7 +88,7 @@ const ObservationFormsPanel: React.FC<ObservationFormsPanelProps> = ({
       formName &&
       directFormMode &&
       !isAllFormsLoading &&
-      !editEncounterUuid
+      !sourceEncounterUuid
     ) {
       useObservationFormsStore.getState().reset();
       const matchingForm = allForms.find(
@@ -104,7 +104,7 @@ const ObservationFormsPanel: React.FC<ObservationFormsPanelProps> = ({
     directFormMode,
     allForms,
     isAllFormsLoading,
-    editEncounterUuid,
+    sourceEncounterUuid,
     addForm,
   ]);
 
@@ -116,16 +116,21 @@ const ObservationFormsPanel: React.FC<ObservationFormsPanelProps> = ({
   // pair so each edit session starts from a clean store.
   const editSessionKeyRef = useRef<string | null>(null);
   useEffect(() => {
-    if (!isEditObservationFormsMode || !formName || !editEncounterUuid) {
+    if (!isEditObservationFormsMode || !formName || !sourceEncounterUuid) {
       return;
     }
-    const sessionKey = `${editEncounterUuid}:${formName}:${isCopyoverMode ? 'copyover' : 'edit'}`;
+    const sessionKey = `${sourceEncounterUuid}:${formName}:${isCopyoverMode ? 'copyover' : 'edit'}`;
     if (editSessionKeyRef.current === sessionKey) {
       return;
     }
     editSessionKeyRef.current = sessionKey;
     useObservationFormsStore.getState().reset();
-  }, [isEditObservationFormsMode, formName, editEncounterUuid, isCopyoverMode]);
+  }, [
+    isEditObservationFormsMode,
+    formName,
+    sourceEncounterUuid,
+    isCopyoverMode,
+  ]);
 
   // Latches once the fetch for a given (encounter, form) session actually
   // starts. Guarding on `selectedForms` instead (as before) breaks as soon as
@@ -140,7 +145,7 @@ const ObservationFormsPanel: React.FC<ObservationFormsPanelProps> = ({
     if (
       !isEditObservationFormsMode ||
       !formName ||
-      !editEncounterUuid ||
+      !sourceEncounterUuid ||
       isAllFormsLoading ||
       (!isEditMode && !isCopyoverMode)
     )
@@ -151,11 +156,11 @@ const ObservationFormsPanel: React.FC<ObservationFormsPanelProps> = ({
     );
     if (!matchingForm) return;
 
-    const sessionKey = `${editEncounterUuid}:${formName}:${isCopyoverMode ? 'copyover' : 'edit'}`;
+    const sessionKey = `${sourceEncounterUuid}:${formName}:${isCopyoverMode ? 'copyover' : 'edit'}`;
     if (editFetchSessionRef.current === sessionKey) return;
     editFetchSessionRef.current = sessionKey;
 
-    getObservationsBundleByEncounterUuid(editEncounterUuid, basedOnId)
+    getObservationsBundleByEncounterUuid(sourceEncounterUuid, basedOnId)
       .then(async (bundle) => {
         // getObservationsBundleByEncounterUuid fetches the WHOLE encounter's
         // observations — an encounter can carry multiple form submissions
@@ -192,7 +197,7 @@ const ObservationFormsPanel: React.FC<ObservationFormsPanelProps> = ({
           // submission happens to be first for the encounter.
           const encounterFormData = patientForms.find(
             (d) =>
-              d.encounterUuid === editEncounterUuid &&
+              d.encounterUuid === sourceEncounterUuid &&
               d.formName.toLowerCase() === formName.toLowerCase(),
           );
           // Primary: formUuid from patient forms API (same as old Bahmni Angular).
@@ -257,7 +262,7 @@ const ObservationFormsPanel: React.FC<ObservationFormsPanelProps> = ({
   }, [
     isEditObservationFormsMode,
     formName,
-    editEncounterUuid,
+    sourceEncounterUuid,
     basedOnId,
     isAllFormsLoading,
     isEditMode,

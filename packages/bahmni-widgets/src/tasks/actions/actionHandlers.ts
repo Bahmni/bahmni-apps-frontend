@@ -28,7 +28,7 @@ const handleLaunchFormAction = (
   );
 };
 
-const resolveEditEncounterUuid = async (
+const resolveSourceEncounterUuid = async (
   task: TaskViewModel,
   formName: string | null,
 ): Promise<string | undefined> => {
@@ -58,7 +58,7 @@ const handleEditFormAction = async (
     task,
     action.handlerConfig.formInputCode as string,
   );
-  const editEncounterUuid = await resolveEditEncounterUuid(task, formName);
+  const sourceEncounterUuid = await resolveSourceEncounterUuid(task, formName);
 
   globalThis.dispatchEvent(
     new CustomEvent('startConsultation', {
@@ -66,7 +66,7 @@ const handleEditFormAction = async (
         encounterType: action.handlerConfig.encounterType,
         editOnly: 'observationForms',
         editTitle: 'EDIT_OBSERVATION_FORM_TITLE',
-        editEncounterUuid,
+        sourceEncounterUuid,
         formName,
         directFormMode: true,
         task: task.fhirResource,

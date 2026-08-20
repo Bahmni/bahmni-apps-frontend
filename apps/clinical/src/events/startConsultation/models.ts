@@ -7,7 +7,7 @@ export interface EncounterSessionStartContext {
   editOnly?: string;
   /** Translation key for the ConsultationPad panel title when in edit mode. */
   editTitle?: string;
-  /** UUID of the encounter being edited (used by edit flows for all input controls). */
-  editEncounterUuid?: string;
+  /** Source encounter UUID for edit or copyover flows. */
+  sourceEncounterUuid?: string;
   [key: string]: unknown;
 }

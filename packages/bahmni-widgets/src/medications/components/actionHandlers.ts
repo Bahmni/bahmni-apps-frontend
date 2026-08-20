@@ -19,7 +19,7 @@ const handleStopAction = (
         stopMedicationStartDate: startDate,
         editOnly: 'stopMedications',
         editTitle: 'STOP_MEDICATION_FORM_TITLE',
-        editEncounterUuid: encounterUuid,
+        sourceEncounterUuid: encounterUuid,
       },
     }),
   );
@@ -45,7 +45,7 @@ export const handleAction = (
 
   if (action.type === 'edit' && fhirResource) {
     const encounterRef = fhirResource.encounter?.reference;
-    const editEncounterUuid = encounterRef?.split('/').pop() ?? undefined;
+    const sourceEncounterUuid = encounterRef?.split('/').pop() ?? undefined;
 
     globalThis.dispatchEvent(
       new CustomEvent('startConsultation', {
@@ -54,7 +54,7 @@ export const handleAction = (
           editMedications: [fhirResource],
           editOnly: MEDICATIONS_INPUT_CONTROL_KEY,
           editTitle: 'MEDICATIONS_EDIT_FORM_TITLE',
-          editEncounterUuid,
+          sourceEncounterUuid,
         },
       }),
     );

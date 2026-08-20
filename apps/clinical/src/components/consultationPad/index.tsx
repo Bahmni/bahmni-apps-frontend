@@ -71,9 +71,8 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
   const editTitle = encounterSessionStartContext.editTitle as
     | string
     | undefined;
-  const editEncounterUuid = encounterSessionStartContext.editEncounterUuid as
-    | string
-    | undefined;
+  const sourceEncounterUuid =
+    encounterSessionStartContext.sourceEncounterUuid as string | undefined;
   const directFormMode = encounterSessionStartContext.directFormMode as
     | boolean
     | undefined;
@@ -191,17 +190,18 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
     ),
   });
   const {
-    data: editEncounter,
-    isLoading: editEncounterLoading,
-    error: editEncounterError,
+    data: sourceEncounter,
+    isLoading: sourceEncounterLoading,
+    error: sourceEncounterError,
   } = useQuery({
-    queryKey: ['encounter', editEncounterUuid],
-    queryFn: ({ signal }) => getEncounterByUuid(editEncounterUuid!, { signal }),
-    enabled: Boolean(editEncounterUuid),
+    queryKey: ['encounter', sourceEncounterUuid],
+    queryFn: ({ signal }) =>
+      getEncounterByUuid(sourceEncounterUuid!, { signal }),
+    enabled: Boolean(sourceEncounterUuid),
   });
 
   useEffect(() => {
-    if (editEncounterError) {
+    if (sourceEncounterError) {
       addNotification({
         title: t('ERROR_DEFAULT_TITLE'),
         message: t('CONSULTATION_ERROR_GENERIC'),
@@ -209,19 +209,19 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
         timeout: 5000,
       });
     }
-  }, [editEncounterError, addNotification, t]);
+  }, [sourceEncounterError, addNotification, t]);
 
-  const isCopyover: boolean | undefined = !editEncounterUuid
+  const isCopyover: boolean | undefined = !sourceEncounterUuid
     ? undefined
     : sessionEncounterStatus === 'success'
-      ? sessionEncounter?.id !== editEncounterUuid
+      ? sessionEncounter?.id !== sourceEncounterUuid
       : sessionEncounterStatus === 'error'
         ? false
         : undefined;
 
   const activeEncounter =
-    isCopyover !== true && editEncounterUuid
-      ? (editEncounter ?? null)
+    isCopyover !== true && sourceEncounterUuid
+      ? (sourceEncounter ?? null)
       : sessionEncounter;
 
   const effectiveContext = useMemo<EncounterSessionStartContext>(
@@ -575,7 +575,7 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
     isSubmitting ||
     !hasConsultationData ||
     !editChangesExist ||
-    editEncounterLoading;
+    sourceEncounterLoading;
   return (
     <>
       <ActionArea
