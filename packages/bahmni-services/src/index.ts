@@ -97,7 +97,10 @@ export {
   type AppointmentUnavailability,
   type CreateUnavailabilityRequest,
 } from './appointmentService';
-export { getFormattedError } from './errorHandling';
+export {
+  getFormattedError,
+  PATIENT_NOT_FOUND_ERROR_KEY,
+} from './errorHandling';
 export {
   capitalize,
   generateId,
