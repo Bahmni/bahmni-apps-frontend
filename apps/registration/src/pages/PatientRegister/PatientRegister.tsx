@@ -14,6 +14,7 @@ import {
   DocumentPrintButton,
   type PrintOption,
 } from '@bahmni/widgets';
+import { usePatientPhoto } from '@bahmni/widgets';
 import { useRef, useState, useEffect, useMemo } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { AdditionalIdentifiersRef } from '../../components/forms/additionalIdentifiers/AdditionalIdentifiers';
@@ -28,7 +29,6 @@ import { BAHMNI_REGISTRATION_SEARCH, getPatientUrl } from '../../constants/app';
 import { useAdditionalIdentifiers } from '../../hooks/useAdditionalIdentifiers';
 import { useCreatePatient } from '../../hooks/useCreatePatient';
 import { usePatientDetails } from '../../hooks/usePatientDetails';
-import { usePatientPhoto } from '../../hooks/usePatientPhoto';
 import { useRelationshipValidation } from '../../hooks/useRelationshipValidation';
 import { useUpdatePatient } from '../../hooks/useUpdatePatient';
 import { useRegistrationConfig } from '../../providers/registrationConfig';
@@ -100,7 +100,8 @@ const PatientRegister = () => {
       addNotification({
         type: 'warning',
         title: t('ERROR_DEFAULT_TITLE'),
-        message: photoError instanceof Error ? photoError.message : String(photoError),
+        message:
+          photoError instanceof Error ? photoError.message : String(photoError),
       });
     }
   }, [photoError, addNotification, t]);
