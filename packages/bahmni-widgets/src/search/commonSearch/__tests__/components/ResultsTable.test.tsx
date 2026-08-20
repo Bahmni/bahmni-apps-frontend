@@ -1,11 +1,11 @@
 import { generateUUID, useTranslation } from '@bahmni/services';
-import { render, screen, waitFor } from '@testing-library/react';
+import { act, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { axe, toHaveNoViolations } from 'jest-axe';
 import jsonata from 'jsonata';
-import { UserPrivilegeProvider } from '../../../userPrivileges/UserPrivilegeProvider';
-import { ResultFieldConfig, SortOrder, ActionConfig } from '../models';
-import ResultsTable from '../ResultsTable';
+import { UserPrivilegeProvider } from '../../../../userPrivileges/UserPrivilegeProvider';
+import ResultsTable from '../../components/ResultsTable';
+import { ResultFieldConfig, SortOrder, ActionConfig } from '../../models';
 import {
   mockActions,
   mockActionsWithInvalidExpression,
@@ -19,7 +19,7 @@ import {
   mockResultFieldsWithDateTransform,
   mockResults,
   mockResultWithoutId,
-} from './__mocks__/resultsTableMocks';
+} from '../__mocks__/resultsTableMocks';
 
 jest.mock('jsonata');
 
@@ -36,14 +36,14 @@ const mockJsonata = jsonata as jest.Mock;
 const mockGenerateUUID = generateUUID as jest.Mock;
 const mockUseTranslation = useTranslation as jest.Mock;
 
-const renderTable = (
+const renderTable = async (
   overrides: Partial<{
     resultFields: ResultFieldConfig[];
     results: unknown[];
     actions?: ActionConfig[];
   }> = {},
-) =>
-  render(
+) => {
+  const result = render(
     <UserPrivilegeProvider>
       <ResultsTable
         resultFields={mockResultFields}
@@ -52,6 +52,9 @@ const renderTable = (
       />
     </UserPrivilegeProvider>,
   );
+  await act(async () => {});
+  return result;
+};
 
 describe('ResultsTable', () => {
   beforeEach(() => {
@@ -65,11 +68,11 @@ describe('ResultsTable', () => {
     mockGetCurrentUserPrivileges.mockResolvedValue([]);
   });
 
-  it('shows expression error notification when a field has an invalid expression', () => {
+  it('shows expression error notification when a field has an invalid expression', async () => {
     mockJsonata.mockImplementationOnce(() => {
       throw new Error('Parse error');
     });
-    renderTable({ resultFields: mockInvalidExpressionFields });
+    await renderTable({ resultFields: mockInvalidExpressionFields });
     expect(
       screen.getByTestId('common-search-results-table-error'),
     ).toBeInTheDocument();
@@ -82,7 +85,7 @@ describe('ResultsTable', () => {
     mockJsonata.mockReturnValue({
       evaluate: jest.fn().mockRejectedValue(new Error('Runtime error')),
     });
-    renderTable();
+    await renderTable();
     await waitFor(() => {
       expect(
         screen.getByTestId('common-search-results-table-error'),
@@ -93,13 +96,13 @@ describe('ResultsTable', () => {
     ).toBeInTheDocument();
   });
 
-  it('shows empty state message when results is an empty array', () => {
-    renderTable({ results: [] });
+  it('shows empty state message when results is an empty array', async () => {
+    await renderTable({ results: [] });
     expect(screen.getByText('COMMON_SEARCH_NO_RESULTS')).toBeInTheDocument();
   });
 
   it('renders the DataTable when results are non-empty', async () => {
-    renderTable();
+    await renderTable();
     await waitFor(() => {
       expect(
         screen.getByTestId('common-search-results-table'),
@@ -109,7 +112,7 @@ describe('ResultsTable', () => {
 
   describe('Row id resolution', () => {
     it('uses item.id as row id when id is present', async () => {
-      renderTable();
+      await renderTable();
       await waitFor(() => {
         expect(
           screen.getByTestId('common-search-results-table'),
@@ -119,7 +122,7 @@ describe('ResultsTable', () => {
     });
 
     it('generates a UUID as row id when item has no id', async () => {
-      renderTable({ results: [mockResultWithoutId] });
+      await renderTable({ results: [mockResultWithoutId] });
       await waitFor(() => {
         expect(
           screen.getByTestId('common-search-results-table'),
@@ -130,8 +133,8 @@ describe('ResultsTable', () => {
   });
 
   describe('Snapshot', () => {
-    it('matches snapshot for empty state', () => {
-      const { container } = renderTable({ results: [] });
+    it('matches snapshot for empty state', async () => {
+      const { container } = await renderTable({ results: [] });
       expect(container).toMatchSnapshot();
     });
 
@@ -139,7 +142,7 @@ describe('ResultsTable', () => {
       mockJsonata.mockReturnValue({
         evaluate: jest.fn().mockRejectedValue(new Error('Runtime error')),
       });
-      const { container } = renderTable();
+      const { container } = await renderTable();
       await waitFor(() => {
         expect(
           screen.getByTestId('common-search-results-table-error'),
@@ -149,7 +152,7 @@ describe('ResultsTable', () => {
     });
 
     it('matches snapshot with data', async () => {
-      const { container } = renderTable();
+      const { container } = await renderTable();
       await waitFor(() => {
         expect(
           screen.getByTestId('common-search-results-table'),
@@ -161,7 +164,7 @@ describe('ResultsTable', () => {
 
   describe('Accessibility', () => {
     it('has no a11y violations for empty state', async () => {
-      const { container } = renderTable({ results: [] });
+      const { container } = await renderTable({ results: [] });
       expect(await axe(container)).toHaveNoViolations();
     });
   });
@@ -173,7 +176,7 @@ describe('ResultsTable', () => {
           .fn()
           .mockResolvedValue('UNREGISTERED_TRANSFORM_RAW_VALUE'),
       });
-      renderTable({
+      await renderTable({
         resultFields: mockResultFieldsWithUnknownTransform,
         results: [{ id: '1', country: 'UNREGISTERED_TRANSFORM_RAW_VALUE' }],
       });
@@ -188,7 +191,7 @@ describe('ResultsTable', () => {
       mockJsonata.mockReturnValue({
         evaluate: jest.fn().mockResolvedValue(null),
       });
-      renderTable({
+      await renderTable({
         resultFields: mockResultFieldsWithTransform,
         results: [{ id: '1', country: null }],
       });
@@ -202,7 +205,7 @@ describe('ResultsTable', () => {
       mockJsonata.mockReturnValue({
         evaluate: jest.fn().mockResolvedValue(''),
       });
-      renderTable({
+      await renderTable({
         resultFields: mockResultFieldsWithTransform,
         results: [{ id: '1', country: '' }],
       });
@@ -271,7 +274,7 @@ describe('ResultsTable', () => {
         evaluate: async (item: Record<string, unknown>) => item[expression],
       }));
 
-      renderTable({
+      await renderTable({
         resultFields: mockResultFieldsWithSortOrder,
         results: [
           { id: '1', name: 'Charlie', age: 30 },
@@ -310,7 +313,7 @@ describe('ResultsTable', () => {
         },
       ];
 
-      renderTable({
+      await renderTable({
         resultFields: resultFieldsWithTwoSortColumns,
         results: [
           { id: '1', name: 'Bob', age: 40 },
@@ -341,7 +344,7 @@ describe('ResultsTable', () => {
         },
       ];
 
-      renderTable({ resultFields: resultFieldsWithFilter });
+      await renderTable({ resultFields: resultFieldsWithFilter });
       await waitFor(() => {
         expect(
           screen.getByTestId('common-search-results-table'),
@@ -359,7 +362,7 @@ describe('ResultsTable', () => {
   });
 
   describe('Navigate action and link rendering', () => {
-    it('shows expression error when action navigationURL has invalid JSONata expression', () => {
+    it('shows expression error when action navigationURL has invalid JSONata expression', async () => {
       mockJsonata.mockImplementation((expr: string) => {
         if (expr === '$$$invalid') {
           throw new Error('Parse error');
@@ -367,7 +370,7 @@ describe('ResultsTable', () => {
         return { evaluate: jest.fn().mockResolvedValue('evaluated-value') };
       });
 
-      renderTable({
+      await renderTable({
         resultFields: mockResultFieldsWithAction,
         actions: mockActionsWithInvalidExpression,
       });
@@ -388,7 +391,7 @@ describe('ResultsTable', () => {
         evaluate: jest.fn().mockResolvedValue('John Doe'),
       });
 
-      renderTable({
+      await renderTable({
         resultFields: mockResultFieldsWithAction,
         actions: mockActions,
       });
@@ -413,7 +416,7 @@ describe('ResultsTable', () => {
         },
       ];
 
-      renderTable({
+      await renderTable({
         resultFields: fieldWithNonExistentAction,
         actions: mockActions,
       });
@@ -431,7 +434,7 @@ describe('ResultsTable', () => {
           .mockResolvedValue(null),
       });
 
-      renderTable({
+      await renderTable({
         resultFields: mockResultFieldsWithAction,
         actions: mockActions,
       });

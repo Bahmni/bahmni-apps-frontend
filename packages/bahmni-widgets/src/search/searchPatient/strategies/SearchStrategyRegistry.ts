@@ -1,7 +1,7 @@
-import { SearchStrategy, PatientSearchType } from '../SearchStrategy.interface';
 import { AppointmentSearchStrategy } from './AppointmentSearchStrategy';
 import { AttributeSearchStrategy } from './AttributeSearchStrategy';
 import { NameOrIdSearchStrategy } from './NameOrIdSearchStrategy';
+import { SearchStrategy, PatientSearchType } from './SearchStrategy.interface';
 
 /**
  * Registry for managing patient search strategies.

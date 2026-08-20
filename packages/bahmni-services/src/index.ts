@@ -470,6 +470,9 @@ export {
   groupExtensionsByPoint,
   filterExtensionsByPrivileges,
   type Extension,
-  type ExtensionHandlerProps,
   type SearchExtensionParam,
+  type SearchExtension,
+  type ActionExtensionParam,
+  type ActionExtension,
+  type ExtensionButtonKind,
 } from './extensions';
