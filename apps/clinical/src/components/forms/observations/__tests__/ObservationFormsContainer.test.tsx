@@ -1810,6 +1810,7 @@ describe('Edit mode - hasFormChanges / change detection', () => {
 
   const editModeContext = {
     editOnly: 'observationForms' as const,
+    sourceEncounterUuid: 'edit-encounter-uuid',
   };
 
   const defaultProps = {

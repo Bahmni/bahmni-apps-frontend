@@ -112,7 +112,8 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
 
   // Derive early so it can be used for hook initialisation below.
   const isEditMode =
-    encounterSessionStartContext?.editOnly === 'observationForms';
+    encounterSessionStartContext?.editOnly === 'observationForms' &&
+    !!encounterSessionStartContext?.sourceEncounterUuid;
 
   // Tracks whether the form differs from its initial values — driven by CarbonContainer's
   // own setIsFormUpdated (uuid-based comparison against the observations it was mounted with).
