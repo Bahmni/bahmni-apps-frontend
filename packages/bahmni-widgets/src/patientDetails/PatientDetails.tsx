@@ -25,14 +25,17 @@ const PatientDetails: React.FC = () => {
   });
 
   const photoUrl = patient?.photoUrl;
-  const { patientPhoto: photoDataUrl, error: photoError } = usePatientPhoto({ photoUrl });
+  const { patientPhoto: photoDataUrl, error: photoError } = usePatientPhoto({
+    photoUrl,
+  });
 
   useEffect(() => {
     if (photoError) {
       addNotification({
         type: 'warning',
         title: t('ERROR_DEFAULT_TITLE'),
-        message: photoError instanceof Error ? photoError.message : String(photoError),
+        message:
+          photoError instanceof Error ? photoError.message : String(photoError),
       });
     }
   }, [photoError, addNotification, t]);

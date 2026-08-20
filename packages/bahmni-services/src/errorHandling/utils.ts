@@ -99,7 +99,8 @@ export const getFormattedError = (
           const forbiddenMessage =
             forbiddenData?.error?.message ?? forbiddenData?.message;
           message =
-            forbiddenMessage ?? 'You are not authorized to perform this action.';
+            forbiddenMessage ??
+            'You are not authorized to perform this action.';
           break;
         }
         case 404:
