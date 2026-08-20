@@ -94,7 +94,16 @@ const PatientRegister = () => {
   );
 
   const photoUrl = patientDetails?.photo?.[0]?.url;
-  const { patientPhoto } = usePatientPhoto({ photoUrl });
+  const { patientPhoto, error: photoError } = usePatientPhoto({ photoUrl });
+  useEffect(() => {
+    if (photoError) {
+      addNotification({
+        type: 'warning',
+        title: t('ERROR_DEFAULT_TITLE'),
+        message: photoError instanceof Error ? photoError.message : String(photoError),
+      });
+    }
+  }, [photoError, addNotification, t]);
 
   // The route element is keyed by path, not by patientUuid, so navigating from one
   // patient to another reuses this component instance. Clear patient-scoped state

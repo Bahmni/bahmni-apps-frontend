@@ -2,15 +2,17 @@ import { Icon, ICON_SIZE } from '@bahmni/design-system';
 import { getFormattedPatientById } from '@bahmni/services';
 import { SkeletonText } from '@carbon/react';
 import { useQuery } from '@tanstack/react-query';
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { usePatientPhoto } from '../hooks/usePatientPhoto';
 import { usePatientUUID } from '../hooks/usePatientUUID';
+import { useNotification } from '../notification';
 import styles from './__styles__/PatientDetails.module.scss';
 import { createPatientDetailsViewModel } from './utils';
 
 const PatientDetails: React.FC = () => {
   const { t } = useTranslation();
+  const { addNotification } = useNotification();
   const patientUUID = usePatientUUID();
   const {
     data: patient,
@@ -23,7 +25,17 @@ const PatientDetails: React.FC = () => {
   });
 
   const photoUrl = patient?.photoUrl;
-  const { patientPhoto: photoDataUrl } = usePatientPhoto({ photoUrl });
+  const { patientPhoto: photoDataUrl, error: photoError } = usePatientPhoto({ photoUrl });
+
+  useEffect(() => {
+    if (photoError) {
+      addNotification({
+        type: 'warning',
+        title: t('ERROR_DEFAULT_TITLE'),
+        message: photoError instanceof Error ? photoError.message : String(photoError),
+      });
+    }
+  }, [photoError, addNotification, t]);
 
   if (isLoading || error || !patient) {
     return (

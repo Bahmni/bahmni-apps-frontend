@@ -6,7 +6,7 @@ interface UsePatientPhotoProps {
 }
 
 export const usePatientPhoto = ({ photoUrl }: UsePatientPhotoProps) => {
-  const { data: patientPhoto, isLoading } = useQuery({
+  const { data: patientPhoto, isLoading, error } = useQuery({
     queryKey: ['patientPhoto', photoUrl],
     queryFn: () => fetchPatientPhotoFromUrl(photoUrl!),
     enabled: !!photoUrl,
@@ -15,5 +15,6 @@ export const usePatientPhoto = ({ photoUrl }: UsePatientPhotoProps) => {
   return {
     patientPhoto,
     isLoading,
+    error,
   };
 };

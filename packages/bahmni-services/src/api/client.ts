@@ -40,10 +40,18 @@ client.interceptors.response.use(
       return Promise.reject(`${title}: ${message}`);
     }
   },
-  function (error) {
+  async function (error) {
     if (axios.isAxiosError(error) && error.response?.status === 401) {
       globalThis.location.href = LOGIN_PATH;
       return Promise.reject(error);
+    }
+    if (axios.isAxiosError(error) && error.response?.data instanceof Blob) {
+      try {
+        const text = await (error.response.data as Blob).text();
+        error.response.data = JSON.parse(text);
+      } catch {
+        // leave as blob if unparseable
+      }
     }
     const { title, message } = getFormattedError(error);
 
