@@ -125,7 +125,12 @@ describe('getFormattedError', () => {
       const error = {
         response: {
           status: 403,
-          data: { error: { message: "User lacks 'Get Patient Photo' privilege and is unable to view the patient photo" } },
+          data: {
+            error: {
+              message:
+                "User lacks 'Get Patient Photo' privilege and is unable to view the patient photo",
+            },
+          },
         },
       } as AxiosError;
 
@@ -133,7 +138,8 @@ describe('getFormattedError', () => {
 
       expect(result).toEqual({
         title: 'Forbidden',
-        message: "User lacks 'Get Patient Photo' privilege and is unable to view the patient photo",
+        message:
+          "User lacks 'Get Patient Photo' privilege and is unable to view the patient photo",
       });
     });
 
