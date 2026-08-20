@@ -13,7 +13,13 @@ import {
 import { Close } from '@carbon/icons-react';
 import { InlineLoading, TextArea } from '@carbon/react';
 import { useQuery } from '@tanstack/react-query';
-import React, { useImperativeHandle, useRef, useState } from 'react';
+import React, {
+  forwardRef,
+  useEffect,
+  useImperativeHandle,
+  useRef,
+  useState,
+} from 'react';
 import { useTranslation } from 'react-i18next';
 import { useActivePractitioner } from '../activePractitioner';
 import { useNotification } from '../notification';
@@ -22,6 +28,7 @@ import { FILE_INPUT_ACCEPT, MAX_NOTE_LENGTH } from './constants';
 import {
   DocumentSaveFailure,
   DocumentSaveSummary,
+  DocumentUploadHandle,
   DocumentUploadProps,
   PendingDocument,
 } from './models';
@@ -37,16 +44,23 @@ interface UploadedDocument {
 const messageOf = (error: unknown): string =>
   error instanceof Error ? error.message : String(error);
 
-export const DocumentUpload: React.FC<DocumentUploadProps> = ({
-  patientUuid,
-  encounterTypeName,
-  saveTarget,
-  documentTypes = [],
-  defaultOption,
-  onSaved,
-  onPendingChange,
+// forwardRef rather than React 19's ref-as-prop: this package's peer range allows React 18, where a
+// `ref` prop never reaches a function component and the handle would silently stay empty.
+export const DocumentUpload = forwardRef<
+  DocumentUploadHandle,
+  DocumentUploadProps
+>(function DocumentUpload(
+  {
+    patientUuid,
+    encounterTypeName,
+    saveTarget,
+    documentTypes = [],
+    defaultOption,
+    onSaved,
+    onPendingChange,
+  },
   ref,
-}) => {
+) {
   const { t } = useTranslation();
   const { addNotification } = useNotification();
   const { practitioner } = useActivePractitioner();
@@ -80,11 +94,8 @@ export const DocumentUpload: React.FC<DocumentUploadProps> = ({
   const typeOf = (document: PendingDocument): DocumentType | null =>
     document.documentType ?? defaultDocumentType;
 
-  const replacePending = (next: PendingDocument[]) => {
-    setPendingDocuments(next);
-    onPendingChange?.(next.length > 0);
-  };
-
+  // Every mutation goes through a functional update, so a change that lands while a save is in
+  // flight is never clobbered by a list captured before the await.
   const updatePending = (id: string, patch: Partial<PendingDocument>) =>
     setPendingDocuments((current) =>
       current.map((document) =>
@@ -99,12 +110,36 @@ export const DocumentUpload: React.FC<DocumentUploadProps> = ({
   };
 
   const discardPending = (id: string) => {
-    const document = pendingDocuments.find((pending) => pending.id === id);
-    if (document) {
-      revokePreview(document);
-    }
-    replacePending(pendingDocuments.filter((pending) => pending.id !== id));
+    setPendingDocuments((current) => {
+      current
+        .filter((pending) => pending.id === id)
+        .forEach((pending) => revokePreview(pending));
+      return current.filter((pending) => pending.id !== id);
+    });
   };
+
+  // Reported from an effect keyed on the flag itself: the consumer hears about a transition once,
+  // and never re-renders us into a loop however it declares its callback.
+  const hasPendingDocuments = pendingDocuments.length > 0;
+  const onPendingChangeRef = useRef(onPendingChange);
+  useEffect(() => {
+    onPendingChangeRef.current = onPendingChange;
+  });
+  useEffect(() => {
+    onPendingChangeRef.current?.(hasPendingDocuments);
+  }, [hasPendingDocuments]);
+
+  // Previews left over when the widget goes away (a visit dropping out of the list, say) would
+  // otherwise hold their blobs until the page is closed.
+  const pendingDocumentsRef = useRef(pendingDocuments);
+  useEffect(() => {
+    pendingDocumentsRef.current = pendingDocuments;
+  });
+  useEffect(
+    () => () => pendingDocumentsRef.current.forEach(revokePreview),
+
+    [],
+  );
 
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(event.target.files ?? []);
@@ -161,7 +196,7 @@ export const DocumentUpload: React.FC<DocumentUploadProps> = ({
     }
 
     if (accepted.length > 0) {
-      replacePending([...pendingDocuments, ...accepted]);
+      setPendingDocuments((current) => [...current, ...accepted]);
     }
   };
 
@@ -219,7 +254,11 @@ export const DocumentUpload: React.FC<DocumentUploadProps> = ({
 
       const uploads = await Promise.allSettled(
         documents.map((document) =>
-          uploadDocument(document.file, encounterTypeName, patientUuid),
+          // A retry after a failed save reuses the bytes already stored, rather than uploading the
+          // file again and orphaning the first copy.
+          document.uploadedUrl
+            ? Promise.resolve({ url: document.uploadedUrl })
+            : uploadDocument(document.file, encounterTypeName, patientUuid),
         ),
       );
       const uploaded: UploadedDocument[] = [];
@@ -234,6 +273,15 @@ export const DocumentUpload: React.FC<DocumentUploadProps> = ({
           });
         }
       });
+      const uploadedUrlById = new Map(
+        uploaded.map(({ document, url }) => [document.id, url]),
+      );
+      setPendingDocuments((current) =>
+        current.map((document) => {
+          const url = uploadedUrlById.get(document.id);
+          return url ? { ...document, uploadedUrl: url } : document;
+        }),
+      );
 
       const outcomes = uploaded.length > 0 ? await saveUploaded(uploaded) : [];
       const savedIds = new Set<string>();
@@ -256,13 +304,15 @@ export const DocumentUpload: React.FC<DocumentUploadProps> = ({
       });
 
       if (savedIds.size > 0) {
-        // Anything that failed stays listed, with its preview intact, so it can be retried.
-        documents
-          .filter((document) => savedIds.has(document.id))
-          .forEach(revokePreview);
-        replacePending(
-          documents.filter((document) => !savedIds.has(document.id)),
-        );
+        // Dropped from the live list rather than from the snapshot taken before the await, so
+        // anything the user changed meanwhile survives. Whatever failed stays listed, preview
+        // intact, ready for a retry.
+        setPendingDocuments((current) => {
+          current
+            .filter((document) => savedIds.has(document.id))
+            .forEach(revokePreview);
+          return current.filter((document) => !savedIds.has(document.id));
+        });
         onSaved?.();
       }
 
@@ -280,7 +330,7 @@ export const DocumentUpload: React.FC<DocumentUploadProps> = ({
     <div className={styles.container}>
       {pendingDocuments.length > 0 && (
         <div className={styles.pending}>
-          {pendingDocuments.map((document, index) => (
+          {pendingDocuments.map((document) => (
             <div
               key={document.id}
               className={styles.pendingDocument}
@@ -297,12 +347,17 @@ export const DocumentUpload: React.FC<DocumentUploadProps> = ({
                 </div>
                 <div className={styles.typeCell}>
                   <Dropdown
-                    id={`document-type-${index}`}
+                    // Keyed on the row's own id, not its position, so discarding one row does not
+                    // renumber the ids of the rows React keeps.
+                    id={`document-type-${document.id}`}
                     testId="document-type-dropdown"
                     titleText=""
                     aria-label={t('DOCUMENT_UPLOAD_CHOOSE_TYPE')}
                     label={t('DOCUMENT_UPLOAD_CHOOSE_TYPE')}
                     items={documentTypes}
+                    // Locked while saving: the payload is built when the save starts, so a change
+                    // made after that would be accepted on screen and never reach the server.
+                    disabled={isSaving}
                     selectedItem={typeOf(document)}
                     itemToString={(item: DocumentType | null) =>
                       item?.label ?? ''
@@ -343,12 +398,13 @@ export const DocumentUpload: React.FC<DocumentUploadProps> = ({
               </Link>
               {document.isNoteVisible && (
                 <TextArea
-                  id={`document-note-${index}`}
+                  id={`document-note-${document.id}`}
                   data-testid="document-note"
                   className={styles.noteArea}
                   labelText=""
                   aria-label={t('DOCUMENT_UPLOAD_ADD_NOTE')}
                   rows={2}
+                  disabled={isSaving}
                   value={document.note}
                   maxLength={MAX_NOTE_LENGTH}
                   placeholder={t('DOCUMENT_UPLOAD_NOTE_PLACEHOLDER')}
@@ -387,6 +443,6 @@ export const DocumentUpload: React.FC<DocumentUploadProps> = ({
       </div>
     </div>
   );
-};
+});
 
 export default DocumentUpload;

@@ -233,5 +233,29 @@ describe('documentWriteService', () => {
       await expect(saveDocuments([])).resolves.toEqual([]);
       expect(mockedPost).not.toHaveBeenCalled();
     });
+
+    it('refuses a batch whose documents do not share one patient and target', async () => {
+      // Attributing a document to the wrong patient or encounter must fail loudly, not silently:
+      // the batch applies the first input's target to every document.
+      await expect(
+        saveDocuments([
+          { ...baseInput, encounterUuid: 'enc-uuid' },
+          { ...secondInput, encounterUuid: 'another-enc-uuid' },
+        ]),
+      ).rejects.toThrow('same patient and save target');
+
+      await expect(
+        saveDocuments([
+          { ...baseInput, encounterUuid: 'enc-uuid' },
+          {
+            ...secondInput,
+            patientUuid: 'other-patient',
+            encounterUuid: 'enc-uuid',
+          },
+        ]),
+      ).rejects.toThrow('same patient and save target');
+
+      expect(mockedPost).not.toHaveBeenCalled();
+    });
   });
 });

@@ -1,5 +1,11 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import {
+  act,
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+} from '@testing-library/react';
 import { useRef, useState } from 'react';
 import { DocumentUpload } from '../DocumentUpload';
 import {
@@ -550,6 +556,60 @@ describe('DocumentUpload', () => {
           title: 'DOCUMENT_UPLOAD_INVALID_TYPE_TITLE',
           type: 'error',
         }),
+      );
+    });
+
+    it('locks the type and note controls while the save is in flight', async () => {
+      // Held open so the row is still on screen mid-save.
+      let releaseUpload: (value: { url: string }) => void = () => {};
+      uploadDocument.mockImplementationOnce(
+        () =>
+          new Promise<{ url: string }>((resolve) => {
+            releaseUpload = resolve;
+          }),
+      );
+      renderWidget();
+      selectFile();
+      await screen.findByTestId('pending-document-row');
+      fireEvent.click(screen.getByText('DOCUMENT_UPLOAD_ADD_NOTE'));
+
+      fireEvent.click(screen.getByTestId('harness-save'));
+
+      // The payload is built when the save starts, so an edit accepted now would never be sent.
+      await waitFor(() =>
+        expect(screen.getByTestId('document-note')).toBeDisabled(),
+      );
+      expect(screen.getByRole('combobox')).toBeDisabled();
+      expect(screen.getByLabelText('DOCUMENT_UPLOAD_DISCARD')).toBeDisabled();
+      expect(screen.getByText('DOCUMENT_UPLOAD_BUTTON')).toBeDisabled();
+
+      await act(async () => releaseUpload({ url: 'patient/doc.png' }));
+      await waitFor(() => expect(saveDocument).toHaveBeenCalled());
+    });
+
+    it('reuses the stored bytes when retrying a failed save instead of uploading again', async () => {
+      // Set explicitly: an earlier test installs a mockImplementation that clearAllMocks leaves in
+      // place, so the default resolved value cannot be relied on here.
+      uploadDocument.mockResolvedValue({ url: 'patient/stored-once.png' });
+      saveDocument.mockRejectedValueOnce(new Error('Save rejected'));
+      renderWidget();
+      selectFile();
+      await screen.findByTestId('pending-document-row');
+
+      fireEvent.click(screen.getByTestId('harness-save'));
+      expect(await savedSummary()).toEqual({
+        savedCount: 0,
+        failures: [{ fileName: 'doc.png', message: 'Save rejected' }],
+      });
+      expect(uploadDocument).toHaveBeenCalledTimes(1);
+
+      // Retry: the bytes are already stored, so uploading again would just orphan the first copy.
+      fireEvent.click(screen.getByTestId('harness-save'));
+
+      await waitFor(() => expect(saveDocument).toHaveBeenCalledTimes(2));
+      expect(uploadDocument).toHaveBeenCalledTimes(1);
+      expect(saveDocument).toHaveBeenLastCalledWith(
+        expect.objectContaining({ url: 'patient/stored-once.png' }),
       );
     });
 

@@ -70,6 +70,9 @@ export const DocumentsSection: React.FC<DocumentsSectionProps> = ({
   >([]);
   const [isSaving, setIsSaving] = useState(false);
   const [isLeaveConfirmationOpen, setIsLeaveConfirmationOpen] = useState(false);
+  // Set when the user has already confirmed they want to leave, so the guard below does not ask a
+  // second time — as the browser's own prompt — for a navigation we started ourselves.
+  const isLeavingIntentionally = useRef(false);
 
   const hasUnsavedDocuments = visitsWithPendingDocument.length > 0;
 
@@ -81,6 +84,9 @@ export const DocumentsSection: React.FC<DocumentsSectionProps> = ({
       return;
     }
     const confirmUnload = (event: BeforeUnloadEvent) => {
+      if (isLeavingIntentionally.current) {
+        return;
+      }
       event.preventDefault();
       // Legacy browsers need a returnValue set to raise the prompt at all.
       event.returnValue = '';
@@ -101,6 +107,7 @@ export const DocumentsSection: React.FC<DocumentsSectionProps> = ({
 
   const leaveToSearch = () => {
     setIsLeaveConfirmationOpen(false);
+    isLeavingIntentionally.current = true;
     if (searchHref) {
       window.location.href = searchHref;
     }
@@ -119,6 +126,24 @@ export const DocumentsSection: React.FC<DocumentsSectionProps> = ({
     },
     [],
   );
+
+  const visitKeys = visitGroups.map(
+    (group, index) => group.visit.id ?? `visit-${index}`,
+  );
+
+  // A visit that is no longer on the page cannot be holding anything unsaved, and a key left behind
+  // would arm the leave guard for good while making Save a silent no-op for it. Reconciled against
+  // the rendered visits rather than off the widget's ref being detached: the ref is rebuilt on every
+  // render (useImperativeHandle there is intentionally dependency-free), so a detach says nothing
+  // about whether the widget is really gone.
+  const renderedVisitKeys = visitKeys.join('|');
+  useEffect(() => {
+    const stillRendered = new Set(renderedVisitKeys.split('|'));
+    setVisitsWithPendingDocument((previous) => {
+      const next = previous.filter((visitKey) => stillRendered.has(visitKey));
+      return next.length === previous.length ? previous : next;
+    });
+  }, [renderedVisitKeys]);
 
   // Exactly one notification per Save, whatever it covered: every document of every visit, saved
   // or failed, is counted into a single message rather than each upload announcing itself.
@@ -188,6 +213,11 @@ export const DocumentsSection: React.FC<DocumentsSectionProps> = ({
           (summary): summary is DocumentSaveSummary => !!summary,
         ),
       );
+      // One refresh for the whole save, and awaited before Save becomes available again: a visit
+      // whose document encounter was just created still reports none until the encounters are
+      // re-read, and saving into it again meanwhile would create a second encounter — of which only
+      // one is ever read back, hiding the documents attached to the other.
+      await refetch();
     } finally {
       setIsSaving(false);
     }
@@ -268,7 +298,7 @@ export const DocumentsSection: React.FC<DocumentsSectionProps> = ({
                 },
               };
 
-          const visitKey = group.visit.id ?? `visit-${index}`;
+          const visitKey = visitKeys[index];
 
           return (
             <AccordionItem key={visitKey} title={visitLabel} open={index === 0}>
@@ -317,7 +347,6 @@ export const DocumentsSection: React.FC<DocumentsSectionProps> = ({
                 saveTarget={saveTarget}
                 documentTypes={documentTypes}
                 defaultOption={defaultOption}
-                onSaved={refetch}
                 onPendingChange={(hasPendingDocument) =>
                   handlePendingChange(visitKey, hasPendingDocument)
                 }

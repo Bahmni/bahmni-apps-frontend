@@ -1,7 +1,6 @@
 @use "@carbon/react/scss/spacing" as *;
 @use "@carbon/react/scss/theme" as *;
 @use "@carbon/react/scss/type" as *;
-@use "@carbon/react/scss/breakpoint" as *;
 
 // Shares the page gutter so it lines up with the patient banner above it.
 .documents {
@@ -79,13 +78,6 @@
   // Neutralise the global .cds--text-area padding-right (3rem) leak, ours only.
   & :global(.cds--text-area) {
     padding-inline: $spacing-05 !important;
-  }
-}
-
-// Below lg the Figma indent starves the row; let the tile fill the width like the banner.
-@include breakpoint-down(lg) {
-  .documents {
-    margin-inline: 0;
   }
 }
 

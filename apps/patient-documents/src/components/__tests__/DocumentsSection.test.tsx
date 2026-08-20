@@ -301,6 +301,51 @@ describe('DocumentsSection', () => {
     await waitFor(() => expect(mockSave).toHaveBeenCalledTimes(2));
   });
 
+  it('refreshes the list once for the whole save, not once per visit', async () => {
+    renderSection();
+    fireEvent.click(screen.getAllByTestId('select-file')[0]);
+    fireEvent.click(screen.getAllByTestId('select-file')[2]);
+
+    fireEvent.click(screen.getByTestId('save-documents'));
+
+    await waitFor(() => expect(mockRefetch).toHaveBeenCalledTimes(1));
+    expect(mockSave).toHaveBeenCalledTimes(2);
+  });
+
+  it('keeps save unavailable until the refresh that updates the save target has landed', async () => {
+    // A visit whose document encounter was just created still reports none until the encounters are
+    // re-read; saving again in that window would create a second encounter and hide documents.
+    let finishRefresh: () => void = () => {};
+    mockRefetch.mockImplementationOnce(
+      () =>
+        new Promise<void>((resolve) => {
+          finishRefresh = () => resolve();
+        }),
+    );
+    renderSection();
+    fireEvent.click(screen.getAllByTestId('select-file')[0]);
+
+    fireEvent.click(screen.getByTestId('save-documents'));
+
+    await waitFor(() => expect(mockRefetch).toHaveBeenCalled());
+    expect(screen.getByTestId('save-documents-loading')).toBeInTheDocument();
+    expect(screen.queryByTestId('save-documents')).not.toBeInTheDocument();
+
+    await act(async () => finishRefresh());
+
+    expect(screen.getByTestId('save-documents')).toBeInTheDocument();
+  });
+
+  it('keeps save enabled after discarding one of two pending visits', () => {
+    renderSection();
+    fireEvent.click(screen.getAllByTestId('select-file')[0]);
+    fireEvent.click(screen.getAllByTestId('select-file')[1]);
+
+    fireEvent.click(screen.getAllByTestId('discard-file')[0]);
+
+    expect(screen.getByTestId('save-documents')).toBeEnabled();
+  });
+
   it('does not save visits with nothing pending', async () => {
     renderSection();
 
@@ -492,6 +537,20 @@ describe('DocumentsSection', () => {
       fireEvent.click(screen.getByText('Leave'));
 
       expect(window.location.href).toBe(SEARCH_HREF);
+    });
+
+    it('does not ask a second time once the user has confirmed leaving', () => {
+      renderSection();
+      fireEvent.click(screen.getAllByTestId('select-file')[0]);
+      clickBackToSearch();
+
+      fireEvent.click(screen.getByText('Leave'));
+
+      // The browser fires beforeunload for the navigation we just started. Cancelling it here is
+      // what raises the native "Leave site?" prompt on top of the modal the user already answered.
+      const unload = new Event('beforeunload', { cancelable: true });
+      window.dispatchEvent(unload);
+      expect(unload.defaultPrevented).toBe(false);
     });
 
     it('warns through the browser on any other exit only while documents are unsaved', () => {

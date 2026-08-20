@@ -1,5 +1,4 @@
 import type { DocumentSaveTarget, DocumentType } from '@bahmni/services';
-import type { Ref } from 'react';
 
 // Re-export so consumers/tests of this widget can reference the shared type.
 export type { DocumentSaveTarget } from '@bahmni/services';
@@ -32,7 +31,6 @@ export interface DocumentUploadProps {
   onSaved?: () => void;
   // Lets the consumer enable/disable its own Save control as files are picked or discarded.
   onPendingChange?: (hasPendingDocument: boolean) => void;
-  ref?: Ref<DocumentUploadHandle>;
 }
 
 // Chosen but not yet uploaded or saved. `url` is a blob URL used for the preview only; the File is
@@ -46,4 +44,7 @@ export interface PendingDocument {
   documentType: DocumentType | null;
   note: string;
   isNoteVisible: boolean;
+  // Set once the bytes are stored server-side, so retrying a failed save does not upload the file a
+  // second time and leave the first copy orphaned.
+  uploadedUrl?: string;
 }
