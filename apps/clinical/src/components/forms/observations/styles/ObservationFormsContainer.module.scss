@@ -24,6 +24,15 @@
   width: 100%;
 }
 
+.loadingWrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  width: 100%;
+  padding: $spacing-08;
+}
+
 // Custom button spacing for form view
 .formViewActionArea {
   :global(.buttonSet) {
@@ -37,14 +46,16 @@
   }
 }
 
-// Pin icon styling
-.formTitleContainer {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  width: 100%;
+// Section title shown in edit mode below EncounterDetails — mirrors the form
+// name title that appears in the ActionArea when adding a form.
+.editFormSectionTitle {
+  padding: $spacing-04 $spacing-06;
+  font-size: $spacing-05;
+  font-weight: 600;
+  color: $text-primary;
 }
 
+// Pin icon styling
 .pinIconContainer {
   cursor: pointer;
   padding: 4px;

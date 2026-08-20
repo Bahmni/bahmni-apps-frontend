@@ -22,7 +22,7 @@ import {
   createEncounterDiagnosisResource,
   createEncounterConditionResource,
 } from '../utils/fhir/conditionResourceCreator';
-import { createObservationResources } from '../utils/fhir/observationResourceCreator';
+import { createObservationEntries } from '../utils/fhir/observationResourceCreator';
 import {
   createPractitionerReference,
   createEncounterReferenceFromString,
@@ -115,6 +115,7 @@ export function createDiagnosisBundleEntries({
       createEncounterReferenceFromString(encounterReference),
       createPractitionerReference(practitionerUUID),
       consultationDate,
+      diagnosis.conceptSystem,
     );
     const diagnosisBundleEntry = createBundleEntry(
       diagnosisResourceURL,
@@ -409,6 +410,7 @@ export function createConditionsBundleEntries({
       consultationDate,
       onsetDate!,
       'active',
+      condition.conceptSystem,
     );
 
     const conditionBundleEntry = createBundleEntry(
@@ -453,7 +455,9 @@ export function createObservationBundleEntries({
 
   const observationEntries: BundleEntry[] = [];
 
-  // Iterate through all observation forms and their observations
+  const encounterRef = createEncounterReferenceFromString(encounterReference);
+  const practitionerRef = createPractitionerReference(practitionerUUID);
+
   for (const formData of observationFormsData) {
     const { observations, basedOn } = formData;
 
@@ -461,25 +465,14 @@ export function createObservationBundleEntries({
       continue;
     }
 
-    // Create FHIR Observation resources from the observation payloads
-    const observationResults = createObservationResources(
+    const entries = createObservationEntries(
       observations,
       encounterSubject,
-      createEncounterReferenceFromString(encounterReference),
-      createPractitionerReference(practitionerUUID),
+      encounterRef,
+      practitionerRef,
       basedOn,
     );
-
-    // Create bundle entries for each observation resource
-    // Use the pre-generated fullUrl so hasMember references work correctly
-    for (const result of observationResults) {
-      const observationBundleEntry = createBundleEntry(
-        result.fullUrl,
-        result.resource,
-        'POST',
-      );
-      observationEntries.push(observationBundleEntry);
-    }
+    observationEntries.push(...entries);
   }
 
   return observationEntries;

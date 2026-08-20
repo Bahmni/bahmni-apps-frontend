@@ -558,3 +558,5 @@ export function getTimeInMinutes(timeStr: string): number | null {
   const [hours, minutes] = time24.split(':').map(Number);
   return hours * 60 + minutes;
 }
+
+export const isDate = (value: string) => /^\d{4}-\d{2}-\d{2}T/.test(value);

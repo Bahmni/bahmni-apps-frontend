@@ -25,6 +25,7 @@ jest.mock('@bahmni/services', () => ({
   dispatchAuditEvent: jest.fn(),
   getPatientProfile: jest.fn(),
   getPatientPhotoDataUrl: jest.fn(),
+  renderAsHtml: jest.fn().mockResolvedValue('<html><body>card</body></html>'),
   useTranslation: () => ({
     t: (key: string) => key,
   }),
@@ -40,11 +41,36 @@ jest.mock('@bahmni/services', () => ({
 jest.mock('@bahmni/widgets', () => ({
   ...jest.requireActual('@bahmni/widgets'),
   useNotification: jest.fn(),
+  UserGlobalAction: jest.fn(() => <div data-testid="user-global-action" />),
+  useUserPrivilege: jest.fn(() => ({ userPrivileges: [] })),
+  // Stubbed so these page tests can assert the props contract. The render-API
+  // wiring (renderAsHtml receiving templateId/format/locale/context) is covered
+  // by DocumentPrintButton's own tests in @bahmni/widgets.
+  DocumentPrintButton: jest.fn(
+    ({
+      printOptions,
+      disabled,
+      'data-testid': testId,
+    }: {
+      printOptions?: { templateId: string }[];
+      disabled?: boolean;
+      'data-testid'?: string;
+    }) =>
+      printOptions?.length ? (
+        <button type="button" data-testid={testId} disabled={disabled} />
+      ) : null,
+  ),
 }));
+
+// Mutable so a test can simulate navigating between patients on the same route.
+// Held as a plain object rather than a jest.fn() so afterEach's clearAllMocks
+// cannot strip its return value out from under the other tests.
+const mockRouteParams: { patientUuid?: string } = {};
 
 jest.mock('react-router-dom', () => ({
   ...jest.requireActual('react-router-dom'),
   useNavigate: () => jest.fn(),
+  useParams: () => mockRouteParams,
 }));
 
 jest.mock('../../../hooks/useCreatePatient');
@@ -402,6 +428,7 @@ describe('PatientRegister', () => {
 
   afterEach(() => {
     jest.clearAllMocks();
+    delete mockRouteParams.patientUuid;
   });
 
   const Wrapper = ({ children }: { children: ReactNode }) => (
@@ -1348,6 +1375,224 @@ describe('PatientRegister', () => {
         expect(accordionButtons[0]).toHaveAttribute('aria-expanded', 'true');
         expect(screen.getByTestId('patient-profile')).toBeInTheDocument();
       });
+    });
+  });
+
+  describe('Print Registration Card', () => {
+    const PRINT_OPTION = {
+      translationKey: 'REGISTRATION_PRINT_REGISTRATION_CARD',
+      templateId: 'REG_CARD_V1',
+    };
+
+    const mockConfig = (printOptions?: unknown) => {
+      const { useRegistrationConfig } = jest.requireMock(
+        '../../../providers/registrationConfig',
+      );
+      useRegistrationConfig.mockReturnValue({
+        registrationConfig: {
+          registrationForm: {
+            sections: [
+              { name: 'Address Details', controls: [{ type: 'address' }] },
+            ],
+          },
+          ...(printOptions !== undefined && { printOptions }),
+        },
+      });
+    };
+
+    const mockPrivileges = (userPrivileges: { name: string }[]) => {
+      const { useUserPrivilege } = jest.requireMock('@bahmni/widgets');
+      (useUserPrivilege as jest.Mock).mockReturnValue({ userPrivileges });
+    };
+
+    const printButtonMock = () =>
+      jest.requireMock('@bahmni/widgets').DocumentPrintButton as jest.Mock;
+
+    const lastPrintProps = () => printButtonMock().mock.calls.at(-1)?.[0];
+
+    // patientUuid is derived from metadata, so this simulates an already-saved patient
+    const mockSavedPatient = () => {
+      (usePatientDetails as jest.Mock).mockReturnValue({
+        metadata: { patientUuid: 'patient-uuid-1' },
+        photo: undefined,
+        isLoading: false,
+      });
+    };
+
+    it('should render the print button for a saved patient when printOptions are configured', async () => {
+      mockConfig([PRINT_OPTION]);
+      mockPrivileges([{ name: 'View Patients' }]);
+      mockSavedPatient();
+
+      renderComponent();
+
+      expect(
+        await screen.findByTestId('print-registration-card'),
+      ).toBeInTheDocument();
+    });
+
+    it('should not render the print button before the patient is saved', () => {
+      mockConfig([PRINT_OPTION]);
+      mockPrivileges([{ name: 'View Patients' }]);
+      // usePatientDetails keeps its default metadata: undefined
+
+      renderComponent();
+
+      expect(
+        screen.queryByTestId('print-registration-card'),
+      ).not.toBeInTheDocument();
+    });
+
+    it('should not render the print button when printOptions are not configured', () => {
+      mockConfig(undefined);
+      mockPrivileges([{ name: 'View Patients' }]);
+      mockSavedPatient();
+
+      renderComponent();
+
+      expect(
+        screen.queryByTestId('print-registration-card'),
+      ).not.toBeInTheDocument();
+    });
+
+    it('should not render the print button when the user lacks the required privilege', () => {
+      mockConfig([
+        { ...PRINT_OPTION, privileges: ['app:registration:printcard'] },
+      ]);
+      mockPrivileges([{ name: 'View Patients' }]);
+      mockSavedPatient();
+
+      renderComponent();
+
+      expect(
+        screen.queryByTestId('print-registration-card'),
+      ).not.toBeInTheDocument();
+    });
+
+    it('should not save the patient when the print button is clicked', async () => {
+      mockConfig([PRINT_OPTION]);
+      mockPrivileges([{ name: 'View Patients' }]);
+      mockSavedPatient();
+
+      renderComponent();
+
+      fireEvent.click(await screen.findByTestId('print-registration-card'));
+
+      await waitFor(() => {
+        expect(mockMutateAsync).not.toHaveBeenCalled();
+      });
+    });
+
+    it('should pass the patient uuid under both render context keys', async () => {
+      mockConfig([PRINT_OPTION]);
+      mockPrivileges([{ name: 'View Patients' }]);
+      mockSavedPatient();
+
+      renderComponent();
+      await screen.findByTestId('print-registration-card');
+
+      // Both keys are required: templates differ on which casing they expect.
+      expect(lastPrintProps().renderContext).toEqual({
+        patientUuid: 'patient-uuid-1',
+        patientUUID: 'patient-uuid-1',
+      });
+    });
+
+    it('should disable the print button while a save is in flight', async () => {
+      (useUpdatePatient as jest.Mock).mockReturnValue({
+        mutateAsync: mockMutateAsync,
+        isPending: true,
+      });
+      mockConfig([PRINT_OPTION]);
+      mockPrivileges([{ name: 'View Patients' }]);
+      mockSavedPatient();
+
+      renderComponent();
+
+      expect(
+        await screen.findByTestId('print-registration-card'),
+      ).toBeDisabled();
+    });
+
+    it('should keep only the options the user is privileged for', async () => {
+      const allowed = {
+        translationKey: 'ALLOWED_CARD',
+        templateId: 'ALLOWED_V1',
+        privileges: ['app:registration:printcard'],
+      };
+      const denied = {
+        translationKey: 'DENIED_CARD',
+        templateId: 'DENIED_V1',
+        privileges: ['app:registration:printsomethingelse'],
+      };
+      mockConfig([allowed, denied]);
+      mockPrivileges([{ name: 'app:registration:printcard' }]);
+      mockSavedPatient();
+
+      renderComponent();
+      await screen.findByTestId('print-registration-card');
+
+      expect(lastPrintProps().printOptions).toEqual([allowed]);
+    });
+
+    it('should keep an unrestricted option for a user with no privileges', async () => {
+      mockConfig([PRINT_OPTION]);
+      mockPrivileges([]);
+      mockSavedPatient();
+
+      renderComponent();
+
+      expect(
+        await screen.findByTestId('print-registration-card'),
+      ).toBeInTheDocument();
+    });
+
+    it('should not print the previous patient after navigating to another patient', async () => {
+      mockConfig([PRINT_OPTION]);
+      mockPrivileges([{ name: 'View Patients' }]);
+      // The details query still holds patient 1's metadata: this is the window
+      // after the URL changes but before patient 2's details have loaded.
+      mockSavedPatient();
+      mockRouteParams.patientUuid = 'patient-uuid-1';
+
+      const { rerender } = renderComponent();
+      expect(
+        await screen.findByTestId('print-registration-card'),
+      ).toBeInTheDocument();
+
+      printButtonMock().mockClear();
+      mockRouteParams.patientUuid = 'patient-uuid-2';
+      rerender(<PatientRegister />);
+
+      // The button is withdrawn until patient 2's details arrive...
+      await waitFor(() => {
+        expect(
+          screen.queryByTestId('print-registration-card'),
+        ).not.toBeInTheDocument();
+      });
+
+      // ...and crucially, no render in that window offered patient 1's card.
+      expect(
+        printButtonMock()
+          .mock.calls.map(([props]) => props.renderContext?.patientUuid)
+          .filter(Boolean),
+      ).not.toContain('patient-uuid-1');
+    });
+
+    it('should hide the print button while privileges are still loading', () => {
+      const { useUserPrivilege } = jest.requireMock('@bahmni/widgets');
+      (useUserPrivilege as jest.Mock).mockReturnValue({
+        userPrivileges: undefined,
+        isLoading: true,
+      });
+      mockConfig([PRINT_OPTION]);
+      mockSavedPatient();
+
+      renderComponent();
+
+      expect(
+        screen.queryByTestId('print-registration-card'),
+      ).not.toBeInTheDocument();
     });
   });
 });

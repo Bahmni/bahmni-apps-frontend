@@ -1,10 +1,17 @@
 import { Button, Icon, ICON_SIZE } from '@bahmni/design-system';
-import { useTranslation, type VisitType } from '@bahmni/services';
+import {
+  useTranslation,
+  filterExtensionsByPrivileges,
+  type VisitType,
+  type ActionExtension,
+} from '@bahmni/services';
+import { useUserPrivilege } from '@bahmni/widgets';
+import { useQueryClient } from '@tanstack/react-query';
+import { useMemo } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { useFilteredExtensions } from '../../hooks/useFilteredExtensions';
-import { useCreateVisit } from '../../hooks/useVisit';
+import { useCreateVisit, useIsCreatingVisit } from '../../hooks/useVisit';
 import { VisitTypeSelector } from '../../pages/PatientRegister/visitTypeSelector';
-import { AppExtensionConfig } from '../../providers/registrationConfig';
+import { useRegistrationConfig } from '../../providers/registrationConfig';
 import { handleExtensionNavigation } from '../../utils/extensionNavigation';
 
 export interface RegistrationActionsProps {
@@ -31,12 +38,32 @@ export const RegistrationActions = ({
   const { t } = useTranslation();
   const navigate = useNavigate();
   const routeParams = useParams();
+  const queryClient = useQueryClient();
   const { createVisit } = useCreateVisit();
-  const { filteredExtensions, isLoading } = useFilteredExtensions({
-    extensionPointId,
-  });
+  const { registrationConfig, isLoading: configLoading } =
+    useRegistrationConfig();
+  const { userPrivileges, isLoading: privilegesLoading } = useUserPrivilege();
+  const isLoading = configLoading || privilegesLoading;
+  const isCreatingVisit = useIsCreatingVisit();
 
-  // Auto-extract URL context from route params as key-value pairs, filtering out undefined values
+  const filteredExtensions = useMemo<ActionExtension[]>(() => {
+    const registrationExtensions = registrationConfig?.extensions ?? [];
+    const extensions = extensionPointId
+      ? registrationExtensions.filter(
+          (ext) => ext.extensionPointId === extensionPointId,
+        )
+      : registrationExtensions;
+    return filterExtensionsByPrivileges(extensions, userPrivileges)
+      .filter(
+        (ext): ext is ActionExtension =>
+          !!ext.extensionParams && 'type' in ext.extensionParams,
+      )
+      .sort(
+        (a, b) =>
+          (a.extensionParams?.order ?? 0) - (b.extensionParams?.order ?? 0),
+      );
+  }, [registrationConfig, userPrivileges, extensionPointId]);
+
   const routeContext: Record<string, string> = Object.fromEntries(
     Object.entries(routeParams).filter(([, value]) => value !== undefined) as [
       string,
@@ -50,37 +77,42 @@ export const RegistrationActions = ({
 
   const handleVisitTypeSelect = async (visitType: VisitType) => {
     if (!onBeforeNavigate) return;
+    if (queryClient.getQueryData(['startVisitInProgress'])) return;
 
-    const patientUuid = await onBeforeNavigate();
-    if (!patientUuid) return;
+    // Set synchronously, before the first await, so that if onBeforeNavigate
+    // triggers a navigation (and remount) mid-flight, the remounted
+    // component's very first render already reads this flag as true.
+    queryClient.setQueryData(['startVisitInProgress'], true);
+    try {
+      const patientUuid = await onBeforeNavigate();
+      if (!patientUuid) return;
 
-    await createVisit(patientUuid, visitType);
-  };
-
-  const handleActiveVisitClick = async (extension: AppExtensionConfig) => {
-    if (!onBeforeNavigate) return;
-    const patientUuid = await onBeforeNavigate();
-    if (!patientUuid) return;
-    if (extension.url) {
-      handleExtensionNavigation(extension.url, routeContext, navigate);
+      await createVisit(patientUuid, visitType);
+    } finally {
+      queryClient.setQueryData(['startVisitInProgress'], false);
     }
   };
 
-  const handleClick = async (extension: AppExtensionConfig) => {
+  const navigateToExtension = async (extension: ActionExtension) => {
     if (!onBeforeNavigate) return;
 
-    const result = await onBeforeNavigate();
-    if (!result) return;
+    const patientUuid = await onBeforeNavigate();
+    if (!patientUuid) return;
 
-    if (extension.url) {
-      handleExtensionNavigation(extension.url, routeContext, navigate);
+    const url = extension.extensionParams?.url;
+    if (url) {
+      handleExtensionNavigation(
+        url,
+        { ...routeContext, patientUuid },
+        navigate,
+      );
     }
   };
 
   return (
     <>
       {filteredExtensions.map((extension) => {
-        if (extension.type === 'startVisit') {
+        if (extension.extensionParams?.type === 'startVisit') {
           return (
             <VisitTypeSelector
               key={extension.id}
@@ -88,33 +120,30 @@ export const RegistrationActions = ({
                 handleVisitTypeSelect(visitType)
               }
               activeVisitLabel={t('PATIENT_DASHBOARD_REDIRECT')}
-              onActiveVisitClick={() => handleActiveVisitClick(extension)}
-              disabled={disabled}
+              onActiveVisitClick={() => navigateToExtension(extension)}
+              disabled={disabled || isCreatingVisit}
+              isLoading={isCreatingVisit}
               data-testid="visit-type-selector"
             />
           );
         }
 
+        const { id, icon, extensionParams } = extension;
+
         return (
           <Button
-            key={extension.id}
-            kind={extension.kind ?? 'primary'}
-            onClick={() => handleClick(extension)}
+            key={id}
+            kind={extensionParams?.buttonKind ?? 'primary'}
+            onClick={() => navigateToExtension(extension)}
             disabled={disabled}
             data-testid="registration-action-button"
             renderIcon={
-              extension.icon
-                ? () => (
-                    <Icon
-                      id={extension.id}
-                      name={extension.icon!}
-                      size={ICON_SIZE.SM}
-                    />
-                  )
+              icon
+                ? () => <Icon id={id} name={icon} size={ICON_SIZE.SM} />
                 : undefined
             }
           >
-            {t(extension.translationKey)}
+            {t(extension.translationKey!)}
           </Button>
         );
       })}

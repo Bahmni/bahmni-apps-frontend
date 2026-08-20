@@ -44,11 +44,16 @@ describe('visitService', () => {
   };
   const patientUuid = '9891a8b4-7404-4c05-a207-5ec9d34fc719';
 
+  const mockCreatedVisit = {
+    uuid: 'created-visit-uuid-123',
+    startDatetime: '2026-06-08T08:00:00.000+0000',
+  };
+
   beforeEach(() => {
     jest.clearAllMocks();
     mockGetUserLoginLocation.mockReturnValue(mockLoginLocation);
     mockGet.mockResolvedValue(mockVisitLocationUUID as any);
-    mockPost.mockResolvedValue({} as any);
+    mockPost.mockResolvedValue(mockCreatedVisit as any);
   });
 
   describe('checkIfActiveVisitExists', () => {
@@ -95,15 +100,26 @@ describe('visitService', () => {
       });
     });
 
-    it('should handle visit creation with proper location', async () => {
+    it('should return the created visit with uuid and startDatetime', async () => {
       mockGet.mockResolvedValueOnce(mockVisitLocationUUID as any);
-      mockPost.mockResolvedValueOnce({} as any);
+      mockPost.mockResolvedValueOnce(mockCreatedVisit as any);
 
       const result = await createVisitForPatient(patientUuid, mockVisitType);
 
-      expect(mockGet).toHaveBeenCalled();
-      expect(mockPost).toHaveBeenCalled();
-      expect(result).toBeDefined();
+      expect(result.uuid).toBe(mockCreatedVisit.uuid);
+      expect(result.startDatetime).toBe(mockCreatedVisit.startDatetime);
+    });
+
+    it('should request uuid and startDatetime in the visit POST representation', async () => {
+      mockGet.mockResolvedValueOnce(mockVisitLocationUUID as any);
+      mockPost.mockResolvedValueOnce(mockCreatedVisit as any);
+
+      await createVisitForPatient(patientUuid, mockVisitType);
+
+      expect(mockPost).toHaveBeenCalledWith(
+        expect.stringContaining('v=custom:(uuid,startDatetime)'),
+        expect.any(Object),
+      );
     });
   });
 });

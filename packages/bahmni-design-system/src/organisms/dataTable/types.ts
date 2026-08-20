@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 import type { ButtonProps } from '../../atoms/button';
 
-export type FilterType = 'text' | 'select' | 'dateRange';
+export type FilterType = 'text' | 'select' | 'dateRange' | 'numeric';
 
 export interface DataTableFilterOption {
   value: string;

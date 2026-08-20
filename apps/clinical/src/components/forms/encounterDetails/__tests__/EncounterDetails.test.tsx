@@ -32,16 +32,14 @@ jest.mock('@bahmni/design-system', () => {
   interface MockDropdownProps {
     id: string;
     titleText: string;
-
     items: Array<any>;
-
     itemToString: (item: any) => string;
     disabled?: boolean;
-
     initialSelectedItem?: any;
     selectedItem?: any;
     invalid?: boolean;
     invalidText?: string;
+    onChange?: (data: { selectedItem: any }) => void;
   }
 
   return {
@@ -56,6 +54,7 @@ jest.mock('@bahmni/design-system', () => {
       selectedItem,
       invalid,
       invalidText,
+      onChange,
     }: MockDropdownProps) => {
       const safeItemToString = (item: any): string => {
         try {
@@ -76,6 +75,15 @@ jest.mock('@bahmni/design-system', () => {
             aria-label={titleText}
             aria-invalid={invalid}
             aria-errormessage={invalid ? `${id}-error` : undefined}
+            onChange={(e) => {
+              if (onChange) {
+                const val = e.target.value;
+                const item = items.find((it: any) =>
+                  typeof it === 'object' && it?.uuid ? it.uuid === val : false,
+                );
+                onChange({ selectedItem: item ?? null });
+              }
+            }}
           >
             {displayItem && (
               <option value="selected">{safeItemToString(displayItem)}</option>
@@ -234,6 +242,7 @@ describe('BasicForm', () => {
     selectedVisitType: null,
     encounterParticipants: [],
     consultationDate: new Date(),
+    isConsultationDateReady: true,
     requestedEncounterType: null,
     isEncounterDetailsFormReady: true,
     activeVisit: null,
@@ -288,7 +297,9 @@ describe('BasicForm', () => {
     );
   });
 
-  const renderBasicForm = () => render(<BasicForm />);
+  const renderBasicForm = (
+    props?: Partial<React.ComponentProps<typeof BasicForm>>,
+  ) => render(<BasicForm {...props} />);
 
   describe('usePatientUUID Hook Integration', () => {
     it('should call usePatientVisit with patient UUID from hook', () => {
@@ -438,6 +449,43 @@ describe('BasicForm', () => {
       expect(screen.getByTestId('encounter-type-dropdown')).toBeInTheDocument();
       expect(screen.getByTestId('visit-type-dropdown')).toBeInTheDocument();
       expect(screen.getByTestId('practitioner-dropdown')).toBeInTheDocument();
+    });
+
+    // Every non-date field renders its dropdown (instead of a skeleton) once its
+    // selected value is populated, so only the encounter-date field is left to
+    // toggle on isConsultationDateReady.
+    const readyStoreState = {
+      ...mockStoreState,
+      selectedLocation: mockLocations[0],
+      selectedEncounterType: mockEncounterConcepts.encounterTypes[0],
+      selectedVisitType: mockEncounterConcepts.visitTypes[0],
+    };
+
+    it('should show the date picker skeleton when isConsultationDateReady is false', () => {
+      (useEncounterDetailsStore as unknown as jest.Mock).mockReturnValue({
+        ...readyStoreState,
+        isConsultationDateReady: false,
+      });
+
+      renderBasicForm();
+
+      // Only the encounter-date field renders its placeholder (title + body).
+      expect(screen.getAllByTestId('skeleton-placeholder')).toHaveLength(2);
+      expect(screen.queryByTestId('date-picker-input')).not.toBeInTheDocument();
+    });
+
+    it('should show the date picker when isConsultationDateReady is true', () => {
+      (useEncounterDetailsStore as unknown as jest.Mock).mockReturnValue({
+        ...readyStoreState,
+        isConsultationDateReady: true,
+      });
+
+      renderBasicForm();
+
+      expect(screen.getByTestId('date-picker-input')).toBeInTheDocument();
+      expect(
+        screen.queryByTestId('skeleton-placeholder'),
+      ).not.toBeInTheDocument();
     });
   });
 
@@ -1898,6 +1946,18 @@ describe('BasicForm', () => {
         await waitFor(() => {
           expect(mockSetEncounterDetailsFormReady).toHaveBeenCalledWith(false);
         });
+      });
+    });
+
+    describe('startVisit mode skips form-ready computation', () => {
+      it('should not call setEncounterDetailsFormReady in startVisit mode', async () => {
+        renderBasicForm({
+          encounterSessionStartContext: { isVisitActive: false },
+        });
+        await new Promise((resolve) => setTimeout(resolve, 0));
+        expect(
+          mockStoreState.setEncounterDetailsFormReady,
+        ).not.toHaveBeenCalled();
       });
     });
 

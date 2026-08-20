@@ -7,6 +7,7 @@ export interface InputControl {
   key: string;
   encounterTypes?: string[];
   privilege?: string[];
+  onActionTriggered?: boolean;
   inputControlConfig?: ClinicalInputControlConfig;
   component: React.ComponentType<{
     encounterSessionStartContext?: EncounterSessionStartContext;
@@ -19,11 +20,6 @@ export interface InputControl {
   createBundleEntries?: (ctx: EncounterContext) => BundleEntry[];
   updateItemCDSCards?: (itemId: string, cards: CDSCard[]) => void;
   hasCriticalCDSCards?: () => boolean;
-  /**
-   * Optional direct submit handler. When present, the ConsultationPad calls this
-   * instead of including the form's data in the consultation bundle.
-   * Used for forms that call dedicated FHIR operations (e.g., $stop).
-   */
   onDirectSubmit?: () => Promise<void>;
 }
 

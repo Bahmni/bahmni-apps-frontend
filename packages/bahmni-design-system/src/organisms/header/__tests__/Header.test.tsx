@@ -227,19 +227,106 @@ describe('Header', () => {
       expect(mockGlobalActions[1].onClick).toHaveBeenCalledTimes(1);
     });
 
-    it('does not render global actions when array is empty', () => {
+    it('does not render global bar when globalActions is empty and no userMenu', () => {
       render(<Header {...defaultProps} globalActions={[]} />);
 
       expect(screen.queryByTestId('header-global-bar')).not.toBeInTheDocument();
     });
 
-    it('does not render global actions when not provided', () => {
+    it('does not render global bar when neither globalActions nor userMenu provided', () => {
       const propsWithoutGlobalActions = { ...defaultProps };
       delete propsWithoutGlobalActions.globalActions;
 
       render(<Header {...propsWithoutGlobalActions} />);
 
       expect(screen.queryByTestId('header-global-bar')).not.toBeInTheDocument();
+    });
+
+    it('renders userMenu directly in the global bar (no HeaderGlobalAction wrapper)', () => {
+      render(
+        <Header
+          {...defaultProps}
+          globalActions={[]}
+          userMenu={<div data-testid="user-menu">User Menu</div>}
+        />,
+      );
+
+      expect(screen.getByTestId('header-global-bar')).toBeInTheDocument();
+      expect(screen.getByTestId('user-menu')).toBeInTheDocument();
+      // userMenu is not wrapped in a global-action tooltip button
+      expect(
+        screen.queryByTestId('global-action-user'),
+      ).not.toBeInTheDocument();
+    });
+
+    it('renders userMenu alongside globalActions', () => {
+      render(
+        <Header
+          {...defaultProps}
+          userMenu={<div data-testid="user-menu">User Menu</div>}
+        />,
+      );
+
+      expect(screen.getByTestId('header-global-bar')).toBeInTheDocument();
+      expect(screen.getByTestId('global-action-search')).toBeInTheDocument();
+      expect(screen.getByTestId('user-menu')).toBeInTheDocument();
+    });
+
+    it('renders globalFeatures in the global bar', () => {
+      render(
+        <Header
+          {...defaultProps}
+          globalActions={[]}
+          globalFeatures={[
+            <div key="loc" data-testid="location-selector">
+              Loc
+            </div>,
+          ]}
+        />,
+      );
+
+      expect(screen.getByTestId('header-global-bar')).toBeInTheDocument();
+      expect(screen.getByTestId('location-selector')).toBeInTheDocument();
+    });
+
+    it('renders the global bar when only globalFeatures are provided', () => {
+      render(
+        <Header
+          globalFeatures={[
+            <div key="loc" data-testid="location-selector">
+              Loc
+            </div>,
+          ]}
+        />,
+      );
+
+      expect(screen.getByTestId('header-global-bar')).toBeInTheDocument();
+      expect(screen.getByTestId('location-selector')).toBeInTheDocument();
+    });
+  });
+
+  describe('Brand', () => {
+    it('renders brand name and prefix as a HeaderName link', () => {
+      render(<Header brandName="Bahmni" brandPrefix="Home" brandHref="/" />);
+
+      const name = screen.getByTestId('header-name');
+      expect(name).toBeInTheDocument();
+      expect(name).toHaveAttribute('href', '/');
+      expect(screen.getByText('Bahmni')).toBeInTheDocument();
+      expect(screen.getByText('Home')).toBeInTheDocument();
+    });
+
+    it('renders brand with only a prefix', () => {
+      render(<Header brandPrefix="Home" />);
+
+      expect(screen.getByTestId('header-name')).toBeInTheDocument();
+      expect(screen.getByText('Home')).toBeInTheDocument();
+    });
+
+    it('does not render brand when neither name nor prefix provided', () => {
+      render(<Header {...defaultProps} />);
+
+      expect(screen.queryByTestId('header-name')).not.toBeInTheDocument();
     });
   });
 
@@ -361,6 +448,30 @@ describe('Header', () => {
   describe('Accessibility', () => {
     it('should have no accessibility violations', async () => {
       const { container } = render(<Header {...defaultProps} />);
+      const results = await axe(container);
+      expect(results).toHaveNoViolations();
+    });
+
+    it('should have no accessibility violations with brand, globalFeatures and userMenu slots', async () => {
+      const { container } = render(
+        <Header
+          {...defaultProps}
+          globalActions={[]}
+          brandName="Bahmni"
+          brandPrefix="Home"
+          brandHref="/"
+          globalFeatures={[
+            <div key="loc" data-testid="location-selector">
+              Location
+            </div>,
+          ]}
+          userMenu={
+            <button type="button" aria-label="User menu">
+              User
+            </button>
+          }
+        />,
+      );
       const results = await axe(container);
       expect(results).toHaveNoViolations();
     });

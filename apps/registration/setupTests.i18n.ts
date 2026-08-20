@@ -7,10 +7,10 @@ const initTestI18n = () => {
     lng: 'en',
     fallbackLng: 'en',
     debug: false,
-    ns: ['clinical'],
-    defaultNS: 'clinical',
+    ns: ['registration'],
+    defaultNS: 'registration',
     resources: {
-      en: { clinical: enTranslations },
+      en: { registration: enTranslations },
     },
     interpolation: {
       escapeValue: false,

@@ -10,6 +10,7 @@ export interface EncounterDetailsState {
   selectedVisitType: Concept | null;
   encounterParticipants: Provider[];
   consultationDate: Date;
+  isConsultationDateReady: boolean;
   requestedEncounterType: string | null;
   activeVisit: FhirEncounter | null;
   activeVisitError: Error | null;
@@ -42,6 +43,7 @@ export const useEncounterDetailsStore = create<EncounterDetailsState>(
     selectedVisitType: null,
     encounterParticipants: [],
     consultationDate: new Date(),
+    isConsultationDateReady: false,
     requestedEncounterType: null,
     isEncounterDetailsFormReady: false,
     activeVisit: null,
@@ -57,7 +59,8 @@ export const useEncounterDetailsStore = create<EncounterDetailsState>(
     setSelectedVisitType: (visitType) => set({ selectedVisitType: visitType }),
     setEncounterParticipants: (participants) =>
       set({ encounterParticipants: participants }),
-    setConsultationDate: (date) => set({ consultationDate: date }),
+    setConsultationDate: (date) =>
+      set({ consultationDate: date, isConsultationDateReady: true }),
     setEncounterDetailsFormReady: (ready) =>
       set({ isEncounterDetailsFormReady: ready }),
     setActiveVisit: (visit) => set({ activeVisit: visit }),
@@ -77,6 +80,7 @@ export const useEncounterDetailsStore = create<EncounterDetailsState>(
         selectedVisitType: null,
         encounterParticipants: [],
         consultationDate: new Date(),
+        isConsultationDateReady: false,
         requestedEncounterType: null,
         isEncounterDetailsFormReady: false,
         activeVisit: null,

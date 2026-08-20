@@ -115,6 +115,7 @@ export const useConditionsAndDiagnosesStore =
       const newDiagnosis: DiagnosisInputEntry = {
         id: diagnosis.conceptUuid,
         display: diagnosis.conceptName,
+        conceptSystem: diagnosis.conceptSystem,
         selectedCertainty: null,
         errors: {},
         hasBeenValidated: false,
@@ -238,6 +239,7 @@ export const useConditionsAndDiagnosesStore =
       const newCondition: ConditionInputEntry = {
         id: diagnosis.id,
         display: diagnosis.display,
+        conceptSystem: diagnosis.conceptSystem,
         durationValue: null,
         durationUnit: null,
         errors: {},

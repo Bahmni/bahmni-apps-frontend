@@ -1,12 +1,81 @@
-import { Observation, Encounter, Bundle } from 'fhir/r4';
+import { Encounter, Bundle } from 'fhir/r4';
 import { get, post, put } from '../api';
+import {
+  FHIR_ENCOUNTER_CLASS_CODE_SYSTEM,
+  FHIR_ENCOUNTER_TAG_SYSTEM,
+} from '../constants/fhir';
+import { getUserLoginLocation } from '../userService';
+import { getVisitLocationUUID } from '../visitService';
 import {
   PATIENT_VISITS_URL,
   PATIENT_ENCOUNTERS_URL,
   ENCOUNTER_TYPE_BY_NAME_URL,
-  FHIR_OBSERVATIONS_BY_ENCOUNTER_URL,
   FHIR_ENCOUNTER_URL,
 } from './constants';
+
+export interface BuildEncounterResourceParams {
+  type: Encounter['type'];
+  partOf: Encounter['partOf'];
+  subject: Encounter['subject'];
+  locationUuid: string;
+  periodStart: string;
+  practitionerUUIDs?: string[];
+}
+
+/**
+ * Builds the canonical FHIR Encounter shape used by both the condition service
+ * and the consultation-pad submission path. Centralising the shape here makes
+ * `encounterResourceCreator.ts` (apps/clinical) the only other place that
+ * constructs an Encounter, and it can be migrated to delegate here once its
+ * reference-creator helpers are aligned.
+ */
+export function buildEncounterResource({
+  type,
+  partOf,
+  subject,
+  locationUuid,
+  periodStart,
+  practitionerUUIDs,
+}: BuildEncounterResourceParams): Encounter {
+  return {
+    resourceType: 'Encounter',
+    status: 'in-progress',
+    class: {
+      system: FHIR_ENCOUNTER_CLASS_CODE_SYSTEM,
+      code: 'AMB',
+      display: 'ambulatory',
+    },
+    meta: {
+      tag: [
+        {
+          system: FHIR_ENCOUNTER_TAG_SYSTEM,
+          code: 'encounter',
+          display: 'Encounter',
+        },
+      ],
+    },
+    type,
+    subject,
+    partOf,
+    participant: practitionerUUIDs?.length
+      ? practitionerUUIDs.map((uuid) => ({
+          individual: {
+            reference: `Practitioner/${uuid}`,
+            type: 'Practitioner' as const,
+          },
+        }))
+      : undefined,
+    location: [
+      {
+        location: {
+          reference: `Location/${locationUuid}`,
+          type: 'Location' as const,
+        },
+      },
+    ],
+    period: { start: periodStart },
+  };
+}
 
 export interface EncounterTypeRef {
   uuid: string;
@@ -16,21 +85,29 @@ export interface EncounterTypeRef {
 /**
  * Fetches visits for a given patient UUID from the FHIR R4 endpoint
  * @param patientUUID - The UUID of the patient
+ * @param locationUuid - Optional location UUID to filter visits server-side
  * @returns Promise resolving to a FhirEncounterBundle
  */
 export async function getPatientVisits(
   patientUUID: string,
+  locationUuid?: string,
 ): Promise<Bundle<Encounter>> {
-  return await get<Bundle<Encounter>>(PATIENT_VISITS_URL(patientUUID));
+  return await get<Bundle<Encounter>>(
+    PATIENT_VISITS_URL(patientUUID, locationUuid),
+  );
 }
 
 /**
  * Fetches and transforms visits for a given patient UUID
  * @param patientUUID - The UUID of the patient
+ * @param locationUuid - Optional location UUID to filter visits server-side
  * @returns Promise resolving to an array of FhirEncounter
  */
-export async function getVisits(patientUUID: string): Promise<Encounter[]> {
-  const fhirEncounterBundle = await getPatientVisits(patientUUID);
+export async function getVisits(
+  patientUUID: string,
+  locationUuid?: string,
+): Promise<Encounter[]> {
+  const fhirEncounterBundle = await getPatientVisits(patientUUID, locationUuid);
   return (
     fhirEncounterBundle.entry
       ?.map((entry) => entry.resource)
@@ -89,12 +166,15 @@ export async function getEncounterTypeByName(
 /**
  * Gets the active visit for a patient (encounter with no end date)
  * @param patientUUID - The UUID of the patient
+ * @param locationUuid - Optional location UUID to filter visits by location
  * @returns Promise resolving to the current FhirEncounter or null if not found
  */
 export async function getActiveVisit(
   patientUUID: string,
+  locationUuid?: string,
 ): Promise<Encounter | null> {
-  const encounters = await getVisits(patientUUID);
+  const encounters = await getVisits(patientUUID, locationUuid);
+
   return encounters.find((encounter) => !encounter.period?.end) ?? null;
 }
 
@@ -111,19 +191,6 @@ export async function getEncounterByUuid(
   return await get<Encounter>(
     `/openmrs/ws/fhir2/R4/Encounter/${encounterUUID}`,
     options,
-  );
-}
-
-/**
- * Fetch observations by encounter UUID from FHIR API
- * @param encounterUUID - Encounter UUID
- * @returns Promise resolving to FHIR observation bundle
- */
-export async function getObservationsBundleByEncounterUuid(
-  encounterUUID: string,
-): Promise<Bundle<Observation>> {
-  return await get<Bundle<Observation>>(
-    FHIR_OBSERVATIONS_BY_ENCOUNTER_URL(encounterUUID),
   );
 }
 
@@ -149,4 +216,21 @@ export async function updateFhirEncounter(
   encounter: Encounter,
 ): Promise<Encounter> {
   return await put<Encounter>(`${FHIR_ENCOUNTER_URL}/${uuid}`, encounter);
+}
+
+/**
+ * Gets the active visit for a patient at the user's login location. This function
+ * automatically resolves the user's current login location to a visit location and
+ * fetches the active visit (encounter with no end date) for the specified patient.
+ * @param patientUuid - The UUID of the patient
+ * @returns Promise resolving to the active FHIR Encounter at the login location, or null if not found
+ */
+export async function getActiveVisitAtLoginLocation(
+  patientUuid: string,
+): Promise<Encounter | null> {
+  const loginLocationUuid = getUserLoginLocation().uuid;
+  const visitLocationResponse = await getVisitLocationUUID(loginLocationUuid);
+  const visitLocationUuid = visitLocationResponse.uuid;
+
+  return getActiveVisit(patientUuid, visitLocationUuid);
 }

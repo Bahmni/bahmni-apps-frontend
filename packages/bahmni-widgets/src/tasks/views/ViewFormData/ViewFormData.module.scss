@@ -1,0 +1,17 @@
+@use "@carbon/react/scss/spacing" as *;
+@use "@carbon/react/scss/theme" as *;
+@use "@carbon/react/scss/type" as *;
+
+.encounterGroup {
+  margin-bottom: $spacing-06;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+}
+
+.encounterHeader {
+  @include type-style("body-compact-01");
+  color: $text-secondary;
+  margin-bottom: $spacing-04;
+}

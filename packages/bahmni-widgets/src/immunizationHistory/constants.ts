@@ -26,6 +26,7 @@ export const NOT_ADMINISTERED_COLUMN_FIELDS: string[] = [
   'code',
   'reason',
   'date',
+  'recordedOn',
   'recordedBy',
 ];
 
@@ -41,5 +42,6 @@ export const NOT_ADMINISTERED_COLUMN_SORTABILITY: Record<string, boolean> = {
   code: true,
   reason: false,
   date: true,
+  recordedOn: true,
   recordedBy: true,
 };

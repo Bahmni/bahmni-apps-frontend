@@ -1,6 +1,6 @@
 import { Bundle, DocumentReference } from 'fhir/r4';
 import { get } from '../../api';
-import { CONCEPT_BY_FULLY_SPECIFIED_NAME_URL } from '../../conceptService/constants';
+import { OPENMRS_REST_V1 } from '../../constants/app';
 import { DOCUMENT_UPLOAD_MAX_SIZE_URL } from '../constants';
 import {
   getDocumentReferences,
@@ -95,7 +95,7 @@ describe('documentReferenceService', () => {
       await getDocumentReferences(PATIENT_UUID, encounterUuids);
 
       expect(mockedGet).toHaveBeenCalledWith(
-        `${BASE_URL}&encounter=enc-uuid-1,enc-uuid-2`,
+        `${BASE_URL}&encounter=enc-uuid-1%2Cenc-uuid-2`,
       );
     });
 
@@ -223,32 +223,6 @@ describe('documentReferenceService', () => {
 
       expect(result[0].attachments).toEqual([]);
       expect(result[0].documentUrl).toBe('');
-    });
-
-    it('handles missing masterIdentifier by using resource id', async () => {
-      const docWithoutMasterIdentifier: DocumentReference = {
-        resourceType: 'DocumentReference',
-        id: 'doc-2',
-        status: 'current',
-        content: [
-          {
-            attachment: {
-              contentType: 'application/pdf',
-              url: '100/doc.pdf',
-            },
-          },
-        ],
-      };
-      const bundleWithoutMasterIdentifier: Bundle<DocumentReference> = {
-        resourceType: 'Bundle',
-        type: 'searchset',
-        entry: [{ resource: docWithoutMasterIdentifier }],
-      };
-      mockedGet.mockResolvedValueOnce(bundleWithoutMasterIdentifier);
-
-      const result = await getFormattedDocumentReferences(PATIENT_UUID);
-
-      expect(result[0].documentIdentifier).toBe('doc-2');
     });
 
     it('uses category coding display when type coding is absent', async () => {
@@ -396,7 +370,7 @@ describe('documentReferenceService', () => {
       await getFormattedDocumentReferences(PATIENT_UUID, encounterUuids);
 
       expect(mockedGet).toHaveBeenCalledWith(
-        `${BASE_URL}&encounter=enc-uuid-1,enc-uuid-2`,
+        `${BASE_URL}&encounter=enc-uuid-1%2Cenc-uuid-2`,
       );
     });
   });
@@ -477,7 +451,7 @@ describe('documentReferenceService', () => {
       await getDocumentReferencePage(PATIENT_UUID, encounterUuids);
 
       expect(mockedGet).toHaveBeenCalledWith(
-        `${PAGE_BASE_URL}&encounter=enc-uuid-1,enc-uuid-2`,
+        `${PAGE_BASE_URL}&encounter=enc-uuid-1%2Cenc-uuid-2`,
       );
     });
 
@@ -500,6 +474,7 @@ describe('documentReferenceService', () => {
   describe('getDocumentTypes', () => {
     // Shape of the OpenMRS concept setMembers response.
     const conceptName = 'Patient Document Type';
+    const customView = 'custom:(setMembers:(uuid,display))';
     const conceptResponse = {
       results: [
         {
@@ -521,10 +496,11 @@ describe('documentReferenceService', () => {
     it('maps concept setMembers to {id,label} document type options', async () => {
       mockedGet.mockResolvedValueOnce(conceptResponse);
 
+      const conceptName = 'Patient Document';
       const result = await getDocumentTypes(conceptName);
 
       expect(mockedGet).toHaveBeenCalledWith(
-        CONCEPT_BY_FULLY_SPECIFIED_NAME_URL(conceptName),
+        `${OPENMRS_REST_V1}/concept?s=byFullySpecifiedName&name=Patient%20Document&v=custom%3A(setMembers%3A(uuid%2Cdisplay))`,
       );
       expect(result).toEqual([
         { id: 'a1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c6d', label: 'Prescription' },

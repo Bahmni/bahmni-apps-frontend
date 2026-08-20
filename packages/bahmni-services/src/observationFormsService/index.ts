@@ -1,6 +1,7 @@
 export {
   fetchObservationForms,
   fetchFormMetadata,
+  fetchFormUuidByObservationDate,
   getPatientFormData,
 } from './observationFormsService';
 export {
@@ -8,7 +9,6 @@ export {
   type FormApiResponse,
   type ApiNameTranslation,
   type FormPrivilege,
-  type ApiFormPrivilege,
   type FormMetadata,
   type FormMetadataApiResponse,
   type FormResource,
@@ -23,7 +23,7 @@ export {
   transformContainerObservationsToForm2Observations,
   convertImmutableToPlainObject,
   extractNotesFromFormData,
-  hasMissingMandatoryVisibleField,
+  formatDateForControl,
   type FormData,
   type FormControlData,
   type Form2Observation,

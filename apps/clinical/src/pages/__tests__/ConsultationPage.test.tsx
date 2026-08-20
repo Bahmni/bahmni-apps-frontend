@@ -6,10 +6,17 @@ import {
   usePatientUUID,
 } from '@bahmni/widgets';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { render, screen, waitFor, fireEvent } from '@testing-library/react';
+import {
+  act,
+  render,
+  screen,
+  waitFor,
+  fireEvent,
+} from '@testing-library/react';
 import { axe, toHaveNoViolations } from 'jest-axe';
 import React, { ReactNode } from 'react';
 import { MemoryRouter } from 'react-router-dom';
+import { dispatchConsultationStart } from '../../events/startConsultation';
 import { useClinicalConfig } from '../../providers/clinicalConfig';
 import ConsultationPage from '../ConsultationPage';
 
@@ -51,6 +58,25 @@ jest.mock('../../stores/observationFormsStore', () => ({
 jest.mock('../../components/patientHeader/PatientHeader', () => ({
   __esModule: true,
   default: jest.fn(() => <div data-testid="mocked-patient-header" />),
+}));
+
+jest.mock('../../components/consultationPadContainer', () => ({
+  __esModule: true,
+  default: jest.fn(
+    ({ isActionAreaExpanded, onToggleActionAreaExpand, onClose }) => (
+      <div data-testid="mocked-consultation-pad">
+        <button
+          data-testid="toggle-expand-button"
+          onClick={onToggleActionAreaExpand}
+        >
+          {isActionAreaExpanded ? 'Collapse' : 'Expand'}
+        </button>
+        <button data-testid="close-consultation-pad-button" onClick={onClose}>
+          Close
+        </button>
+      </div>
+    ),
+  ),
 }));
 
 jest.mock('../../components/dashboardContainer/DashboardContainer', () => ({
@@ -130,6 +156,7 @@ jest.mock('@bahmni/design-system', () => ({
       globalActions,
       onSideNavItemClick,
       breadcrumbItems,
+      userMenu,
     }) => (
       <div data-testid="mocked-header-component">
         {globalActions?.map(
@@ -144,6 +171,7 @@ jest.mock('@bahmni/design-system', () => ({
             </button>
           ),
         )}
+        {userMenu}
         {sideNavItems.map(
           (item: {
             id: string;
@@ -192,6 +220,7 @@ jest.mock('@bahmni/widgets', () => ({
   ProgramDetails: jest.fn(() => (
     <div data-testid="mocked-program-details">Program Details</div>
   )),
+  UserGlobalAction: jest.fn(() => <div data-testid="user-global-action" />),
 }));
 
 jest.mock('@bahmni/services', () => ({
@@ -920,6 +949,86 @@ describe('ConsultationPage', () => {
       await waitFor(() => {
         expect(dashboardContainer).toHaveAttribute('data-scroll-trigger', '2');
       });
+    });
+  });
+
+  describe('Side nav visibility when consultation pad is expanded', () => {
+    it('hides the side nav rail when the pad is expanded, and restores it when collapsed', async () => {
+      renderWithProvider();
+
+      await waitFor(() => {
+        expect(screen.queryByTestId('carbon-loading')).not.toBeInTheDocument();
+      });
+
+      act(() => {
+        dispatchConsultationStart({ encounterType: 'Consultation' });
+      });
+
+      await waitFor(() => {
+        expect(
+          screen.getByTestId('mocked-consultation-pad'),
+        ).toBeInTheDocument();
+      });
+      expect(screen.getByTestId('sidenav-item-vitals')).toBeInTheDocument();
+
+      fireEvent.click(screen.getByTestId('toggle-expand-button'));
+
+      await waitFor(() => {
+        expect(
+          screen.queryByTestId('sidenav-item-vitals'),
+        ).not.toBeInTheDocument();
+      });
+
+      fireEvent.click(screen.getByTestId('toggle-expand-button'));
+
+      await waitFor(() => {
+        expect(screen.getByTestId('sidenav-item-vitals')).toBeInTheDocument();
+      });
+    });
+
+    it('reopens collapsed after being expanded and then closed', async () => {
+      renderWithProvider();
+
+      await waitFor(() => {
+        expect(screen.queryByTestId('carbon-loading')).not.toBeInTheDocument();
+      });
+
+      act(() => {
+        dispatchConsultationStart({ encounterType: 'Consultation' });
+      });
+
+      await waitFor(() => {
+        expect(
+          screen.getByTestId('mocked-consultation-pad'),
+        ).toBeInTheDocument();
+      });
+
+      fireEvent.click(screen.getByTestId('toggle-expand-button'));
+      await waitFor(() => {
+        expect(screen.getByTestId('toggle-expand-button')).toHaveTextContent(
+          'Collapse',
+        );
+      });
+
+      fireEvent.click(screen.getByTestId('close-consultation-pad-button'));
+      await waitFor(() => {
+        expect(
+          screen.queryByTestId('mocked-consultation-pad'),
+        ).not.toBeInTheDocument();
+      });
+
+      act(() => {
+        dispatchConsultationStart({ encounterType: 'Consultation' });
+      });
+
+      await waitFor(() => {
+        expect(
+          screen.getByTestId('mocked-consultation-pad'),
+        ).toBeInTheDocument();
+      });
+      expect(screen.getByTestId('toggle-expand-button')).toHaveTextContent(
+        'Expand',
+      );
     });
   });
 });

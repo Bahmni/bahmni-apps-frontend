@@ -1,11 +1,13 @@
 import { BaseLayout, CodeSnippetSkeleton, Header } from '@bahmni/design-system';
-import { BAHMNI_HOME_PATH, useTranslation } from '@bahmni/services';
-import { useUserPrivilege } from '@bahmni/widgets';
-import { Suspense, useMemo } from 'react';
 import {
+  BAHMNI_HOME_PATH,
+  useTranslation,
   filterExtensionsByPrivileges,
   groupExtensionsByPoint,
-} from '../../extensions';
+  type SearchExtension,
+} from '@bahmni/services';
+import { useUserPrivilege } from '@bahmni/widgets';
+import { Suspense, useMemo } from 'react';
 import { useClinicalConfig } from '../../providers/clinicalConfig';
 import { EXTENSION_HANDLERS } from './constants';
 import styles from './styles/index.module.scss';
@@ -34,7 +36,13 @@ const ClinicalList = () => {
         .map(([pointId, extensions]) => ({
           pointId,
           Handler: EXTENSION_HANDLERS[pointId],
-          filtered: filterExtensionsByPrivileges(extensions, userPrivileges),
+          filtered: filterExtensionsByPrivileges(
+            extensions,
+            userPrivileges,
+          ).filter(
+            (e): e is SearchExtension =>
+              !!e.extensionParams && 'searchHandler' in e.extensionParams,
+          ),
         }))
         .filter(({ Handler, filtered }) => !!Handler && filtered.length > 0),
     [extensionsByPoint, userPrivileges],
@@ -56,7 +64,6 @@ const ClinicalList = () => {
                 key={pointId}
                 id={pointId}
                 data-testid={`${pointId}-test-id`}
-                className={styles.tabs}
               >
                 <Suspense
                   fallback={

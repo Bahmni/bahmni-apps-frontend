@@ -67,5 +67,13 @@
   "CONFIG_ERROR_SCHEMA_VALIDATION_FAILED": "Configuration does not match required schema",
   "CONFIG_ERROR_VALIDATION_FAILED": "Configuration validation failed",
   "ERROR_CONFIG_GENERIC_MESSAGE": "Unable to load {{config}}. Please try refreshing the page.",
-  "ERROR_CONFIG_TITLE": "{{config}} Error"
+  "ERROR_CONFIG_TITLE": "{{config}} Error",
+  "USER_CHANGE_PASSWORD_GLOBAL_ACTION": "Change Password",
+  "USER_GLOBAL_ACTION_BUTTON": "User menu",
+  "USER_GLOBAL_ACTION_ERROR": "Something went wrong. Please try again.",
+  "USER_GLOBAL_ACTION_ERROR_TITLE": "Action failed",
+  "USER_GLOBAL_ACTION_GREETING": "Hi, {{name}}",
+  "USER_GLOBAL_ACTION_LOADING": "Loading user menu",
+  "USER_GLOBAL_ACTION_MENU": "User actions",
+  "USER_LOGOUT_GLOBAL_ACTION": "Logout"
 }

@@ -30,7 +30,8 @@ export async function getDocumentUploadMaxSizeMb(): Promise<
 export async function getDocumentTypes(
   conceptName: string,
 ): Promise<DocumentType[]> {
-  const concept = await searchConceptByName(conceptName);
+  const customView = 'custom:(setMembers:(uuid,display))';
+  const concept = await searchConceptByName(conceptName, customView);
   return (concept?.setMembers ?? []).map((member) => ({
     id: member.uuid,
     label: member.display ?? '',
@@ -49,7 +50,7 @@ function mapDocumentReferencesToViewModels(
     .filter((entry) => entry.resource?.resourceType === 'DocumentReference')
     .map((entry) => {
       const doc = entry.resource;
-      const masterIdentifier = doc.masterIdentifier?.value ?? doc.id ?? '';
+      const masterIdentifier = doc.masterIdentifier?.value ?? '';
       const encounterId = doc.context?.encounter?.[0]?.reference
         ?.split('/')
         .pop();

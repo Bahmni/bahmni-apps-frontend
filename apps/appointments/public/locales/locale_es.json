@@ -68,5 +68,13 @@
   "CONFIG_ERROR_SCHEMA_VALIDATION_FAILED": "La configuración no coincide con el esquema requerido",
   "CONFIG_ERROR_VALIDATION_FAILED": "Error de validación de configuración",
   "ERROR_CONFIG_GENERIC_MESSAGE": "No se puede cargar {{config}}. Por favor, intente actualizar la página.",
-  "ERROR_CONFIG_TITLE": "Error de {{config}}"
+  "ERROR_CONFIG_TITLE": "Error de {{config}}",
+  "USER_CHANGE_PASSWORD_GLOBAL_ACTION": "Cambiar contraseña",
+  "USER_GLOBAL_ACTION_BUTTON": "Menú de usuario",
+  "USER_GLOBAL_ACTION_ERROR": "Algo salió mal. Por favor, inténtelo de nuevo.",
+  "USER_GLOBAL_ACTION_ERROR_TITLE": "Acción fallida",
+  "USER_GLOBAL_ACTION_GREETING": "Hola, {{name}}",
+  "USER_GLOBAL_ACTION_LOADING": "Cargando menú de usuario",
+  "USER_GLOBAL_ACTION_MENU": "Acciones de usuario",
+  "USER_LOGOUT_GLOBAL_ACTION": "Cerrar sesión"
 }
