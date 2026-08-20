@@ -7,6 +7,7 @@ import {
 } from '@bahmni/design-system';
 import {
   dispatchAuditEvent,
+  generateUUID,
   getCurrentUserPrivileges,
   getConfig,
   getUserLoginLocation,
@@ -22,6 +23,7 @@ import {
   CurrentSearchState,
   CommonSearchWidgetConfig,
   CriterionRow,
+  CursorDirection,
   SearchContextConfig,
 } from './models';
 import ResultsTable from './ResultsTable';
@@ -30,7 +32,9 @@ import SearchForm from './SearchForm';
 import SearchSummary from './SearchSummary';
 import styles from './styles/CommonSearchWidget.module.scss';
 import {
+  buildPaginationMeta,
   buildPayload,
+  extractSearchPage,
   processContextConfigs,
   resolveRows,
   toSearchAuditEventType,
@@ -91,6 +95,69 @@ const CommonSearchWidget = ({ extensionParams }: SearchWidgetProps) => {
   const isLoading = isConfigLoading || isPrivilegesLoading;
   const error = configError ?? privilegesError ?? configValidationError;
 
+  const notifySearchFailure = () =>
+    addNotification({
+      title: t('ERROR_DEFAULT_TITLE'),
+      message: t('COMMON_SEARCH_API_ERROR_MESSAGE'),
+      type: 'error',
+      timeout: 5000,
+    });
+
+  const runSearch = (
+    rows: CriterionRow[],
+    context: SearchContextConfig,
+    {
+      cursor,
+      direction,
+      currentSet,
+      searchId,
+    }: {
+      cursor: string | null;
+      direction?: CursorDirection;
+      currentSet: number;
+      searchId?: string;
+    },
+  ) => {
+    setIsSearchResultsLoading(true);
+    post(
+      context.url,
+      buildPayload(
+        resolveRows(rows, context.criteria),
+        context.context,
+        context.locationAware ? location?.uuid : undefined,
+        buildPaginationMeta(context.batchSize, cursor, direction),
+      ),
+    )
+      .then((data) => {
+        if ((data as { error?: unknown } | null)?.error) throw new Error();
+
+        const page = extractSearchPage(data);
+        setCurrentSearchState((prev) => ({
+          context,
+          rows,
+          resultFields: context.resultFields,
+          results: page.results,
+          totalCount: page.totalCount,
+          nextCursor: page.nextCursor,
+          prevCursor: page.prevCursor,
+          currentSet,
+          searchId: searchId ?? prev?.searchId ?? generateUUID(),
+        }));
+        dispatchAuditEvent({
+          eventType: toSearchAuditEventType(context.context),
+        });
+        setIsSearchResultsLoading(false);
+        if (page.results.length > 0) {
+          setIsSearchPanelOpen(false);
+        }
+      })
+      .catch(() => {
+        setIsSearchResultsLoading(false);
+        if (searchId) setCurrentSearchState(null);
+        notifySearchFailure();
+      });
+  };
+
   const handleSearch = (
     rows: CriterionRow[],
     context: SearchContextConfig,
@@ -105,46 +172,27 @@ const CommonSearchWidget = ({ extensionParams }: SearchWidgetProps) => {
     );
     if (!validated.some((r) => r.validationError ?? r.rangeOrderError)) {
       lastSearchRef.current = { rows: validated, contextKey: context.context };
-      setCurrentSearchState({
-        context,
-        rows: validated,
-        resultFields: context.resultFields,
-        results: [],
+      runSearch(validated, context, {
+        cursor: null,
+        currentSet: 0,
+        searchId: generateUUID(),
       });
-      setIsSearchResultsLoading(true);
-      post(
-        context.url,
-        buildPayload(
-          resolveRows(validated, context.criteria),
-          context.context,
-          context.locationAware ? location?.uuid : undefined,
-        ),
-      )
-        .then((data) => {
-          const results = (data as { results: unknown[] }).results;
-          setCurrentSearchState((prev: CurrentSearchState | null) =>
-            prev ? { ...prev, results } : null,
-          );
-          dispatchAuditEvent({
-            eventType: toSearchAuditEventType(context.context),
-          });
-          setIsSearchResultsLoading(false);
-          if (results.length > 0) {
-            setIsSearchPanelOpen(false);
-          }
-        })
-        .catch(() => {
-          setIsSearchResultsLoading(false);
-          setCurrentSearchState(null);
-          addNotification({
-            title: t('ERROR_DEFAULT_TITLE'),
-            message: t('COMMON_SEARCH_API_ERROR_MESSAGE'),
-            type: 'error',
-            timeout: 5000,
-          });
-        });
     }
     return validated;
+  };
+
+  const handleSetNavigation = (direction: CursorDirection) => {
+    if (!currentSearchState) return;
+    const { context, rows, currentSet, nextCursor, prevCursor } =
+      currentSearchState;
+    const cursor = direction === 'next' ? nextCursor : prevCursor;
+    if (!cursor) return;
+
+    runSearch(rows, context, {
+      cursor,
+      direction,
+      currentSet: direction === 'next' ? currentSet + 1 : currentSet - 1,
+    });
   };
 
   if (isLoading)
@@ -231,13 +279,23 @@ const CommonSearchWidget = ({ extensionParams }: SearchWidgetProps) => {
           />
         </AccordionItem>
       </Accordion>
-      {!isSearchResultsLoading && currentSearchState && (
+      {currentSearchState && (
         <>
           <SearchSummary currentSearchState={currentSearchState} />
           <ResultsTable
             resultFields={currentSearchState.resultFields}
             results={currentSearchState.results}
             actions={currentSearchState.context.actions}
+            cursorPagination={{
+              pageSize: currentSearchState.context.pageSize,
+              batchSize: currentSearchState.context.batchSize,
+              currentSet: currentSearchState.currentSet,
+              searchId: currentSearchState.searchId,
+              hasNextSet: currentSearchState.nextCursor !== null,
+              hasPreviousSet: currentSearchState.currentSet > 0,
+              onNextSet: () => handleSetNavigation('next'),
+              onPreviousSet: () => handleSetNavigation('prev'),
+            }}
           />
         </>
       )}

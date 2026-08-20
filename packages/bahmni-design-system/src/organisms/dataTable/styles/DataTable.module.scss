@@ -100,6 +100,56 @@
   border-top: 1px solid $border-subtle;
 }
 
+.setPagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: $spacing-02;
+  background-color: $background;
+  border-top: 1px solid $border-subtle;
+  padding: $spacing-02 $spacing-05;
+}
+
+.setNavButton {
+  gap: $spacing-02;
+  white-space: nowrap;
+}
+
+.setPaginationPages {
+  display: flex;
+  align-items: center;
+  gap: $spacing-02;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.setPaginationPage {
+  @include type-style("body-compact-01");
+  min-width: $spacing-07;
+  padding: $spacing-02 $spacing-03;
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: $text-secondary;
+  cursor: pointer;
+
+  &:hover {
+    background-color: $layer-hover-01;
+  }
+
+  &:focus-visible {
+    outline: 2px solid $focus;
+    outline-offset: -2px;
+  }
+}
+
+.setPaginationPageActive {
+  @include type-style("heading-compact-01");
+  color: $text-primary;
+  border-bottom-color: $border-interactive;
+}
+
 .filterRow {
   background-color: $layer-accent-01;
 }

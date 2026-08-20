@@ -28,6 +28,21 @@ export interface DataTableActionButton {
   props?: Partial<ButtonProps>;
 }
 
+export interface CursorPaginationConfig {
+  batchSize: number;
+  pageSize: number;
+  currentSet: number;
+  searchId: string;
+  hasNextSet: boolean;
+  hasPreviousSet: boolean;
+  onNextSet: () => void;
+  onPreviousSet: () => void;
+  previousSetLabel?: string;
+  nextSetLabel?: string;
+  previousPageLabel?: string;
+  nextPageLabel?: string;
+}
+
 export interface DataTableProps<T extends { id: string }> {
   columns: DataTableColumn<T>[];
   rows: T[];
@@ -51,6 +66,7 @@ export interface DataTableProps<T extends { id: string }> {
   onPageChange?: (page: number, pageSize: number) => void;
   totalItems?: number;
   manualPagination?: boolean;
+  cursorPagination?: CursorPaginationConfig;
   id?: string;
   title?: string;
   description?: string;

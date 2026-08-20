@@ -1,5 +1,6 @@
 export { DataTable } from './DataTable';
 export type {
+  CursorPaginationConfig,
   DataTableActionButton,
   DataTableColumn,
   DataTableFilterOption,

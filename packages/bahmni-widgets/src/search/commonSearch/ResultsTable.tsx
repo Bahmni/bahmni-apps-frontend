@@ -1,5 +1,8 @@
 import { DataTable, Link } from '@bahmni/design-system';
-import type { DataTableColumn } from '@bahmni/design-system';
+import type {
+  CursorPaginationConfig,
+  DataTableColumn,
+} from '@bahmni/design-system';
 import { generateUUID, hasPrivilege, useTranslation } from '@bahmni/services';
 import jsonata from 'jsonata';
 import {
@@ -15,10 +18,16 @@ import { ActionConfig, ResultFieldConfig } from './models';
 import styles from './styles/CommonSearchWidget.module.scss';
 import { needsDisplayKey, resultTransforms } from './utils';
 
+type ResultsTablePagination = Omit<
+  CursorPaginationConfig,
+  'previousSetLabel' | 'nextSetLabel' | 'previousPageLabel' | 'nextPageLabel'
+>;
+
 interface ResultsTableProps {
   resultFields: ResultFieldConfig[];
   results: unknown[];
   actions?: ActionConfig[];
+  cursorPagination?: ResultsTablePagination;
 }
 
 type ResultRow = Record<string, unknown> & { id: string };
@@ -79,6 +88,7 @@ const ResultsTable = ({
   resultFields,
   results,
   actions,
+  cursorPagination,
 }: ResultsTableProps) => {
   const { t } = useTranslation();
   const { userPrivileges } = useUserPrivilege();
@@ -190,6 +200,16 @@ const ResultsTable = ({
       errorStateMessage={errorStateMessage}
       emptyStateMessage={t('COMMON_SEARCH_NO_RESULTS')}
       className={styles.dataTable}
+      enablePagination={!!cursorPagination}
+      cursorPagination={
+        cursorPagination && {
+          ...cursorPagination,
+          previousSetLabel: t('COMMON_SEARCH_PREVIOUS_SET'),
+          nextSetLabel: t('COMMON_SEARCH_NEXT_SET'),
+          previousPageLabel: t('COMMON_SEARCH_PREVIOUS_PAGE'),
+          nextPageLabel: t('COMMON_SEARCH_NEXT_PAGE'),
+        }
+      }
     />
   );
 };

@@ -1,6 +1,6 @@
 import { Table, TableContainer } from '@carbon/react';
 import classnames from 'classnames';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { DataTableBody } from './components/DataTableBody';
 import { DataTableError } from './components/DataTableError';
 import { DataTableFilterRow } from './components/DataTableFilterRow';
@@ -36,6 +36,7 @@ export const DataTable = <T extends { id: string }>({
   onPageChange,
   totalItems,
   manualPagination = false,
+  cursorPagination,
   enableGlobalSearch = false,
   globalSearchPlaceholder,
   id,
@@ -51,13 +52,30 @@ export const DataTable = <T extends { id: string }>({
     renderCell,
     accessor,
     enablePagination,
-    pageSize,
+    pageSize: cursorPagination?.pageSize ?? pageSize,
     page,
     totalItems,
-    manualPagination,
+    manualPagination: cursorPagination ? false : manualPagination,
     onPaginationChange: onPageChange,
     initialExpandedRows,
   });
+
+  const searchId = cursorPagination?.searchId;
+  const currentSet = cursorPagination?.currentSet;
+  const previousSearchIdRef = useRef(searchId);
+
+  useEffect(() => {
+    if (!cursorPagination) return;
+
+    const isNewSearch = previousSearchIdRef.current !== searchId;
+    previousSearchIdRef.current = searchId;
+
+    table.setPageIndex(0);
+    table.resetColumnFilters();
+    table.resetGlobalFilter();
+
+    if (isNewSearch) table.resetSorting();
+  }, [searchId, currentSet]);
 
   const groupableColumns = useMemo(
     () => columns.filter((c) => c.enableGrouping),
@@ -138,6 +156,7 @@ export const DataTable = <T extends { id: string }>({
           pageSizes={pageSizes}
           totalItems={totalForPagination}
           dataTestId={dataTestId}
+          cursorPagination={cursorPagination}
         />
       )}
     </TableContainer>

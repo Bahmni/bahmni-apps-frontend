@@ -1,12 +1,15 @@
 import { Pagination } from '@carbon/react';
 import type { Table } from '@tanstack/react-table';
 import styles from '../styles/DataTable.module.scss';
+import type { CursorPaginationConfig } from '../types';
+import { DataTableSetPagination } from './DataTableSetPagination';
 
 interface DataTablePaginationProps<T> {
   table: Table<T>;
   pageSizes: number[];
   totalItems: number;
   dataTestId: string;
+  cursorPagination?: CursorPaginationConfig;
 }
 
 const DEFAULT_PAGE_SIZES = [5, 10, 25, 50, 100];
@@ -16,7 +19,18 @@ export const DataTablePagination = <T,>({
   pageSizes,
   totalItems,
   dataTestId,
+  cursorPagination,
 }: DataTablePaginationProps<T>) => {
+  if (cursorPagination) {
+    return (
+      <DataTableSetPagination
+        table={table}
+        cursorPagination={cursorPagination}
+        dataTestId={dataTestId}
+      />
+    );
+  }
+
   const { pageIndex, pageSize } = table.getState().pagination;
   const effectivePageSizes = pageSizes.includes(pageSize)
     ? pageSizes

@@ -17,18 +17,23 @@ import {
   KEY_TYPE_VALUE_SUFFIX,
   LOCAL_ISO_DATE_FORMAT,
   LOCATION_UUID_FIELD,
+  SEARCH_SORT_ORDER,
 } from './constants';
 import {
   CriterionConfig,
   CriterionRow,
   CriterionValue,
+  CursorDirection,
   FieldConfig,
   InputConfig,
   LookupOption,
   ResolvedRow,
   ScalarValue,
   SearchCondition,
+  SearchPage,
+  SearchPaginationMeta,
   SearchPayload,
+  SearchResponse,
   SearchContextConfig,
   TextInput,
 } from './models';
@@ -337,10 +342,25 @@ export const resolveRows = (
       return [{ field: criterion.field, value }];
     });
 
+export const buildPaginationMeta = (
+  limit: number,
+  cursor: string | null,
+  direction?: CursorDirection,
+): SearchPaginationMeta => ({
+  includeTotalCount: true,
+  pagination: {
+    limit,
+    sortOrder: SEARCH_SORT_ORDER,
+    cursor,
+    ...(direction ? { direction } : {}),
+  },
+});
+
 export const buildPayload = (
   resolvedRows: ResolvedRow[],
   entity: string,
   locationUuid?: string | undefined,
+  meta?: SearchPaginationMeta,
 ): SearchPayload => ({
   entity,
   criteria: {
@@ -358,7 +378,18 @@ export const buildPayload = (
         : []),
     ],
   },
+  ...(meta ? { meta } : {}),
 });
+
+export const extractSearchPage = (data: unknown): SearchPage => {
+  const response = (data ?? {}) as SearchResponse;
+  return {
+    results: response.results ?? [],
+    totalCount: response.meta?.totalCount ?? 0,
+    nextCursor: response.meta?.pagination?.nextCursor ?? null,
+    prevCursor: response.meta?.pagination?.prevCursor ?? null,
+  };
+};
 
 const hasQualifyingPartner = (
   row: CriterionRow,

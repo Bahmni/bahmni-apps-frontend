@@ -53,6 +53,7 @@ export { RowCell, type RowCellProps } from './atoms/rowCell';
 export { NotificationContainer } from './molecules/notification';
 export {
   DataTable,
+  type CursorPaginationConfig,
   type DataTableActionButton,
   type DataTableColumn,
   type DataTableFilterOption,
