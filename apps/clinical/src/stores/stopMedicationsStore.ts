@@ -16,7 +16,7 @@ export interface StopMedicationState {
   setNote: (note: string) => void;
   setMedicationToStop: (medication: MedicationRequest | null) => void;
   setFieldConfig: (config: StopMedicationConfig) => void;
-  validate: () => boolean;
+  validate: (isCancelVaccination?: boolean) => boolean;
   hasData: () => boolean;
   reset: () => void;
 }
@@ -77,33 +77,41 @@ export const useStopMedicationStore = create<StopMedicationState>(
       });
     },
 
-    validate: () => {
+    validate: (isCancelVaccination = false) => {
       const state = get();
       if (!state.medicationToStop) return true;
 
       const errors: Record<string, string> = {};
-      const cfg = state.fieldConfig;
+      const config = state.fieldConfig;
       let isValid = true;
 
-      if (cfg.stopDate?.isVisible !== false && cfg.stopDate?.isMandatory) {
-        if (!state.stopDate) {
-          errors.stopDate = 'STOP_MEDICATION_DATE_REQUIRED';
-          isValid = false;
-        }
+      if (
+        config.stopDate?.isVisible !== false &&
+        config.stopDate?.isMandatory &&
+        !state.stopDate
+      ) {
+        errors.stopDate = 'STOP_MEDICATION_DATE_REQUIRED';
+        isValid = false;
       }
 
-      if (cfg.stopReason?.isVisible !== false && cfg.stopReason?.isMandatory) {
-        if (!state.stopReason) {
-          errors.stopReason = 'STOP_MEDICATION_REASON_REQUIRED';
-          isValid = false;
-        }
+      if (
+        config.stopReason?.isVisible !== false &&
+        config.stopReason?.isMandatory &&
+        !state.stopReason
+      ) {
+        errors.stopReason = isCancelVaccination
+          ? 'CANCEL_VACCINATION_REASON_REQUIRED'
+          : 'STOP_MEDICATION_REASON_REQUIRED';
+        isValid = false;
       }
 
-      if (cfg.note?.isVisible !== false && cfg.note?.isMandatory) {
-        if (!state.note) {
-          errors.note = 'STOP_MEDICATION_NOTE_REQUIRED';
-          isValid = false;
-        }
+      if (
+        config.note?.isVisible !== false &&
+        config.note?.isMandatory &&
+        !state.note
+      ) {
+        errors.note = 'STOP_MEDICATION_NOTE_REQUIRED';
+        isValid = false;
       }
 
       set({ errors });

@@ -394,6 +394,33 @@ describe('captureUpdatedResources', () => {
     expect(captureUpdatedResources(entries).medications).toBe(true);
   });
 
+  it('flags medications when cancelVaccination hasData', () => {
+    const entries = [
+      makeMockEntry('cancelVaccination', {
+        hasData: jest.fn().mockReturnValue(true),
+      }),
+    ];
+
+    expect(captureUpdatedResources(entries)).toEqual({
+      conditions: false,
+      allergies: false,
+      medications: true,
+      immunizationHistory: false,
+      observationFormsWithBasedOn: undefined,
+      serviceRequests: {},
+    });
+  });
+
+  it('does not flag immunizationHistory when cancelVaccination hasData is false', () => {
+    const entries = [
+      makeMockEntry('cancelVaccination', {
+        hasData: jest.fn().mockReturnValue(false),
+      }),
+    ];
+
+    expect(captureUpdatedResources(entries).immunizationHistory).toBe(false);
+  });
+
   it('maps selected service request categories to lowercase boolean flags', () => {
     (useServiceRequestStore as unknown as { getState: jest.Mock }).getState =
       jest.fn().mockReturnValue({
