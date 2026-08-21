@@ -211,13 +211,10 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
     }
   }, [sourceEncounterError, addNotification, t]);
 
-  const isCopyover: boolean | undefined = !sourceEncounterUuid
-    ? undefined
-    : sessionEncounterStatus === 'success'
-      ? sessionEncounter?.id !== sourceEncounterUuid
-      : sessionEncounterStatus === 'error'
-        ? false
-        : undefined;
+  const isCopyover: boolean | undefined =
+    !sourceEncounterUuid || sessionEncounterStatus === 'pending'
+      ? undefined
+      : sessionEncounter?.id !== sourceEncounterUuid;
 
   const activeEncounter =
     isCopyover !== true && sourceEncounterUuid
