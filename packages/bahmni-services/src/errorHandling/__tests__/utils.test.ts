@@ -127,8 +127,7 @@ describe('getFormattedError', () => {
           status: 403,
           data: {
             error: {
-              message:
-                "User lacks 'Get Patient Photo' privilege and is unable to view the patient photo",
+              message: "User doesn't have Get Patient Photo privilege",
             },
           },
         },
@@ -138,8 +137,7 @@ describe('getFormattedError', () => {
 
       expect(result).toEqual({
         title: 'Forbidden',
-        message:
-          "User lacks 'Get Patient Photo' privilege and is unable to view the patient photo",
+        message: "User doesn't have Get Patient Photo privilege",
       });
     });
 

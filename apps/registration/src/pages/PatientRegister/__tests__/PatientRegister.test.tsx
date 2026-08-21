@@ -761,6 +761,25 @@ describe('PatientRegister', () => {
         expect(mockMutateAsync).toHaveBeenCalled();
       });
     });
+
+    it('should show warning notification when photo fetch fails', async () => {
+      (usePatientPhoto as jest.Mock).mockReturnValue({
+        patientPhoto: undefined,
+        isLoading: false,
+        error: new Error("User doesn't have Get Patient Photo privilege"),
+      });
+
+      renderComponent();
+
+      await waitFor(() => {
+        expect(mockAddNotification).toHaveBeenCalledWith(
+          expect.objectContaining({
+            type: 'warning',
+            message: "User doesn't have Get Patient Photo privilege",
+          }),
+        );
+      });
+    });
   });
 
   describe('Form Section Refs', () => {

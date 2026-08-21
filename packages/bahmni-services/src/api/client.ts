@@ -18,7 +18,7 @@ client.interceptors.request.use(
   },
   function (error) {
     const { title, message } = getFormattedError(error);
-    return Promise.reject(`${title}: ${message}`);
+    throw new Error(`${title}: ${message}`);
   },
 );
 
@@ -37,13 +37,13 @@ client.interceptors.response.use(
       return response;
     } catch (error) {
       const { title, message } = getFormattedError(error);
-      return Promise.reject(`${title}: ${message}`);
+      throw new Error(`${title}: ${message}`);
     }
   },
   async function (error) {
     if (axios.isAxiosError(error) && error.response?.status === 401) {
       globalThis.location.href = LOGIN_PATH;
-      return Promise.reject(error);
+      throw error;
     }
     if (axios.isAxiosError(error) && error.response?.data instanceof Blob) {
       try {
@@ -58,10 +58,10 @@ client.interceptors.response.use(
     // If message is a translation key (starts with ERROR_ or other uppercase patterns),
     // return just the key without wrapping it with the title
     if (message.startsWith('ERROR_') || /^[A-Z_]+$/.test(message)) {
-      return Promise.reject(new Error(message));
+      throw new Error(message);
     }
 
-    return Promise.reject(`${title}: ${message}`);
+    throw new Error(`${title}: ${message}`);
   },
 );
 

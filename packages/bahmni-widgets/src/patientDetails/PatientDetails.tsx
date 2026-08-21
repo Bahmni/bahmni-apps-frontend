@@ -34,8 +34,7 @@ const PatientDetails: React.FC = () => {
       addNotification({
         type: 'warning',
         title: t('ERROR_DEFAULT_TITLE'),
-        message:
-          photoError instanceof Error ? photoError.message : String(photoError),
+        message: photoError.message,
       });
     }
   }, [photoError, addNotification, t]);

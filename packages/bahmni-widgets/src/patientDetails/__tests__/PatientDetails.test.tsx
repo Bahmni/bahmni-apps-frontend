@@ -17,8 +17,9 @@ jest.mock('../../hooks/usePatientPhoto', () => ({
     error: null,
   })),
 }));
+const mockAddNotification = jest.fn();
 jest.mock('../../notification', () => ({
-  useNotification: jest.fn(() => ({ addNotification: jest.fn() })),
+  useNotification: jest.fn(() => ({ addNotification: mockAddNotification })),
 }));
 jest.mock('@tanstack/react-query', () => ({
   ...jest.requireActual('@tanstack/react-query'),
@@ -123,6 +124,28 @@ describe('PatientDetails Component', () => {
       expect(screen.getByTestId('patient-photo-test-id')).toHaveAttribute(
         'src',
         photoDataUrl,
+      );
+    });
+
+    it('shows warning notification when photo fetch fails', () => {
+      mockedUsePatientPhoto.mockReturnValue({
+        patientPhoto: undefined,
+        isLoading: false,
+        error: new Error("User doesn't have Get Patient Photo privilege"),
+      });
+      mockPatientQuery({
+        data: createMockPatient(),
+        isLoading: false,
+        error: null,
+      });
+
+      render(<PatientDetails />);
+
+      expect(mockAddNotification).toHaveBeenCalledWith(
+        expect.objectContaining({
+          type: 'warning',
+          message: "User doesn't have Get Patient Photo privilege",
+        }),
       );
     });
 
