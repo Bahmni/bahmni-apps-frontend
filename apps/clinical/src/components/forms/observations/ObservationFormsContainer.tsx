@@ -115,6 +115,12 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
     encounterSessionStartContext?.editOnly === 'observationForms' &&
     !!encounterSessionStartContext?.sourceEncounterUuid;
 
+  const isCopyover = encounterSessionStartContext?.isCopyover === true;
+  // Empty string (e.g. a locale with no translated copy yet) means "don't show".
+  const copyoverNoticeMessage = isCopyover
+    ? t('OBSERVATION_FORM_COPYOVER_NOTICE')
+    : '';
+
   // Tracks whether the form differs from its initial values — driven by CarbonContainer's
   // own setIsFormUpdated (uuid-based comparison against the observations it was mounted with).
   const [isFormUpdated, setIsFormUpdated] = React.useState(false);
@@ -554,6 +560,17 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
               data-testid="edit-form-section-title"
             >
               <span>{viewingForm.name}</span>
+            </div>
+          )}
+          {isEditMode && viewingForm && copyoverNoticeMessage && (
+            <div className={styles.copyoverNoticeWrapper}>
+              <InlineNotification
+                kind="info"
+                title={copyoverNoticeMessage}
+                lowContrast
+                hideCloseButton
+                testId="observation-form-copyover-notice"
+              />
             </div>
           )}
         </>

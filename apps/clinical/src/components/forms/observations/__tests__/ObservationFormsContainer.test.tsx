@@ -1,6 +1,7 @@
 import { ObservationForm } from '@bahmni/services';
 import { useQuery } from '@tanstack/react-query';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { useTranslation } from 'react-i18next';
 import { useClinicalAppData } from '../../../../hooks/useClinicalAppData';
 import ObservationFormsContainer from '../ObservationFormsContainer';
 import {
@@ -110,6 +111,12 @@ jest.mock('../utils/formEventExecutor', () => ({
     mockExecuteOnFormSaveEvent(...args),
 }));
 
+// Mock EncounterDetails (directMode rendering) — its own hooks/stores are out of scope here
+jest.mock('../../encounterDetails/EncounterDetails', () => ({
+  __esModule: true,
+  default: jest.fn(() => <div data-testid="mocked-encounter-details" />),
+}));
+
 // Mock ActionArea component
 jest.mock('@bahmni/design-system', () => ({
   ActionArea: jest.fn(
@@ -173,9 +180,9 @@ jest.mock('@bahmni/design-system', () => ({
     <div data-testid={testId} aria-label={description} />
   )),
   InlineNotification: jest.fn(
-    ({ kind, title, subtitle, onClose, hideCloseButton }) => (
+    ({ kind, title, subtitle, onClose, hideCloseButton, testId }) => (
       <div
-        data-testid="inline-notification"
+        data-testid={testId ?? 'inline-notification'}
         data-kind={kind}
         data-hide-close-button={hideCloseButton}
       >
@@ -194,6 +201,7 @@ jest.mock('@bahmni/design-system', () => ({
     MD: 'MD',
     LG: 'LG',
   },
+  MenuItemDivider: jest.fn(() => <hr data-testid="menu-item-divider" />),
 }));
 
 // Mock styles
@@ -205,6 +213,7 @@ jest.mock('../styles/ObservationFormsContainer.module.scss', () => ({
   pinned: 'pinned',
   unpinned: 'unpinned',
   errorNotificationWrapper: 'errorNotificationWrapper',
+  copyoverNoticeWrapper: 'copyoverNoticeWrapper',
 }));
 
 describe('ObservationFormsContainer', () => {
@@ -815,6 +824,100 @@ describe('ObservationFormsContainer', () => {
           queryKey: ['patient', 'test-patient-uuid'],
         }),
       );
+    });
+  });
+
+  describe('Copyover notice', () => {
+    const editCopyoverContext = {
+      editOnly: 'observationForms',
+      sourceEncounterUuid: 'source-encounter-uuid',
+      isCopyover: true,
+    };
+
+    it('shows the info notice right under the edit form section title when isCopyover is true and the translation is non-empty', () => {
+      render(
+        <ObservationFormsContainer
+          {...defaultProps}
+          viewingForm={mockForm}
+          directMode
+          encounterSessionStartContext={editCopyoverContext}
+        />,
+      );
+
+      expect(screen.getByTestId('edit-form-section-title')).toBeInTheDocument();
+      const notice = screen.getByTestId('observation-form-copyover-notice');
+      expect(notice).toBeInTheDocument();
+      expect(notice).toHaveAttribute('data-kind', 'info');
+    });
+
+    it('does not show the notice when isCopyover is false', () => {
+      render(
+        <ObservationFormsContainer
+          {...defaultProps}
+          viewingForm={mockForm}
+          directMode
+          encounterSessionStartContext={{
+            ...editCopyoverContext,
+            isCopyover: false,
+          }}
+        />,
+      );
+
+      expect(
+        screen.queryByTestId('observation-form-copyover-notice'),
+      ).not.toBeInTheDocument();
+    });
+
+    it('does not show the notice outside the edit form section (directMode off)', () => {
+      render(
+        <ObservationFormsContainer
+          {...defaultProps}
+          viewingForm={mockForm}
+          encounterSessionStartContext={editCopyoverContext}
+        />,
+      );
+
+      expect(
+        screen.queryByTestId('edit-form-section-title'),
+      ).not.toBeInTheDocument();
+      expect(
+        screen.queryByTestId('observation-form-copyover-notice'),
+      ).not.toBeInTheDocument();
+    });
+
+    it('does not show the notice when encounterSessionStartContext is not provided', () => {
+      render(
+        <ObservationFormsContainer
+          {...defaultProps}
+          viewingForm={mockForm}
+          directMode
+        />,
+      );
+
+      expect(
+        screen.queryByTestId('observation-form-copyover-notice'),
+      ).not.toBeInTheDocument();
+    });
+
+    it('does not show the notice when isCopyover is true but the translation resolves to an empty string', () => {
+      jest.mocked(useTranslation).mockReturnValueOnce({
+        t: jest.fn((key: string) =>
+          key === 'OBSERVATION_FORM_COPYOVER_NOTICE' ? '' : `translated_${key}`,
+        ),
+      } as unknown as ReturnType<typeof useTranslation>);
+
+      render(
+        <ObservationFormsContainer
+          {...defaultProps}
+          viewingForm={mockForm}
+          directMode
+          encounterSessionStartContext={editCopyoverContext}
+        />,
+      );
+
+      expect(
+        screen.queryByTestId('observation-form-copyover-notice'),
+      ).not.toBeInTheDocument();
     });
   });
 
