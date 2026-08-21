@@ -10,7 +10,7 @@ import {
   mockExtensionWithNoSearchHandler,
   mockExtensionWithRegisteredType,
   mockExtensionWithUnregisteredType,
-} from './__mocks__/searchHandlerMocks';
+} from './__mocks__/searchViewMocks';
 
 expect.extend(toHaveNoViolations);
 

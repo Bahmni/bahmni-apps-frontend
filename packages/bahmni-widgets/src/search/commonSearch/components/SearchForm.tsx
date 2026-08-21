@@ -1,9 +1,8 @@
 import { Button, Dropdown } from '@bahmni/design-system';
 import { useTranslation, UserLocation } from '@bahmni/services';
 import { useState } from 'react';
-import CriterionRowComponent from './CriterionRow';
-import { CriterionRow, CriterionValue, SearchContextConfig } from './models';
-import styles from './styles/CommonSearchWidget.module.scss';
+import { CriterionRow, CriterionValue, SearchContextConfig } from '../models';
+import styles from '../styles/CommonSearchWidget.module.scss';
 import {
   availableCriteriaForRow,
   criteriaAvailableToAdd,
@@ -11,7 +10,8 @@ import {
   makeRow,
   reconcileAdditionalCriteriaErrors,
   updateRow,
-} from './utils';
+} from '../utils';
+import CriterionRowComponent from './CriterionRow';
 
 interface SearchFormProps {
   config: SearchContextConfig[];

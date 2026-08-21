@@ -1,10 +1,10 @@
 import { render, screen, fireEvent } from '@testing-library/react';
-import OptionsCriterionInput from '../inputs/OptionsCriterionInput';
-import { ScalarValue } from '../models';
+import OptionsCriterionInput from '../../components/OptionsCriterionInput';
+import { ScalarValue } from '../../models';
 import {
   mockOptionsInput,
   mockOptionsScalarValue,
-} from './__mocks__/optionsCriterionInputMocks';
+} from '../__mocks__/optionsCriterionInputMocks';
 
 const mockOnChange = jest.fn();
 

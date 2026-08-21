@@ -1,6 +1,6 @@
 import { render, screen } from '@testing-library/react';
 import { axe, toHaveNoViolations } from 'jest-axe';
-import SearchSummary from '../SearchSummary';
+import SearchSummary from '../../components/SearchSummary';
 import {
   mockActiveSearchState,
   mockDateRangeRow,
@@ -13,7 +13,7 @@ import {
   mockOptionsRow,
   mockOptionsWithTranslationRow,
   mockTextRow,
-} from './__mocks__/searchSummaryMocks';
+} from '../__mocks__/searchSummaryMocks';
 
 expect.extend(toHaveNoViolations);
 

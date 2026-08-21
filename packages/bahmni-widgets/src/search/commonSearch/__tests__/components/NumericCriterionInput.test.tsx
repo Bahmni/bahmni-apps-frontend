@@ -1,13 +1,13 @@
 import { render, screen, fireEvent } from '@testing-library/react';
-import NumericCriterionInput from '../inputs/NumericCriterionInput';
-import { RangeValue } from '../models';
+import NumericCriterionInput from '../../components/NumericCriterionInput';
+import { RangeValue } from '../../models';
 import {
   mockFromValue,
   mockInvalidOrderRangeValue,
   mockNumericInput,
   mockRangeNumericInput,
   mockRangeValue,
-} from './__mocks__/numericCriterionInputMocks';
+} from '../__mocks__/numericCriterionInputMocks';
 
 const mockOnChange = jest.fn();
 
