@@ -17,8 +17,8 @@ client.interceptors.request.use(
     return config;
   },
   function (error) {
-    const { title, message } = getFormattedError(error);
-    throw new Error(`${title}: ${message}`);
+    const { message } = getFormattedError(error);
+    throw new Error(message);
   },
 );
 
@@ -36,8 +36,8 @@ client.interceptors.response.use(
       }
       return response;
     } catch (error) {
-      const { title, message } = getFormattedError(error);
-      throw new Error(`${title}: ${message}`);
+      const { message } = getFormattedError(error);
+      throw new Error(message);
     }
   },
   async function (error) {
@@ -53,15 +53,8 @@ client.interceptors.response.use(
         // leave as blob if unparseable
       }
     }
-    const { title, message } = getFormattedError(error);
-
-    // If message is a translation key (starts with ERROR_ or other uppercase patterns),
-    // return just the key without wrapping it with the title
-    if (message.startsWith('ERROR_') || /^[A-Z_]+$/.test(message)) {
-      throw new Error(message);
-    }
-
-    throw new Error(`${title}: ${message}`);
+    const { message } = getFormattedError(error);
+    throw new Error(message);
   },
 );
 

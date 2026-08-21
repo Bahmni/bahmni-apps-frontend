@@ -39,7 +39,7 @@ describe('Axios Client', () => {
         .handlers[0];
 
       expect(() => requestInterceptor.rejected(mockError)).toThrow(
-        'Error: Test error message',
+        'Test error message',
       );
       expect(getFormattedError).toHaveBeenCalledWith(mockError);
     });
@@ -264,7 +264,7 @@ describe('Axios Client', () => {
 
         await expect(() =>
           responseInterceptor.rejected(mockError),
-        ).rejects.toThrow('Error: Test error message');
+        ).rejects.toThrow('Test error message');
         expect(getFormattedError).toHaveBeenCalledWith(mockError);
       });
 
@@ -280,7 +280,7 @@ describe('Axios Client', () => {
 
         await expect(() =>
           responseInterceptor.rejected(mockError),
-        ).rejects.toThrow('Error: Test error message');
+        ).rejects.toThrow('Test error message');
         expect(getFormattedError).toHaveBeenCalledWith(mockError);
       });
 
@@ -299,7 +299,7 @@ describe('Axios Client', () => {
 
         await expect(() =>
           responseInterceptor.rejected(mockError),
-        ).rejects.toThrow('Error: Test error message');
+        ).rejects.toThrow('Test error message');
         expect(getFormattedError).toHaveBeenCalledWith(mockError);
       });
 
@@ -321,7 +321,7 @@ describe('Axios Client', () => {
           .handlers[0];
 
         expect(() => responseInterceptor.fulfilled(mockResponse)).toThrow(
-          'Error: Test error message',
+          'Test error message',
         );
         expect(getFormattedError).toHaveBeenCalled();
       });
@@ -333,7 +333,7 @@ describe('Axios Client', () => {
           .handlers[0];
 
         expect(() => responseInterceptor.fulfilled(mockResponse)).toThrow(
-          'Error: Test error message',
+          'Test error message',
         );
         expect(getFormattedError).toHaveBeenCalled();
       });
