@@ -632,6 +632,60 @@ describe('TaskActions', () => {
         expect(screen.queryByTestId(overlayTestId)).not.toBeInTheDocument();
       });
     });
+
+    it('reuses the observationsByServiceRequest cache instead of refetching on edit click', async () => {
+      const queryClient = new QueryClient({
+        defaultOptions: { queries: { retry: false } },
+      });
+      queryClient.setQueryData(
+        ['observationsByServiceRequest', SERVICE_REQUEST_UUID_COMPLETED],
+        {
+          resourceType: 'Bundle',
+          type: 'searchset',
+          entry: [
+            {
+              resource: buildFormObservation('obs-cached', FILL_ENCOUNTER_UUID),
+            },
+          ],
+        },
+      );
+
+      const user = userEvent.setup();
+      const wrapper = ({ children }: { children: React.ReactNode }) => (
+        <QueryClientProvider client={queryClient}>
+          {children}
+        </QueryClientProvider>
+      );
+
+      render(
+        <TaskActions
+          task={mockTaskViewModelCompleted}
+          taskConfig={mockTaskConfigWithEditForm}
+        />,
+        { wrapper },
+      );
+
+      await waitFor(() => {
+        expect(
+          screen.getByRole('button', { name: 'Edit Form' }),
+        ).toBeInTheDocument();
+      });
+
+      await user.click(screen.getByRole('button', { name: 'Edit Form' }));
+
+      await waitFor(() => {
+        expect(dispatchEventSpy).toHaveBeenCalledWith(
+          expect.objectContaining({
+            type: 'startConsultation',
+            detail: expect.objectContaining({
+              sourceEncounterUuid: FILL_ENCOUNTER_UUID,
+            }),
+          }),
+        );
+      });
+
+      expect(mockGetPatientObservationsBundle).not.toHaveBeenCalled();
+    });
   });
 
   describe('Action Icons', () => {

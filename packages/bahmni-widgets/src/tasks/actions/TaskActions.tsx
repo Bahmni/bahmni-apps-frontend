@@ -14,7 +14,7 @@ import {
   type ObservationForm,
   useTranslation,
 } from '@bahmni/services';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import React, { useMemo, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useNotification } from '../../notification';
@@ -40,6 +40,7 @@ const TaskActions: React.FC<TaskActionsProps> = ({ task, taskConfig }) => {
   const { userPrivileges } = useUserPrivilege();
   const { t } = useTranslation();
   const { addNotification } = useNotification();
+  const queryClient = useQueryClient();
   const [isLoading, setIsLoading] = useState(false);
 
   const shouldFetchForms = hasFormActions(taskConfig, task.code);
@@ -82,7 +83,7 @@ const TaskActions: React.FC<TaskActionsProps> = ({ task, taskConfig }) => {
   const handleActionClick = async (action: TaskAction) => {
     setIsLoading(true);
     try {
-      await handleTaskAction(action, task);
+      await handleTaskAction(action, task, queryClient);
     } catch (error) {
       const { message } = getFormattedError(error);
       addNotification({
