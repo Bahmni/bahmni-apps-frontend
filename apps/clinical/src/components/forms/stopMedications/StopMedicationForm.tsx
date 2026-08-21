@@ -14,6 +14,7 @@ import {
   fetchMedicationOrdersMetadata,
   useTranslation,
 } from '@bahmni/services';
+import { CANCEL_VACCINATION_INPUT_CONTROL_KEY } from '@bahmni/widgets';
 import { useQuery } from '@tanstack/react-query';
 import { MedicationRequest } from 'fhir/r4';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
@@ -32,7 +33,6 @@ import {
 import { useStopMedicationStore } from '../../../stores/stopMedicationsStore';
 import { MEDICATIONS_CONFIG_URL } from '../medicationRequest/constants';
 import medicationConfigSchema from '../medicationRequest/schema.json';
-import { CANCEL_VACCINATION_INPUT_CONTROL_KEY } from './constants';
 import styles from './styles/StopMedicationForm.module.scss';
 
 interface StopMedicationFormProps {

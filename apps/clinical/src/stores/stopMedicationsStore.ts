@@ -82,12 +82,12 @@ export const useStopMedicationStore = create<StopMedicationState>(
       if (!state.medicationToStop) return true;
 
       const errors: Record<string, string> = {};
-      const cfg = state.fieldConfig;
+      const config = state.fieldConfig;
       let isValid = true;
 
       if (
-        cfg.stopDate?.isVisible !== false &&
-        cfg.stopDate?.isMandatory &&
+        config.stopDate?.isVisible !== false &&
+        config.stopDate?.isMandatory &&
         !state.stopDate
       ) {
         errors.stopDate = 'STOP_MEDICATION_DATE_REQUIRED';
@@ -95,8 +95,8 @@ export const useStopMedicationStore = create<StopMedicationState>(
       }
 
       if (
-        cfg.stopReason?.isVisible !== false &&
-        cfg.stopReason?.isMandatory &&
+        config.stopReason?.isVisible !== false &&
+        config.stopReason?.isMandatory &&
         !state.stopReason
       ) {
         errors.stopReason = isCancelVaccination
@@ -106,8 +106,8 @@ export const useStopMedicationStore = create<StopMedicationState>(
       }
 
       if (
-        cfg.note?.isVisible !== false &&
-        cfg.note?.isMandatory &&
+        config.note?.isVisible !== false &&
+        config.note?.isMandatory &&
         !state.note
       ) {
         errors.note = 'STOP_MEDICATION_NOTE_REQUIRED';
