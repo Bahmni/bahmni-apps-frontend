@@ -28,6 +28,7 @@ interface ResultsTableProps {
   results: unknown[];
   actions?: ActionConfig[];
   cursorPagination?: ResultsTablePagination;
+  totalCount?: number;
 }
 
 type ResultRow = Record<string, unknown> & { id: string };
@@ -89,6 +90,7 @@ const ResultsTable = ({
   results,
   actions,
   cursorPagination,
+  totalCount,
 }: ResultsTableProps) => {
   const { t } = useTranslation();
   const { userPrivileges } = useUserPrivilege();
@@ -193,7 +195,13 @@ const ResultsTable = ({
       id="common-search-results-table"
       dataTestId="common-search-results-table"
       ariaLabel="common-search-results-table-aria-label"
-      title={t('COMMON_SEARCH_RESULTS_TABLE_TITLE')}
+      title={
+        totalCount === undefined
+          ? t('COMMON_SEARCH_RESULTS_TABLE_TITLE')
+          : t('COMMON_SEARCH_RESULTS_TABLE_TITLE_WITH_COUNT', {
+              total: totalCount,
+            })
+      }
       columns={columns}
       rows={rows}
       renderCell={renderCell}

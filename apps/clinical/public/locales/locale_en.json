@@ -93,6 +93,7 @@
   "COMMON_SEARCH_NEXT_PAGE": "Next page",
   "COMMON_SEARCH_RANGE_ORDER_INVALID": "To value must be greater than or equal to From value",
   "COMMON_SEARCH_RESULTS_TABLE_TITLE": "Search Results",
+  "COMMON_SEARCH_RESULTS_TABLE_TITLE_WITH_COUNT": "Search Results ({{total}})",
   "COMMON_SEARCH_SEARCH_BUTTON": "Search",
   "COMMON_SEARCH_SELECT_CONTEXT_PLACEHOLDER": "Select a context",
   "COMMON_SEARCH_SELECT_CONTEXT_TITLE": "Search Context",

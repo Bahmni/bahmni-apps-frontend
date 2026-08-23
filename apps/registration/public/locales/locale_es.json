@@ -29,6 +29,7 @@
   "COMMON_SEARCH_NEXT_PAGE": "Página siguiente",
   "COMMON_SEARCH_RANGE_ORDER_INVALID": "El valor final debe ser mayor o igual al valor inicial",
   "COMMON_SEARCH_RESULTS_TABLE_TITLE": "Resultados de búsqueda",
+  "COMMON_SEARCH_RESULTS_TABLE_TITLE_WITH_COUNT": "Resultados de búsqueda ({{total}})",
   "COMMON_SEARCH_SEARCH_BUTTON": "Buscar",
   "COMMON_SEARCH_SELECT_CONTEXT_PLACEHOLDER": "Seleccionar un contexto",
   "COMMON_SEARCH_SELECT_CONTEXT_TITLE": "Contexto de Búsqueda",

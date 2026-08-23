@@ -202,7 +202,7 @@ export interface SearchResponse {
 
 export interface SearchPage {
   results: unknown[];
-  totalCount: number;
+  totalCount: number | null;
   nextCursor: string | null;
   prevCursor: string | null;
 }

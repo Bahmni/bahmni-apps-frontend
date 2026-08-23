@@ -347,7 +347,7 @@ export const buildPaginationMeta = (
   cursor: string | null,
   direction?: CursorDirection,
 ): SearchPaginationMeta => ({
-  includeTotalCount: true,
+  includeTotalCount: !direction,
   pagination: {
     limit,
     sortOrder: SEARCH_SORT_ORDER,
@@ -385,7 +385,7 @@ export const extractSearchPage = (data: unknown): SearchPage => {
   const response = (data ?? {}) as SearchResponse;
   return {
     results: response.results ?? [],
-    totalCount: response.meta?.totalCount ?? 0,
+    totalCount: response.meta?.totalCount ?? null,
     nextCursor: response.meta?.pagination?.nextCursor ?? null,
     prevCursor: response.meta?.pagination?.prevCursor ?? null,
   };

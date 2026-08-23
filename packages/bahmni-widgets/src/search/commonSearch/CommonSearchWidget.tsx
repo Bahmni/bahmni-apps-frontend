@@ -137,7 +137,7 @@ const CommonSearchWidget = ({ extensionParams }: SearchWidgetProps) => {
           rows,
           resultFields: context.resultFields,
           results: page.results,
-          totalCount: page.totalCount,
+          totalCount: page.totalCount ?? prev?.totalCount ?? 0,
           nextCursor: page.nextCursor,
           prevCursor: page.prevCursor,
           currentSet,
@@ -286,6 +286,7 @@ const CommonSearchWidget = ({ extensionParams }: SearchWidgetProps) => {
             resultFields={currentSearchState.resultFields}
             results={currentSearchState.results}
             actions={currentSearchState.context.actions}
+            totalCount={currentSearchState.totalCount}
             cursorPagination={{
               pageSize: currentSearchState.context.pageSize,
               batchSize: currentSearchState.context.batchSize,
