@@ -386,6 +386,45 @@ describe('useStopMedicationStore', () => {
       // the code checks cfg.stopReason?.isVisible !== false
       expect(isValid!).toBe(true);
     });
+
+    it('should use STOP_MEDICATION_*_REQUIRED error keys when isCancelVaccination is false', () => {
+      const { result } = renderHook(() => useStopMedicationStore());
+
+      act(() => {
+        result.current.setMedicationToStop(mockMedicationRequest);
+        result.current.setStopDate(null as unknown as Date);
+      });
+
+      let isValid: boolean;
+      act(() => {
+        isValid = result.current.validate(false);
+      });
+
+      expect(isValid!).toBe(false);
+      expect(result.current.errors.stopDate).toBe(
+        'STOP_MEDICATION_DATE_REQUIRED',
+      );
+      expect(result.current.errors.stopReason).toBe(
+        'STOP_MEDICATION_REASON_REQUIRED',
+      );
+    });
+
+    it('should default to STOP_MEDICATION_*_REQUIRED error keys when isCancelVaccination is omitted', () => {
+      const { result } = renderHook(() => useStopMedicationStore());
+
+      act(() => {
+        result.current.setMedicationToStop(mockMedicationRequest);
+        result.current.setStopDate(null as unknown as Date);
+      });
+
+      act(() => {
+        result.current.validate();
+      });
+
+      expect(result.current.errors.stopDate).toBe(
+        'STOP_MEDICATION_DATE_REQUIRED',
+      );
+    });
   });
 
   describe('hasData', () => {
