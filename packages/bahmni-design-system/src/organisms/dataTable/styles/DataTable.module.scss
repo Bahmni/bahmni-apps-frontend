@@ -101,9 +101,10 @@
 }
 
 .setPagination {
+  width: 100%;
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: right;
   gap: $spacing-02;
   background-color: $background;
   border-top: 1px solid $border-subtle;
@@ -111,8 +112,9 @@
 }
 
 .setNavButton {
-  gap: $spacing-02;
-  white-space: nowrap;
+  gap: $spacing-05;
+  display: flex;
+  align-items: center;
 }
 
 .setPaginationPages {

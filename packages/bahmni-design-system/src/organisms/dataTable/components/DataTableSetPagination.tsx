@@ -26,8 +26,6 @@ export const DataTableSetPagination = <T,>({
     onPreviousSet,
     previousSetLabel = 'Previous set',
     nextSetLabel = 'Next set',
-    previousPageLabel = 'Previous page',
-    nextPageLabel = 'Next page',
   } = cursorPagination;
 
   const pageCount = table.getPageCount();
@@ -44,29 +42,18 @@ export const DataTableSetPagination = <T,>({
       data-testid={`${dataTestId}-set-pagination`}
       aria-label="pagination"
     >
-      <Button
-        kind="ghost"
-        size="sm"
-        className={styles.setNavButton}
-        disabled={!hasPreviousSet}
-        onClick={onPreviousSet}
-        testId={`${dataTestId}-previous-set`}
-      >
-        <CaretLeft />
-        {previousSetLabel}
-      </Button>
-
-      <Button
-        kind="ghost"
-        size="sm"
-        hasIconOnly
-        renderIcon={CaretLeft}
-        iconDescription={previousPageLabel}
-        tooltipPosition="top"
-        disabled={!table.getCanPreviousPage()}
-        onClick={() => table.previousPage()}
-        testId={`${dataTestId}-previous-page`}
-      />
+      {hasPreviousSet && (
+        <Button
+          kind="ghost"
+          size="sm"
+          className={styles.setNavButton}
+          onClick={onPreviousSet}
+          testId={`${dataTestId}-previous-set`}
+        >
+          <CaretLeft />
+          {previousSetLabel}
+        </Button>
+      )}
 
       <ul className={styles.setPaginationPages}>
         {Array.from({ length: pageCount }, (_, index) => {
@@ -90,29 +77,18 @@ export const DataTableSetPagination = <T,>({
         })}
       </ul>
 
-      <Button
-        kind="ghost"
-        size="sm"
-        hasIconOnly
-        renderIcon={CaretRight}
-        iconDescription={nextPageLabel}
-        tooltipPosition="top"
-        disabled={!table.getCanNextPage()}
-        onClick={() => table.nextPage()}
-        testId={`${dataTestId}-next-page`}
-      />
-
-      <Button
-        kind="ghost"
-        size="sm"
-        className={styles.setNavButton}
-        disabled={!hasNextSet}
-        onClick={onNextSet}
-        testId={`${dataTestId}-next-set`}
-      >
-        {nextSetLabel}
-        <CaretRight />
-      </Button>
+      {hasNextSet && (
+        <Button
+          kind="ghost"
+          size="sm"
+          className={styles.setNavButton}
+          onClick={onNextSet}
+          testId={`${dataTestId}-next-set`}
+        >
+          {nextSetLabel}
+          <CaretRight />
+        </Button>
+      )}
     </nav>
   );
 };
