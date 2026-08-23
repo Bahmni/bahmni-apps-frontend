@@ -185,9 +185,7 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
         selectedEncounterType?.uuid,
       ),
     staleTime: 0,
-    enabled: Boolean(
-      patientId && practitioner?.uuid && selectedEncounterType?.uuid,
-    ),
+    enabled: !!(patientId && practitioner?.uuid && selectedEncounterType?.uuid),
   });
   const {
     data: sourceEncounter,
@@ -197,7 +195,7 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
     queryKey: ['encounter', sourceEncounterUuid],
     queryFn: ({ signal }) =>
       getEncounterByUuid(sourceEncounterUuid!, { signal }),
-    enabled: Boolean(sourceEncounterUuid),
+    enabled: !!sourceEncounterUuid,
   });
 
   useEffect(() => {

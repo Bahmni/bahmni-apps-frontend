@@ -472,7 +472,7 @@
   "OBSERVATION_FORMS_SEARCH_PLACEHOLDER": "Search to add Observation Form",
   "OBSERVATION_FORMS_SECTION_TITLE": "Observation Forms",
   "OBSERVATION_FORM_CONTINUE_ANYWAY_BUTTON": "Continue Anyway",
-  "OBSERVATION_FORM_COPYOVER_NOTICE": "",
+  "OBSERVATION_FORM_COPYOVER_NOTICE": "You are in copy-over mode. It will create a new instance.",
   "OBSERVATION_FORM_DISCARD_BUTTON": "Discard Form",
   "OBSERVATION_FORM_LOADING_METADATA": "Loading form's metadata...",
   "OBSERVATION_FORM_LOADING_METADATA_ERROR": "Error loading form metadata",

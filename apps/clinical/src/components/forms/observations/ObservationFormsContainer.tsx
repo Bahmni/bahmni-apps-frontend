@@ -563,7 +563,7 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
             </div>
           )}
           {isEditMode && viewingForm && copyoverNoticeMessage && (
-            <div className={styles.copyoverNoticeWrapper}>
+            <div className={styles.inlineNotificationWrapper}>
               <InlineNotification
                 kind="info"
                 title={copyoverNoticeMessage}
@@ -578,7 +578,7 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
 
       {validationErrorType &&
         validationErrorType !== VALIDATION_STATE_SCRIPT_ERROR && (
-          <div className={styles.errorNotificationWrapper}>
+          <div className={styles.inlineNotificationWrapper}>
             <InlineNotification
               kind="error"
               title={t(
@@ -596,7 +596,7 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
 
       {validationErrorType === VALIDATION_STATE_SCRIPT_ERROR &&
         validationErrorMessage && (
-          <div className={styles.errorNotificationWrapper}>
+          <div className={styles.inlineNotificationWrapper}>
             <InlineNotification
               kind="error"
               title={t('OBSERVATION_FORM_SCRIPT_ERROR_TITLE')}

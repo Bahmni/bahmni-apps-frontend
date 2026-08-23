@@ -212,8 +212,7 @@ jest.mock('../styles/ObservationFormsContainer.module.scss', () => ({
   pinIconContainer: 'pinIconContainer',
   pinned: 'pinned',
   unpinned: 'unpinned',
-  errorNotificationWrapper: 'errorNotificationWrapper',
-  copyoverNoticeWrapper: 'copyoverNoticeWrapper',
+  inlineNotificationWrapper: 'inlineNotificationWrapper',
 }));
 
 describe('ObservationFormsContainer', () => {
