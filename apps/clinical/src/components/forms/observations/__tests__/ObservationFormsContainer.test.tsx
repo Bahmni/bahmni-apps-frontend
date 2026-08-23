@@ -169,12 +169,8 @@ jest.mock('@bahmni/design-system', () => ({
       Icon
     </div>
   )),
-  SkeletonText: jest.fn(({ width, lineCount }) => (
-    <div
-      data-testid="skeleton-text"
-      data-width={width}
-      data-line-count={lineCount}
-    />
+  Loading: jest.fn(({ description, testId }) => (
+    <div data-testid={testId} aria-label={description} />
   )),
   InlineNotification: jest.fn(
     ({ kind, title, subtitle, onClose, hideCloseButton }) => (
@@ -672,6 +668,26 @@ describe('ObservationFormsContainer', () => {
       );
 
       expect(screen.getByTestId('form2-container')).toBeInTheDocument();
+    });
+
+    it('should show the loading indicator while metadata is loading, instead of the form container', () => {
+      mockUseObservationFormData.mockReturnValue({
+        observations: [],
+        handleFormDataChange: jest.fn(),
+        resetForm: jest.fn(),
+        formMetadata: undefined,
+        isLoadingMetadata: true,
+        metadataError: null,
+      });
+
+      render(
+        <ObservationFormsContainer {...defaultProps} viewingForm={mockForm} />,
+      );
+
+      expect(
+        screen.getByTestId('observation-form-loading'),
+      ).toBeInTheDocument();
+      expect(screen.queryByTestId('form2-container')).not.toBeInTheDocument();
     });
 
     it('should display error message when metadata fetch fails', async () => {

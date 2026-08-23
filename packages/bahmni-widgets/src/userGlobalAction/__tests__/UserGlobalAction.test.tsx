@@ -100,6 +100,20 @@ describe('UserGlobalAction', () => {
     ).toBeInTheDocument();
   });
 
+  it('should show the full display name as a hover tooltip on the greeting', () => {
+    renderWithProviders(
+      buildActivePractitionerValue({
+        user: {
+          display: 'Jane Elizabeth Doe',
+        } as ActivePractitionerContextType['user'],
+      }),
+    );
+
+    expect(
+      screen.getByText('USER_GLOBAL_ACTION_GREETING Jane'),
+    ).toHaveAttribute('title', 'Jane Elizabeth Doe');
+  });
+
   it('should render a skeleton while the active practitioner is loading', () => {
     renderWithProviders(buildActivePractitionerValue({ loading: true }));
 

@@ -1,6 +1,7 @@
 import { Patient } from 'fhir/r4';
 import { get, post } from '../../api';
 import { APP_PROPERTY_URL } from '../../applicationConfigService/constants';
+import { PATIENT_NOT_FOUND_ERROR_KEY } from '../../errorHandling';
 import { getUserLoginLocation } from '../../userService';
 import { blobToDataUrl } from '../../utils';
 import {
@@ -69,34 +70,37 @@ describe('Patient Service', () => {
       expect(mockedGet).toHaveBeenCalledWith(PATIENT_RESOURCE_URL(patientUUID));
     });
 
-    it('should throw error for empty UUID', async () => {
+    it('should throw patient not found for empty UUID', async () => {
       await expect(getPatientById('')).rejects.toThrow(
-        'Invalid patient UUID: UUID cannot be empty',
+        PATIENT_NOT_FOUND_ERROR_KEY,
       );
       expect(mockedGet).not.toHaveBeenCalled();
     });
 
-    it('should throw error for whitespace-only UUID', async () => {
+    it('should throw patient not found for whitespace-only UUID', async () => {
       await expect(getPatientById('   ')).rejects.toThrow(
-        'Invalid patient UUID: UUID cannot be empty',
+        PATIENT_NOT_FOUND_ERROR_KEY,
       );
       expect(mockedGet).not.toHaveBeenCalled();
     });
 
-    it('should throw error for invalid UUID format', async () => {
-      const invalidUUID = 'not-a-valid-uuid';
+    // A malformed UUID is rejected before any network call, so it must produce
+    // the same translation key as a 400/404 — otherwise the caller cannot tell
+    // "patient not found" apart from an unexpected failure.
+    it('should throw patient not found for invalid UUID format', async () => {
+      const invalidUUID = 'abc-not-uuid';
 
       await expect(getPatientById(invalidUUID)).rejects.toThrow(
-        'Invalid patient UUID format: not-a-valid-uuid',
+        PATIENT_NOT_FOUND_ERROR_KEY,
       );
       expect(mockedGet).not.toHaveBeenCalled();
     });
 
-    it('should throw error for UUID with invalid characters', async () => {
+    it('should throw patient not found for UUID with invalid characters', async () => {
       const invalidUUID = '12345678-1234-1234-1234-12345678ZZZZ';
 
       await expect(getPatientById(invalidUUID)).rejects.toThrow(
-        'Invalid patient UUID format',
+        PATIENT_NOT_FOUND_ERROR_KEY,
       );
       expect(mockedGet).not.toHaveBeenCalled();
     });

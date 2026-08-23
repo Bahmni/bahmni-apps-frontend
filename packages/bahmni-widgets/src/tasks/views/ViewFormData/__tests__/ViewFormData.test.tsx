@@ -381,15 +381,16 @@ describe('ViewFormData', () => {
         },
       ],
     ])(
-      'should display SkeletonPlaceholder when %s',
+      'should display the table skeleton loader when %s',
       async (_desc, setupMock) => {
         setupMock();
 
         renderComponent();
 
         await waitFor(() => {
-          const element = document.querySelector('.cds--skeleton__placeholder');
-          expect(element).toBeInTheDocument();
+          expect(
+            screen.getByTestId('view-form-loading-skeleton'),
+          ).toBeInTheDocument();
         });
       },
     );

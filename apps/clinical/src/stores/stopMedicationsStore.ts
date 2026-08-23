@@ -1,21 +1,22 @@
 import { MedicationRequest } from 'fhir/r4';
 import { create } from 'zustand';
 import { StopMedicationConfig } from '../models/medicationConfig';
+import { StopReason } from '../services/stopMedicationService';
 
 export interface StopMedicationState {
   stopDate: Date;
-  stopReason: string | null;
+  stopReason: StopReason | null;
   note: string;
   medicationToStop: MedicationRequest | null;
   fieldConfig: StopMedicationConfig;
   errors: Record<string, string>;
 
   setStopDate: (date: Date) => void;
-  setStopReason: (reason: string | null) => void;
+  setStopReason: (reason: StopReason | null) => void;
   setNote: (note: string) => void;
   setMedicationToStop: (medication: MedicationRequest | null) => void;
   setFieldConfig: (config: StopMedicationConfig) => void;
-  validate: () => boolean;
+  validate: (isCancelVaccination?: boolean) => boolean;
   hasData: () => boolean;
   reset: () => void;
 }
@@ -43,7 +44,7 @@ export const useStopMedicationStore = create<StopMedicationState>(
       });
     },
 
-    setStopReason: (reason: string | null) => {
+    setStopReason: (reason: StopReason | null) => {
       set((state) => {
         const errors = { ...state.errors };
         if (reason) delete errors.stopReason;
@@ -76,34 +77,41 @@ export const useStopMedicationStore = create<StopMedicationState>(
       });
     },
 
-    validate: () => {
+    validate: (isCancelVaccination = false) => {
       const state = get();
-      // Nothing to validate if no medication is being stopped
       if (!state.medicationToStop) return true;
 
       const errors: Record<string, string> = {};
-      const cfg = state.fieldConfig;
+      const config = state.fieldConfig;
       let isValid = true;
 
-      if (cfg.stopDate?.isVisible !== false && cfg.stopDate?.isMandatory) {
-        if (!state.stopDate) {
-          errors.stopDate = 'STOP_MEDICATION_DATE_REQUIRED';
-          isValid = false;
-        }
+      if (
+        config.stopDate?.isVisible !== false &&
+        config.stopDate?.isMandatory &&
+        !state.stopDate
+      ) {
+        errors.stopDate = 'STOP_MEDICATION_DATE_REQUIRED';
+        isValid = false;
       }
 
-      if (cfg.stopReason?.isVisible !== false && cfg.stopReason?.isMandatory) {
-        if (!state.stopReason) {
-          errors.stopReason = 'STOP_MEDICATION_REASON_REQUIRED';
-          isValid = false;
-        }
+      if (
+        config.stopReason?.isVisible !== false &&
+        config.stopReason?.isMandatory &&
+        !state.stopReason
+      ) {
+        errors.stopReason = isCancelVaccination
+          ? 'CANCEL_VACCINATION_REASON_REQUIRED'
+          : 'STOP_MEDICATION_REASON_REQUIRED';
+        isValid = false;
       }
 
-      if (cfg.note?.isVisible !== false && cfg.note?.isMandatory) {
-        if (!state.note) {
-          errors.note = 'STOP_MEDICATION_NOTE_REQUIRED';
-          isValid = false;
-        }
+      if (
+        config.note?.isVisible !== false &&
+        config.note?.isMandatory &&
+        !state.note
+      ) {
+        errors.note = 'STOP_MEDICATION_NOTE_REQUIRED';
+        isValid = false;
       }
 
       set({ errors });

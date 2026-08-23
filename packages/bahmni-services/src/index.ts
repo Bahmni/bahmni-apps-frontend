@@ -97,7 +97,10 @@ export {
   type AppointmentUnavailability,
   type CreateUnavailabilityRequest,
 } from './appointmentService';
-export { getFormattedError } from './errorHandling';
+export {
+  getFormattedError,
+  PATIENT_NOT_FOUND_ERROR_KEY,
+} from './errorHandling';
 export {
   capitalize,
   generateId,
@@ -327,6 +330,7 @@ export {
   DATETIME_REGEX_PATTERN,
   INTERPRETATION_TO_CODE,
   FHIR_LAB_ORDER_CONCEPT_TYPE_EXTENSION_URL,
+  FHIR_EXT_MEDICATION_REQUEST_NOTE_CATEGORY,
 } from './constants/fhir';
 
 export {
@@ -468,6 +472,9 @@ export {
   groupExtensionsByPoint,
   filterExtensionsByPrivileges,
   type Extension,
-  type ExtensionHandlerProps,
   type SearchExtensionParam,
+  type SearchExtension,
+  type ActionExtensionParam,
+  type ActionExtension,
+  type ExtensionButtonKind,
 } from './extensions';

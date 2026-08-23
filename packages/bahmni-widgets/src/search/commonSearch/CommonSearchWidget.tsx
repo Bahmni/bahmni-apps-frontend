@@ -19,6 +19,9 @@ import { useQuery } from '@tanstack/react-query';
 import { useMemo, useRef, useState } from 'react';
 import { useNotification } from '../../notification';
 import { SearchWidgetProps } from '../models';
+import ResultsTable from './components/ResultsTable';
+import SearchForm from './components/SearchForm';
+import SearchSummary from './components/SearchSummary';
 import {
   CurrentSearchState,
   CommonSearchWidgetConfig,
@@ -26,10 +29,7 @@ import {
   CursorDirection,
   SearchContextConfig,
 } from './models';
-import ResultsTable from './ResultsTable';
 import schema from './schema.json';
-import SearchForm from './SearchForm';
-import SearchSummary from './SearchSummary';
 import styles from './styles/CommonSearchWidget.module.scss';
 import {
   buildPaginationMeta,

@@ -1,8 +1,8 @@
 import { render, screen, fireEvent } from '@testing-library/react';
 import { axe, toHaveNoViolations } from 'jest-axe';
 import { v4 as uuidv4 } from 'uuid';
-import SearchForm from '../SearchForm';
-import { validateRows } from '../utils';
+import SearchForm from '../../components/SearchForm';
+import { validateRows } from '../../utils';
 import {
   mockAppointmentContext,
   mockConfig,
@@ -13,7 +13,7 @@ import {
   mockPatientContextWithoutLocationAware,
   mockPatientContextWithRangeNumeric,
   mockSavedRows,
-} from './__mocks__/searchFormMocks';
+} from '../__mocks__/searchFormMocks';
 
 jest.mock('uuid');
 expect.extend(toHaveNoViolations);
