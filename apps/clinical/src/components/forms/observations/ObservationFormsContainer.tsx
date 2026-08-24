@@ -117,9 +117,8 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
 
   const isCopyover = encounterSessionStartContext?.isCopyover === true;
   // Empty string (e.g. a locale with no translated copy yet) means "don't show".
-  const copyoverNoticeMessage = isCopyover
-    ? t('OBSERVATION_FORM_COPYOVER_NOTICE')
-    : '';
+  const copyoverNoticeMessage =
+    isCopyover && t('OBSERVATION_FORM_COPYOVER_NOTICE');
 
   // Tracks whether the form differs from its initial values — driven by CarbonContainer's
   // own setIsFormUpdated (uuid-based comparison against the observations it was mounted with).
