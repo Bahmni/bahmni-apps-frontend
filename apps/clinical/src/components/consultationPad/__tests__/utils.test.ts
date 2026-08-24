@@ -1,3 +1,4 @@
+import type { Encounter } from 'fhir/r4';
 import type { ConsultationPad } from '../../../providers/clinicalConfig/models';
 import {
   useServiceRequestStore,
@@ -6,6 +7,7 @@ import {
 import type { InputControl } from '../../forms';
 import {
   captureUpdatedResources,
+  getActiveEncounter,
   getActiveEntries,
   loadEncounterInputControls,
 } from '../utils';
@@ -449,5 +451,86 @@ describe('captureUpdatedResources', () => {
       observationFormsWithBasedOn: undefined,
       serviceRequests: {},
     });
+  });
+});
+
+describe('getActiveEncounter', () => {
+  const SOURCE_UUID = 'source-encounter-uuid';
+  const OTHER_UUID = 'other-encounter-uuid';
+
+  const encounter = (id: string): Encounter =>
+    ({ resourceType: 'Encounter', id, status: 'in-progress' }) as Encounter;
+
+  it('returns the session encounter when no sourceEncounterUuid is provided (plain visit)', () => {
+    const session = encounter(OTHER_UUID);
+    const result = getActiveEncounter({
+      sourceEncounterUuid: undefined,
+      sourceEncounter: null,
+      sessionEncounter: session,
+      sessionEncounterStatus: 'success',
+    });
+    expect(result).toBe(session);
+  });
+
+  it('returns null when no sourceEncounterUuid and no session encounter (plain visit, none active)', () => {
+    const result = getActiveEncounter({
+      sourceEncounterUuid: undefined,
+      sourceEncounter: null,
+      sessionEncounter: null,
+      sessionEncounterStatus: 'success',
+    });
+    expect(result).toBeNull();
+  });
+
+  it('returns undefined while the session query is still pending (source uuid set)', () => {
+    const result = getActiveEncounter({
+      sourceEncounterUuid: SOURCE_UUID,
+      sourceEncounter: encounter(SOURCE_UUID),
+      sessionEncounter: undefined,
+      sessionEncounterStatus: 'pending',
+    });
+    expect(result).toBeUndefined();
+  });
+
+  it('returns the source encounter when the session encounter matches source (regular edit)', () => {
+    const source = encounter(SOURCE_UUID);
+    const result = getActiveEncounter({
+      sourceEncounterUuid: SOURCE_UUID,
+      sourceEncounter: source,
+      sessionEncounter: encounter(SOURCE_UUID),
+      sessionEncounterStatus: 'success',
+    });
+    expect(result).toBe(source);
+  });
+
+  it('returns the session encounter when it differs from source (copyover)', () => {
+    const session = encounter(OTHER_UUID);
+    const result = getActiveEncounter({
+      sourceEncounterUuid: SOURCE_UUID,
+      sourceEncounter: encounter(SOURCE_UUID),
+      sessionEncounter: session,
+      sessionEncounterStatus: 'success',
+    });
+    expect(result).toBe(session);
+  });
+
+  it('returns null when session query resolves with no active encounter (safe copyover default)', () => {
+    const result = getActiveEncounter({
+      sourceEncounterUuid: SOURCE_UUID,
+      sourceEncounter: encounter(SOURCE_UUID),
+      sessionEncounter: null,
+      sessionEncounterStatus: 'success',
+    });
+    expect(result).toBeNull();
+  });
+
+  it('returns null on session query error (safe copyover default; does not fall back to source)', () => {
+    const result = getActiveEncounter({
+      sourceEncounterUuid: SOURCE_UUID,
+      sourceEncounter: encounter(SOURCE_UUID),
+      sessionEncounter: null,
+      sessionEncounterStatus: 'error',
+    });
+    expect(result).toBeNull();
   });
 });

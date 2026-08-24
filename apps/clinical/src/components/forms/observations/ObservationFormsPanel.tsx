@@ -37,9 +37,11 @@ const ObservationFormsPanel: React.FC<ObservationFormsPanelProps> = ({
     | boolean
     | undefined;
   const sourceEncounterUuid = encounterSessionStartContext?.sourceEncounterUuid;
-  const isCopyover = encounterSessionStartContext?.isCopyover as
-    | boolean
-    | undefined;
+  const activeEncounter = encounterSessionStartContext?.activeEncounter;
+  const isCopyover: boolean | undefined =
+    !sourceEncounterUuid || activeEncounter === undefined
+      ? undefined
+      : activeEncounter?.id !== sourceEncounterUuid;
   const task = encounterSessionStartContext?.task as Task | undefined;
   const basedOnRef = task?.basedOn?.[0]?.reference;
   const basedOnId = basedOnRef?.split('/').pop() ?? undefined;

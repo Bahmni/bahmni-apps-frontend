@@ -830,7 +830,7 @@ describe('ObservationFormsContainer', () => {
     const editCopyoverContext = {
       editOnly: 'observationForms',
       sourceEncounterUuid: 'source-encounter-uuid',
-      isCopyover: true,
+      activeEncounter: { id: 'session-different-uuid' } as any,
     };
 
     it('shows the info notice right under the edit form section title when isCopyover is true and the translation is non-empty', () => {
@@ -849,7 +849,7 @@ describe('ObservationFormsContainer', () => {
       expect(notice).toHaveAttribute('data-kind', 'info');
     });
 
-    it('does not show the notice when isCopyover is false', () => {
+    it('does not show the notice when isCopyover is false (session matches source)', () => {
       render(
         <ObservationFormsContainer
           {...defaultProps}
@@ -857,7 +857,7 @@ describe('ObservationFormsContainer', () => {
           directMode
           encounterSessionStartContext={{
             ...editCopyoverContext,
-            isCopyover: false,
+            activeEncounter: { id: 'source-encounter-uuid' } as any,
           }}
         />,
       );

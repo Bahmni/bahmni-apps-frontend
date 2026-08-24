@@ -103,6 +103,7 @@ jest.mock('../services', () => ({
 }));
 
 jest.mock('../utils', () => ({
+  ...jest.requireActual('../utils'),
   loadEncounterInputControls: jest.fn(),
   getActiveEntries: jest.fn(),
   captureUpdatedResources: jest.fn(),
@@ -302,9 +303,8 @@ describe('ConsultationPad', () => {
     });
   });
 
-  describe('isCopyover and activeEncounter resolution', () => {
+  describe('activeEncounter wiring', () => {
     const EDIT_ENCOUNTER_UUID = 'edit-enc-uuid';
-    const SESSION_ENCOUNTER_ID = 'session-enc-uuid';
 
     const withViewingForm = () =>
       jest.mocked(useObservationFormsStore).mockReturnValue({
@@ -312,7 +312,7 @@ describe('ConsultationPad', () => {
         viewingForm: { uuid: 'form-uuid', name: 'Vitals' } as any,
       } as any);
 
-    it('isCopyover is false when sessionEncounter.id matches sourceEncounterUuid (edit mode)', async () => {
+    it('passes the resolved activeEncounter through effectiveContext and as activeEncounterUuid prop', async () => {
       jest.mocked(useActivePractitioner).mockReturnValue({
         practitioner: { uuid: 'prac-uuid' },
       } as any);
@@ -337,130 +337,9 @@ describe('ConsultationPad', () => {
           expect.objectContaining({
             activeEncounterUuid: EDIT_ENCOUNTER_UUID,
             encounterSessionStartContext: expect.objectContaining({
-              isCopyover: false,
-            }),
-          }),
-        );
-      });
-    });
-
-    it('isCopyover is true when sessionEncounter.id differs from sourceEncounterUuid (copyover)', async () => {
-      jest.mocked(useActivePractitioner).mockReturnValue({
-        practitioner: { uuid: 'prac-uuid' },
-      } as any);
-      jest
-        .mocked(findActiveEncounterInSession)
-        .mockResolvedValue({ id: SESSION_ENCOUNTER_ID } as any);
-      jest
-        .mocked(getEncounterByUuid)
-        .mockResolvedValue({ id: EDIT_ENCOUNTER_UUID } as any);
-      withViewingForm();
-
-      renderComponent({
-        encounterSessionStartContext: {
-          encounterType: 'Consultation',
-          editOnly: 'observationForms',
-          sourceEncounterUuid: EDIT_ENCOUNTER_UUID,
-        },
-      });
-
-      await waitFor(() => {
-        expect(mockObservationFormsContainer).toHaveBeenCalledWith(
-          expect.objectContaining({
-            activeEncounterUuid: SESSION_ENCOUNTER_ID,
-            encounterSessionStartContext: expect.objectContaining({
-              isCopyover: true,
-            }),
-          }),
-        );
-      });
-    });
-
-    it('isCopyover is true on session query error (safe copyover default)', async () => {
-      jest.mocked(useActivePractitioner).mockReturnValue({
-        practitioner: { uuid: 'prac-uuid' },
-      } as any);
-      jest
-        .mocked(findActiveEncounterInSession)
-        .mockRejectedValue(new Error('network error'));
-      jest
-        .mocked(getEncounterByUuid)
-        .mockResolvedValue({ id: EDIT_ENCOUNTER_UUID } as any);
-      withViewingForm();
-
-      renderComponent({
-        encounterSessionStartContext: {
-          encounterType: 'Consultation',
-          editOnly: 'observationForms',
-          sourceEncounterUuid: EDIT_ENCOUNTER_UUID,
-        },
-      });
-
-      await waitFor(() => {
-        expect(mockObservationFormsContainer).toHaveBeenCalledWith(
-          expect.objectContaining({
-            encounterSessionStartContext: expect.objectContaining({
-              isCopyover: true,
-            }),
-          }),
-        );
-      });
-    });
-
-    it('isCopyover is true when session query succeeds with no active encounter (copyover)', async () => {
-      jest.mocked(useActivePractitioner).mockReturnValue({
-        practitioner: { uuid: 'prac-uuid' },
-      } as any);
-      jest.mocked(findActiveEncounterInSession).mockResolvedValue(null);
-      jest
-        .mocked(getEncounterByUuid)
-        .mockResolvedValue({ id: EDIT_ENCOUNTER_UUID } as any);
-      withViewingForm();
-
-      renderComponent({
-        encounterSessionStartContext: {
-          encounterType: 'Consultation',
-          editOnly: 'observationForms',
-          sourceEncounterUuid: EDIT_ENCOUNTER_UUID,
-        },
-      });
-
-      await waitFor(() => {
-        expect(mockObservationFormsContainer).toHaveBeenCalledWith(
-          expect.objectContaining({
-            encounterSessionStartContext: expect.objectContaining({
-              isCopyover: true,
-            }),
-          }),
-        );
-      });
-    });
-
-    it('isCopyover stays undefined while session query is pending', async () => {
-      jest.mocked(useActivePractitioner).mockReturnValue({
-        practitioner: { uuid: 'prac-uuid' },
-      } as any);
-      jest
-        .mocked(findActiveEncounterInSession)
-        .mockImplementation(() => new Promise(() => {}));
-      jest
-        .mocked(getEncounterByUuid)
-        .mockResolvedValue({ id: EDIT_ENCOUNTER_UUID } as any);
-      withViewingForm();
-
-      renderComponent({
-        encounterSessionStartContext: {
-          encounterType: 'Consultation',
-          editOnly: 'observationForms',
-          sourceEncounterUuid: EDIT_ENCOUNTER_UUID,
-        },
-      });
-
-      await waitFor(() => {
-        expect(mockObservationFormsContainer).toHaveBeenCalledWith(
-          expect.objectContaining({
-            encounterSessionStartContext: expect.objectContaining({
-              isCopyover: undefined,
+              activeEncounter: expect.objectContaining({
+                id: EDIT_ENCOUNTER_UUID,
+              }),
             }),
           }),
         );

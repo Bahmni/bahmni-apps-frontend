@@ -30,7 +30,7 @@ import {
 } from '@bahmni/services';
 import { useActivePractitioner, usePatientUUID } from '@bahmni/widgets';
 import { useQuery } from '@tanstack/react-query';
-import type { Reference, Task } from 'fhir/r4';
+import type { Encounter, Reference, Task } from 'fhir/r4';
 import React, { useState, useRef, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
@@ -115,7 +115,16 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
     encounterSessionStartContext?.editOnly === 'observationForms' &&
     !!encounterSessionStartContext?.sourceEncounterUuid;
 
-  const isCopyover = encounterSessionStartContext?.isCopyover === true;
+  const activeEncounter = encounterSessionStartContext?.activeEncounter as
+    | Encounter
+    | null
+    | undefined;
+  const sourceEncounterUuidFromContext =
+    encounterSessionStartContext?.sourceEncounterUuid as string | undefined;
+  const isCopyover: boolean | undefined =
+    !sourceEncounterUuidFromContext || activeEncounter === undefined
+      ? undefined
+      : activeEncounter?.id !== sourceEncounterUuidFromContext;
   // Blank string (e.g. a locale with no translated copy yet) means "don't show".
   const copyoverNoticeMessage =
     isCopyover && t('OBSERVATION_FORM_COPYOVER_NOTICE').trim();

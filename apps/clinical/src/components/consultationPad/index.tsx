@@ -46,6 +46,7 @@ import { submitConsultation } from './services';
 import styles from './styles/index.module.scss';
 import {
   captureUpdatedResources,
+  getActiveEncounter,
   getActiveEntries,
   loadEncounterInputControls,
 } from './utils';
@@ -209,19 +210,16 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
     }
   }, [sourceEncounterError, addNotification, t]);
 
-  const isCopyover: boolean | undefined =
-    !sourceEncounterUuid || sessionEncounterStatus === 'pending'
-      ? undefined
-      : sessionEncounter?.id !== sourceEncounterUuid;
-
-  const activeEncounter =
-    isCopyover !== true && sourceEncounterUuid
-      ? (sourceEncounter ?? null)
-      : sessionEncounter;
+  const activeEncounter = getActiveEncounter({
+    sourceEncounterUuid,
+    sourceEncounter,
+    sessionEncounter,
+    sessionEncounterStatus,
+  });
 
   const effectiveContext = useMemo<EncounterSessionStartContext>(
-    () => ({ ...encounterSessionStartContext, isCopyover }),
-    [encounterSessionStartContext, isCopyover],
+    () => ({ ...encounterSessionStartContext, activeEncounter }),
+    [encounterSessionStartContext, activeEncounter],
   );
 
   useEffect(() => {
@@ -239,7 +237,7 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
     }
   }, [sessionEncounter, sessionEncounterStatus]);
 
-  const encounterForSubmission = activeEncounter;
+  const encounterForSubmission = activeEncounter ?? null;
 
   const episodeOfCareUuids = episodeOfCare.map((eoc) => eoc.uuid);
   const statDurationInMilliseconds =
@@ -570,7 +568,8 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
     isSubmitting ||
     !hasConsultationData ||
     !editChangesExist ||
-    sourceEncounterLoading;
+    sourceEncounterLoading ||
+    activeEncounter === undefined;
   return (
     <>
       <ActionArea

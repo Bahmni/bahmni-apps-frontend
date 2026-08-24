@@ -1,9 +1,34 @@
+import type { Encounter } from 'fhir/r4';
 import { extractId } from '../../../../../packages/bahmni-widgets/src/utils/Observations';
 import type { ConsultationPad } from '../../providers/clinicalConfig/models';
 import { useServiceRequestStore, useObservationFormsStore } from '../../stores';
 import type { InputControl } from '../forms';
 import { getRegisteredInputControls } from '../forms/registry';
 import { ENCOUNTER_DETAILS_INPUT_CONTROL_KEY } from './constants';
+
+type QueryStatus = 'pending' | 'error' | 'success';
+
+export function getActiveEncounter(args: {
+  sourceEncounterUuid: string | undefined;
+  sourceEncounter: Encounter | null | undefined;
+  sessionEncounter: Encounter | null | undefined;
+  sessionEncounterStatus: QueryStatus;
+}): Encounter | null | undefined {
+  const {
+    sourceEncounterUuid,
+    sourceEncounter,
+    sessionEncounter,
+    sessionEncounterStatus,
+  } = args;
+
+  if (!sourceEncounterUuid) return sessionEncounter ?? null;
+  if (sessionEncounterStatus === 'pending') return undefined;
+
+  const isSourceEncounterActive = sessionEncounter?.id === sourceEncounterUuid;
+  return isSourceEncounterActive
+    ? (sourceEncounter ?? null)
+    : (sessionEncounter ?? null);
+}
 
 export function loadEncounterInputControls(
   config: ConsultationPad | undefined,

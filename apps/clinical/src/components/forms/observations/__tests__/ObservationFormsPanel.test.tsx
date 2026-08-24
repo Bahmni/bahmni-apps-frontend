@@ -384,7 +384,7 @@ describe('ObservationFormsPanel', () => {
             editOnly: 'observationForms',
             formName: 'Vitals',
             sourceEncounterUuid: 'encounter-uuid-1',
-            isCopyover: false,
+            activeEncounter: { id: 'encounter-uuid-1' } as any,
           }}
         />,
       );
@@ -420,7 +420,7 @@ describe('ObservationFormsPanel', () => {
             editOnly: 'observationForms',
             formName: 'Vitals',
             sourceEncounterUuid: 'encounter-uuid-1',
-            isCopyover: false,
+            activeEncounter: { id: 'encounter-uuid-1' } as any,
             task: {
               resourceType: 'Task',
               basedOn: [{ reference: 'ServiceRequest/service-request-42' }],
@@ -470,7 +470,7 @@ describe('ObservationFormsPanel', () => {
             editOnly: 'observationForms',
             formName: 'Vitals',
             sourceEncounterUuid: 'encounter-uuid-1',
-            isCopyover: false,
+            activeEncounter: { id: 'encounter-uuid-1' } as any,
           }}
         />,
       );
@@ -497,7 +497,7 @@ describe('ObservationFormsPanel', () => {
             editOnly: 'observationForms',
             formName: 'Vitals',
             sourceEncounterUuid: 'encounter-uuid-1',
-            isCopyover: false,
+            activeEncounter: { id: 'encounter-uuid-1' } as any,
           }}
         />,
       );
@@ -514,7 +514,7 @@ describe('ObservationFormsPanel', () => {
             editOnly: 'observationForms',
             formName: 'NonExistentForm',
             sourceEncounterUuid: 'encounter-uuid-1',
-            isCopyover: false,
+            activeEncounter: { id: 'encounter-uuid-1' } as any,
           }}
         />,
       );
@@ -547,7 +547,7 @@ describe('ObservationFormsPanel', () => {
         editOnly: 'observationForms',
         formName: 'Vitals',
         sourceEncounterUuid: 'encounter-uuid-1',
-        isCopyover: false as const,
+        activeEncounter: { id: 'encounter-uuid-1' } as any,
       };
 
       const { rerender } = render(
@@ -607,7 +607,7 @@ describe('ObservationFormsPanel', () => {
             editOnly: 'observationForms',
             formName: 'Vitals',
             sourceEncounterUuid: 'encounter-uuid-1',
-            isCopyover: false,
+            activeEncounter: { id: 'encounter-uuid-1' } as any,
           }}
         />,
       );
@@ -667,7 +667,7 @@ describe('ObservationFormsPanel', () => {
             editOnly: 'observationForms',
             formName: 'Vitals',
             sourceEncounterUuid: 'encounter-uuid-1',
-            isCopyover: false,
+            activeEncounter: { id: 'encounter-uuid-1' } as any,
           }}
         />,
       );
@@ -714,7 +714,7 @@ describe('ObservationFormsPanel', () => {
             editOnly: 'observationForms',
             formName: 'Vitals',
             sourceEncounterUuid: 'encounter-uuid-1',
-            isCopyover: false,
+            activeEncounter: { id: 'encounter-uuid-1' } as any,
           }}
         />,
       );
@@ -764,7 +764,7 @@ describe('ObservationFormsPanel', () => {
             editOnly: 'observationForms',
             formName: 'Vitals',
             sourceEncounterUuid: 'encounter-uuid-1',
-            isCopyover: false,
+            activeEncounter: { id: 'encounter-uuid-1' } as any,
           }}
         />,
       );
@@ -775,14 +775,14 @@ describe('ObservationFormsPanel', () => {
       });
     });
 
-    it('blocks fetch while isCopyover is undefined (session query still pending)', async () => {
+    it('blocks fetch while activeEncounter is undefined (session query still pending)', async () => {
       render(
         <ObservationFormsPanel
           encounterSessionStartContext={{
             editOnly: 'observationForms',
             formName: 'Vitals',
             sourceEncounterUuid: 'encounter-uuid-1',
-            // isCopyover intentionally absent — undefined means mode not yet determined
+            // activeEncounter intentionally absent — undefined means mode not yet determined
           }}
         />,
       );
@@ -825,7 +825,7 @@ describe('ObservationFormsPanel', () => {
             editOnly: 'observationForms',
             formName: 'Vitals',
             sourceEncounterUuid: 'encounter-uuid-1',
-            isCopyover: true,
+            activeEncounter: { id: 'session-different-uuid' } as any,
           }}
         />,
       );

@@ -1,3 +1,4 @@
+import type { Encounter } from 'fhir/r4';
 import type { AllergyInputEntry } from '../../models/allergy';
 
 export interface EncounterSessionStartContext {
@@ -9,5 +10,6 @@ export interface EncounterSessionStartContext {
   editTitle?: string;
   /** Source encounter UUID for edit or copyover flows. */
   sourceEncounterUuid?: string;
+  activeEncounter?: Encounter | null;
   [key: string]: unknown;
 }
