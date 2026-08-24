@@ -46,6 +46,7 @@ import { submitConsultation } from './services';
 import styles from './styles/index.module.scss';
 import {
   captureUpdatedResources,
+  getActiveEncounter,
   getActiveEntries,
   loadEncounterInputControls,
 } from './utils';
@@ -71,9 +72,8 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
   const editTitle = encounterSessionStartContext.editTitle as
     | string
     | undefined;
-  const editEncounterUuid = encounterSessionStartContext.editEncounterUuid as
-    | string
-    | undefined;
+  const sourceEncounterUuid =
+    encounterSessionStartContext.sourceEncounterUuid as string | undefined;
   const directFormMode = encounterSessionStartContext.directFormMode as
     | boolean
     | undefined;
@@ -186,22 +186,21 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
         selectedEncounterType?.uuid,
       ),
     staleTime: 0,
-    enabled: Boolean(
-      patientId && practitioner?.uuid && selectedEncounterType?.uuid,
-    ),
+    enabled: !!(patientId && practitioner?.uuid && selectedEncounterType?.uuid),
   });
   const {
-    data: editEncounter,
-    isLoading: editEncounterLoading,
-    error: editEncounterError,
+    data: sourceEncounter,
+    isLoading: sourceEncounterLoading,
+    error: sourceEncounterError,
   } = useQuery({
-    queryKey: ['encounter', editEncounterUuid],
-    queryFn: ({ signal }) => getEncounterByUuid(editEncounterUuid!, { signal }),
-    enabled: Boolean(editEncounterUuid),
+    queryKey: ['encounter', sourceEncounterUuid],
+    queryFn: ({ signal }) =>
+      getEncounterByUuid(sourceEncounterUuid!, { signal }),
+    enabled: !!sourceEncounterUuid,
   });
 
   useEffect(() => {
-    if (editEncounterError) {
+    if (sourceEncounterError) {
       addNotification({
         title: t('ERROR_DEFAULT_TITLE'),
         message: t('CONSULTATION_ERROR_GENERIC'),
@@ -209,11 +208,19 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
         timeout: 5000,
       });
     }
-  }, [editEncounterError, addNotification, t]);
+  }, [sourceEncounterError, addNotification, t]);
 
-  const activeEncounter = editEncounterUuid
-    ? (editEncounter ?? null)
-    : sessionEncounter;
+  const activeEncounter = getActiveEncounter({
+    sourceEncounterUuid,
+    sourceEncounter,
+    sessionEncounter,
+    sessionEncounterStatus,
+  });
+
+  const effectiveContext = useMemo<EncounterSessionStartContext>(
+    () => ({ ...encounterSessionStartContext, activeEncounter }),
+    [encounterSessionStartContext, activeEncounter],
+  );
 
   useEffect(() => {
     const periodStart = sessionEncounter?.period?.start;
@@ -230,7 +237,7 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
     }
   }, [sessionEncounter, sessionEncounterStatus]);
 
-  const encounterForSubmission = activeEncounter;
+  const encounterForSubmission = activeEncounter ?? null;
 
   const episodeOfCareUuids = episodeOfCare.map((eoc) => eoc.uuid);
   const statDurationInMilliseconds =
@@ -537,7 +544,7 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
             key={entry.key}
             entry={entry}
             encounterType={resolvedEncounterType!}
-            encounterSessionStartContext={encounterSessionStartContext}
+            encounterSessionStartContext={effectiveContext}
           />
         ))}
       </div>
@@ -561,7 +568,8 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
     isSubmitting ||
     !hasConsultationData ||
     !editChangesExist ||
-    editEncounterLoading;
+    sourceEncounterLoading ||
+    activeEncounter === undefined;
   return (
     <>
       <ActionArea
@@ -589,11 +597,10 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
           onRemoveForm={removeForm}
           onFormObservationsChange={updateFormData}
           existingObservations={getFormData(viewingForm.uuid)?.observations}
-          activeEncounterUuid={activeEncounter?.id ?? null}
           directMode={directFormMode}
           onDirectModeSubmit={directFormMode ? handleSubmit : undefined}
           onDirectModeCancel={directFormMode ? handleCancel : undefined}
-          encounterSessionStartContext={encounterSessionStartContext}
+          encounterSessionStartContext={effectiveContext}
           isActionAreaExpanded={isActionAreaExpanded}
           onToggleActionAreaExpand={onToggleActionAreaExpand}
         />
