@@ -461,7 +461,7 @@ describe('getActiveEncounter', () => {
   const encounter = (id: string): Encounter =>
     ({ resourceType: 'Encounter', id, status: 'in-progress' }) as Encounter;
 
-  it('returns the session encounter when no sourceEncounterUuid is provided (plain visit)', () => {
+  it('returns the session encounter when no sourceEncounterUuid is provided (active encounter)', () => {
     const session = encounter(OTHER_UUID);
     const result = getActiveEncounter({
       sourceEncounterUuid: undefined,
@@ -472,7 +472,7 @@ describe('getActiveEncounter', () => {
     expect(result).toBe(session);
   });
 
-  it('returns null when no sourceEncounterUuid and no session encounter (plain visit, none active)', () => {
+  it('returns null when no sourceEncounterUuid and no session encounter (no active encounter)', () => {
     const result = getActiveEncounter({
       sourceEncounterUuid: undefined,
       sourceEncounter: null,

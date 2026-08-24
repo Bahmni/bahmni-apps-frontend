@@ -754,7 +754,9 @@ describe('ObservationFormsContainer', () => {
         <ObservationFormsContainer
           {...defaultProps}
           viewingForm={mockForm}
-          activeEncounterUuid="encounter-uuid-789"
+          encounterSessionStartContext={{
+            activeEncounter: { id: 'encounter-uuid-789' } as any,
+          }}
         />,
       );
 
@@ -793,11 +795,7 @@ describe('ObservationFormsContainer', () => {
       });
 
       render(
-        <ObservationFormsContainer
-          {...defaultProps}
-          viewingForm={mockForm}
-          activeEncounterUuid={null}
-        />,
+        <ObservationFormsContainer {...defaultProps} viewingForm={mockForm} />,
       );
 
       fireEvent.click(screen.getByTestId('primary-button'));

@@ -23,11 +23,11 @@ export function getActiveEncounter(args: {
 
   if (!sourceEncounterUuid) return sessionEncounter ?? null;
   if (sessionEncounterStatus === 'pending') return undefined;
+  if (!sessionEncounter) return null;
 
-  const isSourceEncounterActive = sessionEncounter?.id === sourceEncounterUuid;
-  return isSourceEncounterActive
-    ? (sourceEncounter ?? null)
-    : (sessionEncounter ?? null);
+  return sessionEncounter.id === sourceEncounterUuid
+    ? sourceEncounter
+    : sessionEncounter;
 }
 
 export function loadEncounterInputControls(

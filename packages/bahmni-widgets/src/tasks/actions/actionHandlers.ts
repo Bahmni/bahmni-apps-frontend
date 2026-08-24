@@ -38,7 +38,7 @@ const resolveSourceEncounterUuid = async (
   const patientId = extractId(task.fhirResource.for?.reference);
   if (!serviceRequestId || !patientId || !formName) return undefined;
 
-  const bundle = await queryClient.ensureQueryData({
+  const bundle = await queryClient.fetchQuery({
     queryKey: ['observationsByServiceRequest', serviceRequestId],
     queryFn: () =>
       getPatientObservationsBundle(patientId, undefined, serviceRequestId),

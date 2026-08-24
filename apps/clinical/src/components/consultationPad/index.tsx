@@ -597,7 +597,6 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
           onRemoveForm={removeForm}
           onFormObservationsChange={updateFormData}
           existingObservations={getFormData(viewingForm.uuid)?.observations}
-          activeEncounterUuid={activeEncounter?.id ?? null}
           directMode={directFormMode}
           onDirectModeSubmit={directFormMode ? handleSubmit : undefined}
           onDirectModeCancel={directFormMode ? handleCancel : undefined}

@@ -81,7 +81,6 @@ interface ObservationFormsContainerProps {
     basedOn?: Reference,
   ) => void;
   existingObservations?: Form2Observation[];
-  activeEncounterUuid?: string | null;
   directMode?: boolean;
   onDirectModeSubmit?: () => void | Promise<void>;
   onDirectModeCancel?: () => void;
@@ -96,7 +95,6 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
   onRemoveForm,
   onFormObservationsChange,
   existingObservations,
-  activeEncounterUuid,
   directMode = false,
   onDirectModeSubmit,
   onDirectModeCancel,
@@ -168,10 +166,10 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
         ? mapGenderFromFhir(fhirPatient.gender)
         : undefined,
       activeVisitUuid: activeVisitId ?? undefined,
-      currentEncounterUuid: activeEncounterUuid ?? undefined,
+      currentEncounterUuid: activeEncounter?.id ?? undefined,
       getAgeDetails: () => ageDetails ?? AGE_DETAILS_DEFAULT,
     };
-  }, [fhirPatient, patientUUID, activeVisitId, activeEncounterUuid]);
+  }, [fhirPatient, patientUUID, activeVisitId, activeEncounter?.id]);
   const episodeOfCareUuids = episodeOfCare.map((eoc) => eoc.uuid);
   const { forms: allForms, isLoading: isAllFormsLoading } =
     useObservationFormsSearch('', episodeOfCareUuids);

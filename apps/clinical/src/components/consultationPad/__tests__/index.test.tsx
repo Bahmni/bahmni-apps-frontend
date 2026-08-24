@@ -312,7 +312,7 @@ describe('ConsultationPad', () => {
         viewingForm: { uuid: 'form-uuid', name: 'Vitals' } as any,
       } as any);
 
-    it('passes the resolved activeEncounter through effectiveContext and as activeEncounterUuid prop', async () => {
+    it('passes the resolved activeEncounter through encounterSessionStartContext', async () => {
       jest.mocked(useActivePractitioner).mockReturnValue({
         practitioner: { uuid: 'prac-uuid' },
       } as any);
@@ -335,7 +335,6 @@ describe('ConsultationPad', () => {
       await waitFor(() => {
         expect(mockObservationFormsContainer).toHaveBeenCalledWith(
           expect.objectContaining({
-            activeEncounterUuid: EDIT_ENCOUNTER_UUID,
             encounterSessionStartContext: expect.objectContaining({
               activeEncounter: expect.objectContaining({
                 id: EDIT_ENCOUNTER_UUID,

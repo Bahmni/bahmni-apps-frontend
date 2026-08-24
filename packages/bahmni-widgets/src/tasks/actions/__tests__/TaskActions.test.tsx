@@ -635,7 +635,7 @@ describe('TaskActions', () => {
 
     it('reuses the observationsByServiceRequest cache instead of refetching on edit click', async () => {
       const queryClient = new QueryClient({
-        defaultOptions: { queries: { retry: false } },
+        defaultOptions: { queries: { retry: false, staleTime: Infinity } },
       });
       queryClient.setQueryData(
         ['observationsByServiceRequest', SERVICE_REQUEST_UUID_COMPLETED],
