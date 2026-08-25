@@ -154,8 +154,12 @@ const ConsultationPadContainer: React.FC<ConsultationPadContainerProps> = ({
   useEffect(() => {
     useEncounterDetailsStore
       .getState()
-      .setRequestedEncounterType(defaultEncounterType ?? null);
-  }, [defaultEncounterType]);
+      .setRequestedEncounterType(
+        encounterSessionStartContext.encounterType ??
+          defaultEncounterType ??
+          null,
+      );
+  }, [encounterSessionStartContext.encounterType, defaultEncounterType]);
 
   useEffect(() => {
     if (!shouldAutoCreate) return;
