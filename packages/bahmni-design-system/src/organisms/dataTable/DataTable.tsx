@@ -46,16 +46,20 @@ export const DataTable = <T extends { id: string }>({
 }: DataTableProps<T>) => {
   const [showFilters, setShowFilters] = useState(false);
 
+  const isCursorSet = !!cursorPagination;
+  const paginationEnabled = enablePagination || isCursorSet;
+  const isManuallyPaginated = isCursorSet ? false : manualPagination;
+
   const table = useDataTable({
     columns,
     rows,
     renderCell,
     accessor,
-    enablePagination,
+    enablePagination: paginationEnabled,
     pageSize: cursorPagination?.pageSize ?? pageSize,
     page,
     totalItems,
-    manualPagination: cursorPagination ? false : manualPagination,
+    manualPagination: isManuallyPaginated,
     onPaginationChange: onPageChange,
     initialExpandedRows,
   });
@@ -65,7 +69,7 @@ export const DataTable = <T extends { id: string }>({
   const previousSearchIdRef = useRef(searchId);
 
   useEffect(() => {
-    if (!cursorPagination) return;
+    if (!isCursorSet) return;
 
     const isNewSearch = previousSearchIdRef.current !== searchId;
     previousSearchIdRef.current = searchId;
@@ -103,7 +107,7 @@ export const DataTable = <T extends { id: string }>({
   }
 
   const expandable = !!renderExpandedContent;
-  const totalForPagination = manualPagination
+  const totalForPagination = isManuallyPaginated
     ? (totalItems ?? rows.length)
     : table.getFilteredRowModel().rows.length;
 
@@ -150,7 +154,7 @@ export const DataTable = <T extends { id: string }>({
           shouldRowBeExpandable={shouldRowBeExpandable}
         />
       </Table>
-      {enablePagination && (
+      {paginationEnabled && (
         <DataTablePagination
           table={table}
           pageSizes={pageSizes}

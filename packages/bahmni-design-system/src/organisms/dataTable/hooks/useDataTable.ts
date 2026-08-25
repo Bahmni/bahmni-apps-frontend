@@ -66,6 +66,12 @@ export const useDataTable = <T extends { id: string }>({
     pageSize: pageSize ?? DEFAULT_PAGE_SIZE,
   }));
 
+  const [previousPageSize, setPreviousPageSize] = useState(pageSize);
+  if (pageSize !== undefined && pageSize !== previousPageSize) {
+    setPreviousPageSize(pageSize);
+    setPagination((prev) => ({ ...prev, pageSize, pageIndex: 0 }));
+  }
+
   const tableColumns = useMemo(
     () => buildTanStackColumns(columns, renderCell, accessor),
     [columns, renderCell, accessor],
