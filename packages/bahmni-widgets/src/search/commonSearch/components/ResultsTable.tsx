@@ -208,7 +208,6 @@ const ResultsTable = ({
       errorStateMessage={errorStateMessage}
       emptyStateMessage={t('COMMON_SEARCH_NO_RESULTS')}
       className={styles.dataTable}
-      enablePagination={!!cursorPagination}
       cursorPagination={
         cursorPagination && {
           ...cursorPagination,
