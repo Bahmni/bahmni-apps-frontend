@@ -142,6 +142,7 @@ describe('stopMedications input control', () => {
         effectiveDate: stopDate,
         note: 'Patient had rash',
         ctx: baseCtx,
+        status: 'stopped',
       });
       expect(entries).toHaveLength(1);
     });
@@ -357,6 +358,7 @@ describe('cancelVaccination input control', () => {
         effectiveDate: stopDate,
         note: 'Patient developed a fever',
         ctx: baseCtx,
+        status: 'cancelled',
       });
       expect(entries).toHaveLength(1);
     });

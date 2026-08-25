@@ -58,6 +58,7 @@ interface StopMedicationEntryParams {
   effectiveDate: Date;
   note?: string;
   ctx: EncounterContext;
+  status: MedicationRequest['status'];
 }
 
 export function createStopMedicationEntry({
@@ -67,12 +68,13 @@ export function createStopMedicationEntry({
   effectiveDate,
   note,
   ctx,
+  status,
 }: StopMedicationEntryParams): BundleEntry {
   const stopDate = `${effectiveDate.getFullYear()}-${String(effectiveDate.getMonth() + 1).padStart(2, '0')}-${String(effectiveDate.getDate()).padStart(2, '0')}`;
 
   const resource: MedicationRequest = {
     resourceType: 'MedicationRequest',
-    status: 'stopped',
+    status,
     intent: 'order',
     subject: { reference: `Patient/${patientUuid}` },
     medicationCodeableConcept: { text: '' },

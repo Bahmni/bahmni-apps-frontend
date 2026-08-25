@@ -9,7 +9,10 @@ import type { EncounterContext } from '../models';
 import { registerInputControl } from '../registry';
 import StopMedicationForm from './StopMedicationForm';
 
-const createBundleEntriesForStopFlow = (ctx: EncounterContext) => {
+const createBundleEntriesForStopFlow = (
+  ctx: EncounterContext,
+  isCancelVaccination = false,
+) => {
   const state = useStopMedicationStore.getState();
   if (!state.medicationToStop?.id || !state.stopReason) return [];
 
@@ -25,6 +28,7 @@ const createBundleEntriesForStopFlow = (ctx: EncounterContext) => {
     effectiveDate: state.stopDate,
     note: state.note || undefined,
     ctx,
+    status: isCancelVaccination ? 'cancelled' : 'stopped',
   });
 
   dispatchAuditEvent({
@@ -56,5 +60,6 @@ registerInputControl({
   validate: () => useStopMedicationStore.getState().validate(true),
   hasData: () => useStopMedicationStore.getState().hasData(),
   subscribe: (cb) => useStopMedicationStore.subscribe(cb),
-  createBundleEntries: createBundleEntriesForStopFlow,
+  createBundleEntries: (ctx: EncounterContext) =>
+    createBundleEntriesForStopFlow(ctx, true),
 });

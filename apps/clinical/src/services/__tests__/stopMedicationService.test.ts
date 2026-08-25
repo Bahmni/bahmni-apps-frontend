@@ -167,6 +167,7 @@ describe('stopMedicationService', () => {
       reason: { uuid: 'reason-uuid-1', display: 'Refused To Take' },
       effectiveDate: new Date(2025, 5, 10),
       ctx: baseCtx,
+      status: 'stopped' as const,
     };
 
     it('should build a stopped MedicationRequest bundle entry with encounter reference', () => {
@@ -182,6 +183,13 @@ describe('stopMedicationService', () => {
         coding: [{ code: 'reason-uuid-1', display: 'Refused To Take' }],
         text: 'Refused To Take',
       });
+    });
+
+    it('should build a cancelled MedicationRequest bundle entry when status is cancelled', () => {
+      createStopMedicationEntry({ ...baseParams, status: 'cancelled' });
+
+      const resource = (createBundleEntry as jest.Mock).mock.calls[0][1];
+      expect(resource.status).toBe('cancelled');
     });
 
     it('should include dateStopped extension with formatted date', () => {
