@@ -1,5 +1,11 @@
-import { get, createBundleEntry, MedicationStatus } from '@bahmni/services';
+import {
+  get,
+  createBundleEntry,
+  dispatchAuditEvent,
+  MedicationStatus,
+} from '@bahmni/services';
 import { Bundle, ValueSet } from 'fhir/r4';
+import { useStopMedicationStore } from '../../stores/stopMedicationsStore';
 import {
   fetchStopReasons,
   createStopMedicationEntry,
@@ -8,6 +14,7 @@ import {
 jest.mock('@bahmni/services', () => ({
   ...jest.requireActual('@bahmni/services'),
   get: jest.fn(),
+  dispatchAuditEvent: jest.fn(),
   createBundleEntry: jest.fn((fullUrl, resource, method) => ({
     fullUrl,
     resource,
@@ -16,6 +23,9 @@ jest.mock('@bahmni/services', () => ({
 }));
 
 const mockGet = get as jest.MockedFunction<typeof get>;
+const mockDispatchAuditEvent = dispatchAuditEvent as jest.MockedFunction<
+  typeof dispatchAuditEvent
+>;
 
 const baseCtx = {
   encounterReference: 'enc-uuid-1',
@@ -161,19 +171,34 @@ describe('stopMedicationService', () => {
   });
 
   describe('createStopMedicationEntry', () => {
-    const baseParams = {
-      medicationRequestId: 'med-req-1',
-      patientUuid: 'patient-1',
-      reason: { uuid: 'reason-uuid-1', display: 'Refused To Take' },
-      effectiveDate: new Date(2025, 5, 10),
-      ctx: baseCtx,
-      status: MedicationStatus.Stopped,
-    };
+    beforeEach(() => {
+      useStopMedicationStore.getState().reset();
+    });
+
+    function setUpMedicationToStop(overrides: Record<string, unknown> = {}) {
+      const store = useStopMedicationStore.getState();
+      store.setMedicationToStop({
+        resourceType: 'MedicationRequest',
+        id: 'med-req-1',
+        status: 'active',
+        intent: 'order',
+        subject: { reference: 'Patient/patient-1' },
+        ...overrides,
+      });
+      store.setStopReason({
+        uuid: 'reason-uuid-1',
+        display: 'Refused To Take',
+      });
+      store.setStopDate(new Date(2025, 5, 10));
+    }
 
     it('should build a stopped MedicationRequest bundle entry with encounter reference', () => {
-      createStopMedicationEntry(baseParams);
+      setUpMedicationToStop();
+
+      const entries = createStopMedicationEntry(baseCtx);
 
       const resource = (createBundleEntry as jest.Mock).mock.calls[0][1];
+      expect(entries).toHaveLength(1);
       expect(resource.status).toBe(MedicationStatus.Stopped);
       expect(resource.priorPrescription).toEqual({
         reference: 'MedicationRequest/med-req-1',
@@ -185,25 +210,30 @@ describe('stopMedicationService', () => {
       });
     });
 
-    it('should build a cancelled MedicationRequest bundle entry when status is cancelled', () => {
-      createStopMedicationEntry({
-        ...baseParams,
-        status: MedicationStatus.Cancelled,
-      });
+    it('should build a cancelled MedicationRequest bundle entry when inputControlKey is cancelVaccination', () => {
+      setUpMedicationToStop();
+      useStopMedicationStore.getState().setInputControlKey('cancelVaccination');
+
+      createStopMedicationEntry(baseCtx);
 
       const resource = (createBundleEntry as jest.Mock).mock.calls[0][1];
       expect(resource.status).toBe(MedicationStatus.Cancelled);
     });
 
     it('should include dateStopped extension with formatted date', () => {
-      createStopMedicationEntry(baseParams);
+      setUpMedicationToStop();
+
+      createStopMedicationEntry(baseCtx);
 
       const resource = (createBundleEntry as jest.Mock).mock.calls[0][1];
       expect(resource.extension[0].valueDateTime).toBe('2025-06-10');
     });
 
     it('should include cancellation note with note-category extension when note provided', () => {
-      createStopMedicationEntry({ ...baseParams, note: 'Patient refused' });
+      setUpMedicationToStop();
+      useStopMedicationStore.getState().setNote('Patient refused');
+
+      createStopMedicationEntry(baseCtx);
 
       const resource = (createBundleEntry as jest.Mock).mock.calls[0][1];
       expect(resource.note[0].text).toBe('Patient refused');
@@ -211,20 +241,83 @@ describe('stopMedicationService', () => {
     });
 
     it('should omit note field when note is not provided', () => {
-      createStopMedicationEntry(baseParams);
+      setUpMedicationToStop();
+
+      createStopMedicationEntry(baseCtx);
 
       const resource = (createBundleEntry as jest.Mock).mock.calls[0][1];
       expect(resource.note).toBeUndefined();
     });
 
     it('should call createBundleEntry with POST method', () => {
-      createStopMedicationEntry(baseParams);
+      setUpMedicationToStop();
+
+      createStopMedicationEntry(baseCtx);
 
       expect(createBundleEntry).toHaveBeenCalledWith(
         'urn:uuid:stop-med-req-1',
         expect.any(Object),
         'POST',
       );
+    });
+
+    it('should dispatch a STOP_MEDICATION audit event', () => {
+      setUpMedicationToStop();
+
+      createStopMedicationEntry(baseCtx);
+
+      expect(mockDispatchAuditEvent).toHaveBeenCalledWith({
+        eventType: 'STOP_MEDICATION',
+        patientUuid: 'patient-1',
+        messageParams: {},
+      });
+    });
+
+    it('should return an empty array and not dispatch an audit event when medicationToStop is null', () => {
+      const entries = createStopMedicationEntry(baseCtx);
+
+      expect(entries).toEqual([]);
+      expect(createBundleEntry).not.toHaveBeenCalled();
+      expect(mockDispatchAuditEvent).not.toHaveBeenCalled();
+    });
+
+    it('should return an empty array when medicationToStop has no id', () => {
+      const store = useStopMedicationStore.getState();
+      store.setMedicationToStop({
+        resourceType: 'MedicationRequest',
+        status: 'active',
+        intent: 'order',
+        subject: { reference: 'Patient/patient-1' },
+      });
+      store.setStopReason({ uuid: 'reason-uuid-1', display: 'reason' });
+
+      expect(createStopMedicationEntry(baseCtx)).toEqual([]);
+    });
+
+    it('should return an empty array when stopReason is null', () => {
+      useStopMedicationStore.getState().setMedicationToStop({
+        resourceType: 'MedicationRequest',
+        id: 'med-req-1',
+        status: 'active',
+        intent: 'order',
+        subject: { reference: 'Patient/patient-1' },
+      });
+
+      expect(createStopMedicationEntry(baseCtx)).toEqual([]);
+    });
+
+    it('should return an empty array when subject reference is missing', () => {
+      const store = useStopMedicationStore.getState();
+      store.setMedicationToStop({
+        resourceType: 'MedicationRequest',
+        id: 'med-req-1',
+        status: 'active',
+        intent: 'order',
+        subject: {},
+      });
+      store.setStopReason({ uuid: 'reason-uuid-1', display: 'reason' });
+
+      expect(createStopMedicationEntry(baseCtx)).toEqual([]);
     });
   });
 });
