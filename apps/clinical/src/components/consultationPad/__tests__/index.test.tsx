@@ -523,6 +523,86 @@ describe('ConsultationPad', () => {
     });
   });
 
+  describe('active episode encounter scoping', () => {
+    beforeEach(() => {
+      jest
+        .mocked(findActiveEncounterInSession)
+        .mockClear()
+        .mockResolvedValue(null);
+      jest
+        .mocked(useActivePractitioner)
+        .mockClear()
+        .mockReturnValue({
+          practitioner: { uuid: 'practitioner-uuid' },
+        } as any);
+    });
+
+    it("passes the active episode's own encounter uuids to findActiveEncounterInSession", async () => {
+      jest.mocked(useClinicalAppData).mockReturnValue({
+        episodeOfCare: [
+          { uuid: 'eoc-1', encounterUuids: ['encounter-1', 'encounter-2'] },
+        ],
+        patientId: 'patient-123',
+        activeVisitId: 'visit-123',
+        activeEpisodeId: 'eoc-1',
+      } as any);
+
+      renderComponent();
+
+      await waitFor(() => {
+        expect(findActiveEncounterInSession).toHaveBeenCalledWith(
+          'patient-123',
+          'practitioner-uuid',
+          undefined,
+          'encounter-type-uuid',
+          ['encounter-1', 'encounter-2'],
+        );
+      });
+    });
+
+    it('passes undefined when there is no active episode', async () => {
+      jest.mocked(useClinicalAppData).mockReturnValue({
+        episodeOfCare: [],
+        patientId: 'patient-123',
+        activeVisitId: 'visit-123',
+        activeEpisodeId: null,
+      } as any);
+
+      renderComponent();
+
+      await waitFor(() => {
+        expect(findActiveEncounterInSession).toHaveBeenCalledWith(
+          'patient-123',
+          'practitioner-uuid',
+          undefined,
+          'encounter-type-uuid',
+          undefined,
+        );
+      });
+    });
+
+    it("passes undefined when the active episode isn't in episodeOfCare", async () => {
+      jest.mocked(useClinicalAppData).mockReturnValue({
+        episodeOfCare: [],
+        patientId: 'patient-123',
+        activeVisitId: 'visit-123',
+        activeEpisodeId: 'eoc-1',
+      } as any);
+
+      renderComponent();
+
+      await waitFor(() => {
+        expect(findActiveEncounterInSession).toHaveBeenCalledWith(
+          'patient-123',
+          'practitioner-uuid',
+          undefined,
+          'encounter-type-uuid',
+          undefined,
+        );
+      });
+    });
+  });
+
   describe('cancel', () => {
     it('resets all entries and calls onClose', async () => {
       const onClose = jest.fn();
@@ -633,7 +713,7 @@ describe('ConsultationPad', () => {
             activeVisitId: 'visit-123',
             activeEpisodeId: 'eoc-1',
           } as any),
-        { episodeOfCareUuids: ['eoc-1', 'eoc-2'] },
+        { episodeOfCareUuids: ['eoc-1'] },
       ],
       [
         'statDurationInMilliseconds from config',

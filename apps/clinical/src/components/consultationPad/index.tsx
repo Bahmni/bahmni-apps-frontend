@@ -167,8 +167,12 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
       .setRequestedEncounterType(resolvedEncounterType);
   }, [resolvedEncounterType]);
 
-  const { episodeOfCare, patientId, activeVisitId, activeEpisodeId } =
+  const { patientId, activeVisitId, activeEpisodeId, episodeOfCare } =
     useClinicalAppData();
+
+  const activeEpisodeEncounterUuids = activeEpisodeId
+    ? episodeOfCare.find((eoc) => eoc.uuid === activeEpisodeId)?.encounterUuids
+    : undefined;
 
   const { practitioner } = useActivePractitioner();
   const { data: sessionEncounter, status: sessionEncounterStatus } = useQuery({
@@ -177,6 +181,8 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
       patientId,
       practitioner?.uuid,
       selectedEncounterType?.uuid,
+      activeEpisodeId,
+      activeEpisodeEncounterUuids,
     ],
     queryFn: () =>
       findActiveEncounterInSession(
@@ -184,6 +190,7 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
         practitioner?.uuid,
         undefined,
         selectedEncounterType?.uuid,
+        activeEpisodeEncounterUuids,
       ),
     staleTime: 0,
     enabled: Boolean(
@@ -232,7 +239,7 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
 
   const encounterForSubmission = activeEncounter;
 
-  const episodeOfCareUuids = episodeOfCare.map((eoc) => eoc.uuid);
+  const episodeOfCareUuids = activeEpisodeId ? [activeEpisodeId] : [];
   const statDurationInMilliseconds =
     clinicalConfig?.consultationPad?.statDurationInMilliseconds;
 
