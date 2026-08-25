@@ -98,6 +98,7 @@ function buildStoreMock(overrides: Record<string, unknown> = {}) {
     setNote: jest.fn(),
     setMedicationToStop: jest.fn(),
     setFieldConfig: jest.fn(),
+    setInputControlKey: jest.fn(),
     ...overrides,
   };
 }
@@ -252,6 +253,41 @@ describe('StopMedicationForm', () => {
       });
 
       expect(setMedicationToStop).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('setInputControlKey side effect', () => {
+    it('calls setInputControlKey with inputControlConfig.type', async () => {
+      const setInputControlKey = jest.fn();
+      mockUseStopMedicationStore.mockReturnValue(
+        makeStoreMock({ setInputControlKey }) as any,
+      );
+
+      await act(async () => {
+        render(
+          <StopMedicationForm
+            encounterSessionStartContext={{
+              stopMedication: mockMedicationRequest,
+            }}
+            inputControlConfig={{ type: 'cancelVaccination' } as any}
+          />,
+        );
+      });
+
+      expect(setInputControlKey).toHaveBeenCalledWith('cancelVaccination');
+    });
+
+    it('calls setInputControlKey with "stopMedications" when inputControlConfig is absent', async () => {
+      const setInputControlKey = jest.fn();
+      mockUseStopMedicationStore.mockReturnValue(
+        makeStoreMock({ setInputControlKey }) as any,
+      );
+
+      await act(async () => {
+        renderForm({ stopMedication: mockMedicationRequest });
+      });
+
+      expect(setInputControlKey).toHaveBeenCalledWith('stopMedications');
     });
   });
 

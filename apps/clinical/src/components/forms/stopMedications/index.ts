@@ -4,16 +4,14 @@ import {
   AuditEventType,
   MedicationStatus,
 } from '@bahmni/services';
+import { CANCEL_VACCINATION_INPUT_CONTROL_KEY } from '@bahmni/widgets';
 import { createStopMedicationEntry } from '../../../services/stopMedicationService';
 import { useStopMedicationStore } from '../../../stores/stopMedicationsStore';
 import type { EncounterContext } from '../models';
 import { registerInputControl } from '../registry';
 import StopMedicationForm from './StopMedicationForm';
 
-const createBundleEntriesForStopFlow = (
-  ctx: EncounterContext,
-  isCancelVaccination = false,
-) => {
+const createBundleEntriesForStopFlow = (ctx: EncounterContext) => {
   const state = useStopMedicationStore.getState();
   if (!state.medicationToStop?.id || !state.stopReason) return [];
 
@@ -21,6 +19,9 @@ const createBundleEntriesForStopFlow = (
     ?.split('/')
     .pop();
   if (!patientUuid) return [];
+
+  const isCancelVaccination =
+    state.inputControlKey === CANCEL_VACCINATION_INPUT_CONTROL_KEY;
 
   const entry = createStopMedicationEntry({
     medicationRequestId: state.medicationToStop.id,
@@ -60,9 +61,8 @@ registerInputControl({
   onActionTriggered: true,
   component: StopMedicationForm,
   reset: () => useStopMedicationStore.getState().reset(),
-  validate: () => useStopMedicationStore.getState().validate(true),
+  validate: () => useStopMedicationStore.getState().validate(),
   hasData: () => useStopMedicationStore.getState().hasData(),
   subscribe: (cb) => useStopMedicationStore.subscribe(cb),
-  createBundleEntries: (ctx: EncounterContext) =>
-    createBundleEntriesForStopFlow(ctx, true),
+  createBundleEntries: createBundleEntriesForStopFlow,
 });

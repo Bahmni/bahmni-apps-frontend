@@ -305,13 +305,15 @@ describe('cancelVaccination input control', () => {
   });
 
   it('validate() sets CANCEL_VACCINATION_REASON_REQUIRED, not STOP_MEDICATION_REASON_REQUIRED', () => {
-    useStopMedicationStore.getState().setMedicationToStop({
+    const store = useStopMedicationStore.getState();
+    store.setMedicationToStop({
       resourceType: 'MedicationRequest',
       id: 'med-1',
       status: 'active',
       intent: 'order',
       subject: { reference: 'Patient/p-1' },
     });
+    store.setInputControlKey('cancelVaccination');
 
     getCancelVaccinationControl()!.validate();
 
@@ -351,6 +353,7 @@ describe('cancelVaccination input control', () => {
       });
       store.setStopDate(stopDate);
       store.setNote('Patient developed a fever');
+      store.setInputControlKey('cancelVaccination');
 
       const entries =
         getCancelVaccinationControl()!.createBundleEntries!(baseCtx);
