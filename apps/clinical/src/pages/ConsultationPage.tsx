@@ -123,8 +123,12 @@ const ConsultationPage: React.FC = () => {
 
   const breadcrumbItems = useMemo(
     () => [
-      { id: 'home', label: 'Home', href: BAHMNI_HOME_PATH },
-      { id: 'clinical', label: 'Clinical', href: BAHMNI_CLINICAL_PATH },
+      { id: 'home', label: t('HOME_LABEL'), href: BAHMNI_HOME_PATH },
+      {
+        id: 'clinical',
+        label: t('CLINICAL_LABEL'),
+        href: BAHMNI_CLINICAL_PATH,
+      },
       {
         id: 'current',
         label: patient?.fullName

@@ -831,7 +831,10 @@ describe('ObservationFormsContainer', () => {
       const pinContainer = pinIcon.parentElement;
 
       expect(pinContainer).toHaveClass('pinned');
-      expect(pinContainer).toHaveAttribute('title', 'Unpin form');
+      expect(pinContainer).toHaveAttribute(
+        'title',
+        'translated_UNPIN_FORM_TOOLTIP',
+      );
     });
 
     it('should render the pin icon alongside the maximize/minimize toggle, not inside the title', () => {
@@ -866,7 +869,10 @@ describe('ObservationFormsContainer', () => {
       const pinContainer = pinIcon.parentElement;
 
       expect(pinContainer).toHaveClass('unpinned');
-      expect(pinContainer).toHaveAttribute('title', 'Pin form');
+      expect(pinContainer).toHaveAttribute(
+        'title',
+        'translated_PIN_FORM_TOOLTIP',
+      );
     });
 
     it('should call updatePinnedForms when pin icon is clicked', () => {

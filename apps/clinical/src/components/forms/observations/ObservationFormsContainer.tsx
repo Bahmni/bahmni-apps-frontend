@@ -651,7 +651,9 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
     <div
       onClick={handlePinToggle}
       className={`${styles.pinIconContainer} ${isCurrentFormPinned ? styles.pinned : styles.unpinned}`}
-      title={isCurrentFormPinned ? 'Unpin form' : 'Pin form'}
+      title={
+        isCurrentFormPinned ? t('UNPIN_FORM_TOOLTIP') : t('PIN_FORM_TOOLTIP')
+      }
     >
       <Icon id="pin-icon" name="fa-thumbtack" size={ICON_SIZE.SM} />
     </div>

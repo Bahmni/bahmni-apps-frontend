@@ -1,4 +1,5 @@
-import { render, screen } from '@testing-library/react';
+import { act, render, screen } from '@testing-library/react';
+import i18n from 'i18next';
 import { axe, toHaveNoViolations } from 'jest-axe';
 import { HomePageHeader } from '../HomePageHeader';
 
@@ -36,6 +37,21 @@ describe('HomePageHeader', () => {
     render(<HomePageHeader />);
 
     expect(screen.getByTestId('brand')).toHaveTextContent('Home');
+  });
+
+  it('renders translated brand text when the locale changes', async () => {
+    i18n.addResourceBundle('es', 'home', { HOME_LABEL: 'Inicio' }, true, true);
+    await act(async () => {
+      await i18n.changeLanguage('es');
+    });
+
+    render(<HomePageHeader />);
+
+    expect(screen.getByTestId('brand')).toHaveTextContent('Inicio');
+
+    await act(async () => {
+      await i18n.changeLanguage('en');
+    });
   });
 
   it('renders the location selector in the global features slot', () => {
