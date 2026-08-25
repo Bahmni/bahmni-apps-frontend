@@ -1,4 +1,4 @@
-import { get, createBundleEntry } from '@bahmni/services';
+import { get, createBundleEntry, MedicationStatus } from '@bahmni/services';
 import { Bundle, ValueSet } from 'fhir/r4';
 import {
   fetchStopReasons,
@@ -167,14 +167,14 @@ describe('stopMedicationService', () => {
       reason: { uuid: 'reason-uuid-1', display: 'Refused To Take' },
       effectiveDate: new Date(2025, 5, 10),
       ctx: baseCtx,
-      status: 'stopped' as const,
+      status: MedicationStatus.Stopped,
     };
 
     it('should build a stopped MedicationRequest bundle entry with encounter reference', () => {
       createStopMedicationEntry(baseParams);
 
       const resource = (createBundleEntry as jest.Mock).mock.calls[0][1];
-      expect(resource.status).toBe('stopped');
+      expect(resource.status).toBe(MedicationStatus.Stopped);
       expect(resource.priorPrescription).toEqual({
         reference: 'MedicationRequest/med-req-1',
       });
@@ -186,10 +186,13 @@ describe('stopMedicationService', () => {
     });
 
     it('should build a cancelled MedicationRequest bundle entry when status is cancelled', () => {
-      createStopMedicationEntry({ ...baseParams, status: 'cancelled' });
+      createStopMedicationEntry({
+        ...baseParams,
+        status: MedicationStatus.Cancelled,
+      });
 
       const resource = (createBundleEntry as jest.Mock).mock.calls[0][1];
-      expect(resource.status).toBe('cancelled');
+      expect(resource.status).toBe(MedicationStatus.Cancelled);
     });
 
     it('should include dateStopped extension with formatted date', () => {

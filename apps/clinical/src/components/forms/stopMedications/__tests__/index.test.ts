@@ -1,4 +1,8 @@
-import { dispatchAuditEvent, AUDIT_LOG_EVENT_DETAILS } from '@bahmni/services';
+import {
+  dispatchAuditEvent,
+  AUDIT_LOG_EVENT_DETAILS,
+  MedicationStatus,
+} from '@bahmni/services';
 import { createStopMedicationEntry } from '../../../../services/stopMedicationService';
 import { useStopMedicationStore } from '../../../../stores/stopMedicationsStore';
 import type { EncounterContext } from '../../models';
@@ -142,7 +146,7 @@ describe('stopMedications input control', () => {
         effectiveDate: stopDate,
         note: 'Patient had rash',
         ctx: baseCtx,
-        status: 'stopped',
+        status: MedicationStatus.Stopped,
       });
       expect(entries).toHaveLength(1);
     });
@@ -358,7 +362,7 @@ describe('cancelVaccination input control', () => {
         effectiveDate: stopDate,
         note: 'Patient developed a fever',
         ctx: baseCtx,
-        status: 'cancelled',
+        status: MedicationStatus.Cancelled,
       });
       expect(entries).toHaveLength(1);
     });

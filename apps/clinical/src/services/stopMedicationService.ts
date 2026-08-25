@@ -2,6 +2,7 @@ import {
   get,
   createBundleEntry,
   FHIR_EXT_MEDICATION_REQUEST_NOTE_CATEGORY,
+  MedicationStatus,
   OPENMRS_FHIR_R4,
 } from '@bahmni/services';
 import { BundleEntry, MedicationRequest, ValueSet, Bundle } from 'fhir/r4';
@@ -58,7 +59,7 @@ interface StopMedicationEntryParams {
   effectiveDate: Date;
   note?: string;
   ctx: EncounterContext;
-  status: MedicationRequest['status'];
+  status: MedicationStatus.Stopped | MedicationStatus.Cancelled;
 }
 
 export function createStopMedicationEntry({
@@ -74,7 +75,7 @@ export function createStopMedicationEntry({
 
   const resource: MedicationRequest = {
     resourceType: 'MedicationRequest',
-    status,
+    status: status as MedicationRequest['status'],
     intent: 'order',
     subject: { reference: `Patient/${patientUuid}` },
     medicationCodeableConcept: { text: '' },

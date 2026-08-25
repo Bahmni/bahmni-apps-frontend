@@ -2,6 +2,7 @@ import {
   dispatchAuditEvent,
   AUDIT_LOG_EVENT_DETAILS,
   AuditEventType,
+  MedicationStatus,
 } from '@bahmni/services';
 import { createStopMedicationEntry } from '../../../services/stopMedicationService';
 import { useStopMedicationStore } from '../../../stores/stopMedicationsStore';
@@ -28,7 +29,9 @@ const createBundleEntriesForStopFlow = (
     effectiveDate: state.stopDate,
     note: state.note || undefined,
     ctx,
-    status: isCancelVaccination ? 'cancelled' : 'stopped',
+    status: isCancelVaccination
+      ? MedicationStatus.Cancelled
+      : MedicationStatus.Stopped,
   });
 
   dispatchAuditEvent({
