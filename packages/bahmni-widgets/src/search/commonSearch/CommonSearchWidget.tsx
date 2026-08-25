@@ -28,6 +28,7 @@ import {
   CriterionRow,
   CursorDirection,
   SearchContextConfig,
+  SearchResponse,
 } from './models';
 import schema from './schema.json';
 import styles from './styles/CommonSearchWidget.module.scss';
@@ -129,13 +130,14 @@ const CommonSearchWidget = ({ extensionParams }: SearchWidgetProps) => {
       ),
     )
       .then((data) => {
-        if ((data as { error?: unknown } | null)?.error) throw new Error();
+        if ((data as SearchResponse).error) {
+          throw new Error('Search response returned an error');
+        }
 
         const page = extractSearchPage(data);
         setCurrentSearchState((prev) => ({
           context,
           rows,
-          resultFields: context.resultFields,
           results: page.results,
           totalCount: page.totalCount ?? prev?.totalCount ?? 0,
           nextCursor: page.nextCursor,
@@ -143,19 +145,19 @@ const CommonSearchWidget = ({ extensionParams }: SearchWidgetProps) => {
           currentSet,
           searchId: searchId ?? prev?.searchId ?? generateUUID(),
         }));
+
         dispatchAuditEvent({
           eventType: toSearchAuditEventType(context.context),
         });
-        setIsSearchResultsLoading(false);
         if (page.results.length > 0) {
           setIsSearchPanelOpen(false);
         }
       })
       .catch(() => {
-        setIsSearchResultsLoading(false);
         if (searchId) setCurrentSearchState(null);
         notifySearchFailure();
-      });
+      })
+      .finally(() => setIsSearchResultsLoading(false));
   };
 
   const handleSearch = (
@@ -283,7 +285,7 @@ const CommonSearchWidget = ({ extensionParams }: SearchWidgetProps) => {
         <>
           <SearchSummary currentSearchState={currentSearchState} />
           <ResultsTable
-            resultFields={currentSearchState.resultFields}
+            resultFields={currentSearchState.context.resultFields}
             results={currentSearchState.results}
             actions={currentSearchState.context.actions}
             totalCount={currentSearchState.totalCount}

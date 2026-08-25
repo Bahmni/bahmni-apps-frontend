@@ -191,7 +191,6 @@ export const mockOptionsWithTranslationRow: CriterionRow = {
 export const mockActiveSearchState: CurrentSearchState = {
   context: mockAppointmentContext,
   rows: [mockTextRow],
-  resultFields: mockResultFields,
   results: [],
   currentSet: 0,
   searchId: 'search-id',

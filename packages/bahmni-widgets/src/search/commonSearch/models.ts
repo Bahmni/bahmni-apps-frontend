@@ -141,7 +141,6 @@ export interface CriterionRow {
 export interface CurrentSearchState {
   context: SearchContextConfig;
   rows: CriterionRow[];
-  resultFields: ResultFieldConfig[];
   results: unknown[];
   currentSet: number;
   searchId: string;
