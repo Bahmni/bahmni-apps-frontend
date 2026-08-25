@@ -5,12 +5,12 @@ import {
 } from '@bahmni/services';
 import { useQuery } from '@tanstack/react-query';
 import { Encounter } from 'fhir/r4';
+import { useRef } from 'react';
 
 export interface VisitDocumentGroup {
   visit: Encounter;
   documents: DocumentViewModel[];
-  // Existing document encounter for this visit, reused when saving.
-  documentEncounterUuid?: string;
+  documentEncounter?: Encounter;
 }
 
 const isVisit = (encounter: Encounter): boolean =>
@@ -28,6 +28,8 @@ export const useVisitDocuments = (
   patientUuid: string | null,
   documentEncounterTypeUuid?: string[],
 ) => {
+  const hasCompletedInitialLoad = useRef(false);
+
   const encountersQuery = useQuery({
     queryKey: ['patientEncounters', patientUuid],
     queryFn: () => getPatientEncounters(patientUuid!),
@@ -37,7 +39,7 @@ export const useVisitDocuments = (
   const encounters = encountersQuery.data ?? [];
 
   const encounterToVisit = new Map<string, string>();
-  const documentEncounterByVisit = new Map<string, string>();
+  const documentEncounterByVisit = new Map<string, Encounter>();
   encounters
     .filter((encounter) => !isVisit(encounter))
     .forEach((encounter) => {
@@ -52,13 +54,13 @@ export const useVisitDocuments = (
         typeCode &&
         documentEncounterTypeUuid.includes(typeCode)
       ) {
-        documentEncounterByVisit.set(visitId, encounter.id);
+        documentEncounterByVisit.set(visitId, encounter);
       }
     });
 
   const matchingEncounterInstanceUuids = Array.from(
     documentEncounterByVisit.values(),
-  );
+  ).flatMap((encounter) => (encounter.id ? [encounter.id] : []));
 
   const documentsQuery = useQuery({
     queryKey: [
@@ -75,6 +77,7 @@ export const useVisitDocuments = (
           : undefined,
       ),
     enabled: !!patientUuid && matchingEncounterInstanceUuids.length > 0,
+    placeholderData: (previous) => previous,
   });
 
   const documents = documentsQuery.data ?? [];
@@ -106,7 +109,7 @@ export const useVisitDocuments = (
   const visitGroups: VisitDocumentGroup[] = visits.map((visit) => ({
     visit,
     documents: visit.id ? (documentsByVisit.get(visit.id) ?? []) : [],
-    documentEncounterUuid: visit.id
+    documentEncounter: visit.id
       ? documentEncounterByVisit.get(visit.id)
       : undefined,
   }));
@@ -115,9 +118,15 @@ export const useVisitDocuments = (
     await Promise.all([encountersQuery.refetch(), documentsQuery.refetch()]);
   };
 
+  const isFirstLoadPending =
+    encountersQuery.isLoading || documentsQuery.isLoading;
+  if (encountersQuery.data !== undefined && !isFirstLoadPending) {
+    hasCompletedInitialLoad.current = true;
+  }
+
   return {
     visitGroups,
-    isLoading: encountersQuery.isLoading || documentsQuery.isLoading,
+    isLoading: !hasCompletedInitialLoad.current && isFirstLoadPending,
     error: encountersQuery.error ?? documentsQuery.error,
     refetch,
   };

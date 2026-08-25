@@ -1,4 +1,4 @@
-import { DocumentReference } from 'fhir/r4';
+import { DocumentReference, Encounter } from 'fhir/r4';
 import { post } from '../../api';
 import { ENCOUNTER_BUNDLE_URL } from '../../encounterBundle';
 import { getUserLoginLocation } from '../../userService';
@@ -19,6 +19,38 @@ const mockedGetUserLoginLocation = getUserLoginLocation as jest.MockedFunction<
 >;
 
 const PATIENT_UUID = 'patient-uuid';
+
+// Stands in for an encounter as the server returned it: the whole resource is re-sent on save.
+const EXISTING_ENCOUNTER: Encounter = {
+  resourceType: 'Encounter',
+  id: 'enc-uuid',
+  status: 'finished',
+  class: { code: 'AMB', display: 'ambulatory' },
+  type: [{ coding: [{ code: 'enc-type-uuid', display: 'Patient Document' }] }],
+  subject: { reference: `Patient/${PATIENT_UUID}` },
+  partOf: { reference: 'Encounter/visit-uuid', type: 'Encounter' },
+  location: [{ location: { reference: 'Location/location-uuid' } }],
+  participant: [{ individual: { reference: 'Practitioner/prac-uuid' } }],
+  period: { start: '2026-06-29T09:00:00Z' },
+};
+
+const existingEncounterTarget = {
+  encounterUuid: 'enc-uuid',
+  existingEncounter: EXISTING_ENCOUNTER,
+};
+
+interface TestBundle {
+  resourceType: string;
+  type: string;
+  entry: Array<{
+    fullUrl: string;
+    resource: Record<string, unknown>;
+    request: { method: string; url: string };
+  }>;
+}
+
+const postedBundle = (callIndex = 0): TestBundle =>
+  mockedPost.mock.calls[callIndex][1] as unknown as TestBundle;
 
 const baseInput: SaveDocumentInput = {
   patientUuid: PATIENT_UUID,
@@ -58,24 +90,67 @@ describe('documentWriteService', () => {
   });
 
   describe('saveDocument', () => {
-    it('POSTs a single DocumentReference when encounterUuid is provided', async () => {
-      await saveDocument({ ...baseInput, encounterUuid: 'enc-uuid' });
+    it('attaches to an existing encounter via a single EncounterBundle transaction', async () => {
+      await saveDocument({ ...baseInput, ...existingEncounterTarget });
 
       expect(mockedPost).toHaveBeenCalledTimes(1);
-      expect(mockedPost.mock.calls[0][0]).toBe(DOCUMENT_REFERENCE_URL);
+      const [url] = mockedPost.mock.calls[0];
+      const bundle = postedBundle();
+      expect(url).toBe(ENCOUNTER_BUNDLE_URL);
+      expect(bundle.resourceType).toBe('EncounterBundle');
+      expect(bundle.type).toBe('transaction');
+      expect(bundle.entry).toHaveLength(2);
+
+      const [encounterEntry, docEntry] = bundle.entry;
+      expect(encounterEntry.fullUrl).toBe('Encounter/enc-uuid');
+      expect(encounterEntry.request).toEqual({
+        method: 'PUT',
+        url: 'Encounter/enc-uuid',
+      });
+      expect(docEntry.request.method).toBe('POST');
+      expect(docEntry.request.url).toBe('DocumentReference');
+      expect(
+        (docEntry.resource as unknown as DocumentReference).context
+          ?.encounter?.[0].reference,
+      ).toBe('Encounter/enc-uuid');
+    });
+
+    it('re-sends the existing encounter unchanged so the update cannot drop its fields', async () => {
+      await saveDocument({ ...baseInput, ...existingEncounterTarget });
+
+      const [encounterEntry] = postedBundle().entry;
+      expect(encounterEntry.resource).toEqual(EXISTING_ENCOUNTER);
+    });
+
+    it('normalises the encounter id to the bare uuid the PUT url expects', async () => {
+      await saveDocument({
+        ...baseInput,
+        encounterUuid: 'enc-uuid',
+        existingEncounter: { ...EXISTING_ENCOUNTER, id: 'Encounter/enc-uuid' },
+      });
+
+      expect(postedBundle().entry[0].resource.id).toBe('enc-uuid');
     });
 
     it('includes the note as description and the author when provided', async () => {
       await saveDocument({
         ...baseInput,
-        encounterUuid: 'enc-uuid',
+        ...existingEncounterTarget,
         description: 'follow up',
         authorPractitionerUuid: 'prac-uuid',
       });
 
-      const doc = mockedPost.mock.calls[0][1] as DocumentReference;
+      const doc = postedBundle().entry[1]
+        .resource as unknown as DocumentReference;
       expect(doc.description).toBe('follow up');
       expect(doc.author?.[0].reference).toBe('Practitioner/prac-uuid');
+    });
+
+    it('throws when an existing encounter uuid arrives without its resource', async () => {
+      await expect(
+        saveDocument({ ...baseInput, encounterUuid: 'enc-uuid' }),
+      ).rejects.toThrow('requires existingEncounter alongside encounterUuid');
+      expect(mockedPost).not.toHaveBeenCalled();
     });
 
     it('creates the encounter and document atomically via an EncounterBundle', async () => {
@@ -130,10 +205,11 @@ describe('documentWriteService', () => {
         url: '100/doc-uuid__file.pdf',
         contentType: 'application/pdf',
         title: 'file.pdf',
-        encounterUuid: 'enc-uuid',
+        ...existingEncounterTarget,
       });
 
-      const doc = mockedPost.mock.calls[0][1] as DocumentReference;
+      const doc = postedBundle().entry[1]
+        .resource as unknown as DocumentReference;
       expect(doc.type).toBeUndefined();
       expect(doc.description).toBeUndefined();
       expect(doc.author).toBeUndefined();
@@ -173,19 +249,38 @@ describe('documentWriteService', () => {
       title: 'scan.png',
     };
 
-    it('POSTs one DocumentReference per document against an existing encounter', async () => {
+    it('saves a batch against an existing encounter in one transaction', async () => {
       await saveDocuments([
-        { ...baseInput, encounterUuid: 'enc-uuid' },
-        { ...secondInput, encounterUuid: 'enc-uuid' },
+        { ...baseInput, ...existingEncounterTarget },
+        { ...secondInput, ...existingEncounterTarget },
       ]);
 
-      expect(mockedPost).toHaveBeenCalledTimes(2);
-      const urls = mockedPost.mock.calls.map(([url]) => url);
-      const titles = mockedPost.mock.calls.map(
-        ([, body]) => (body as DocumentReference).content?.[0].attachment.title,
+      expect(mockedPost).toHaveBeenCalledTimes(1);
+      const [url] = mockedPost.mock.calls[0];
+      const bundle = postedBundle();
+      expect(url).toBe(ENCOUNTER_BUNDLE_URL);
+      expect(bundle.entry).toHaveLength(3);
+
+      const [encounterEntry, ...documentEntries] = bundle.entry;
+      expect(encounterEntry.request.method).toBe('PUT');
+      expect(
+        documentEntries.map(
+          (entry) =>
+            (entry.resource as unknown as DocumentReference).context
+              ?.encounter?.[0].reference,
+        ),
+      ).toEqual(['Encounter/enc-uuid', 'Encounter/enc-uuid']);
+      expect(
+        documentEntries.map(
+          (entry) =>
+            (entry.resource as unknown as DocumentReference).content?.[0]
+              .attachment.title,
+        ),
+      ).toEqual(['file.pdf', 'scan.png']);
+      // Each document needs its own placeholder so the transaction creates two resources.
+      expect(new Set(documentEntries.map((entry) => entry.fullUrl)).size).toBe(
+        2,
       );
-      expect(urls).toEqual([DOCUMENT_REFERENCE_URL, DOCUMENT_REFERENCE_URL]);
-      expect(titles).toEqual(['file.pdf', 'scan.png']);
     });
 
     it('creates a single encounter for the whole batch when the visit has none yet', async () => {
@@ -234,18 +329,18 @@ describe('documentWriteService', () => {
     it('refuses a batch whose documents do not share one patient and target', async () => {
       await expect(
         saveDocuments([
-          { ...baseInput, encounterUuid: 'enc-uuid' },
+          { ...baseInput, ...existingEncounterTarget },
           { ...secondInput, encounterUuid: 'another-enc-uuid' },
         ]),
       ).rejects.toThrow('same patient and save target');
 
       await expect(
         saveDocuments([
-          { ...baseInput, encounterUuid: 'enc-uuid' },
+          { ...baseInput, ...existingEncounterTarget },
           {
             ...secondInput,
+            ...existingEncounterTarget,
             patientUuid: 'other-patient',
-            encounterUuid: 'enc-uuid',
           },
         ]),
       ).rejects.toThrow('same patient and save target');

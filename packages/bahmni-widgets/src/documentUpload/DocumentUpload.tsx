@@ -6,7 +6,6 @@ import {
   DocumentType,
   getDocumentUploadMaxSizeMb,
   SaveDocumentInput,
-  saveDocument,
   saveDocuments,
   uploadDocument,
 } from '@bahmni/services';
@@ -206,18 +205,6 @@ export const DocumentUpload = forwardRef<
   const saveUploaded = async (
     uploaded: UploadedDocument[],
   ): Promise<Array<{ uploaded: UploadedDocument; error?: unknown }>> => {
-    if ('encounterUuid' in saveTarget) {
-      const results = await Promise.allSettled(
-        uploaded.map((entry) => saveDocument(toSaveInput(entry))),
-      );
-      return uploaded.map((entry, index) => {
-        const result = results[index];
-        return result.status === 'rejected'
-          ? { uploaded: entry, error: result.reason }
-          : { uploaded: entry };
-      });
-    }
-
     try {
       await saveDocuments(uploaded.map(toSaveInput));
       return uploaded.map((entry) => ({ uploaded: entry }));

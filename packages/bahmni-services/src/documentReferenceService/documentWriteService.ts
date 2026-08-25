@@ -1,4 +1,9 @@
-import { DocumentReference, Encounter } from 'fhir/r4';
+import {
+  BundleEntry,
+  DocumentReference,
+  Encounter,
+  FhirResource,
+} from 'fhir/r4';
 import { post } from '../api';
 import {
   FHIR_ENCOUNTER_CLASS_CODE_SYSTEM,
@@ -140,15 +145,55 @@ export async function saveDocuments(
     );
   }
 
-  const { encounterUuid } = first;
-  if (encounterUuid) {
-    return Promise.all(
-      inputs.map((input) =>
-        createDocumentReference({ ...input, encounterUuid }),
-      ),
+  const entries = first.encounterUuid
+    ? existingEncounterEntries(first, first.encounterUuid, inputs)
+    : newEncounterEntries(first, inputs);
+
+  return post<unknown>(ENCOUNTER_BUNDLE_URL, createEncounterBundle(entries));
+}
+
+function documentEntries(
+  inputs: SaveDocumentInput[],
+  encounterReference: string,
+): Array<BundleEntry<FhirResource>> {
+  return inputs.map((input) =>
+    createBundleEntry(
+      `urn:uuid:${generateUUID()}`,
+      buildDocumentReference(input, encounterReference),
+      'POST',
+    ),
+  );
+}
+
+function existingEncounterEntries(
+  first: SaveDocumentInput,
+  encounterUuid: string,
+  inputs: SaveDocumentInput[],
+): Array<BundleEntry<FhirResource>> {
+  const { existingEncounter } = first;
+  if (!existingEncounter) {
+    throw new Error(
+      'saveDocuments requires existingEncounter alongside encounterUuid, because the bundle re-sends the encounter as a PUT',
     );
   }
 
+  // fullUrl must equal the reference the documents carry, otherwise the server cannot resolve it.
+  const encounterReference = `Encounter/${encounterUuid}`;
+  return [
+    createBundleEntry(
+      encounterReference,
+      { ...existingEncounter, id: encounterUuid },
+      'PUT',
+      encounterReference,
+    ),
+    ...documentEntries(inputs, encounterReference),
+  ];
+}
+
+function newEncounterEntries(
+  first: SaveDocumentInput,
+  inputs: SaveDocumentInput[],
+): Array<BundleEntry<FhirResource>> {
   if (!first.createEncounterInVisit) {
     throw new Error(
       'saveDocument requires either encounterUuid or createEncounterInVisit',
@@ -167,18 +212,10 @@ export async function saveDocuments(
     first.authorPractitionerUuid,
   );
 
-  const bundle = createEncounterBundle([
+  return [
     createBundleEntry(encounterPlaceholder, encounter, 'POST'),
-    ...inputs.map((input) =>
-      createBundleEntry(
-        `urn:uuid:${generateUUID()}`,
-        buildDocumentReference(input, encounterPlaceholder),
-        'POST',
-      ),
-    ),
-  ]);
-
-  return post<unknown>(ENCOUNTER_BUNDLE_URL, bundle);
+    ...documentEntries(inputs, encounterPlaceholder),
+  ];
 }
 
 export async function saveDocument(input: SaveDocumentInput): Promise<unknown> {

@@ -17,7 +17,6 @@ import {
 jest.mock('@bahmni/services', () => ({
   ...jest.requireActual('@bahmni/services'),
   uploadDocument: jest.fn().mockResolvedValue({ url: 'patient/doc.png' }),
-  saveDocument: jest.fn().mockResolvedValue({}),
   saveDocuments: jest.fn().mockResolvedValue({}),
   getDocumentUploadMaxSizeMb: jest.fn().mockResolvedValue(5),
   dispatchAuditEvent: jest.fn(),
@@ -41,13 +40,21 @@ jest.mock('../../activePractitioner', () => ({
 
 const {
   uploadDocument,
-  saveDocument,
   saveDocuments,
   getDocumentUploadMaxSizeMb,
   dispatchAuditEvent,
 } = jest.requireMock('@bahmni/services');
 
-const EXISTING_ENCOUNTER_TARGET = { encounterUuid: 'encounter-uuid' };
+const EXISTING_ENCOUNTER_TARGET = {
+  encounterUuid: 'encounter-uuid',
+  existingEncounter: {
+    resourceType: 'Encounter' as const,
+    id: 'encounter-uuid',
+    status: 'finished' as const,
+    subject: { reference: 'Patient/patient-uuid' },
+    partOf: { reference: 'Encounter/visit-uuid' },
+  },
+};
 const CREATE_ENCOUNTER_TARGET = {
   createEncounterInVisit: {
     visitUuid: 'visit-uuid',
@@ -180,7 +187,7 @@ describe('DocumentUpload', () => {
     fireEvent.click(screen.getByTestId('harness-save'));
 
     await waitFor(() => expect(uploadDocument).not.toHaveBeenCalled());
-    expect(saveDocument).not.toHaveBeenCalled();
+    expect(saveDocuments).not.toHaveBeenCalled();
   });
 
   it('rejects unsupported file types without uploading', () => {
@@ -201,13 +208,13 @@ describe('DocumentUpload', () => {
     fireEvent.click(screen.getByTestId('harness-save'));
 
     await waitFor(() =>
-      expect(saveDocument).toHaveBeenCalledWith(
+      expect(saveDocuments).toHaveBeenCalledWith([
         expect.objectContaining({
           patientUuid: 'patient-uuid',
           url: 'patient/doc.png',
           encounterUuid: 'encounter-uuid',
         }),
-      ),
+      ]),
     );
     await waitFor(() => expect(onSaved).toHaveBeenCalled());
   });
@@ -314,9 +321,9 @@ describe('DocumentUpload', () => {
     fireEvent.click(screen.getByTestId('harness-save'));
 
     await waitFor(() =>
-      expect(saveDocument).toHaveBeenCalledWith(
+      expect(saveDocuments).toHaveBeenCalledWith([
         expect.objectContaining({ description: 'follow up in 2 weeks' }),
-      ),
+      ]),
     );
   });
 
@@ -331,12 +338,12 @@ describe('DocumentUpload', () => {
     fireEvent.click(screen.getByTestId('harness-save'));
 
     await waitFor(() =>
-      expect(saveDocument).toHaveBeenCalledWith(
+      expect(saveDocuments).toHaveBeenCalledWith([
         expect.objectContaining({
           typeCode: 'type-1',
           typeDisplay: 'Lab Report',
         }),
-      ),
+      ]),
     );
   });
 
@@ -350,11 +357,11 @@ describe('DocumentUpload', () => {
     expect(
       screen.queryByTestId('pending-document-row'),
     ).not.toBeInTheDocument();
-    expect(saveDocument).not.toHaveBeenCalled();
+    expect(saveDocuments).not.toHaveBeenCalled();
   });
 
   it('keeps the pending selection and reports the backend error on save failure', async () => {
-    saveDocument.mockRejectedValueOnce(new Error('Save rejected by server'));
+    saveDocuments.mockRejectedValueOnce(new Error('Save rejected by server'));
     const onSaved = jest.fn();
     renderWidget(onSaved);
     selectFile();
@@ -377,7 +384,7 @@ describe('DocumentUpload', () => {
       callOrder.push('upload');
       return { url: 'server/uploaded.png' };
     });
-    saveDocument.mockImplementation(async () => {
+    saveDocuments.mockImplementation(async () => {
       callOrder.push('save');
       return {};
     });
@@ -402,13 +409,13 @@ describe('DocumentUpload', () => {
     fireEvent.click(screen.getByTestId('harness-save'));
 
     await waitFor(() =>
-      expect(saveDocument).toHaveBeenCalledWith(
+      expect(saveDocuments).toHaveBeenCalledWith([
         expect.objectContaining({ url: 'server/new-url.png' }),
-      ),
+      ]),
     );
   });
 
-  it('does not call saveDocument if uploadDocument fails', async () => {
+  it('does not call saveDocuments if uploadDocument fails', async () => {
     uploadDocument.mockRejectedValueOnce(new Error('Upload failed'));
     renderWidget();
     selectFile();
@@ -417,7 +424,7 @@ describe('DocumentUpload', () => {
     fireEvent.click(screen.getByTestId('harness-save'));
 
     await waitFor(() => expect(uploadDocument).toHaveBeenCalled());
-    expect(saveDocument).not.toHaveBeenCalled();
+    expect(saveDocuments).not.toHaveBeenCalled();
   });
 
   it('clears pending document when discard is clicked after file selection', async () => {
@@ -461,18 +468,14 @@ describe('DocumentUpload', () => {
 
       expect(await savedSummary()).toEqual({ savedCount: 2, failures: [] });
       expect(uploadDocument).toHaveBeenCalledTimes(2);
-      expect(saveDocument).toHaveBeenCalledTimes(2);
-      expect(saveDocument).toHaveBeenNthCalledWith(
-        1,
+      expect(saveDocuments).toHaveBeenCalledTimes(1);
+      expect(saveDocuments).toHaveBeenCalledWith([
         expect.objectContaining({ title: 'scan.png', description: undefined }),
-      );
-      expect(saveDocument).toHaveBeenNthCalledWith(
-        2,
         expect.objectContaining({
           title: 'report.pdf',
           description: 'second file only',
         }),
-      );
+      ]);
       expect(screen.queryAllByTestId('pending-document-row')).toHaveLength(0);
     });
 
@@ -486,7 +489,6 @@ describe('DocumentUpload', () => {
       expect(await savedSummary()).toEqual({ savedCount: 2, failures: [] });
       // One call, so the batch shares a single new document encounter.
       expect(saveDocuments).toHaveBeenCalledTimes(1);
-      expect(saveDocument).not.toHaveBeenCalled();
       expect(saveDocuments.mock.calls[0][0]).toEqual([
         expect.objectContaining({ title: 'scan.png' }),
         expect.objectContaining({ title: 'report.pdf' }),
@@ -521,6 +523,45 @@ describe('DocumentUpload', () => {
       fireEvent.click(screen.getByTestId('harness-save'));
 
       // Atomic: nothing was written, so both stay pending.
+      expect(await savedSummary()).toEqual({
+        savedCount: 0,
+        failures: [
+          { fileName: 'scan.png', message: 'Bundle rejected' },
+          { fileName: 'report.pdf', message: 'Bundle rejected' },
+        ],
+      });
+      expect(screen.getAllByTestId('pending-document-row')).toHaveLength(2);
+    });
+
+    it('saves a batch against an existing encounter in one transaction too', async () => {
+      renderWidget(jest.fn(), EXISTING_ENCOUNTER_TARGET);
+      selectFiles(fileOf('scan.png'), fileOf('report.pdf', 'application/pdf'));
+      await screen.findAllByTestId('pending-document-row');
+
+      fireEvent.click(screen.getByTestId('harness-save'));
+
+      expect(await savedSummary()).toEqual({ savedCount: 2, failures: [] });
+      expect(saveDocuments).toHaveBeenCalledTimes(1);
+      expect(saveDocuments.mock.calls[0][0]).toEqual([
+        expect.objectContaining({
+          title: 'scan.png',
+          encounterUuid: 'encounter-uuid',
+        }),
+        expect.objectContaining({
+          title: 'report.pdf',
+          encounterUuid: 'encounter-uuid',
+        }),
+      ]);
+    });
+
+    it('fails an existing-encounter batch as a whole when the transaction is rejected', async () => {
+      saveDocuments.mockRejectedValueOnce(new Error('Bundle rejected'));
+      renderWidget(jest.fn(), EXISTING_ENCOUNTER_TARGET);
+      selectFiles(fileOf('scan.png'), fileOf('report.pdf', 'application/pdf'));
+      await screen.findAllByTestId('pending-document-row');
+
+      fireEvent.click(screen.getByTestId('harness-save'));
+
       expect(await savedSummary()).toEqual({
         savedCount: 0,
         failures: [
@@ -576,12 +617,12 @@ describe('DocumentUpload', () => {
       expect(screen.getByText('DOCUMENT_UPLOAD_BUTTON')).toBeDisabled();
 
       await act(async () => releaseUpload({ url: 'patient/doc.png' }));
-      await waitFor(() => expect(saveDocument).toHaveBeenCalled());
+      await waitFor(() => expect(saveDocuments).toHaveBeenCalled());
     });
 
     it('reuses the stored bytes when retrying a failed save instead of uploading again', async () => {
       uploadDocument.mockResolvedValue({ url: 'patient/stored-once.png' });
-      saveDocument.mockRejectedValueOnce(new Error('Save rejected'));
+      saveDocuments.mockRejectedValueOnce(new Error('Save rejected'));
       renderWidget();
       selectFile();
       await screen.findByTestId('pending-document-row');
@@ -595,11 +636,11 @@ describe('DocumentUpload', () => {
 
       fireEvent.click(screen.getByTestId('harness-save'));
 
-      await waitFor(() => expect(saveDocument).toHaveBeenCalledTimes(2));
+      await waitFor(() => expect(saveDocuments).toHaveBeenCalledTimes(2));
       expect(uploadDocument).toHaveBeenCalledTimes(1);
-      expect(saveDocument).toHaveBeenLastCalledWith(
+      expect(saveDocuments).toHaveBeenLastCalledWith([
         expect.objectContaining({ url: 'patient/stored-once.png' }),
-      );
+      ]);
     });
 
     it('discards one pending document without touching the others', async () => {

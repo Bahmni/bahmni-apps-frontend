@@ -262,8 +262,11 @@ export const DocumentsSection: React.FC<DocumentsSectionProps> = ({
           } else if (startDate) {
             visitLabel = t('DOCUMENTS_VISIT_ON', { date: startDate });
           }
-          const saveTarget = group.documentEncounterUuid
-            ? { encounterUuid: group.documentEncounterUuid }
+          const saveTarget = group.documentEncounter?.id
+            ? {
+                encounterUuid: group.documentEncounter.id,
+                existingEncounter: group.documentEncounter,
+              }
             : {
                 createEncounterInVisit: {
                   visitUuid: group.visit.id ?? '',

@@ -1,3 +1,5 @@
+import { Encounter } from 'fhir/r4';
+
 /**
  * Interface representing a single attachment within a document
  */
@@ -48,12 +50,20 @@ export interface CreateEncounterInVisit {
   encounterTypeDisplay?: string;
 }
 
+/**
+ * An existing document encounter to attach to. The encounter resource is carried alongside its
+ * uuid because the save bundle re-sends it as a PUT — see saveDocuments for why.
+ */
+export interface AttachToExistingEncounter {
+  encounterUuid: string;
+  existingEncounter: Encounter;
+}
+
 /** Where a document is attached: an existing encounter, or a new one created within a visit. */
 export type DocumentSaveTarget =
-  | { encounterUuid: string }
+  | AttachToExistingEncounter
   | { createEncounterInVisit: CreateEncounterInVisit };
 
-// Provide encounterUuid to attach to an existing encounter, or createEncounterInVisit to create one.
 export interface SaveDocumentInput {
   patientUuid: string;
   url: string;
@@ -64,5 +74,6 @@ export interface SaveDocumentInput {
   description?: string;
   authorPractitionerUuid?: string;
   encounterUuid?: string;
+  existingEncounter?: Encounter;
   createEncounterInVisit?: CreateEncounterInVisit;
 }

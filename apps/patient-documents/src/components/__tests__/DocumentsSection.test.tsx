@@ -101,7 +101,13 @@ const visitGroups = [
       period: { start: '2026-06-29T09:00:00Z', end: '2026-06-29T12:00:00Z' },
     },
     documents: [imageDoc, videoDoc, pdfDoc],
-    documentEncounterUuid: 'doc-enc-1',
+    documentEncounter: {
+      resourceType: 'Encounter',
+      id: 'doc-enc-1',
+      status: 'finished',
+      subject: { reference: 'Patient/patient-uuid' },
+      partOf: { reference: 'Encounter/visit-1' },
+    },
   },
   {
     visit: {
@@ -226,7 +232,17 @@ describe('DocumentsSection', () => {
       .getAllByTestId('document-upload')
       .map((node) => JSON.parse(node.getAttribute('data-savetarget') ?? '{}'));
 
-    expect(targets[0]).toEqual({ encounterUuid: 'doc-enc-1' });
+    // The encounter travels whole, not just its uuid: the save bundle re-sends it as a PUT.
+    expect(targets[0]).toEqual({
+      encounterUuid: 'doc-enc-1',
+      existingEncounter: {
+        resourceType: 'Encounter',
+        id: 'doc-enc-1',
+        status: 'finished',
+        subject: { reference: 'Patient/patient-uuid' },
+        partOf: { reference: 'Encounter/visit-1' },
+      },
+    });
     expect(targets[1]).toEqual({
       createEncounterInVisit: {
         visitUuid: 'visit-2',
