@@ -116,12 +116,6 @@
   align-items: center;
   border: none !important;
   outline: none !important;
-
-  &:focus,
-  &:focus-visible {
-    outline: none !important;
-    box-shadow: none !important;
-  }
 }
 
 .setPaginationPages {
