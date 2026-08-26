@@ -36,11 +36,24 @@ const mockJsonata = jsonata as jest.Mock;
 const mockGenerateUUID = generateUUID as jest.Mock;
 const mockUseTranslation = useTranslation as jest.Mock;
 
+const cursorPagination = {
+  batchSize: 6,
+  pageSize: 2,
+  currentSet: 0,
+  searchId: 'search-1',
+  hasNextSet: true,
+  hasPreviousSet: false,
+  onNextSet: jest.fn(),
+  onPreviousSet: jest.fn(),
+};
+
 const renderTable = async (
   overrides: Partial<{
     resultFields: ResultFieldConfig[];
     results: unknown[];
     actions?: ActionConfig[];
+    totalCount?: number;
+    cursorPagination?: typeof cursorPagination;
   }> = {},
 ) => {
   const result = render(
@@ -442,6 +455,40 @@ describe('ResultsTable', () => {
       await waitFor(() => {
         expect(screen.queryByTestId('link-1-uuid-0')).not.toBeInTheDocument();
       });
+    });
+  });
+
+  describe('pagination', () => {
+    it('should render the set pagination footer when cursor pagination config is provided', async () => {
+      await renderTable({ cursorPagination });
+
+      expect(
+        screen.getByTestId('common-search-results-table-set-pagination'),
+      ).toBeInTheDocument();
+    });
+
+    it('should not render a pagination footer when cursor pagination config is not provided', async () => {
+      await renderTable();
+
+      expect(
+        screen.queryByTestId('common-search-results-table-set-pagination'),
+      ).not.toBeInTheDocument();
+    });
+
+    it('should render the table title without a count when the total count is unknown', async () => {
+      await renderTable();
+
+      expect(
+        screen.getByText('COMMON_SEARCH_RESULTS_TABLE_TITLE'),
+      ).toBeInTheDocument();
+    });
+
+    it('should render the table title with the total count when one is provided', async () => {
+      await renderTable({ totalCount: 300 });
+
+      expect(
+        screen.getByText('COMMON_SEARCH_RESULTS_TABLE_TITLE_WITH_COUNT'),
+      ).toBeInTheDocument();
     });
   });
 });
