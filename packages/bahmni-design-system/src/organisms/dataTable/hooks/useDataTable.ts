@@ -16,7 +16,7 @@ import {
   type Table,
 } from '@tanstack/react-table';
 import { useMemo, useState, type ReactNode } from 'react';
-import type { DataTableColumn } from '../types';
+import type { DataTableColumn, DataTablePaginationConfig } from '../types';
 import {
   buildTanStackColumns,
   defaultRenderCell,
@@ -29,28 +29,18 @@ interface UseDataTableArgs<T extends { id: string }> {
   rows: T[];
   renderCell?: (row: T, columnKey: string) => ReactNode;
   accessor?: (row: T, columnKey: string) => unknown;
-  enablePagination?: boolean;
-  pageSize?: number;
-  page?: number;
-  totalItems?: number;
-  manualPagination?: boolean;
-  onPaginationChange?: (page: number, pageSize: number) => void;
+  pagination?: DataTablePaginationConfig<T>;
   initialExpandedRows?: string[];
 }
 
-const DEFAULT_PAGE_SIZE = 10;
+export const DEFAULT_PAGE_SIZE = 10;
 
 export const useDataTable = <T extends { id: string }>({
   columns,
   rows,
   renderCell = defaultRenderCell,
   accessor,
-  enablePagination = false,
-  pageSize,
-  page,
-  totalItems,
-  manualPagination = false,
-  onPaginationChange,
+  pagination: paginationConfig,
   initialExpandedRows,
 }: UseDataTableArgs<T>): Table<T> => {
   const initialSorting = useMemo(() => initialSortingState(columns), [columns]);
@@ -61,16 +51,43 @@ export const useDataTable = <T extends { id: string }>({
   const [expanded, setExpanded] = useState<ExpandedState>(() =>
     initialExpandedState(initialExpandedRows),
   );
+  const configuredPageSize = paginationConfig?.pageSize;
+  const isManual = paginationConfig?.mode === 'manual';
+
   const [pagination, setPagination] = useState<PaginationState>(() => ({
-    pageIndex: (page ?? 1) - 1,
-    pageSize: pageSize ?? DEFAULT_PAGE_SIZE,
+    pageIndex: 0,
+    pageSize: configuredPageSize ?? DEFAULT_PAGE_SIZE,
   }));
 
-  const [previousPageSize, setPreviousPageSize] = useState(pageSize);
-  if (pageSize !== undefined && pageSize !== previousPageSize) {
-    setPreviousPageSize(pageSize);
-    setPagination((prev) => ({ ...prev, pageSize, pageIndex: 0 }));
+  const [previousPageSize, setPreviousPageSize] = useState(configuredPageSize);
+  if (
+    configuredPageSize !== undefined &&
+    configuredPageSize !== previousPageSize
+  ) {
+    setPreviousPageSize(configuredPageSize);
+    setPagination((prev) => ({
+      ...prev,
+      pageSize: configuredPageSize,
+      pageIndex: 0,
+    }));
   }
+
+  const [previousRows, setPreviousRows] = useState(rows);
+  if (rows !== previousRows) {
+    setPreviousRows(rows);
+    if (paginationConfig && !isManual) {
+      setPagination((prev) => ({ ...prev, pageIndex: 0 }));
+    }
+  }
+
+  const paginationState: PaginationState | undefined = !paginationConfig
+    ? undefined
+    : paginationConfig.mode === 'manual'
+      ? {
+          pageIndex: paginationConfig.page - 1,
+          pageSize: paginationConfig.pageSize,
+        }
+      : pagination;
 
   const tableColumns = useMemo(
     () => buildTanStackColumns(columns, renderCell, accessor),
@@ -86,7 +103,7 @@ export const useDataTable = <T extends { id: string }>({
       globalFilter,
       grouping,
       expanded,
-      ...(enablePagination ? { pagination } : {}),
+      ...(paginationState ? { pagination: paginationState } : {}),
     },
     onSortingChange: (updater) => {
       setSorting((old) => {
@@ -98,12 +115,12 @@ export const useDataTable = <T extends { id: string }>({
     onGlobalFilterChange: setGlobalFilter,
     onGroupingChange: setGrouping,
     onExpandedChange: setExpanded,
-    onPaginationChange: enablePagination
+    onPaginationChange: paginationConfig
       ? (updater) => {
-          const next =
-            typeof updater === 'function' ? updater(pagination) : updater;
-          setPagination(next);
-          onPaginationChange?.(next.pageIndex + 1, next.pageSize);
+          if (isManual) return;
+          setPagination((prev) =>
+            typeof updater === 'function' ? updater(prev) : updater,
+          );
         }
       : undefined,
     getCoreRowModel: getCoreRowModel(),
@@ -113,12 +130,15 @@ export const useDataTable = <T extends { id: string }>({
     getExpandedRowModel: getExpandedRowModel(),
     getFacetedRowModel: getFacetedRowModel(),
     getFacetedUniqueValues: getFacetedUniqueValues(),
-    ...(enablePagination
+    ...(paginationConfig && !isManual
       ? { getPaginationRowModel: getPaginationRowModel() }
       : {}),
     globalFilterFn: 'includesString',
-    manualPagination,
-    rowCount: manualPagination ? totalItems : undefined,
+    manualPagination: isManual,
+    rowCount:
+      paginationConfig?.mode === 'manual'
+        ? paginationConfig.totalItems
+        : undefined,
     getRowId: (row) => row.id,
     autoResetExpanded: false,
   });

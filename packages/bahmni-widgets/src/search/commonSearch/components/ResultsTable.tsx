@@ -1,7 +1,8 @@
 import { DataTable, Link } from '@bahmni/design-system';
 import type {
-  CursorPaginationConfig,
   DataTableColumn,
+  DataTableInstance,
+  DataTableSetDirection,
 } from '@bahmni/design-system';
 import { generateUUID, hasPrivilege, useTranslation } from '@bahmni/services';
 import jsonata from 'jsonata';
@@ -14,14 +15,19 @@ import {
 } from 'react';
 import { useUserPrivilege } from '../../../userPrivileges/useUserPrivilege';
 import { resolveNavigationURL } from '../../../utils/urlUtils';
-import { ActionConfig, ResultFieldConfig } from '../models';
+import { ActionConfig, CursorDirection, ResultFieldConfig } from '../models';
 import styles from '../styles/CommonSearchWidget.module.scss';
 import { needsDisplayKey, resultTransforms } from '../utils';
 
-type ResultsTablePagination = Omit<
-  CursorPaginationConfig,
-  'previousSetLabel' | 'nextSetLabel' | 'previousPageLabel' | 'nextPageLabel'
->;
+interface ResultsTablePagination {
+  batchSize: number;
+  pageSize: number;
+  currentSet: number;
+  searchId: string;
+  hasNextSet: boolean;
+  hasPreviousSet: boolean;
+  onSetChange: (direction: CursorDirection) => void;
+}
 
 interface ResultsTableProps {
   resultFields: ResultFieldConfig[];
@@ -32,6 +38,16 @@ interface ResultsTableProps {
 }
 
 type ResultRow = Record<string, unknown> & { id: string };
+
+const navigateSet = (
+  direction: DataTableSetDirection,
+  table: DataTableInstance<ResultRow>,
+  fetchSet: (direction: CursorDirection) => void,
+) => {
+  fetchSet(direction === 'next' ? 'next' : 'prev');
+  table.resetColumnFilters();
+  table.resetGlobalFilter();
+};
 
 type ResolvedField = { id: string; field: ResultFieldConfig };
 
@@ -190,8 +206,18 @@ const ResultsTable = ({
     [resolvedFields],
   );
 
+  const startPage = cursorPagination
+    ? cursorPagination.currentSet *
+        Math.max(
+          Math.ceil(cursorPagination.batchSize / cursorPagination.pageSize),
+          1,
+        ) +
+      1
+    : undefined;
+
   return (
     <DataTable
+      key={cursorPagination?.searchId}
       id="common-search-results-table"
       dataTestId="common-search-results-table"
       ariaLabel="common-search-results-table-aria-label"
@@ -208,13 +234,17 @@ const ResultsTable = ({
       errorStateMessage={errorStateMessage}
       emptyStateMessage={t('COMMON_SEARCH_NO_RESULTS')}
       className={styles.dataTable}
-      cursorPagination={
+      pagination={
         cursorPagination && {
-          ...cursorPagination,
-          previousSetLabel: t('COMMON_SEARCH_PREVIOUS_SET'),
-          nextSetLabel: t('COMMON_SEARCH_NEXT_SET'),
-          previousPageLabel: t('COMMON_SEARCH_PREVIOUS_PAGE'),
-          nextPageLabel: t('COMMON_SEARCH_NEXT_PAGE'),
+          mode: 'cursor',
+          pageSize: cursorPagination.pageSize,
+          startPage,
+          hasNext: cursorPagination.hasNextSet,
+          hasPrevious: cursorPagination.hasPreviousSet,
+          onSetChange: (direction, table) =>
+            navigateSet(direction, table, cursorPagination.onSetChange),
+          previousLabel: t('COMMON_SEARCH_PREVIOUS_SET'),
+          nextLabel: t('COMMON_SEARCH_NEXT_SET'),
         }
       }
     />

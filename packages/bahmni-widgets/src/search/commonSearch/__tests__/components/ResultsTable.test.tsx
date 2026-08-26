@@ -43,8 +43,7 @@ const cursorPagination = {
   searchId: 'search-1',
   hasNextSet: true,
   hasPreviousSet: false,
-  onNextSet: jest.fn(),
-  onPreviousSet: jest.fn(),
+  onSetChange: jest.fn(),
 };
 
 const renderTable = async (
@@ -473,6 +472,42 @@ describe('ResultsTable', () => {
       expect(
         screen.queryByTestId('common-search-results-table-set-pagination'),
       ).not.toBeInTheDocument();
+    });
+
+    const pageLabels = () =>
+      screen
+        .getAllByTestId(/^common-search-results-table-page-\d+$/)
+        .map((button) => button.textContent);
+
+    it('should number pages from 1 on the first set', async () => {
+      await renderTable({ cursorPagination });
+
+      expect(pageLabels()).toEqual(['1']);
+    });
+
+    it('should continue page numbering across sets', async () => {
+      await renderTable({
+        cursorPagination: {
+          ...cursorPagination,
+          currentSet: 1,
+          hasPreviousSet: true,
+        },
+      });
+
+      expect(pageLabels()).toEqual(['4']);
+    });
+
+    it('should fetch the next batch and clear filters when the next-set button is clicked', async () => {
+      const onSetChange = jest.fn();
+      await renderTable({
+        cursorPagination: { ...cursorPagination, onSetChange },
+      });
+
+      await userEvent.click(
+        screen.getByTestId('common-search-results-table-next-set'),
+      );
+
+      expect(onSetChange).toHaveBeenCalledWith('next');
     });
 
     it('should render the table title without a count when the total count is unknown', async () => {

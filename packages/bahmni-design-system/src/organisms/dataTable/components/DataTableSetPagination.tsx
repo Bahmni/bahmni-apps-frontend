@@ -7,34 +7,29 @@ import type { CursorPaginationConfig } from '../types';
 
 interface DataTableSetPaginationProps<T> {
   table: Table<T>;
-  cursorPagination: CursorPaginationConfig;
+  pagination: CursorPaginationConfig<T>;
   dataTestId: string;
 }
 
 export const DataTableSetPagination = <T,>({
   table,
-  cursorPagination,
+  pagination,
   dataTestId,
 }: DataTableSetPaginationProps<T>) => {
   const {
-    batchSize,
-    pageSize,
-    currentSet,
-    hasNextSet,
-    hasPreviousSet,
-    onNextSet,
-    onPreviousSet,
-    previousSetLabel = 'Previous set',
-    nextSetLabel = 'Next set',
-  } = cursorPagination;
+    startPage = 1,
+    hasNext,
+    hasPrevious,
+    onSetChange,
+    previousLabel = 'Previous set',
+    nextLabel = 'Next set',
+  } = pagination;
 
   const pageCount = table.getPageCount();
 
-  if (pageCount <= 1 && !hasPreviousSet && !hasNextSet) return null;
+  if (pageCount <= 1 && !hasPrevious && !hasNext) return null;
 
-  const pagesPerSet = Math.max(Math.ceil(batchSize / pageSize), 1);
-  const setStartPage = currentSet * pagesPerSet + 1;
-  const currentPage = setStartPage + table.getState().pagination.pageIndex;
+  const currentPage = startPage + table.getState().pagination.pageIndex;
 
   return (
     <nav
@@ -42,22 +37,22 @@ export const DataTableSetPagination = <T,>({
       data-testid={`${dataTestId}-set-pagination`}
       aria-label="pagination"
     >
-      {hasPreviousSet && (
+      {hasPrevious && (
         <Button
           kind="ghost"
           size="sm"
           className={styles.setNavButton}
-          onClick={onPreviousSet}
+          onClick={() => onSetChange('previous', table)}
           testId={`${dataTestId}-previous-set`}
         >
           <CaretLeft />
-          {previousSetLabel}
+          {previousLabel}
         </Button>
       )}
 
       <ul className={styles.setPaginationPages}>
         {Array.from({ length: pageCount }, (_, index) => {
-          const page = setStartPage + index;
+          const page = startPage + index;
           const isActive = page === currentPage;
           return (
             <li key={page}>
@@ -77,15 +72,15 @@ export const DataTableSetPagination = <T,>({
         })}
       </ul>
 
-      {hasNextSet && (
+      {hasNext && (
         <Button
           kind="ghost"
           size="sm"
           className={styles.setNavButton}
-          onClick={onNextSet}
+          onClick={() => onSetChange('next', table)}
           testId={`${dataTestId}-next-set`}
         >
-          {nextSetLabel}
+          {nextLabel}
           <CaretRight />
         </Button>
       )}

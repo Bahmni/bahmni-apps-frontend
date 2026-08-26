@@ -70,8 +70,7 @@ let capturedCursorPagination: {
   searchId: string;
   hasNextSet: boolean;
   hasPreviousSet: boolean;
-  onNextSet: () => void;
-  onPreviousSet: () => void;
+  onSetChange: (direction: 'next' | 'prev') => void;
 } | null = null;
 let capturedTotalCount: number | undefined;
 
@@ -597,7 +596,7 @@ describe('CommonSearchWidget', () => {
       await search();
 
       await act(async () => {
-        capturedCursorPagination!.onNextSet();
+        capturedCursorPagination!.onSetChange('next');
       });
 
       expect(metaOfCall(1)).toEqual({
@@ -616,10 +615,10 @@ describe('CommonSearchWidget', () => {
       mockPost.mockResolvedValue(responseWith('next-1', 'prev-1', 300));
       await search();
       await act(async () => {
-        capturedCursorPagination!.onNextSet();
+        capturedCursorPagination!.onSetChange('next');
       });
       await act(async () => {
-        capturedCursorPagination!.onPreviousSet();
+        capturedCursorPagination!.onSetChange('prev');
       });
 
       expect(metaOfCall(2).pagination).toMatchObject({
@@ -638,7 +637,7 @@ describe('CommonSearchWidget', () => {
       expect(capturedCursorPagination!.hasPreviousSet).toBe(false);
 
       await act(async () => {
-        capturedCursorPagination!.onNextSet();
+        capturedCursorPagination!.onSetChange('next');
       });
 
       expect(capturedCursorPagination!.hasNextSet).toBe(false);
@@ -651,7 +650,7 @@ describe('CommonSearchWidget', () => {
       const firstSearchId = capturedCursorPagination!.searchId;
 
       await act(async () => {
-        capturedCursorPagination!.onNextSet();
+        capturedCursorPagination!.onSetChange('next');
       });
       expect(capturedCursorPagination!.searchId).toBe(firstSearchId);
 
@@ -669,7 +668,7 @@ describe('CommonSearchWidget', () => {
       expect(capturedTotalCount).toBe(300);
 
       await act(async () => {
-        capturedCursorPagination!.onNextSet();
+        capturedCursorPagination!.onSetChange('next');
       });
 
       expect(capturedTotalCount).toBe(300);
@@ -682,7 +681,7 @@ describe('CommonSearchWidget', () => {
       await search();
 
       await act(async () => {
-        capturedCursorPagination!.onNextSet();
+        capturedCursorPagination!.onSetChange('next');
       });
 
       expect(screen.getByTestId('results-table')).toBeInTheDocument();

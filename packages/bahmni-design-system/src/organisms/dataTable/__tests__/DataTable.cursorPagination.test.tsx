@@ -1,7 +1,11 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { DataTable } from '../DataTable';
-import type { CursorPaginationConfig, DataTableColumn } from '../types';
+import type {
+  CursorPaginationConfig,
+  DataTableColumn,
+  DataTableInstance,
+} from '../types';
 import '@testing-library/jest-dom';
 
 interface Medication {
@@ -41,21 +45,19 @@ const setRows = (count = 6): Medication[] =>
   }));
 
 const cursorPaginationConfig = (
-  overrides: Partial<CursorPaginationConfig> = {},
-): CursorPaginationConfig => ({
-  batchSize: 6,
+  overrides: Partial<CursorPaginationConfig<Medication>> = {},
+): CursorPaginationConfig<Medication> => ({
+  mode: 'cursor',
   pageSize: 2,
-  currentSet: 0,
-  searchId: 'search-1',
-  hasNextSet: false,
-  hasPreviousSet: false,
-  onNextSet: jest.fn(),
-  onPreviousSet: jest.fn(),
+  startPage: 1,
+  hasNext: false,
+  hasPrevious: false,
+  onSetChange: jest.fn(),
   ...overrides,
 });
 
 const renderTable = (
-  cursorPagination: CursorPaginationConfig,
+  pagination: CursorPaginationConfig<Medication>,
   rows: Medication[] = setRows(),
   columns: DataTableColumn<Medication>[] = baseColumns,
 ) =>
@@ -65,7 +67,7 @@ const renderTable = (
       rows={rows}
       renderCell={renderCell}
       ariaLabel="Medications"
-      cursorPagination={cursorPagination}
+      pagination={pagination}
     />,
   );
 
@@ -93,13 +95,13 @@ describe('DataTable cursor-set pagination', () => {
     expect(pageButtonLabels()).toEqual(['1', '2', '3']);
     unmount();
 
-    renderTable(cursorPaginationConfig({ currentSet: 1 }));
+    renderTable(cursorPaginationConfig({ startPage: 4 }));
     expect(pageButtonLabels()).toEqual(['4', '5', '6']);
   });
 
   it('should mark the current page and paginate within the set without invoking set navigation callbacks', async () => {
     const user = userEvent.setup();
-    const config = cursorPaginationConfig({ hasNextSet: true });
+    const config = cursorPaginationConfig({ hasNext: true });
     renderTable(config);
 
     expect(screen.getByTestId('data-table-page-1')).toHaveAttribute(
@@ -115,28 +117,30 @@ describe('DataTable cursor-set pagination', () => {
       'aria-current',
       'page',
     );
-    expect(config.onNextSet).not.toHaveBeenCalled();
-    expect(config.onPreviousSet).not.toHaveBeenCalled();
+    expect(config.onSetChange).not.toHaveBeenCalled();
   });
 
   it('should render set navigation buttons only when the corresponding set exists and invoke the appropriate callback on click', async () => {
     const user = userEvent.setup();
     const config = cursorPaginationConfig({
-      currentSet: 1,
-      hasPreviousSet: true,
-      hasNextSet: true,
+      startPage: 4,
+      hasPrevious: true,
+      hasNext: true,
     });
     renderTable(config);
 
     await user.click(screen.getByTestId('data-table-next-set'));
-    expect(config.onNextSet).toHaveBeenCalledTimes(1);
+    expect(config.onSetChange).toHaveBeenCalledWith('next', expect.anything());
 
     await user.click(screen.getByTestId('data-table-previous-set'));
-    expect(config.onPreviousSet).toHaveBeenCalledTimes(1);
+    expect(config.onSetChange).toHaveBeenCalledWith(
+      'previous',
+      expect.anything(),
+    );
   });
 
   it('should hide the previous-set button on the first set and the next-set button on the last set', () => {
-    renderTable(cursorPaginationConfig({ hasNextSet: true }));
+    renderTable(cursorPaginationConfig({ hasNext: true }));
 
     expect(
       screen.queryByTestId('data-table-previous-set'),
@@ -146,7 +150,7 @@ describe('DataTable cursor-set pagination', () => {
 
   it('should render only the pages available in a short final set while preserving the set offset', () => {
     renderTable(
-      cursorPaginationConfig({ currentSet: 1, hasPreviousSet: true }),
+      cursorPaginationConfig({ startPage: 4, hasPrevious: true }),
       setRows(3),
     );
 
@@ -161,32 +165,25 @@ describe('DataTable cursor-set pagination', () => {
     ).not.toBeInTheDocument();
   });
 
-  it('should reset to the first page and clear filters when the set changes while preserving sorting', async () => {
+  it('should return to the first page of the new set when a new batch of rows arrives', async () => {
     const user = userEvent.setup();
-    const { rerender } = render(
-      <DataTable
-        columns={filterableColumns}
-        rows={setRows()}
-        renderCell={renderCell}
-        ariaLabel="Medications"
-        cursorPagination={cursorPaginationConfig({ hasNextSet: true })}
-      />,
-    );
+    const { rerender } = renderTable(cursorPaginationConfig({ hasNext: true }));
 
-    await user.click(screen.getByText('Medication'));
-    await user.click(screen.getByTestId('data-table-page-2'));
-    await user.click(screen.getByTestId('data-table-filter-toggle'));
-    await user.type(screen.getByPlaceholderText('Filter Medication'), '1');
+    await user.click(screen.getByTestId('data-table-page-3'));
+    expect(screen.getByTestId('data-table-page-3')).toHaveAttribute(
+      'aria-current',
+      'page',
+    );
 
     rerender(
       <DataTable
-        columns={filterableColumns}
+        columns={baseColumns}
         rows={setRows()}
         renderCell={renderCell}
         ariaLabel="Medications"
-        cursorPagination={cursorPaginationConfig({
-          currentSet: 1,
-          hasPreviousSet: true,
+        pagination={cursorPaginationConfig({
+          startPage: 4,
+          hasPrevious: true,
         })}
       />,
     );
@@ -196,16 +193,11 @@ describe('DataTable cursor-set pagination', () => {
       'page',
     );
     expect(pageButtonLabels()).toEqual(['4', '5', '6']);
-    expect(screen.getByPlaceholderText('Filter Medication')).toHaveValue('');
-    expect(screen.getAllByTestId(/^table-row-/)[0]).toHaveTextContent(
-      'Medication 1',
-    );
   });
 
-  it('should reset sorting to the column default when the search changes', async () => {
+  it('should preserve sorting across set navigation', async () => {
     const user = userEvent.setup();
-    const rows = setRows();
-    const { rerender } = renderTable(cursorPaginationConfig(), rows);
+    const { rerender } = renderTable(cursorPaginationConfig({ hasNext: true }));
 
     await user.click(screen.getByText('Medication'));
     await user.click(screen.getByText('Medication'));
@@ -216,16 +208,41 @@ describe('DataTable cursor-set pagination', () => {
     rerender(
       <DataTable
         columns={baseColumns}
-        rows={rows}
+        rows={setRows()}
         renderCell={renderCell}
         ariaLabel="Medications"
-        cursorPagination={cursorPaginationConfig({ searchId: 'search-2' })}
+        pagination={cursorPaginationConfig({
+          startPage: 4,
+          hasPrevious: true,
+        })}
       />,
     );
 
     expect(screen.getAllByTestId(/^table-row-/)[0]).toHaveTextContent(
-      'Medication 1',
+      'Medication 6',
     );
+  });
+
+  it('should clear column filters when navigating to another set', async () => {
+    const user = userEvent.setup();
+    const config = cursorPaginationConfig({
+      hasNext: true,
+      hasPrevious: true,
+      startPage: 4,
+      onSetChange: jest.fn((_direction, table: DataTableInstance<Medication>) =>
+        table.resetColumnFilters(),
+      ),
+    });
+    renderTable(config, setRows(), filterableColumns);
+
+    await user.click(screen.getByTestId('data-table-filter-toggle'));
+    await user.type(screen.getByPlaceholderText('Filter Medication'), '1');
+    expect(screen.getByPlaceholderText('Filter Medication')).toHaveValue('1');
+
+    await user.click(screen.getByTestId('data-table-next-set'));
+
+    expect(config.onSetChange).toHaveBeenCalledTimes(1);
+    expect(screen.getByPlaceholderText('Filter Medication')).toHaveValue('');
   });
 
   it('should apply a changed pageSize without remounting', () => {
@@ -240,7 +257,7 @@ describe('DataTable cursor-set pagination', () => {
         rows={rows}
         renderCell={renderCell}
         ariaLabel="Medications"
-        cursorPagination={cursorPaginationConfig({ pageSize: 3 })}
+        pagination={cursorPaginationConfig({ pageSize: 3 })}
       />,
     );
 

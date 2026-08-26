@@ -296,8 +296,7 @@ const CommonSearchWidget = ({ extensionParams }: SearchWidgetProps) => {
               searchId: currentSearchState.searchId,
               hasNextSet: currentSearchState.nextCursor !== null,
               hasPreviousSet: currentSearchState.currentSet > 0,
-              onNextSet: () => handleSetNavigation('next'),
-              onPreviousSet: () => handleSetNavigation('prev'),
+              onSetChange: handleSetNavigation,
             }}
           />
         </>
