@@ -127,6 +127,27 @@ describe('useVisitDocuments', () => {
     expect(result.current.isLoading).toBe(false);
   });
 
+  it('reports isLoading again when the patient changes without a remount', async () => {
+    // The route reuses IndexPage across a :patientUuid change, so this hook instance survives.
+    // The latch is per-patient; leaking it would suppress the skeleton during the next load.
+    mockedGetPatientEncounters.mockResolvedValue([
+      visit(NEWER_VISIT_UUID, '2026-06-29T09:15:00+00:00'),
+    ]);
+    mockedGetFormattedDocumentReferences.mockResolvedValue([]);
+
+    const { result, rerender } = renderHook(
+      ({ patient }: { patient: string }) =>
+        useVisitDocuments(patient, [DOC_ENCOUNTER_TYPE_UUID]),
+      { wrapper, initialProps: { patient: PATIENT_UUID } },
+    );
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+
+    rerender({ patient: 'a-different-patient-uuid' });
+
+    expect(result.current.isLoading).toBe(true);
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+  });
+
   it('still reports isLoading for the very first load', async () => {
     mockedGetPatientEncounters.mockResolvedValue([
       visit(NEWER_VISIT_UUID, '2026-06-29T09:15:00+00:00'),

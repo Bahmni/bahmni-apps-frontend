@@ -5,7 +5,7 @@ import {
   dispatchAuditEvent,
   DocumentType,
   getDocumentUploadMaxSizeMb,
-  SaveDocumentInput,
+  DocumentPayload,
   saveDocuments,
   uploadDocument,
 } from '@bahmni/services';
@@ -27,7 +27,7 @@ import { FILE_INPUT_ACCEPT, MAX_NOTE_LENGTH } from './constants';
 import {
   DocumentSaveFailure,
   DocumentSaveSummary,
-  DocumentUploadHandle,
+  DocumentUploadRef,
   DocumentUploadProps,
   PendingDocument,
 } from './models';
@@ -43,7 +43,7 @@ const messageOf = (error: unknown): string =>
   error instanceof Error ? error.message : String(error);
 
 export const DocumentUpload = forwardRef<
-  DocumentUploadHandle,
+  DocumentUploadRef,
   DocumentUploadProps
 >(function DocumentUpload(
   {
@@ -187,10 +187,9 @@ export const DocumentUpload = forwardRef<
     }
   };
 
-  const toSaveInput = ({ document, url }: UploadedDocument) => {
+  const toDocumentPayload = ({ document, url }: UploadedDocument) => {
     const type = typeOf(document);
     return {
-      patientUuid,
       url,
       contentType: document.contentType,
       title: document.fileName,
@@ -198,15 +197,18 @@ export const DocumentUpload = forwardRef<
       typeDisplay: type?.label,
       description: document.note.trim() || undefined,
       authorPractitionerUuid: practitioner?.uuid,
-      ...saveTarget,
-    } satisfies SaveDocumentInput;
+    } satisfies DocumentPayload;
   };
 
   const saveUploaded = async (
     uploaded: UploadedDocument[],
   ): Promise<Array<{ uploaded: UploadedDocument; error?: unknown }>> => {
     try {
-      await saveDocuments(uploaded.map(toSaveInput));
+      await saveDocuments({
+        patientUuid,
+        target: saveTarget,
+        documents: uploaded.map(toDocumentPayload),
+      });
       return uploaded.map((entry) => ({ uploaded: entry }));
     } catch (error) {
       return uploaded.map((entry) => ({ uploaded: entry, error }));

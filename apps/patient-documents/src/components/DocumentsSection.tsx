@@ -14,7 +14,7 @@ import {
   ConfirmationModal,
   DocumentSaveSummary,
   DocumentUpload,
-  DocumentUploadHandle,
+  DocumentUploadRef,
   renderDocumentTile,
   useNotification,
 } from '@bahmni/widgets';
@@ -61,7 +61,28 @@ export const DocumentsSection: React.FC<DocumentsSectionProps> = ({
     [documentEncounterType.uuid],
   );
 
-  const uploadHandles = useRef(new Map<string, DocumentUploadHandle>());
+  const uploadHandles = useRef(new Map<string, DocumentUploadRef>());
+  // Cached per visit so the ref prop keeps a stable identity. An inline callback would make React
+  // detach and reattach every rendered handle on each re-render of this section, which also opens
+  // a window where uploadHandles has no entry for a visit that is on screen.
+  const uploadHandleRefs = useRef(
+    new Map<string, (handle: DocumentUploadRef | null) => void>(),
+  );
+  const uploadHandleRef = useCallback((visitKey: string) => {
+    const cached = uploadHandleRefs.current.get(visitKey);
+    if (cached) {
+      return cached;
+    }
+    const setHandle = (handle: DocumentUploadRef | null) => {
+      if (handle) {
+        uploadHandles.current.set(visitKey, handle);
+      } else {
+        uploadHandles.current.delete(visitKey);
+      }
+    };
+    uploadHandleRefs.current.set(visitKey, setHandle);
+    return setHandle;
+  }, []);
   const [visitsWithPendingDocument, setVisitsWithPendingDocument] = useState<
     string[]
   >([]);
@@ -96,8 +117,10 @@ export const DocumentsSection: React.FC<DocumentsSectionProps> = ({
 
   const leaveToSearch = () => {
     setIsLeaveConfirmationOpen(false);
-    isLeavingIntentionally.current = true;
     if (searchHref) {
+      // Only disarm the unload guard when we are actually navigating away. Setting it
+      // unconditionally would leave the user on the page with unsaved documents and no warning.
+      isLeavingIntentionally.current = true;
       window.location.href = searchHref;
     }
   };
@@ -182,15 +205,23 @@ export const DocumentsSection: React.FC<DocumentsSectionProps> = ({
     setIsSaving(true);
     try {
       const summaries = await Promise.all(
-        visitsWithPendingDocument.map((visitKey) =>
-          uploadHandles.current.get(visitKey)?.save(),
-        ),
+        visitsWithPendingDocument.map((visitKey) => {
+          const handle = uploadHandles.current.get(visitKey);
+          if (!handle) {
+            return {
+              savedCount: 0,
+              failures: [
+                {
+                  fileName: '',
+                  message: t('DOCUMENT_UPLOAD_SAVE_UNAVAILABLE'),
+                },
+              ],
+            } satisfies DocumentSaveSummary;
+          }
+          return handle.save();
+        }),
       );
-      notifySaveOutcome(
-        summaries.filter(
-          (summary): summary is DocumentSaveSummary => !!summary,
-        ),
-      );
+      notifySaveOutcome(summaries);
       await refetch();
     } finally {
       setIsSaving(false);
@@ -327,13 +358,7 @@ export const DocumentsSection: React.FC<DocumentsSectionProps> = ({
                 onPendingChange={(hasPendingDocument) =>
                   handlePendingChange(visitKey, hasPendingDocument)
                 }
-                ref={(handle) => {
-                  if (handle) {
-                    uploadHandles.current.set(visitKey, handle);
-                  } else {
-                    uploadHandles.current.delete(visitKey);
-                  }
-                }}
+                ref={uploadHandleRef(visitKey)}
               />
             </AccordionItem>
           );

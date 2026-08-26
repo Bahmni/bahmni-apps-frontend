@@ -17,19 +17,24 @@ import {
 } from '../encounterBundle';
 import { getUserLoginLocation } from '../userService';
 import { generateUUID } from '../utils/utils';
-import { DOCUMENT_REFERENCE_URL } from './constants';
-import { CreateDocumentReferenceInput, SaveDocumentInput } from './models';
+import {
+  AttachToExistingEncounter,
+  CreateEncounterInVisit,
+  DocumentPayload,
+  SaveDocumentsInput,
+} from './models';
 
 // encounterReference is a concrete "Encounter/{uuid}" or a bundle-local "urn:uuid:..." placeholder.
 function buildDocumentReference(
-  input: SaveDocumentInput,
+  patientUuid: string,
+  input: DocumentPayload,
   encounterReference: string,
 ): DocumentReference {
   const documentReference: DocumentReference = {
     resourceType: 'DocumentReference',
     status: 'current',
     docStatus: 'final',
-    subject: { reference: `Patient/${input.patientUuid}` },
+    subject: { reference: `Patient/${patientUuid}` },
     content: [
       {
         attachment: {
@@ -116,108 +121,80 @@ function buildDocumentEncounter(
   return encounter;
 }
 
-export async function createDocumentReference(
-  input: CreateDocumentReferenceInput,
-): Promise<DocumentReference> {
-  const documentReference = buildDocumentReference(
-    input,
-    `Encounter/${input.encounterUuid}`,
-  );
-  return post<DocumentReference>(DOCUMENT_REFERENCE_URL, documentReference);
-}
-
-export async function saveDocuments(
-  inputs: SaveDocumentInput[],
-): Promise<unknown> {
-  const [first] = inputs;
-  if (!first) {
+export async function saveDocuments({
+  patientUuid,
+  target,
+  documents,
+}: SaveDocumentsInput): Promise<unknown> {
+  if (documents.length === 0) {
     return [];
   }
 
-  const sharesTargetWithFirst = (input: SaveDocumentInput) =>
-    input.patientUuid === first.patientUuid &&
-    input.encounterUuid === first.encounterUuid &&
-    input.createEncounterInVisit?.visitUuid ===
-      first.createEncounterInVisit?.visitUuid;
-  if (!inputs.every(sharesTargetWithFirst)) {
-    throw new Error(
-      'saveDocuments requires every document to share the same patient and save target',
-    );
-  }
-
-  const entries = first.encounterUuid
-    ? existingEncounterEntries(first, first.encounterUuid, inputs)
-    : newEncounterEntries(first, inputs);
+  const entries =
+    'encounterUuid' in target
+      ? existingEncounterEntries(patientUuid, target, documents)
+      : newEncounterEntries(
+          patientUuid,
+          target.createEncounterInVisit,
+          documents,
+        );
 
   return post<unknown>(ENCOUNTER_BUNDLE_URL, createEncounterBundle(entries));
 }
 
 function documentEntries(
-  inputs: SaveDocumentInput[],
+  patientUuid: string,
+  documents: DocumentPayload[],
   encounterReference: string,
 ): Array<BundleEntry<FhirResource>> {
-  return inputs.map((input) =>
+  return documents.map((document) =>
     createBundleEntry(
       `urn:uuid:${generateUUID()}`,
-      buildDocumentReference(input, encounterReference),
+      buildDocumentReference(patientUuid, document, encounterReference),
       'POST',
     ),
   );
 }
 
 function existingEncounterEntries(
-  first: SaveDocumentInput,
-  encounterUuid: string,
-  inputs: SaveDocumentInput[],
+  patientUuid: string,
+  target: AttachToExistingEncounter,
+  documents: DocumentPayload[],
 ): Array<BundleEntry<FhirResource>> {
-  const { existingEncounter } = first;
-  if (!existingEncounter) {
-    throw new Error(
-      'saveDocuments requires existingEncounter alongside encounterUuid, because the bundle re-sends the encounter as a PUT',
-    );
-  }
-
-  // fullUrl must equal the reference the documents carry, otherwise the server cannot resolve it.
-  const encounterReference = `Encounter/${encounterUuid}`;
+  // fullUrl must equal the reference the documents carry, otherwise the server cannot resolve it:
+  // the endpoint requires exactly one Encounter entry and matches encounter references against
+  // bundle entry fullUrls.
+  const encounterReference = `Encounter/${target.encounterUuid}`;
   return [
     createBundleEntry(
       encounterReference,
-      { ...existingEncounter, id: encounterUuid },
+      { ...target.existingEncounter, id: target.encounterUuid },
       'PUT',
       encounterReference,
     ),
-    ...documentEntries(inputs, encounterReference),
+    ...documentEntries(patientUuid, documents, encounterReference),
   ];
 }
 
 function newEncounterEntries(
-  first: SaveDocumentInput,
-  inputs: SaveDocumentInput[],
+  patientUuid: string,
+  createEncounterInVisit: CreateEncounterInVisit,
+  documents: DocumentPayload[],
 ): Array<BundleEntry<FhirResource>> {
-  if (!first.createEncounterInVisit) {
-    throw new Error(
-      'saveDocument requires either encounterUuid or createEncounterInVisit',
-    );
-  }
-
   const { visitUuid, encounterTypeUuid, encounterTypeDisplay } =
-    first.createEncounterInVisit;
+    createEncounterInVisit;
   const encounterPlaceholder = `urn:uuid:${generateUUID()}`;
   const encounter = buildDocumentEncounter(
-    first.patientUuid,
+    patientUuid,
     visitUuid,
     encounterTypeUuid,
     getUserLoginLocation().uuid,
     encounterTypeDisplay,
-    first.authorPractitionerUuid,
+    documents[0]?.authorPractitionerUuid,
   );
 
   return [
     createBundleEntry(encounterPlaceholder, encounter, 'POST'),
-    ...documentEntries(inputs, encounterPlaceholder),
+    ...documentEntries(patientUuid, documents, encounterPlaceholder),
   ];
-}
-
-export async function saveDocument(input: SaveDocumentInput): Promise<unknown> {
-  return saveDocuments([input]);
 }

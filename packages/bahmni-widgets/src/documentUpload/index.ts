@@ -3,7 +3,7 @@ export { renderDocumentTile } from './renderDocumentTile';
 export type { DocumentTileData } from './renderDocumentTile';
 export type {
   DocumentUploadProps,
-  DocumentUploadHandle,
+  DocumentUploadRef,
   DocumentSaveSummary,
   DocumentSaveFailure,
   DocumentSaveTarget,

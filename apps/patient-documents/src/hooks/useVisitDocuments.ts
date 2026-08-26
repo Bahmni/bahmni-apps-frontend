@@ -3,7 +3,7 @@ import {
   getFormattedDocumentReferences,
   getPatientEncounters,
 } from '@bahmni/services';
-import { useQuery } from '@tanstack/react-query';
+import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { Encounter } from 'fhir/r4';
 import { useRef } from 'react';
 
@@ -29,6 +29,14 @@ export const useVisitDocuments = (
   documentEncounterTypeUuid?: string[],
 ) => {
   const hasCompletedInitialLoad = useRef(false);
+  // Both queries re-key when the patient changes, which is a genuine first load for that patient.
+  // Without this reset the latch would stay set from the previous patient and suppress the
+  // skeleton, leaving a blank section until the new patient's encounters arrive.
+  const loadedPatientUuid = useRef(patientUuid);
+  if (loadedPatientUuid.current !== patientUuid) {
+    loadedPatientUuid.current = patientUuid;
+    hasCompletedInitialLoad.current = false;
+  }
 
   const encountersQuery = useQuery({
     queryKey: ['patientEncounters', patientUuid],
@@ -77,7 +85,7 @@ export const useVisitDocuments = (
           : undefined,
       ),
     enabled: !!patientUuid && matchingEncounterInstanceUuids.length > 0,
-    placeholderData: (previous) => previous,
+    placeholderData: keepPreviousData,
   });
 
   const documents = documentsQuery.data ?? [];

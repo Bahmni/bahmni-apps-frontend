@@ -11,7 +11,7 @@ import { DocumentUpload } from '../DocumentUpload';
 import {
   DocumentSaveSummary,
   DocumentSaveTarget,
-  DocumentUploadHandle,
+  DocumentUploadRef,
 } from '../models';
 
 jest.mock('@bahmni/services', () => ({
@@ -72,7 +72,7 @@ const Harness = ({
   onSaved: () => void;
   saveTarget: DocumentSaveTarget;
 }) => {
-  const uploadRef = useRef<DocumentUploadHandle>(null);
+  const uploadRef = useRef<DocumentUploadRef>(null);
   const [summary, setSummary] = useState<DocumentSaveSummary | null>(null);
   return (
     <>
@@ -208,13 +208,11 @@ describe('DocumentUpload', () => {
     fireEvent.click(screen.getByTestId('harness-save'));
 
     await waitFor(() =>
-      expect(saveDocuments).toHaveBeenCalledWith([
-        expect.objectContaining({
-          patientUuid: 'patient-uuid',
-          url: 'patient/doc.png',
-          encounterUuid: 'encounter-uuid',
-        }),
-      ]),
+      expect(saveDocuments).toHaveBeenCalledWith({
+        patientUuid: 'patient-uuid',
+        target: EXISTING_ENCOUNTER_TARGET,
+        documents: [expect.objectContaining({ url: 'patient/doc.png' })],
+      }),
     );
     await waitFor(() => expect(onSaved).toHaveBeenCalled());
   });
@@ -238,17 +236,12 @@ describe('DocumentUpload', () => {
     fireEvent.click(screen.getByTestId('harness-save'));
 
     await waitFor(() =>
-      expect(saveDocuments).toHaveBeenCalledWith([
-        expect.objectContaining({
-          patientUuid: 'patient-uuid',
-          url: 'patient/doc.png',
-          createEncounterInVisit: {
-            visitUuid: 'visit-uuid',
-            encounterTypeUuid: 'encounter-type-uuid',
-            encounterTypeDisplay: 'Patient Document',
-          },
-        }),
-      ]),
+      expect(saveDocuments).toHaveBeenCalledWith({
+        patientUuid: 'patient-uuid',
+        // The target travels once for the batch, not repeated on every document.
+        target: CREATE_ENCOUNTER_TARGET,
+        documents: [expect.objectContaining({ url: 'patient/doc.png' })],
+      }),
     );
   });
 
@@ -321,9 +314,13 @@ describe('DocumentUpload', () => {
     fireEvent.click(screen.getByTestId('harness-save'));
 
     await waitFor(() =>
-      expect(saveDocuments).toHaveBeenCalledWith([
-        expect.objectContaining({ description: 'follow up in 2 weeks' }),
-      ]),
+      expect(saveDocuments).toHaveBeenCalledWith(
+        expect.objectContaining({
+          documents: [
+            expect.objectContaining({ description: 'follow up in 2 weeks' }),
+          ],
+        }),
+      ),
     );
   });
 
@@ -338,12 +335,16 @@ describe('DocumentUpload', () => {
     fireEvent.click(screen.getByTestId('harness-save'));
 
     await waitFor(() =>
-      expect(saveDocuments).toHaveBeenCalledWith([
+      expect(saveDocuments).toHaveBeenCalledWith(
         expect.objectContaining({
-          typeCode: 'type-1',
-          typeDisplay: 'Lab Report',
+          documents: [
+            expect.objectContaining({
+              typeCode: 'type-1',
+              typeDisplay: 'Lab Report',
+            }),
+          ],
         }),
-      ]),
+      ),
     );
   });
 
@@ -409,9 +410,11 @@ describe('DocumentUpload', () => {
     fireEvent.click(screen.getByTestId('harness-save'));
 
     await waitFor(() =>
-      expect(saveDocuments).toHaveBeenCalledWith([
-        expect.objectContaining({ url: 'server/new-url.png' }),
-      ]),
+      expect(saveDocuments).toHaveBeenCalledWith(
+        expect.objectContaining({
+          documents: [expect.objectContaining({ url: 'server/new-url.png' })],
+        }),
+      ),
     );
   });
 
@@ -469,13 +472,20 @@ describe('DocumentUpload', () => {
       expect(await savedSummary()).toEqual({ savedCount: 2, failures: [] });
       expect(uploadDocument).toHaveBeenCalledTimes(2);
       expect(saveDocuments).toHaveBeenCalledTimes(1);
-      expect(saveDocuments).toHaveBeenCalledWith([
-        expect.objectContaining({ title: 'scan.png', description: undefined }),
+      expect(saveDocuments).toHaveBeenCalledWith(
         expect.objectContaining({
-          title: 'report.pdf',
-          description: 'second file only',
+          documents: [
+            expect.objectContaining({
+              title: 'scan.png',
+              description: undefined,
+            }),
+            expect.objectContaining({
+              title: 'report.pdf',
+              description: 'second file only',
+            }),
+          ],
         }),
-      ]);
+      );
       expect(screen.queryAllByTestId('pending-document-row')).toHaveLength(0);
     });
 
@@ -489,7 +499,7 @@ describe('DocumentUpload', () => {
       expect(await savedSummary()).toEqual({ savedCount: 2, failures: [] });
       // One call, so the batch shares a single new document encounter.
       expect(saveDocuments).toHaveBeenCalledTimes(1);
-      expect(saveDocuments.mock.calls[0][0]).toEqual([
+      expect(saveDocuments.mock.calls[0][0].documents).toEqual([
         expect.objectContaining({ title: 'scan.png' }),
         expect.objectContaining({ title: 'report.pdf' }),
       ]);
@@ -542,15 +552,9 @@ describe('DocumentUpload', () => {
 
       expect(await savedSummary()).toEqual({ savedCount: 2, failures: [] });
       expect(saveDocuments).toHaveBeenCalledTimes(1);
-      expect(saveDocuments.mock.calls[0][0]).toEqual([
-        expect.objectContaining({
-          title: 'scan.png',
-          encounterUuid: 'encounter-uuid',
-        }),
-        expect.objectContaining({
-          title: 'report.pdf',
-          encounterUuid: 'encounter-uuid',
-        }),
+      expect(saveDocuments.mock.calls[0][0].documents).toEqual([
+        expect.objectContaining({ title: 'scan.png' }),
+        expect.objectContaining({ title: 'report.pdf' }),
       ]);
     });
 
@@ -570,6 +574,29 @@ describe('DocumentUpload', () => {
         ],
       });
       expect(screen.getAllByTestId('pending-document-row')).toHaveLength(2);
+    });
+
+    it('raises one notification per rejection reason, not per file', async () => {
+      renderWidget();
+      // Wait for the max-size setting so the size check is active.
+      await screen.findByText(/DOCUMENT_UPLOAD_HELP/);
+
+      selectFiles(
+        fileOf('ok.png'),
+        fileOf('huge.png', 'image/png', 6 * 1000 * 1000),
+        fileOf('notes.txt', 'text/plain'),
+      );
+
+      expect(await screen.findAllByTestId('pending-document-row')).toHaveLength(
+        1,
+      );
+      const titles = mockAddNotification.mock.calls.map(
+        ([notification]) => notification.title,
+      );
+      expect(titles).toContain('DOCUMENT_UPLOAD_INVALID_TYPE_TITLE');
+      expect(titles).toContain('DOCUMENT_UPLOAD_SIZE_EXCEEDED_TITLE');
+      // One per reason, not one per rejected file.
+      expect(titles).toHaveLength(2);
     });
 
     it('rejects unsupported files in a mixed selection with a single notification', async () => {
@@ -638,9 +665,13 @@ describe('DocumentUpload', () => {
 
       await waitFor(() => expect(saveDocuments).toHaveBeenCalledTimes(2));
       expect(uploadDocument).toHaveBeenCalledTimes(1);
-      expect(saveDocuments).toHaveBeenLastCalledWith([
-        expect.objectContaining({ url: 'patient/stored-once.png' }),
-      ]);
+      expect(saveDocuments).toHaveBeenLastCalledWith(
+        expect.objectContaining({
+          documents: [
+            expect.objectContaining({ url: 'patient/stored-once.png' }),
+          ],
+        }),
+      );
     });
 
     it('discards one pending document without touching the others', async () => {

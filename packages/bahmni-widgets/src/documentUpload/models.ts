@@ -13,7 +13,7 @@ export interface DocumentSaveSummary {
   failures: DocumentSaveFailure[];
 }
 
-export interface DocumentUploadHandle {
+export interface DocumentUploadRef {
   save: () => Promise<DocumentSaveSummary>;
 }
 

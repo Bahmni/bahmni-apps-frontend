@@ -45,5 +45,6 @@
   "PATIENT_DOCUMENTS_UNSAVED_MODAL_TITLE": "Documentos sin guardar",
   "PATIENT_DOCUMENTS_WELCOME_MESSAGE": "Bienvenido a Documentos del Paciente",
   "YEARS_one": " año",
-  "YEARS_other": " años"
+  "YEARS_other": " años",
+  "DOCUMENT_UPLOAD_SAVE_UNAVAILABLE": "No se pudieron guardar los documentos de esta visita. Inténtelo de nuevo."
 }

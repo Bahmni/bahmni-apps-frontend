@@ -50,22 +50,19 @@ export interface CreateEncounterInVisit {
   encounterTypeDisplay?: string;
 }
 
-/**
- * An existing document encounter to attach to. The encounter resource is carried alongside its
- * uuid because the save bundle re-sends it as a PUT — see saveDocuments for why.
- */
+/** An existing document encounter to attach a batch to. */
 export interface AttachToExistingEncounter {
   encounterUuid: string;
   existingEncounter: Encounter;
 }
 
-/** Where a document is attached: an existing encounter, or a new one created within a visit. */
+/** Where a batch of documents is attached: an existing encounter, or a new one in a visit. */
 export type DocumentSaveTarget =
   | AttachToExistingEncounter
   | { createEncounterInVisit: CreateEncounterInVisit };
 
-export interface SaveDocumentInput {
-  patientUuid: string;
+/** A single document. url comes from the prior visitDocument upload call. */
+export interface DocumentPayload {
   url: string;
   contentType?: string;
   title?: string;
@@ -73,7 +70,14 @@ export interface SaveDocumentInput {
   typeDisplay?: string;
   description?: string;
   authorPractitionerUuid?: string;
-  encounterUuid?: string;
-  existingEncounter?: Encounter;
-  createEncounterInVisit?: CreateEncounterInVisit;
+}
+
+/**
+ * The save target is held once for the whole batch rather than repeated on every document, so a
+ * batch cannot describe two different targets and no runtime check is needed to reject one.
+ */
+export interface SaveDocumentsInput {
+  patientUuid: string;
+  target: DocumentSaveTarget;
+  documents: DocumentPayload[];
 }
