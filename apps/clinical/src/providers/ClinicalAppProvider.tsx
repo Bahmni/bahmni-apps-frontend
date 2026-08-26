@@ -52,7 +52,7 @@ export const ClinicalAppProvider: React.FC<ClinicalAppDataProviderProps> = ({
     });
   }, [episodeUuids, queryClient]);
 
-  const value = useMemo(() => {
+  const clinicalContext = useMemo(() => {
     const episodeOfCare: EpisodeOfCare[] =
       episodeUuids.length > 0 ? episodeOfCareQueries.data : [];
 
@@ -71,11 +71,11 @@ export const ClinicalAppProvider: React.FC<ClinicalAppDataProviderProps> = ({
     };
   }, [episodeOfCareQueries, episodeUuids, patientId, activeVisit?.id]);
 
-  if (value.isLoading && episodeUuids.length > 0) {
+  if (clinicalContext.isLoading && episodeUuids.length > 0) {
     return <Loading description={t('LOADING_CLINICAL_DATA')} role="status" />;
   }
 
-  if (value.error)
+  if (clinicalContext.error)
     return (
       <div className="alert alert-danger">
         {t('ERROR_FETCHING_CLINICAL_DATA')}
@@ -83,7 +83,7 @@ export const ClinicalAppProvider: React.FC<ClinicalAppDataProviderProps> = ({
     );
 
   return (
-    <ClinicalAppContext.Provider value={value}>
+    <ClinicalAppContext.Provider value={clinicalContext}>
       {children}
     </ClinicalAppContext.Provider>
   );

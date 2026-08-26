@@ -61,19 +61,13 @@ export async function getEncounterSessionDuration(): Promise<number> {
  * Filters encounters to find those belonging to the active visit
  * @param encounters - Array of encounters to filter
  * @param patientUUID - Patient UUID
- * @param episodeEncounterUuids - The current episode of care's own known encounter UUIDs
- * (optional). `encounter.episodeOfCare` is never populated on encounters returned by a
- * search (only Bahmni's create() response carries it, in memory, never persisted) so it
- * cannot be used to detect that a candidate belongs to a different episode. Instead, a
- * candidate is only reused if its id is a member of this list — sourced from the real
- * episode<->encounter relationship (see getEncountersAndVisitsForEOC). Passing undefined
- * preserves the no-episode-context behavior of reusing the first active-visit match.
+ * @param currentEpisodeEncounterUuids - Array of known encounters UUIDs of current EOC
  * @returns Promise resolving to encounter within active visit or null
  */
 export async function filterByActiveVisit(
   encounters: Encounter[],
   patientUUID: string,
-  episodeEncounterUuids?: string[],
+  currentEpisodeEncounterUuids?: string[],
 ): Promise<Encounter | null> {
   if (!encounters.length) return null;
 
@@ -86,8 +80,10 @@ export async function filterByActiveVisit(
       encounters.find((encounter) => {
         const visitUUID = encounter.partOf?.reference?.split('/')[1];
         if (activeVisit.id !== visitUUID) return false;
-        if (!episodeEncounterUuids) return true;
-        return !!encounter.id && episodeEncounterUuids.includes(encounter.id);
+        if (!currentEpisodeEncounterUuids) return true;
+        return (
+          !!encounter.id && currentEpisodeEncounterUuids.includes(encounter.id)
+        );
       }) ?? null
     );
   } catch {
@@ -102,8 +98,7 @@ export async function filterByActiveVisit(
  * @param practitionerUUID - Practitioner UUID (optional, for practitioner-specific sessions)
  * @param sessionDurationMinutes - Session duration in minutes (optional, will fetch from config if not provided)
  * @param encounterTypeUUID - Encounter type UUID (optional, filters by type)
- * @param episodeEncounterUuids - The current episode of care's own known encounter UUIDs
- * (optional, scopes reuse to encounters already belonging to this EoC — see filterByActiveVisit)
+ * @param currentEpisodeEncounterUuids - The current episode of care's own known encounter UUIDs
  * @returns Promise resolving to active encounter or null
  */
 export async function findActiveEncounterInSession(
@@ -111,7 +106,7 @@ export async function findActiveEncounterInSession(
   practitionerUUID?: string,
   sessionDurationMinutes?: number,
   encounterTypeUUID?: string,
-  episodeEncounterUuids?: string[],
+  currentEpisodeEncounterUuids?: string[],
 ): Promise<Encounter | null> {
   try {
     if (!patientUUID) return null;
@@ -143,7 +138,7 @@ export async function findActiveEncounterInSession(
     const result = await filterByActiveVisit(
       encounters,
       patientUUID,
-      episodeEncounterUuids,
+      currentEpisodeEncounterUuids,
     );
     return result;
   } catch {

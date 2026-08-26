@@ -170,7 +170,7 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
   const { patientId, activeVisitId, activeEpisodeId, episodeOfCare } =
     useClinicalAppData();
 
-  const activeEpisodeEncounterUuids = activeEpisodeId
+  const currentEpisodeEncounterUuids = activeEpisodeId
     ? episodeOfCare.find((eoc) => eoc.uuid === activeEpisodeId)?.encounterUuids
     : undefined;
 
@@ -182,7 +182,7 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
       practitioner?.uuid,
       selectedEncounterType?.uuid,
       activeEpisodeId,
-      activeEpisodeEncounterUuids,
+      currentEpisodeEncounterUuids,
     ],
     queryFn: () =>
       findActiveEncounterInSession(
@@ -190,7 +190,7 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
         practitioner?.uuid,
         undefined,
         selectedEncounterType?.uuid,
-        activeEpisodeEncounterUuids,
+        currentEpisodeEncounterUuids,
       ),
     staleTime: 0,
     enabled: !!(patientId && practitioner?.uuid && selectedEncounterType?.uuid),
@@ -246,7 +246,7 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
 
   const encounterForSubmission = activeEncounter ?? null;
 
-  const episodeOfCareUuids = activeEpisodeId ? [activeEpisodeId] : [];
+  const episodeOfCareUuids = episodeOfCare.map((eoc) => eoc.uuid);
   const statDurationInMilliseconds =
     clinicalConfig?.consultationPad?.statDurationInMilliseconds;
 

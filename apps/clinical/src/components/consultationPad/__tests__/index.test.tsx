@@ -757,7 +757,7 @@ describe('ConsultationPad', () => {
             activeVisitId: 'visit-123',
             activeEpisodeId: 'eoc-1',
           } as any),
-        { episodeOfCareUuids: ['eoc-1'] },
+        { episodeOfCareUuids: ['eoc-1', 'eoc-2'] },
       ],
       [
         'statDurationInMilliseconds from config',
