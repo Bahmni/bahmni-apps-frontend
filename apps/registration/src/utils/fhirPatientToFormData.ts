@@ -63,6 +63,51 @@ export function convertFhirToBasicInfo(
   };
 }
 
+// Contact attribute types are matched by these conventional slugs (derived from their
+// configured PersonAttributeType name, e.g. "phoneNumber" -> "phonenumber") since a FHIR
+// ContactPoint carries only system/use/rank, not the originating attribute type's name.
+const PHONE_ATTRIBUTE_SLUG = 'phonenumber';
+const ALTERNATE_PHONE_ATTRIBUTE_SLUG = 'alternatephonenumber';
+const EMAIL_ATTRIBUTE_SLUG = 'email';
+
+function populateContactAttributesFromTelecom(
+  patient: Patient,
+  slugToName: Record<string, string>,
+  data: PersonAttributesData,
+): Set<string> {
+  const populated = new Set<string>();
+  const telecom = patient.telecom ?? [];
+
+  const phoneContactPoints = telecom
+    .filter((cp) => cp.system === 'phone' && cp.value)
+    .sort(
+      (a, b) =>
+        (a.rank ?? Number.MAX_SAFE_INTEGER) - (b.rank ?? Number.MAX_SAFE_INTEGER),
+    );
+  const emailContactPoint = telecom.find(
+    (cp) => cp.system === 'email' && cp.value,
+  );
+
+  const phoneAttrName = slugToName[PHONE_ATTRIBUTE_SLUG];
+  const alternatePhoneAttrName = slugToName[ALTERNATE_PHONE_ATTRIBUTE_SLUG];
+  const emailAttrName = slugToName[EMAIL_ATTRIBUTE_SLUG];
+
+  if (phoneAttrName && phoneContactPoints[0]) {
+    data[phoneAttrName] = phoneContactPoints[0].value as string;
+    populated.add(phoneAttrName);
+  }
+  if (alternatePhoneAttrName && phoneContactPoints[1]) {
+    data[alternatePhoneAttrName] = phoneContactPoints[1].value as string;
+    populated.add(alternatePhoneAttrName);
+  }
+  if (emailAttrName && emailContactPoint) {
+    data[emailAttrName] = emailContactPoint.value as string;
+    populated.add(emailAttrName);
+  }
+
+  return populated;
+}
+
 export function convertFhirToPersonAttributes(
   patient: Patient,
   personAttributes: PersonAttributeType[],
@@ -73,13 +118,22 @@ export function convertFhirToPersonAttributes(
   });
 
   const data: PersonAttributesData = {};
-  let found = false;
+
+  // Prefer Patient.telecom for contact attributes (phone/email); only fall back to the
+  // legacy generic-attribute extensions for whichever of those isn't present in telecom,
+  // so both old (extension-only) and new (telecom) patient records render correctly.
+  const populatedFromTelecom = populateContactAttributesFromTelecom(
+    patient,
+    slugToName,
+    data,
+  );
+  let found = populatedFromTelecom.size > 0;
 
   for (const ext of patient.extension ?? []) {
     if (!ext.url?.startsWith(PATIENT_ATTRIBUTE_PREFIX)) continue;
     const slug = ext.url.substring(PATIENT_ATTRIBUTE_PREFIX.length);
     const attrName = slugToName[slug];
-    if (!attrName) continue;
+    if (!attrName || populatedFromTelecom.has(attrName)) continue;
 
     const value = ext.valueString ?? ext.valueBoolean;
     if (value !== undefined) {
