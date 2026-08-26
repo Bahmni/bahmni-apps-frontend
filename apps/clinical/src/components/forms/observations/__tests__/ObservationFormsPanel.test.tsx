@@ -355,7 +355,7 @@ describe('ObservationFormsPanel', () => {
           encounterSessionStartContext={{
             editOnly: 'observationForms',
             editFormName: 'Vitals',
-            editEncounterUuid: 'encounter-uuid-1',
+            sourceEncounterUuid: 'encounter-uuid-1',
           }}
         />,
       );
@@ -383,7 +383,8 @@ describe('ObservationFormsPanel', () => {
           encounterSessionStartContext={{
             editOnly: 'observationForms',
             formName: 'Vitals',
-            editEncounterUuid: 'encounter-uuid-1',
+            sourceEncounterUuid: 'encounter-uuid-1',
+            activeEncounter: { id: 'encounter-uuid-1' } as any,
           }}
         />,
       );
@@ -418,7 +419,8 @@ describe('ObservationFormsPanel', () => {
           encounterSessionStartContext={{
             editOnly: 'observationForms',
             formName: 'Vitals',
-            editEncounterUuid: 'encounter-uuid-1',
+            sourceEncounterUuid: 'encounter-uuid-1',
+            activeEncounter: { id: 'encounter-uuid-1' } as any,
             task: {
               resourceType: 'Task',
               basedOn: [{ reference: 'ServiceRequest/service-request-42' }],
@@ -467,7 +469,8 @@ describe('ObservationFormsPanel', () => {
           encounterSessionStartContext={{
             editOnly: 'observationForms',
             formName: 'Vitals',
-            editEncounterUuid: 'encounter-uuid-1',
+            sourceEncounterUuid: 'encounter-uuid-1',
+            activeEncounter: { id: 'encounter-uuid-1' } as any,
           }}
         />,
       );
@@ -493,7 +496,8 @@ describe('ObservationFormsPanel', () => {
           encounterSessionStartContext={{
             editOnly: 'observationForms',
             formName: 'Vitals',
-            editEncounterUuid: 'encounter-uuid-1',
+            sourceEncounterUuid: 'encounter-uuid-1',
+            activeEncounter: { id: 'encounter-uuid-1' } as any,
           }}
         />,
       );
@@ -509,7 +513,8 @@ describe('ObservationFormsPanel', () => {
           encounterSessionStartContext={{
             editOnly: 'observationForms',
             formName: 'NonExistentForm',
-            editEncounterUuid: 'encounter-uuid-1',
+            sourceEncounterUuid: 'encounter-uuid-1',
+            activeEncounter: { id: 'encounter-uuid-1' } as any,
           }}
         />,
       );
@@ -541,7 +546,8 @@ describe('ObservationFormsPanel', () => {
       const sessionContext = {
         editOnly: 'observationForms',
         formName: 'Vitals',
-        editEncounterUuid: 'encounter-uuid-1',
+        sourceEncounterUuid: 'encounter-uuid-1',
+        activeEncounter: { id: 'encounter-uuid-1' } as any,
       };
 
       const { rerender } = render(
@@ -600,7 +606,8 @@ describe('ObservationFormsPanel', () => {
           encounterSessionStartContext={{
             editOnly: 'observationForms',
             formName: 'Vitals',
-            editEncounterUuid: 'encounter-uuid-1',
+            sourceEncounterUuid: 'encounter-uuid-1',
+            activeEncounter: { id: 'encounter-uuid-1' } as any,
           }}
         />,
       );
@@ -659,7 +666,8 @@ describe('ObservationFormsPanel', () => {
           encounterSessionStartContext={{
             editOnly: 'observationForms',
             formName: 'Vitals',
-            editEncounterUuid: 'encounter-uuid-1',
+            sourceEncounterUuid: 'encounter-uuid-1',
+            activeEncounter: { id: 'encounter-uuid-1' } as any,
           }}
         />,
       );
@@ -705,7 +713,8 @@ describe('ObservationFormsPanel', () => {
           encounterSessionStartContext={{
             editOnly: 'observationForms',
             formName: 'Vitals',
-            editEncounterUuid: 'encounter-uuid-1',
+            sourceEncounterUuid: 'encounter-uuid-1',
+            activeEncounter: { id: 'encounter-uuid-1' } as any,
           }}
         />,
       );
@@ -754,7 +763,8 @@ describe('ObservationFormsPanel', () => {
           encounterSessionStartContext={{
             editOnly: 'observationForms',
             formName: 'Vitals',
-            editEncounterUuid: 'encounter-uuid-1',
+            sourceEncounterUuid: 'encounter-uuid-1',
+            activeEncounter: { id: 'encounter-uuid-1' } as any,
           }}
         />,
       );
@@ -763,6 +773,73 @@ describe('ObservationFormsPanel', () => {
         expect(fetchFormUuidByObservationDate).not.toHaveBeenCalled();
         expect(mockAddForm).toHaveBeenCalledWith(mockForm1);
       });
+    });
+
+    it('blocks fetch while activeEncounter is undefined (session query still pending)', async () => {
+      render(
+        <ObservationFormsPanel
+          encounterSessionStartContext={{
+            editOnly: 'observationForms',
+            formName: 'Vitals',
+            sourceEncounterUuid: 'encounter-uuid-1',
+            // activeEncounter intentionally absent — undefined means mode not yet determined
+          }}
+        />,
+      );
+
+      await waitFor(() => {
+        expect(getObservationsBundleByEncounterUuid).not.toHaveBeenCalled();
+      });
+    });
+
+    it('fetches in copyover mode and strips observation UUIDs before storing', async () => {
+      const mockSetState = jest.fn();
+      (
+        useObservationFormsStore as unknown as { setState: jest.Mock }
+      ).setState = mockSetState;
+
+      const mockBundle = { entry: [] };
+      jest
+        .mocked(getObservationsBundleByEncounterUuid)
+        .mockResolvedValue(mockBundle as never);
+      jest.mocked(getObservationsFromFhir).mockReturnValue([
+        {
+          uuid: 'obs-uuid-parent',
+          concept: { uuid: 'concept-parent' },
+          value: 'yes',
+          formFieldPath: 'Vitals.3/1-0',
+          groupMembers: [
+            {
+              uuid: 'obs-uuid-child',
+              concept: { uuid: 'concept-child' },
+              value: 'x',
+              formFieldPath: 'Vitals.3/2-0',
+            },
+          ],
+        },
+      ] as never);
+
+      render(
+        <ObservationFormsPanel
+          encounterSessionStartContext={{
+            editOnly: 'observationForms',
+            formName: 'Vitals',
+            sourceEncounterUuid: 'encounter-uuid-1',
+            activeEncounter: { id: 'session-different-uuid' } as any,
+          }}
+        />,
+      );
+
+      await waitFor(() => expect(mockSetState).toHaveBeenCalled());
+
+      const updater = mockSetState.mock.calls[0][0];
+      const result = updater({ formsData: {} });
+      const stored = result.formsData['form-uuid-1'].observations;
+
+      expect(stored[0].uuid).toBeUndefined();
+      expect(stored[0].groupMembers[0].uuid).toBeUndefined();
+      expect(stored[0].value).toBe('yes');
+      expect(stored[0].groupMembers[0].value).toBe('x');
     });
   });
 });

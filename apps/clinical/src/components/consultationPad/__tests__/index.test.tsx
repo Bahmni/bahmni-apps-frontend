@@ -103,6 +103,7 @@ jest.mock('../services', () => ({
 }));
 
 jest.mock('../utils', () => ({
+  ...jest.requireActual('../utils'),
   loadEncounterInputControls: jest.fn(),
   getActiveEntries: jest.fn(),
   captureUpdatedResources: jest.fn(),
@@ -302,6 +303,49 @@ describe('ConsultationPad', () => {
     });
   });
 
+  describe('activeEncounter wiring', () => {
+    const EDIT_ENCOUNTER_UUID = 'edit-enc-uuid';
+
+    const withViewingForm = () =>
+      jest.mocked(useObservationFormsStore).mockReturnValue({
+        ...mockObsFormsState,
+        viewingForm: { uuid: 'form-uuid', name: 'Vitals' } as any,
+      } as any);
+
+    it('passes the resolved activeEncounter through encounterSessionStartContext', async () => {
+      jest.mocked(useActivePractitioner).mockReturnValue({
+        practitioner: { uuid: 'prac-uuid' },
+      } as any);
+      jest
+        .mocked(findActiveEncounterInSession)
+        .mockResolvedValue({ id: EDIT_ENCOUNTER_UUID } as any);
+      jest
+        .mocked(getEncounterByUuid)
+        .mockResolvedValue({ id: EDIT_ENCOUNTER_UUID } as any);
+      withViewingForm();
+
+      renderComponent({
+        encounterSessionStartContext: {
+          encounterType: 'Consultation',
+          editOnly: 'observationForms',
+          sourceEncounterUuid: EDIT_ENCOUNTER_UUID,
+        },
+      });
+
+      await waitFor(() => {
+        expect(mockObservationFormsContainer).toHaveBeenCalledWith(
+          expect.objectContaining({
+            encounterSessionStartContext: expect.objectContaining({
+              activeEncounter: expect.objectContaining({
+                id: EDIT_ENCOUNTER_UUID,
+              }),
+            }),
+          }),
+        );
+      });
+    });
+  });
+
   describe('encounterType prop validation', () => {
     it('renders error state when specified encounterType is not defined in configuration', () => {
       renderComponent({
@@ -428,7 +472,7 @@ describe('ConsultationPad', () => {
       );
     });
 
-    it('falls back to current date when editEncounter fetch fails (edit mode)', async () => {
+    it('falls back to current date when sourceEncounter fetch fails (edit mode)', async () => {
       const mockSetConsultationDate = jest.fn();
       jest
         .mocked(findActiveEncounterInSession)
@@ -460,7 +504,7 @@ describe('ConsultationPad', () => {
       renderComponent({
         encounterSessionStartContext: {
           encounterType: 'Consultation',
-          editEncounterUuid: 'missing-uuid',
+          sourceEncounterUuid: 'missing-uuid',
         },
       });
 
@@ -508,7 +552,7 @@ describe('ConsultationPad', () => {
       renderComponent({
         encounterSessionStartContext: {
           encounterType: 'Consultation',
-          editEncounterUuid: 'existing-uuid',
+          sourceEncounterUuid: 'existing-uuid',
         },
       });
 
