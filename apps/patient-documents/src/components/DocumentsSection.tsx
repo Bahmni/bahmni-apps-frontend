@@ -205,23 +205,15 @@ export const DocumentsSection: React.FC<DocumentsSectionProps> = ({
     setIsSaving(true);
     try {
       const summaries = await Promise.all(
-        visitsWithPendingDocument.map((visitKey) => {
-          const handle = uploadHandles.current.get(visitKey);
-          if (!handle) {
-            return {
-              savedCount: 0,
-              failures: [
-                {
-                  fileName: '',
-                  message: t('DOCUMENT_UPLOAD_SAVE_UNAVAILABLE'),
-                },
-              ],
-            } satisfies DocumentSaveSummary;
-          }
-          return handle.save();
-        }),
+        visitsWithPendingDocument.map((visitKey) =>
+          uploadHandles.current.get(visitKey)?.save(),
+        ),
       );
-      notifySaveOutcome(summaries);
+      notifySaveOutcome(
+        summaries.filter(
+          (summary): summary is DocumentSaveSummary => !!summary,
+        ),
+      );
       await refetch();
     } finally {
       setIsSaving(false);
