@@ -106,15 +106,22 @@
   align-items: center;
   justify-content: right;
   gap: $spacing-02;
-  background-color: $background;
+  background-color: $layer-01;
   border-top: 1px solid $border-subtle;
-  padding: $spacing-02 $spacing-05;
 }
 
 .setNavButton {
   gap: $spacing-05;
   display: flex;
   align-items: center;
+  border: none !important;
+  outline: none !important;
+
+  &:focus,
+  &:focus-visible {
+    outline: none !important;
+    box-shadow: none !important;
+  }
 }
 
 .setPaginationPages {
