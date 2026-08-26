@@ -1,3 +1,4 @@
+import { CANCEL_VACCINATION_INPUT_CONTROL_KEY } from '@bahmni/widgets';
 import { MedicationRequest } from 'fhir/r4';
 import { create } from 'zustand';
 import { StopMedicationConfig } from '../models/medicationConfig';
@@ -10,13 +11,15 @@ export interface StopMedicationState {
   medicationToStop: MedicationRequest | null;
   fieldConfig: StopMedicationConfig;
   errors: Record<string, string>;
+  inputControlKey: string;
 
   setStopDate: (date: Date) => void;
   setStopReason: (reason: StopReason | null) => void;
   setNote: (note: string) => void;
   setMedicationToStop: (medication: MedicationRequest | null) => void;
   setFieldConfig: (config: StopMedicationConfig) => void;
-  validate: (isCancelVaccination?: boolean) => boolean;
+  setInputControlKey: (key: string) => void;
+  validate: () => boolean;
   hasData: () => boolean;
   reset: () => void;
 }
@@ -35,6 +38,7 @@ export const useStopMedicationStore = create<StopMedicationState>(
     medicationToStop: null,
     fieldConfig: DEFAULT_FIELD_CONFIG,
     errors: {},
+    inputControlKey: 'stopMedications',
 
     setStopDate: (date: Date) => {
       set((state) => {
@@ -64,6 +68,10 @@ export const useStopMedicationStore = create<StopMedicationState>(
       set({ medicationToStop: medication });
     },
 
+    setInputControlKey: (key: string) => {
+      set({ inputControlKey: key });
+    },
+
     setFieldConfig: (config: StopMedicationConfig) => {
       set({
         fieldConfig: {
@@ -77,10 +85,12 @@ export const useStopMedicationStore = create<StopMedicationState>(
       });
     },
 
-    validate: (isCancelVaccination = false) => {
+    validate: () => {
       const state = get();
       if (!state.medicationToStop) return true;
 
+      const isCancelVaccination =
+        state.inputControlKey === CANCEL_VACCINATION_INPUT_CONTROL_KEY;
       const errors: Record<string, string> = {};
       const config = state.fieldConfig;
       let isValid = true;
@@ -131,6 +141,7 @@ export const useStopMedicationStore = create<StopMedicationState>(
         medicationToStop: null,
         fieldConfig: DEFAULT_FIELD_CONFIG,
         errors: {},
+        inputControlKey: 'stopMedications',
       });
     },
   }),

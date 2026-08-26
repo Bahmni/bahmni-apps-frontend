@@ -59,6 +59,7 @@ const StopMedicationForm: React.FC<StopMedicationFormProps> = React.memo(
       setNote,
       setMedicationToStop,
       setFieldConfig,
+      setInputControlKey,
     } = useStopMedicationStore();
 
     const [hasNote, setHasNote] = useState(
@@ -108,6 +109,10 @@ const StopMedicationForm: React.FC<StopMedicationFormProps> = React.memo(
         setMedicationToStop(stopMedication);
       }
     }, [stopMedication, setMedicationToStop]);
+
+    useEffect(() => {
+      setInputControlKey(inputControlConfig?.type ?? 'stopMedications');
+    }, [inputControlConfig?.type, setInputControlKey]);
 
     useEffect(() => {
       if (medicationConfig?.stopMedicationFields) {
