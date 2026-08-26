@@ -833,7 +833,7 @@ describe('ObservationFormsContainer', () => {
       expect(pinContainer).toHaveClass('pinned');
       expect(pinContainer).toHaveAttribute(
         'title',
-        'translated_UNPIN_FORM_TOOLTIP',
+        'translated_OBSERVATION_FORMS_UNPIN_TOOLTIP',
       );
     });
 
@@ -871,7 +871,7 @@ describe('ObservationFormsContainer', () => {
       expect(pinContainer).toHaveClass('unpinned');
       expect(pinContainer).toHaveAttribute(
         'title',
-        'translated_PIN_FORM_TOOLTIP',
+        'translated_OBSERVATION_FORMS_PIN_TOOLTIP',
       );
     });
 

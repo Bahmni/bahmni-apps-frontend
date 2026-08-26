@@ -39,18 +39,28 @@ describe('HomePageHeader', () => {
     expect(screen.getByTestId('brand')).toHaveTextContent('Home');
   });
 
-  it('renders translated brand text when the locale changes', async () => {
-    i18n.addResourceBundle('es', 'home', { HOME_LABEL: 'Inicio' }, true, true);
-    await act(async () => {
-      await i18n.changeLanguage('es');
+  describe('locale change', () => {
+    afterEach(async () => {
+      await act(async () => {
+        await i18n.changeLanguage('en');
+      });
     });
 
-    render(<HomePageHeader />);
+    it('renders translated brand text when the locale changes', async () => {
+      i18n.addResourceBundle(
+        'es',
+        'home',
+        { HOME_LABEL: 'Inicio' },
+        true,
+        true,
+      );
+      await act(async () => {
+        await i18n.changeLanguage('es');
+      });
 
-    expect(screen.getByTestId('brand')).toHaveTextContent('Inicio');
+      render(<HomePageHeader />);
 
-    await act(async () => {
-      await i18n.changeLanguage('en');
+      expect(screen.getByTestId('brand')).toHaveTextContent('Inicio');
     });
   });
 

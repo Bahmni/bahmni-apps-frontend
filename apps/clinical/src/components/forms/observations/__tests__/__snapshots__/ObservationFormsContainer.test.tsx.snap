@@ -22,7 +22,7 @@ exports[`ObservationFormsContainer Rendering and Structure should match the snap
     >
       <div
         class="pinIconContainer unpinned"
-        title="translated_PIN_FORM_TOOLTIP"
+        title="translated_OBSERVATION_FORMS_PIN_TOOLTIP"
       >
         <div
           data-icon-name="fa-thumbtack"
