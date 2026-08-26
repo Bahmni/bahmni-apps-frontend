@@ -398,7 +398,7 @@ describe('ConsultationPage', () => {
       );
     });
 
-    it('should show "Current Patient" fallback in breadcrumb while patient data is loading', async () => {
+    it('shows a loading placeholder and the "Current Patient" breadcrumb while patient data is loading', async () => {
       (usePatientUUID as jest.Mock).mockReturnValue('test-patient-uuid');
       (getFormattedPatientById as jest.Mock).mockReturnValue(
         new Promise(() => {}),
@@ -406,10 +406,15 @@ describe('ConsultationPage', () => {
 
       renderWithProvider();
 
+      // Content area shows the patient loading placeholder while the fetch is in flight
       await waitFor(() => {
-        expect(screen.queryByTestId('carbon-loading')).not.toBeInTheDocument();
+        expect(screen.getByText('Loading patient data...')).toBeInTheDocument();
       });
-
+      // Patient-scoped widgets are not mounted yet
+      expect(
+        screen.queryByTestId('dashboard-container'),
+      ).not.toBeInTheDocument();
+      // Header breadcrumb still shows the fallback
       expect(screen.getByTestId('breadcrumb-item-current')).toHaveTextContent(
         'Current Patient',
       );
@@ -479,6 +484,197 @@ describe('ConsultationPage', () => {
       expect(screen.getByTestId('breadcrumb-item-clinical')).toHaveTextContent(
         'Clínico',
       );
+    });
+  });
+
+  describe('Patient not found handling', () => {
+    it('shows the patient-not-found error notification when the patient fetch fails with ERROR_PATIENT_NOT_FOUND', async () => {
+      const mockAddNotification = jest.fn();
+      (useNotification as jest.Mock).mockReturnValue({
+        addNotification: mockAddNotification,
+        notifications: [],
+        removeNotification: jest.fn(),
+        clearAllNotifications: jest.fn(),
+      });
+      (usePatientUUID as jest.Mock).mockReturnValue('missing-patient-uuid');
+      // getFormattedError (via the api client) classifies a failed patient
+      // fetch as this key regardless of the underlying HTTP status.
+      (getFormattedPatientById as jest.Mock).mockRejectedValue(
+        new Error('ERROR_PATIENT_NOT_FOUND'),
+      );
+
+      renderWithProvider();
+
+      await waitFor(() => {
+        expect(mockAddNotification).toHaveBeenCalledWith({
+          title: 'Error',
+          message: 'Patient not found',
+          type: 'error',
+        });
+      });
+
+      // The app chrome (header/breadcrumb/nav) still renders — never a blank page
+      expect(screen.getByTestId('mocked-clinical-layout')).toBeInTheDocument();
+      // Patient-scoped widgets are held back so only "Patient not found" shows
+      expect(
+        screen.queryByTestId('dashboard-container'),
+      ).not.toBeInTheDocument();
+      expect(
+        screen.queryByTestId('section-sticky-header-test-id'),
+      ).not.toBeInTheDocument();
+    });
+
+    it('renders the dashboard once the patient loads successfully', async () => {
+      (usePatientUUID as jest.Mock).mockReturnValue('valid-patient-uuid');
+      (getFormattedPatientById as jest.Mock).mockResolvedValue({
+        fullName: 'John Doe',
+      });
+
+      renderWithProvider();
+
+      await waitFor(() => {
+        expect(screen.getByTestId('dashboard-container')).toBeInTheDocument();
+      });
+      expect(
+        screen.getByTestId('section-sticky-header-test-id'),
+      ).toBeInTheDocument();
+    });
+
+    // The api client rejects with a bare string for errors it cannot map to a
+    // translation key, so the notification must not depend on the error being
+    // an Error instance.
+    it('shows the patient-not-found notification when the fetch rejects with a bare string key', async () => {
+      const mockAddNotification = jest.fn();
+      (useNotification as jest.Mock).mockReturnValue({
+        addNotification: mockAddNotification,
+        notifications: [],
+        removeNotification: jest.fn(),
+        clearAllNotifications: jest.fn(),
+      });
+      (usePatientUUID as jest.Mock).mockReturnValue('missing-patient-uuid');
+      (getFormattedPatientById as jest.Mock).mockRejectedValue(
+        'ERROR_PATIENT_NOT_FOUND',
+      );
+
+      renderWithProvider();
+
+      await waitFor(() => {
+        expect(mockAddNotification).toHaveBeenCalledWith({
+          title: 'Error',
+          message: 'Patient not found',
+          type: 'error',
+        });
+      });
+    });
+
+    // getPatientById rejects on its own UUID validation before any network
+    // call, so this path must land on the same key as a 400/404.
+    it('shows the patient-not-found error notification when the URL holds a malformed UUID', async () => {
+      const mockAddNotification = jest.fn();
+      (useNotification as jest.Mock).mockReturnValue({
+        addNotification: mockAddNotification,
+        notifications: [],
+        removeNotification: jest.fn(),
+        clearAllNotifications: jest.fn(),
+      });
+      (usePatientUUID as jest.Mock).mockReturnValue('abc-not-uuid');
+      (getFormattedPatientById as jest.Mock).mockRejectedValue(
+        new Error('ERROR_PATIENT_NOT_FOUND'),
+      );
+
+      renderWithProvider();
+
+      await waitFor(() => {
+        expect(mockAddNotification).toHaveBeenCalledWith({
+          title: 'Error',
+          message: 'Patient not found',
+          type: 'error',
+        });
+      });
+
+      expect(
+        screen.queryByTestId('dashboard-container'),
+      ).not.toBeInTheDocument();
+    });
+
+    // Previously this case produced no notification at all — a blank area with
+    // no explanation. Any non-not-found failure now reports a generic message.
+    it('shows a generic error notification for an unauthorized error', async () => {
+      const mockAddNotification = jest.fn();
+      (useNotification as jest.Mock).mockReturnValue({
+        addNotification: mockAddNotification,
+        notifications: [],
+        removeNotification: jest.fn(),
+        clearAllNotifications: jest.fn(),
+      });
+      (usePatientUUID as jest.Mock).mockReturnValue('test-patient-uuid');
+      (getFormattedPatientById as jest.Mock).mockRejectedValue(
+        'Unauthorized: You are not authorized to perform this action. Please log in again.',
+      );
+
+      renderWithProvider();
+
+      await waitFor(() => {
+        expect(mockAddNotification).toHaveBeenCalledWith({
+          title: 'Error',
+          message: 'Error fetching patient data',
+          type: 'error',
+        });
+      });
+
+      expect(mockAddNotification).not.toHaveBeenCalledWith(
+        expect.objectContaining({ message: 'Patient not found' }),
+      );
+    });
+
+    // A toast disappears, so the content area must state the reason itself
+    // rather than leaving the user with an unexplained empty region.
+    it('renders the reason in the content area when the patient is not found', async () => {
+      (usePatientUUID as jest.Mock).mockReturnValue('missing-patient-uuid');
+      (getFormattedPatientById as jest.Mock).mockRejectedValue(
+        new Error('ERROR_PATIENT_NOT_FOUND'),
+      );
+
+      renderWithProvider();
+
+      const errorState = await screen.findByTestId(
+        'error-loading-patient-test-id',
+      );
+      expect(errorState).toHaveTextContent('Patient not found');
+      expect(errorState).toHaveAttribute('role', 'alert');
+      expect(
+        screen.queryByTestId('dashboard-container'),
+      ).not.toBeInTheDocument();
+    });
+
+    it('renders the generic reason in the content area for a non-not-found error', async () => {
+      (usePatientUUID as jest.Mock).mockReturnValue('test-patient-uuid');
+      (getFormattedPatientById as jest.Mock).mockRejectedValue(
+        'Unauthorized: You are not authorized to perform this action. Please log in again.',
+      );
+
+      renderWithProvider();
+
+      const errorState = await screen.findByTestId(
+        'error-loading-patient-test-id',
+      );
+      expect(errorState).toHaveTextContent('Error fetching patient data');
+    });
+
+    it('does not render the patient error state when the patient loads', async () => {
+      (usePatientUUID as jest.Mock).mockReturnValue('valid-patient-uuid');
+      (getFormattedPatientById as jest.Mock).mockResolvedValue({
+        fullName: 'John Doe',
+      });
+
+      renderWithProvider();
+
+      await waitFor(() => {
+        expect(screen.getByTestId('dashboard-container')).toBeInTheDocument();
+      });
+      expect(
+        screen.queryByTestId('error-loading-patient-test-id'),
+      ).not.toBeInTheDocument();
     });
   });
 

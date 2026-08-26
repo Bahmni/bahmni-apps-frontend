@@ -5,15 +5,15 @@ import {
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import LookupCriterionInput from '../inputs/LookupCriterionInput';
-import { ScalarValue } from '../models';
+import LookupCriterionInput from '../../components/LookupCriterionInput';
+import { ScalarValue } from '../../models';
 import {
   mockAppointmentServices,
   mockLookupInput,
   mockLookupScalarValue,
   mockUnsupportedLookupInput,
   mockUserLoginLocation,
-} from './__mocks__/lookupCriterionInputMocks';
+} from '../__mocks__/lookupCriterionInputMocks';
 
 jest.mock('@bahmni/services', () => ({
   ...jest.requireActual('@bahmni/services'),

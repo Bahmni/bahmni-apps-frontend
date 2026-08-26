@@ -11,7 +11,7 @@ import {
   SearchStrategy,
   SearchContext,
   ValidationResult,
-} from '../SearchStrategy.interface';
+} from './SearchStrategy.interface';
 
 /**
  * Strategy for searching patients by appointment attributes

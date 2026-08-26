@@ -1,3 +1,4 @@
+import { CANCEL_VACCINATION_INPUT_CONTROL_KEY } from '@bahmni/widgets';
 import { MedicationRequest } from 'fhir/r4';
 import { create } from 'zustand';
 import { StopMedicationConfig } from '../models/medicationConfig';
@@ -10,12 +11,14 @@ export interface StopMedicationState {
   medicationToStop: MedicationRequest | null;
   fieldConfig: StopMedicationConfig;
   errors: Record<string, string>;
+  inputControlKey: string;
 
   setStopDate: (date: Date) => void;
   setStopReason: (reason: StopReason | null) => void;
   setNote: (note: string) => void;
   setMedicationToStop: (medication: MedicationRequest | null) => void;
   setFieldConfig: (config: StopMedicationConfig) => void;
+  setInputControlKey: (key: string) => void;
   validate: () => boolean;
   hasData: () => boolean;
   reset: () => void;
@@ -35,6 +38,7 @@ export const useStopMedicationStore = create<StopMedicationState>(
     medicationToStop: null,
     fieldConfig: DEFAULT_FIELD_CONFIG,
     errors: {},
+    inputControlKey: 'stopMedications',
 
     setStopDate: (date: Date) => {
       set((state) => {
@@ -64,6 +68,10 @@ export const useStopMedicationStore = create<StopMedicationState>(
       set({ medicationToStop: medication });
     },
 
+    setInputControlKey: (key: string) => {
+      set({ inputControlKey: key });
+    },
+
     setFieldConfig: (config: StopMedicationConfig) => {
       set({
         fieldConfig: {
@@ -81,29 +89,39 @@ export const useStopMedicationStore = create<StopMedicationState>(
       const state = get();
       if (!state.medicationToStop) return true;
 
+      const isCancelVaccination =
+        state.inputControlKey === CANCEL_VACCINATION_INPUT_CONTROL_KEY;
       const errors: Record<string, string> = {};
-      const cfg = state.fieldConfig;
+      const config = state.fieldConfig;
       let isValid = true;
 
-      if (cfg.stopDate?.isVisible !== false && cfg.stopDate?.isMandatory) {
-        if (!state.stopDate) {
-          errors.stopDate = 'STOP_MEDICATION_DATE_REQUIRED';
-          isValid = false;
-        }
+      if (
+        config.stopDate?.isVisible !== false &&
+        config.stopDate?.isMandatory &&
+        !state.stopDate
+      ) {
+        errors.stopDate = 'STOP_MEDICATION_DATE_REQUIRED';
+        isValid = false;
       }
 
-      if (cfg.stopReason?.isVisible !== false && cfg.stopReason?.isMandatory) {
-        if (!state.stopReason) {
-          errors.stopReason = 'STOP_MEDICATION_REASON_REQUIRED';
-          isValid = false;
-        }
+      if (
+        config.stopReason?.isVisible !== false &&
+        config.stopReason?.isMandatory &&
+        !state.stopReason
+      ) {
+        errors.stopReason = isCancelVaccination
+          ? 'CANCEL_VACCINATION_REASON_REQUIRED'
+          : 'STOP_MEDICATION_REASON_REQUIRED';
+        isValid = false;
       }
 
-      if (cfg.note?.isVisible !== false && cfg.note?.isMandatory) {
-        if (!state.note) {
-          errors.note = 'STOP_MEDICATION_NOTE_REQUIRED';
-          isValid = false;
-        }
+      if (
+        config.note?.isVisible !== false &&
+        config.note?.isMandatory &&
+        !state.note
+      ) {
+        errors.note = 'STOP_MEDICATION_NOTE_REQUIRED';
+        isValid = false;
       }
 
       set({ errors });
@@ -123,6 +141,7 @@ export const useStopMedicationStore = create<StopMedicationState>(
         medicationToStop: null,
         fieldConfig: DEFAULT_FIELD_CONFIG,
         errors: {},
+        inputControlKey: 'stopMedications',
       });
     },
   }),

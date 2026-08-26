@@ -2,6 +2,7 @@ import { Patient } from 'fhir/r4';
 import { get, post, put } from '../api';
 import { APP_PROPERTY_URL } from '../applicationConfigService/constants';
 import { BIRTH_TIME_EXT_URL } from '../constants/fhir';
+import { PATIENT_NOT_FOUND_ERROR_KEY } from '../errorHandling';
 import { getUserLoginLocation } from '../userService';
 import { blobToDataUrl } from '../utils';
 import {
@@ -47,12 +48,16 @@ export const mapGenderFromFhir = (fhirGender: string): string => {
 };
 
 export const getPatientById = async (patientUUID: string): Promise<Patient> => {
-  if (!patientUUID || patientUUID.trim() === '') {
-    throw new Error('Invalid patient UUID: UUID cannot be empty');
-  }
-
-  if (!UUID_PATTERN.test(patientUUID)) {
-    throw new Error(`Invalid patient UUID format: ${patientUUID}`);
+  // A blank or malformed UUID can never identify a patient. This check runs
+  // before any network call, so throw the same translation key the 400/404
+  // response path produces — otherwise callers cannot distinguish "not found"
+  // from an unexpected failure and end up rendering nothing at all.
+  if (
+    !patientUUID ||
+    patientUUID.trim() === '' ||
+    !UUID_PATTERN.test(patientUUID)
+  ) {
+    throw new Error(PATIENT_NOT_FOUND_ERROR_KEY);
   }
 
   return get<Patient>(PATIENT_RESOURCE_URL(patientUUID));
