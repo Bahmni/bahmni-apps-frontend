@@ -217,7 +217,7 @@ describe('getFormattedError', () => {
       });
     });
 
-    it('should handle 403 Forbidden error', () => {
+    it('should handle 403 Forbidden error with no backend message', () => {
       const error = {
         response: {
           status: 403,
@@ -228,9 +228,28 @@ describe('getFormattedError', () => {
       const result = getFormattedError(error);
 
       expect(result).toEqual({
-        title: 'Unauthorized',
-        message:
-          'You are not authorized to perform this action. Please log in again.',
+        title: 'Forbidden',
+        message: 'You are not authorized to perform this action.',
+      });
+    });
+
+    it('should handle 403 Forbidden error with backend message', () => {
+      const error = {
+        response: {
+          status: 403,
+          data: {
+            error: {
+              message: "User doesn't have Get Patient Photo privilege",
+            },
+          },
+        },
+      } as AxiosError;
+
+      const result = getFormattedError(error);
+
+      expect(result).toEqual({
+        title: 'Forbidden',
+        message: "User doesn't have Get Patient Photo privilege",
       });
     });
 

@@ -63,13 +63,13 @@ export {
 // Hooks
 export { useDebounce } from './commandPalette/useDebounce';
 export { usePatientUUID } from './hooks/usePatientUUID';
+export { usePatientPhoto } from './hooks/usePatientPhoto';
 export { useUserPrivilege } from './userPrivileges/useUserPrivilege';
 export { useHasPrivilege } from './userPrivileges/useHasPrivilege';
 
 // User Privileges
 export { UserPrivilegeProvider } from './userPrivileges/UserPrivilegeProvider';
 export { CONSULTATION_PAD_PRIVILEGES } from './userPrivileges/consultationPadPrivileges';
-export { GET_PATIENT_PHOTO_PRIVILEGE } from './userPrivileges/patientPhotoPrivileges';
 
 // App Context
 export { AppContextProvider } from './appContext';

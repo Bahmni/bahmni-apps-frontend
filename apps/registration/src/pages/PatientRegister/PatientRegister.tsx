@@ -14,6 +14,7 @@ import {
   DocumentPrintButton,
   type PrintOption,
 } from '@bahmni/widgets';
+import { usePatientPhoto } from '@bahmni/widgets';
 import { useRef, useState, useEffect, useMemo } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { AdditionalIdentifiersRef } from '../../components/forms/additionalIdentifiers/AdditionalIdentifiers';
@@ -28,7 +29,6 @@ import { BAHMNI_REGISTRATION_SEARCH, getPatientUrl } from '../../constants/app';
 import { useAdditionalIdentifiers } from '../../hooks/useAdditionalIdentifiers';
 import { useCreatePatient } from '../../hooks/useCreatePatient';
 import { usePatientDetails } from '../../hooks/usePatientDetails';
-import { usePatientPhoto } from '../../hooks/usePatientPhoto';
 import { useRelationshipValidation } from '../../hooks/useRelationshipValidation';
 import { useUpdatePatient } from '../../hooks/useUpdatePatient';
 import { useRegistrationConfig } from '../../providers/registrationConfig';
@@ -94,7 +94,16 @@ const PatientRegister = () => {
   );
 
   const photoUrl = patientDetails?.photo?.[0]?.url;
-  const { patientPhoto } = usePatientPhoto({ photoUrl });
+  const { patientPhoto, error: photoError } = usePatientPhoto({ photoUrl });
+  useEffect(() => {
+    if (photoError) {
+      addNotification({
+        type: 'warning',
+        title: t('ERROR_DEFAULT_TITLE'),
+        message: photoError.message,
+      });
+    }
+  }, [photoError, addNotification, t]);
 
   // The route element is keyed by path, not by patientUuid, so navigating from one
   // patient to another reuses this component instance. Clear patient-scoped state
