@@ -166,6 +166,7 @@ const ViewFormData: React.FC<ViewFormDataProps> = ({
 
   return (
     <Modal
+      portalId={'main-display-area'}
       open={open}
       onRequestClose={onClose}
       modalHeading={formName ?? t('VIEW_DATA')}

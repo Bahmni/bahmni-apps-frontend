@@ -3,6 +3,7 @@ import {
   Edit,
   Icon,
   IconButton,
+  Loading,
   OverflowMenu,
   OverflowMenuItem,
 } from '@bahmni/design-system';
@@ -13,8 +14,9 @@ import {
   type ObservationForm,
   useTranslation,
 } from '@bahmni/services';
-import { useQuery } from '@tanstack/react-query';
-import React, { useMemo } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import React, { useMemo, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { useNotification } from '../../notification';
 import { useUserPrivilege } from '../../userPrivileges/useUserPrivilege';
 import { TaskActionType } from '../constants';
@@ -38,6 +40,8 @@ const TaskActions: React.FC<TaskActionsProps> = ({ task, taskConfig }) => {
   const { userPrivileges } = useUserPrivilege();
   const { t } = useTranslation();
   const { addNotification } = useNotification();
+  const queryClient = useQueryClient();
+  const [isLoading, setIsLoading] = useState(false);
 
   const shouldFetchForms = hasFormActions(taskConfig, task.code);
 
@@ -77,8 +81,9 @@ const TaskActions: React.FC<TaskActionsProps> = ({ task, taskConfig }) => {
       : task.status !== READY_TASK_STATUS;
 
   const handleActionClick = async (action: TaskAction) => {
+    setIsLoading(true);
     try {
-      await handleTaskAction(action, task);
+      await handleTaskAction(action, task, queryClient);
     } catch (error) {
       const { message } = getFormattedError(error);
       addNotification({
@@ -86,48 +91,65 @@ const TaskActions: React.FC<TaskActionsProps> = ({ task, taskConfig }) => {
         message,
         type: 'error',
       });
+    } finally {
+      setIsLoading(false);
     }
   };
+
+  const loadingOverlay =
+    isLoading &&
+    createPortal(
+      <div data-testid={`task-action-loading-overlay-${task.id}`}>
+        <Loading active withOverlay />
+      </div>,
+      document.body,
+    );
 
   if (permittedActions.length === 1) {
     const action = permittedActions[0];
 
     return (
-      <IconButton
-        label={t(action.label)}
-        kind="ghost"
-        size="sm"
-        onClick={() => handleActionClick(action)}
-        testId={`task-action-${action.type}-${task.id}`}
-        disabled={getIsActionDisabled(action)}
-      >
-        {TASK_ACTION_ICONS[action.type] ?? (
-          <Icon name={action.icon} id={`task-action-icon-${task.id}`} />
-        )}
-      </IconButton>
+      <>
+        <IconButton
+          label={t(action.label)}
+          kind="ghost"
+          size="sm"
+          onClick={() => handleActionClick(action)}
+          testId={`task-action-${action.type}-${task.id}`}
+          disabled={getIsActionDisabled(action)}
+        >
+          {TASK_ACTION_ICONS[action.type] ?? (
+            <Icon name={action.icon} id={`task-action-icon-${task.id}`} />
+          )}
+        </IconButton>
+        {loadingOverlay}
+      </>
     );
   }
 
   return (
-    <OverflowMenu
-      id={`task-actions-menu-${task.id}`}
-      testId={`task-actions-menu-${task.id}`}
-      aria-label={t('TASK_ACTIONS_MENU_LABEL')}
-      flipped
-      size="sm"
-    >
-      {permittedActions.map((action) => (
-        <OverflowMenuItem
-          id={`task-action-${action.type}-${task.id}`}
-          testId={`task-action-${action.type}-${task.id}`}
-          key={action.type}
-          itemText={t(action.label)}
-          isDelete={false}
-          disabled={getIsActionDisabled(action)}
-          onClick={() => handleActionClick(action)}
-        />
-      ))}
-    </OverflowMenu>
+    <>
+      <OverflowMenu
+        id={`task-actions-menu-${task.id}`}
+        testId={`task-actions-menu-${task.id}`}
+        aria-label={t('TASK_ACTIONS_MENU_LABEL')}
+        flipped
+        size="sm"
+      >
+        {permittedActions.map((action) => (
+          <OverflowMenuItem
+            id={`task-action-${action.type}-${task.id}`}
+            testId={`task-action-${action.type}-${task.id}`}
+            key={action.type}
+            itemText={t(action.label)}
+            isDelete={false}
+            disabled={getIsActionDisabled(action)}
+            onClick={() => handleActionClick(action)}
+          />
+        ))}
+      </OverflowMenu>
+      {loadingOverlay}
+    </>
   );
 };
 

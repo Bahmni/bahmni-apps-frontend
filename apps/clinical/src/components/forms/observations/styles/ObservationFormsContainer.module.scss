@@ -8,7 +8,7 @@
   background-color: $background;
 }
 
-.errorNotificationWrapper {
+.inlineNotificationWrapper {
   padding: $spacing-04 $spacing-06 0 $spacing-06;
 
   :global(.cds--inline-notification) {

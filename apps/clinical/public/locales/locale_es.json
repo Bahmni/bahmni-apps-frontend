@@ -479,6 +479,7 @@
   "OBSERVATION_FORMS_SEARCH_PLACEHOLDER": "Buscar para agregar formulario de observación",
   "OBSERVATION_FORMS_SECTION_TITLE": "Formularios de Observación",
   "OBSERVATION_FORM_CONTINUE_ANYWAY_BUTTON": "Continuar de todos modos",
+  "OBSERVATION_FORM_COPYOVER_NOTICE": "Está en modo de copia. Esto creará una nueva instancia.",
   "OBSERVATION_FORM_DISCARD_BUTTON": "Descartar Formulario",
   "OBSERVATION_FORM_LOADING_METADATA": "Cargando los metadatos del formulario...",
   "OBSERVATION_FORM_LOADING_METADATA_ERROR": "Error al cargar los metadatos del formulario",
