@@ -316,3 +316,34 @@ export function sortObservationsByEncounterDate(
     return new Date(dateB).getTime() - new Date(dateA).getTime();
   });
 }
+
+export function filterObservationsByLatestEncounter(
+  result: ExtractedObservationsResult,
+): ExtractedObservationsResult {
+  const allObs = [...result.observations, ...result.groupedObservations];
+
+  if (allObs.length === 0) return result;
+
+  const latestEncounterId = allObs.reduce(
+    (latestId, obs) => {
+      if (!latestId) return obs.encounter?.id;
+      const latestObs = allObs.find((o) => o.encounter?.id === latestId);
+      const latestTime =
+        latestObs?.effectiveDateTime ?? latestObs?.issued ?? '';
+      const currentTime = obs.effectiveDateTime ?? obs.issued ?? '';
+
+      return currentTime > latestTime ? obs.encounter?.id : latestId;
+    },
+    undefined as string | undefined,
+  );
+
+  if (!latestEncounterId) return result;
+
+  const filterByEncounter = (obs: ExtractedObservation) =>
+    obs.encounter?.id === latestEncounterId;
+
+  return {
+    observations: result.observations.filter(filterByEncounter),
+    groupedObservations: result.groupedObservations.filter(filterByEncounter),
+  };
+}

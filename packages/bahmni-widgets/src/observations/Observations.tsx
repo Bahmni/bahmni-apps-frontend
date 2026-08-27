@@ -3,8 +3,10 @@ import {
   searchConceptByName,
   useTranslation,
   getPatientObservationsWithEncounterBundle,
+  getPatientLatestObservations,
   useSubscribeConsultationSaved,
   ConsultationSavedEventPayload,
+  shouldEnableEncounterFilter,
 } from '@bahmni/services';
 import { useQuery, useQueries } from '@tanstack/react-query';
 import { useEffect, useMemo, useRef } from 'react';
@@ -17,6 +19,7 @@ import {
   extractObservationsFromBundle,
   groupObservationsByEncounter,
   sortObservationsByEncounterDate,
+  filterObservationsByLatestEncounter,
 } from './utils';
 
 export interface ObservationConfig {
@@ -24,6 +27,7 @@ export interface ObservationConfig {
   conceptUuid?: string[];
   titleTranslationKey?: string;
   hideThumbnail?: boolean;
+  scope?: 'all' | 'latest' | 'latest-encounter';
 }
 
 export const conceptUuidQueryKeys = (conceptName: string) =>
@@ -32,15 +36,30 @@ export const conceptUuidQueryKeys = (conceptName: string) =>
 export const observationsQueryKeys = (
   patientUUID: string,
   conceptUuids: string[],
-) => ['observations', patientUUID, ...conceptUuids] as const;
+  encounterUuids?: string[],
+  scope?: string,
+) =>
+  [
+    'observations',
+    patientUUID,
+    ...conceptUuids,
+    encounterUuids,
+    scope,
+  ] as const;
 
-const Observations: React.FC<WidgetProps> = ({ config }) => {
+const Observations: React.FC<WidgetProps> = ({
+  config,
+  episodeOfCareUuids,
+  encounterUuids,
+}) => {
   const observationConfig = config as ObservationConfig;
   const {
     conceptNames = [],
     conceptUuid = [],
     hideThumbnail = false,
+    scope = 'all',
   } = observationConfig;
+
   const notifiedIndices = useRef(new Set());
   const patientUUID = usePatientUUID();
   const { addNotification } = useNotification();
@@ -85,15 +104,34 @@ const Observations: React.FC<WidgetProps> = ({ config }) => {
     return conceptQueries.every((query) => !query.isLoading);
   }, [conceptQueries, conceptNames.length]);
 
+  const useLastN = scope === 'latest' || scope === 'latest-encounter';
+
   const {
     data: observations,
     isLoading: isLoadingObservations,
     isError: isObservationsError,
     refetch,
   } = useQuery({
-    queryKey: observationsQueryKeys(patientUUID!, allConceptUuids),
-    queryFn: () =>
-      getPatientObservationsWithEncounterBundle(patientUUID!, allConceptUuids),
+    queryKey: observationsQueryKeys(
+      patientUUID!,
+      allConceptUuids,
+      encounterUuids,
+      scope,
+    ),
+    queryFn: () => {
+      return useLastN
+        ? getPatientLatestObservations(
+            patientUUID!,
+            allConceptUuids,
+            encounterUuids,
+            true,
+          )
+        : getPatientObservationsWithEncounterBundle(
+            patientUUID!,
+            allConceptUuids,
+            encounterUuids,
+          );
+    },
     enabled:
       !!patientUUID && allConceptUuids.length > 0 && areConceptQueriesComplete,
   });
@@ -130,10 +168,15 @@ const Observations: React.FC<WidgetProps> = ({ config }) => {
   const groupedData = useMemo(() => {
     if (!observations) return [];
 
-    const extractedObs = extractObservationsFromBundle(observations);
+    let extractedObs = extractObservationsFromBundle(observations);
+
+    if (scope === 'latest-encounter') {
+      extractedObs = filterObservationsByLatestEncounter(extractedObs);
+    }
+
     const grouped = groupObservationsByEncounter(extractedObs);
     return sortObservationsByEncounterDate(grouped);
-  }, [observations]);
+  }, [observations, scope]);
 
   const headers = [
     { key: 'name', header: 'name' },
@@ -141,13 +184,19 @@ const Observations: React.FC<WidgetProps> = ({ config }) => {
     { key: 'form', header: 'form' },
   ];
 
+  const emptyEncounterFilter = shouldEnableEncounterFilter(
+    episodeOfCareUuids,
+    encounterUuids,
+  );
+
   const isLoading = isLoadingObservations || !areConceptQueriesComplete;
   const hasError = isObservationsError && areConceptQueriesComplete;
   const isEmpty =
     (!observations ||
       observations.entry?.length === 0 ||
       allConceptUuids.length === 0) &&
-    areConceptQueriesComplete;
+    areConceptQueriesComplete &&
+    !emptyEncounterFilter;
 
   const errorMessage = hasError ? t('ERROR_FETCHING_OBSERVATIONS') : null;
   const emptyMessage = isEmpty ? t('NO_OBSERVATIONS_FOUND') : undefined;
