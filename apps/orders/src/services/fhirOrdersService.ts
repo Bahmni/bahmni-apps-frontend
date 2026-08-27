@@ -2,6 +2,7 @@ import {
   calculateAge,
   getMedicationRequestsForWorklist,
   getServiceRequestsForWorklist,
+  getTasksByBasedOn,
 } from '@bahmni/services';
 import {
   Bundle,
@@ -9,6 +10,7 @@ import {
   Patient,
   Resource,
   ServiceRequest,
+  Task,
 } from 'fhir/r4';
 import moment from 'moment';
 import { FHIR_TASK_STATUS_TO_UI_STATUS } from '../constants/orderStatusMappings';
@@ -19,19 +21,6 @@ import {
   PatientOrderRow,
 } from '../models/orderFulfillment';
 import { ORDER_PRIORITY } from '../models/ordersConfig';
-
-/**
- * Bahmni-namespaced ServiceRequest extensions populated server-side by
- * BahmniServiceRequestTranslatorImpl#mapTaskFields, from the linked FHIR Task. Reading these
- * lets the worklist render owner/status/notes off a single ServiceRequest fetch - no separate
- * Task search is needed for these order types (unlike Drug Orders, see below).
- */
-const FHIR_EXT_SERVICE_REQUEST_TASK_OWNER =
-  'http://fhir.bahmni.org/ext/service-request/task-owner';
-const FHIR_EXT_SERVICE_REQUEST_ORDER_STATUS =
-  'http://fhir.bahmni.org/ext/service-request/order-status';
-const FHIR_EXT_SERVICE_REQUEST_TASK_NOTE =
-  'http://fhir.bahmni.org/ext/service-request/task-note';
 
 /** ServiceRequest.category codes registered in OrderTypeCategoryMapping (backend). */
 export enum FhirOrderCategory {
@@ -139,20 +128,13 @@ function calculatePatientDetails(patient?: Patient) {
   };
 }
 
-function serviceRequestToOrder(serviceRequest: ServiceRequest): Order {
-  const ownerExtension = serviceRequest.extension?.find(
-    (ext) => ext.url === FHIR_EXT_SERVICE_REQUEST_TASK_OWNER,
-  );
-  const statusExtension = serviceRequest.extension?.find(
-    (ext) => ext.url === FHIR_EXT_SERVICE_REQUEST_ORDER_STATUS,
-  );
-  const taskNoteExtension = serviceRequest.extension?.find(
-    (ext) => ext.url === FHIR_EXT_SERVICE_REQUEST_TASK_NOTE,
-  );
-
-  const taskStatus = statusExtension?.valueString?.toLowerCase();
-  const notes: FhirAnnotation[] = taskNoteExtension?.valueAnnotation?.text
-    ? [{ text: taskNoteExtension.valueAnnotation.text }]
+function serviceRequestToOrder(
+  serviceRequest: ServiceRequest,
+  task?: Task,
+): Order {
+  const taskStatus = task?.status?.toLowerCase();
+  const notes: FhirAnnotation[] = task?.note?.[0]?.text
+    ? [{ text: task.note[0].text }]
     : [];
 
   return {
@@ -171,8 +153,8 @@ function serviceRequestToOrder(serviceRequest: ServiceRequest): Order {
     status: taskStatus
       ? (FHIR_TASK_STATUS_TO_UI_STATUS[taskStatus] ?? 'New')
       : 'New',
-    owner: ownerExtension?.valueReference
-      ? toFhirReference(ownerExtension.valueReference)
+    owner: task?.owner?.reference
+      ? { reference: task.owner.reference, display: task.owner.display ?? '' }
       : null,
     note: notes,
   };
@@ -266,7 +248,28 @@ async function fetchServiceRequestOrders(
     );
   const patientsById = indexByResourceType<Patient>(bundle, 'Patient');
 
-  const orders = serviceRequests.map(serviceRequestToOrder);
+  // Fetch tasks for all service requests (mirrors openmrs-module-bahmniapps pattern)
+  const basedOnRefs = serviceRequests
+    .map((sr) => sr.id)
+    .filter(Boolean)
+    .map((id) => `ServiceRequest/${id}`);
+
+  const taskBundle = await getTasksByBasedOn(basedOnRefs);
+
+  // Build tasksByOrderId map (first task per order wins)
+  const tasksByOrderId = new Map<string, Task>();
+  (taskBundle.entry ?? []).forEach((entry) => {
+    const task = entry.resource as Task;
+    const ref = task?.basedOn?.[0]?.reference;
+    const orderId = ref?.split('/').pop();
+    if (orderId && !tasksByOrderId.has(orderId)) {
+      tasksByOrderId.set(orderId, task);
+    }
+  });
+
+  const orders = serviceRequests.map((sr) =>
+    serviceRequestToOrder(sr, tasksByOrderId.get(sr.id!)),
+  );
   return groupByPatient(orders, patientsById);
 }
 

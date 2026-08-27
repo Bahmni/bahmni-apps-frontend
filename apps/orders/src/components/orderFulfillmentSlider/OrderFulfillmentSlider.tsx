@@ -180,8 +180,10 @@ export const OrderFulfillmentSlider: React.FC<OrderFulfillmentSliderProps> = ({
 
   const detectChanges = (currentEncounterUuid: string | null) => {
     const initialStatus = order?.status ?? '';
-    const initialOwner = order?.ownerUuid ?? '';
-    const initialNotes = (order?.note ?? '').trim();
+    const initialOwner = order?.owner?.reference
+      ? referenceIdFrom(order.owner.reference)
+      : '';
+    const initialNotes = (order?.note?.[0]?.text ?? '').trim();
     const currentNotes = notes.trim();
 
     return {
