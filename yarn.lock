@@ -1060,7 +1060,7 @@
 
 "@bahmni/form2-controls@0.0.3-dev.91":
   version "0.0.3-dev.91"
-  resolved "http://localhost:4873/@bahmni/form2-controls/-/form2-controls-0.0.3-dev.91.tgz#bb6acb4c59c42c74379e4bb1559886ea2f6e965f"
+  resolved "https://registry.yarnpkg.com/@bahmni/form2-controls/-/form2-controls-0.0.3-dev.91.tgz#bb6acb4c59c42c74379e4bb1559886ea2f6e965f"
   integrity sha512-mCfHwDvmKF96v1MOpTDG5wYcRFkPG44DwVEUXWxJPEdBeUg6mYj2bzLjTft89pbHE3tHUDdxY5SDB//bfq54Ug==
   dependencies:
     ajv "^8.17.1"
