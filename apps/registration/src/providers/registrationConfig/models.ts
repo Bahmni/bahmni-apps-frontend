@@ -1,4 +1,5 @@
 import { Extension } from '@bahmni/services';
+import type { PrintOption } from '@bahmni/widgets';
 
 export interface PatientPhotoConfig {
   widthPx?: number;
@@ -62,24 +63,6 @@ export interface FieldValidationConfig {
   [fieldName: string]: FieldValidationRule;
 }
 
-export interface AppExtensionConfig {
-  id: string;
-  extensionPointId: string;
-  type: 'link' | 'startVisit';
-  translationKey: string;
-  url: string;
-  shortcutKey?: string;
-  icon?: string;
-  order?: number;
-  kind?: 'primary' | 'secondary' | 'tertiary' | 'ghost' | 'danger';
-  requiredPrivilege?: string;
-}
-
-export interface ExtensionPoint {
-  id: string;
-  description?: string;
-}
-
 export interface RegistrationFormControl {
   type: string;
   titleTranslationKey?: string;
@@ -102,8 +85,7 @@ export interface RegistrationConfig {
   patientInformation?: PatientInformationConfig;
   fieldValidation?: FieldValidationConfig;
   registrationForm?: RegistrationFormConfig;
-  extensionPoints?: ExtensionPoint[];
-  registrationAppExtensions?: AppExtensionConfig[];
+  printOptions?: PrintOption[];
   extensions?: Extension[];
 }
 

@@ -1,4 +1,5 @@
 import { getPatientObservationsBundle } from '@bahmni/services';
+import type { QueryClient } from '@tanstack/react-query';
 import type { Observation } from 'fhir/r4';
 import { extractFormName } from '../../observations/utils';
 import { extractId } from '../../utils/Observations';
@@ -28,19 +29,20 @@ const handleLaunchFormAction = (
   );
 };
 
-const resolveEditEncounterUuid = async (
+const resolveSourceEncounterUuid = async (
   task: TaskViewModel,
   formName: string | null,
+  queryClient: QueryClient,
 ): Promise<string | undefined> => {
   const serviceRequestId = extractId(task.fhirResource.basedOn?.[0]?.reference);
   const patientId = extractId(task.fhirResource.for?.reference);
   if (!serviceRequestId || !patientId || !formName) return undefined;
 
-  const bundle = await getPatientObservationsBundle(
-    patientId,
-    undefined,
-    serviceRequestId,
-  );
+  const bundle = await queryClient.fetchQuery({
+    queryKey: ['observationsByServiceRequest', serviceRequestId],
+    queryFn: () =>
+      getPatientObservationsBundle(patientId, undefined, serviceRequestId),
+  });
 
   const target = formName.toLowerCase();
   const firstMatch = (bundle.entry ?? [])
@@ -53,19 +55,25 @@ const resolveEditEncounterUuid = async (
 const handleEditFormAction = async (
   action: TaskAction,
   task: TaskViewModel,
+  queryClient: QueryClient,
 ): Promise<void> => {
   const formName = extractFormNameFromTask(
     task,
     action.handlerConfig.formInputCode as string,
   );
-  const editEncounterUuid = await resolveEditEncounterUuid(task, formName);
+  const sourceEncounterUuid = await resolveSourceEncounterUuid(
+    task,
+    formName,
+    queryClient,
+  );
 
   globalThis.dispatchEvent(
     new CustomEvent('startConsultation', {
       detail: {
+        encounterType: action.handlerConfig.encounterType,
         editOnly: 'observationForms',
         editTitle: 'EDIT_OBSERVATION_FORM_TITLE',
-        editEncounterUuid,
+        sourceEncounterUuid,
         formName,
         directFormMode: true,
         task: task.fhirResource,
@@ -77,11 +85,12 @@ const handleEditFormAction = async (
 export const handleTaskAction = (
   action: TaskAction,
   task: TaskViewModel,
+  queryClient: QueryClient,
 ): void | Promise<void> => {
   if (action.type === TaskActionType.LAUNCH_FORM) {
     return handleLaunchFormAction(action, task);
   }
   if (action.type === TaskActionType.EDIT_FORM) {
-    return handleEditFormAction(action, task);
+    return handleEditFormAction(action, task, queryClient);
   }
 };

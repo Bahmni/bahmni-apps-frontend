@@ -118,6 +118,11 @@
       "required": ["field", "translationKey", "input"],
       "additionalProperties": false,
       "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Human-readable identifier for this criterion, unique within its context. Referenced by other criteria's additionalCriteria list. When omitted, an identifier is auto-derived from field.key/keyType."
+        },
         "field": { "$ref": "#/definitions/fieldConfig" },
         "default": {
           "type": "boolean",
@@ -128,7 +133,14 @@
           "minLength": 1,
           "description": "i18n key for the criterion label"
         },
-        "input": { "$ref": "#/definitions/inputConfig" }
+        "input": { "$ref": "#/definitions/inputConfig" },
+        "additionalCriteria": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 },
+          "minItems": 1,
+          "uniqueItems": true,
+          "description": "IDs of other criteria in this context that qualify as a sufficient companion when this criterion would otherwise be the only one active. When set and no other active criterion's id appears in this list, the search is blocked."
+        }
       }
     },
     "fieldConfig": {

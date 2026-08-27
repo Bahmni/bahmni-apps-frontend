@@ -61,11 +61,13 @@ export async function getEncounterSessionDuration(): Promise<number> {
  * Filters encounters to find those belonging to the active visit
  * @param encounters - Array of encounters to filter
  * @param patientUUID - Patient UUID
+ * @param currentEpisodeEncounterUuids - Array of known encounters UUIDs of current EOC
  * @returns Promise resolving to encounter within active visit or null
  */
 export async function filterByActiveVisit(
   encounters: Encounter[],
   patientUUID: string,
+  currentEpisodeEncounterUuids?: string[],
 ): Promise<Encounter | null> {
   if (!encounters.length) return null;
 
@@ -77,7 +79,11 @@ export async function filterByActiveVisit(
     return (
       encounters.find((encounter) => {
         const visitUUID = encounter.partOf?.reference?.split('/')[1];
-        return activeVisit.id === visitUUID;
+        if (activeVisit.id !== visitUUID) return false;
+        if (!currentEpisodeEncounterUuids) return true;
+        return (
+          !!encounter.id && currentEpisodeEncounterUuids.includes(encounter.id)
+        );
       }) ?? null
     );
   } catch {
@@ -91,6 +97,8 @@ export async function filterByActiveVisit(
  * @param patientUUID - Patient UUID
  * @param practitionerUUID - Practitioner UUID (optional, for practitioner-specific sessions)
  * @param sessionDurationMinutes - Session duration in minutes (optional, will fetch from config if not provided)
+ * @param encounterTypeUUID - Encounter type UUID (optional, filters by type)
+ * @param currentEpisodeEncounterUuids - The current episode of care's own known encounter UUIDs
  * @returns Promise resolving to active encounter or null
  */
 export async function findActiveEncounterInSession(
@@ -98,6 +106,7 @@ export async function findActiveEncounterInSession(
   practitionerUUID?: string,
   sessionDurationMinutes?: number,
   encounterTypeUUID?: string,
+  currentEpisodeEncounterUuids?: string[],
 ): Promise<Encounter | null> {
   try {
     if (!patientUUID) return null;
@@ -126,7 +135,11 @@ export async function findActiveEncounterInSession(
     if (encounters.length === 0) return null;
 
     // Filter by active visit and return the most recent one
-    const result = await filterByActiveVisit(encounters, patientUUID);
+    const result = await filterByActiveVisit(
+      encounters,
+      patientUUID,
+      currentEpisodeEncounterUuids,
+    );
     return result;
   } catch {
     return null;
