@@ -1,7 +1,7 @@
 {
   "name": "@bahmni/source",
   "version": "0.1.0",
-  "license": "MIT",
+  "license": "MPLv2",
   "scripts": {
     "create:app": "node ./scripts/create-app.js",
     "dev": "nx serve distro",

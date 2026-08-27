@@ -125,11 +125,17 @@ export const getFormattedError = (
           message =
             'You are not authorized to perform this action. Please log in again.';
           break;
-        case 403:
-          title = 'Unauthorized';
+        case 403: {
+          title = 'Forbidden';
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const forbiddenData = axiosError.response.data as any;
+          const forbiddenMessage =
+            forbiddenData?.error?.message ?? forbiddenData?.message;
           message =
-            'You are not authorized to perform this action. Please log in again.';
+            forbiddenMessage ??
+            'You are not authorized to perform this action.';
           break;
+        }
         case 404:
           title = 'Not Found';
           message = 'The requested resource was not found.';

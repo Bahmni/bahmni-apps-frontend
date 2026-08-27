@@ -18,24 +18,18 @@ jest.mock('@bahmni/services', () => ({
     t: (key: string) => key, // Mock translation function
   })),
   getCurrentUserPrivileges: jest.fn(() => Promise.resolve([])),
+  getEncountersAndVisitsForEOC: jest.fn(() =>
+    Promise.resolve({
+      encounterUuids: ['encounter-1', 'encounter-2'],
+      visitUuids: ['visit-1', 'visit-2'],
+    }),
+  ),
 }));
 
 // Mock the usePatientUUID hook
 jest.mock('@bahmni/widgets', () => ({
   ...jest.requireActual('@bahmni/widgets'),
   usePatientUUID: jest.fn(),
-}));
-
-jest.mock('@tanstack/react-query', () => ({
-  ...jest.requireActual('@tanstack/react-query'),
-  useQuery: jest.fn(() => ({
-    data: {
-      encounterUuids: ['encounter-1', 'encounter-2'],
-      visitUuids: ['visit-1', 'visit-2'],
-    },
-    isLoading: false,
-    error: null,
-  })),
 }));
 
 // Mock i18n hook
@@ -132,15 +126,21 @@ describe('DashboardContainer Component', () => {
     renderDashboardContainerWithProvider(mockSections);
 
     // Check if all sections are rendered
-    expect(screen.getByTestId('mocked-section-Section 1')).toBeInTheDocument();
-    expect(screen.getByTestId('mocked-section-Section 2')).toBeInTheDocument();
+    expect(
+      await screen.findByTestId('mocked-section-Section 1'),
+    ).toBeInTheDocument();
+    expect(
+      await screen.findByTestId('mocked-section-Section 2'),
+    ).toBeInTheDocument();
   });
 
   it('renders a message when no sections are provided', async () => {
     renderDashboardContainerWithProvider([]);
 
     // Check if the no sections message is rendered
-    expect(screen.getByText('NO_DASHBOARD_SECTIONS')).toBeInTheDocument();
+    expect(
+      await screen.findByText('NO_DASHBOARD_SECTIONS'),
+    ).toBeInTheDocument();
   });
 
   it('scrolls to the active section when activeItemId matches section id', async () => {
@@ -269,7 +269,9 @@ describe('DashboardContainer Component', () => {
     );
 
     // Check if the new section is rendered
-    expect(screen.getByTestId('mocked-section-Section 3')).toBeInTheDocument();
+    expect(
+      await screen.findByTestId('mocked-section-Section 3'),
+    ).toBeInTheDocument();
 
     // Simulate activating the new section
     rerender(
