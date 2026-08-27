@@ -1,4 +1,5 @@
 import { dispatchAuditEvent, PersonAttributeType } from '@bahmni/services';
+import { usePatientPhoto } from '@bahmni/widgets';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { ReactNode } from 'react';
@@ -6,7 +7,6 @@ import { BrowserRouter } from 'react-router-dom';
 import { useAdditionalIdentifiers } from '../../../hooks/useAdditionalIdentifiers';
 import { useCreatePatient } from '../../../hooks/useCreatePatient';
 import { usePatientDetails } from '../../../hooks/usePatientDetails';
-import { usePatientPhoto } from '../../../hooks/usePatientPhoto';
 import { useUpdatePatient } from '../../../hooks/useUpdatePatient';
 import { PersonAttributesProvider } from '../../../providers/PersonAttributesProvider';
 import { validateAllSections, collectFormData } from '../patientFormService';
@@ -41,6 +41,7 @@ jest.mock('@bahmni/services', () => ({
 jest.mock('@bahmni/widgets', () => ({
   ...jest.requireActual('@bahmni/widgets'),
   useNotification: jest.fn(),
+  usePatientPhoto: jest.fn(),
   UserGlobalAction: jest.fn(() => <div data-testid="user-global-action" />),
   useUserPrivilege: jest.fn(() => ({ userPrivileges: [] })),
   // Stubbed so these page tests can assert the props contract. The render-API
@@ -79,7 +80,6 @@ jest.mock('../../../hooks/useRelationshipValidation');
 jest.mock('../../../providers/registrationConfig');
 jest.mock('../../../hooks/useAdditionalIdentifiers');
 jest.mock('../../../hooks/usePatientDetails');
-jest.mock('../../../hooks/usePatientPhoto');
 jest.mock('../patientFormService');
 
 // Mock child components
@@ -759,6 +759,25 @@ describe('PatientRegister', () => {
 
       await waitFor(() => {
         expect(mockMutateAsync).toHaveBeenCalled();
+      });
+    });
+
+    it('should show warning notification when photo fetch fails', async () => {
+      (usePatientPhoto as jest.Mock).mockReturnValue({
+        patientPhoto: undefined,
+        isLoading: false,
+        error: new Error("User doesn't have Get Patient Photo privilege"),
+      });
+
+      renderComponent();
+
+      await waitFor(() => {
+        expect(mockAddNotification).toHaveBeenCalledWith(
+          expect.objectContaining({
+            type: 'warning',
+            message: "User doesn't have Get Patient Photo privilege",
+          }),
+        );
       });
     });
   });
