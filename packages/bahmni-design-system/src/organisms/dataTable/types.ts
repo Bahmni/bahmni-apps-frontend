@@ -55,7 +55,7 @@ export interface ManualPaginationConfig<T> {
   ) => void;
 }
 
-export type DataTableSetDirection = 'next' | 'previous';
+export type DataTableSetDirection = 'next' | 'prev';
 
 export interface CursorPaginationConfig<T> {
   mode: 'cursor';

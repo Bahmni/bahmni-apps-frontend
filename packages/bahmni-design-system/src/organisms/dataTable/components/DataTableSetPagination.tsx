@@ -42,7 +42,7 @@ export const DataTableSetPagination = <T,>({
           kind="ghost"
           size="sm"
           className={styles.setNavButton}
-          onClick={() => onSetChange('previous', table)}
+          onClick={() => onSetChange('prev', table)}
           testId={`${dataTestId}-previous-set`}
         >
           <CaretLeft />

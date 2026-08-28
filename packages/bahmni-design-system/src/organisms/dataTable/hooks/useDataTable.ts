@@ -135,10 +135,7 @@ export const useDataTable = <T extends { id: string }>({
       : {}),
     globalFilterFn: 'includesString',
     manualPagination: isManual,
-    rowCount:
-      paginationConfig?.mode === 'manual'
-        ? paginationConfig.totalItems
-        : undefined,
+    rowCount: isManual ? paginationConfig.totalItems : undefined,
     getRowId: (row) => row.id,
     autoResetExpanded: false,
   });

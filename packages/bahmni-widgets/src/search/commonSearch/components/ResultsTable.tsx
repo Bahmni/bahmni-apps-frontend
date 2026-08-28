@@ -44,7 +44,7 @@ const navigateSet = (
   table: DataTableInstance<ResultRow>,
   fetchSet: (direction: CursorDirection) => void,
 ) => {
-  fetchSet(direction === 'next' ? 'next' : 'prev');
+  fetchSet(direction);
   table.resetColumnFilters();
   table.resetGlobalFilter();
 };
