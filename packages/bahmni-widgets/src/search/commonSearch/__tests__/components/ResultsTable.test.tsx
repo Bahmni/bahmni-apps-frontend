@@ -17,6 +17,7 @@ import {
   mockResultFieldsWithUnknownTransform,
   mockResultFieldsWithAgeTransform,
   mockResultFieldsWithDateTransform,
+  mockResultFieldsWithFilter,
   mockResults,
   mockResultWithoutId,
 } from '../__mocks__/resultsTableMocks';
@@ -497,7 +498,7 @@ describe('ResultsTable', () => {
       expect(pageLabels()).toEqual(['4']);
     });
 
-    it('should fetch the next batch and clear filters when the next-set button is clicked', async () => {
+    it('should fetch the next batch when the next-set button is clicked', async () => {
       const onSetChange = jest.fn();
       await renderTable({
         cursorPagination: { ...cursorPagination, onSetChange },
@@ -508,6 +509,28 @@ describe('ResultsTable', () => {
       );
 
       expect(onSetChange).toHaveBeenCalledWith('next');
+    });
+
+    it('should clear column filters when navigating to another set', async () => {
+      await renderTable({
+        resultFields: mockResultFieldsWithFilter,
+        cursorPagination,
+      });
+
+      await userEvent.click(
+        screen.getByTestId('common-search-results-table-filter-toggle'),
+      );
+      const filterInput = screen.getByPlaceholderText('Filter PATIENT_NAME');
+      await userEvent.type(filterInput, 'John');
+      expect(filterInput).toHaveValue('John');
+
+      await userEvent.click(
+        screen.getByTestId('common-search-results-table-next-set'),
+      );
+
+      expect(screen.getByPlaceholderText('Filter PATIENT_NAME')).toHaveValue(
+        '',
+      );
     });
 
     it('should render the table title without a count when the total count is unknown', async () => {

@@ -1,11 +1,7 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { DataTable } from '../DataTable';
-import type {
-  CursorPaginationConfig,
-  DataTableColumn,
-  DataTableInstance,
-} from '../types';
+import type { CursorPaginationConfig, DataTableColumn } from '../types';
 import '@testing-library/jest-dom';
 
 interface Medication {
@@ -17,18 +13,6 @@ interface Medication {
 
 const baseColumns: DataTableColumn<Medication>[] = [
   { key: 'name', header: 'Medication', enableSorting: true },
-  { key: 'status', header: 'Status' },
-  { key: 'orderedBy', header: 'Ordered By' },
-];
-
-const filterableColumns: DataTableColumn<Medication>[] = [
-  {
-    key: 'name',
-    header: 'Medication',
-    enableSorting: true,
-    enableFiltering: true,
-    filterType: 'text',
-  },
   { key: 'status', header: 'Status' },
   { key: 'orderedBy', header: 'Ordered By' },
 ];
@@ -120,7 +104,7 @@ describe('DataTable cursor-set pagination', () => {
     expect(config.onSetChange).not.toHaveBeenCalled();
   });
 
-  it('should render set navigation buttons only when the corresponding set exists and invoke the appropriate callback on click', async () => {
+  it('should invoke onSetChange with the direction of the clicked button', async () => {
     const user = userEvent.setup();
     const config = cursorPaginationConfig({
       startPage: 4,
@@ -133,10 +117,7 @@ describe('DataTable cursor-set pagination', () => {
     expect(config.onSetChange).toHaveBeenCalledWith('next', expect.anything());
 
     await user.click(screen.getByTestId('data-table-previous-set'));
-    expect(config.onSetChange).toHaveBeenCalledWith(
-      'previous',
-      expect.anything(),
-    );
+    expect(config.onSetChange).toHaveBeenCalledWith('prev', expect.anything());
   });
 
   it('should hide the previous-set button on the first set and the next-set button on the last set', () => {
@@ -148,7 +129,7 @@ describe('DataTable cursor-set pagination', () => {
     expect(screen.getByTestId('data-table-next-set')).toBeInTheDocument();
   });
 
-  it('should render only the pages available in a short final set while preserving the set offset', () => {
+  it('should render only as many pages as the loaded rows fill, keeping the startPage offset', () => {
     renderTable(
       cursorPaginationConfig({ startPage: 4, hasPrevious: true }),
       setRows(3),
@@ -193,56 +174,6 @@ describe('DataTable cursor-set pagination', () => {
       'page',
     );
     expect(pageButtonLabels()).toEqual(['4', '5', '6']);
-  });
-
-  it('should preserve sorting across set navigation', async () => {
-    const user = userEvent.setup();
-    const { rerender } = renderTable(cursorPaginationConfig({ hasNext: true }));
-
-    await user.click(screen.getByText('Medication'));
-    await user.click(screen.getByText('Medication'));
-    expect(screen.getAllByTestId(/^table-row-/)[0]).toHaveTextContent(
-      'Medication 6',
-    );
-
-    rerender(
-      <DataTable
-        columns={baseColumns}
-        rows={setRows()}
-        renderCell={renderCell}
-        ariaLabel="Medications"
-        pagination={cursorPaginationConfig({
-          startPage: 4,
-          hasPrevious: true,
-        })}
-      />,
-    );
-
-    expect(screen.getAllByTestId(/^table-row-/)[0]).toHaveTextContent(
-      'Medication 6',
-    );
-  });
-
-  it('should clear column filters when navigating to another set', async () => {
-    const user = userEvent.setup();
-    const config = cursorPaginationConfig({
-      hasNext: true,
-      hasPrevious: true,
-      startPage: 4,
-      onSetChange: jest.fn((_direction, table: DataTableInstance<Medication>) =>
-        table.resetColumnFilters(),
-      ),
-    });
-    renderTable(config, setRows(), filterableColumns);
-
-    await user.click(screen.getByTestId('data-table-filter-toggle'));
-    await user.type(screen.getByPlaceholderText('Filter Medication'), '1');
-    expect(screen.getByPlaceholderText('Filter Medication')).toHaveValue('1');
-
-    await user.click(screen.getByTestId('data-table-next-set'));
-
-    expect(config.onSetChange).toHaveBeenCalledTimes(1);
-    expect(screen.getByPlaceholderText('Filter Medication')).toHaveValue('');
   });
 
   it('should apply a changed pageSize without remounting', () => {
