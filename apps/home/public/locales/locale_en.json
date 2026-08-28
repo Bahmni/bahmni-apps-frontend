@@ -2,6 +2,7 @@
   "HOME_ERROR_FETCH_CONFIG": "Failed to load home page configuration",
   "HOME_ERROR_LOCATION_SYNC_FAILED": "Location change saved locally but failed to sync to server.",
   "HOME_ERROR_LOCATION_SYNC_FAILED_TITLE": "Location Sync Warning",
+  "HOME_LABEL": "Home",
   "HOME_LOADING_MODULES": "Loading modules",
   "HOME_NO_LOCATION_SELECTED": "No location selected",
   "HOME_NO_MODULES": "No modules available",

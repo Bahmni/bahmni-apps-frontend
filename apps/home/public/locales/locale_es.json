@@ -2,6 +2,7 @@
   "HOME_ERROR_FETCH_CONFIG": "Error al cargar la configuración de la página de inicio",
   "HOME_ERROR_LOCATION_SYNC_FAILED": "El cambio de ubicación se guardó localmente pero no se pudo sincronizar con el servidor.",
   "HOME_ERROR_LOCATION_SYNC_FAILED_TITLE": "Advertencia de sincronización de ubicación",
+  "HOME_LABEL": "Inicio",
   "HOME_LOADING_MODULES": "Cargando módulos",
   "HOME_NO_LOCATION_SELECTED": "Ninguna ubicación seleccionada",
   "HOME_NO_MODULES": "No hay módulos disponibles",

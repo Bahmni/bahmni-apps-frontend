@@ -13,6 +13,7 @@ import {
   waitFor,
   fireEvent,
 } from '@testing-library/react';
+import i18n from 'i18next';
 import { axe, toHaveNoViolations } from 'jest-axe';
 import React, { ReactNode } from 'react';
 import { MemoryRouter } from 'react-router-dom';
@@ -433,6 +434,55 @@ describe('ConsultationPage', () => {
 
       expect(screen.getByTestId('breadcrumb-item-current')).toHaveTextContent(
         'Current Patient',
+      );
+    });
+  });
+
+  describe('Breadcrumb static labels', () => {
+    afterEach(async () => {
+      await act(async () => {
+        await i18n.changeLanguage('en');
+      });
+    });
+
+    it('renders Home and Clinical breadcrumb labels using i18n translations', async () => {
+      renderWithProvider();
+
+      await waitFor(() => {
+        expect(screen.queryByTestId('carbon-loading')).not.toBeInTheDocument();
+      });
+
+      expect(screen.getByTestId('breadcrumb-item-home')).toHaveTextContent(
+        'Home',
+      );
+      expect(screen.getByTestId('breadcrumb-item-clinical')).toHaveTextContent(
+        'Clinical',
+      );
+    });
+
+    it('updates Home and Clinical breadcrumb labels when the locale changes', async () => {
+      i18n.addResourceBundle(
+        'es',
+        'clinical',
+        { HOME_LABEL: 'Inicio', CLINICAL_LABEL: 'Clínico' },
+        true,
+        true,
+      );
+      await act(async () => {
+        await i18n.changeLanguage('es');
+      });
+
+      renderWithProvider();
+
+      await waitFor(() => {
+        expect(screen.queryByTestId('carbon-loading')).not.toBeInTheDocument();
+      });
+
+      expect(screen.getByTestId('breadcrumb-item-home')).toHaveTextContent(
+        'Inicio',
+      );
+      expect(screen.getByTestId('breadcrumb-item-clinical')).toHaveTextContent(
+        'Clínico',
       );
     });
   });

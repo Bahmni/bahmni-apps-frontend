@@ -5,6 +5,7 @@ import {
   dispatchAuditEvent,
   useSubscribeConsultationSaved,
   useTranslation,
+  DEFAULT_DATE_FORMAT_STORAGE_KEY,
 } from '@bahmni/services';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, screen, waitFor, act } from '@testing-library/react';
@@ -146,8 +147,16 @@ describe('RadiologyInvestigationTable', () => {
     ],
   };
 
+  afterEach(() => {
+    localStorage.removeItem(DEFAULT_DATE_FORMAT_STORAGE_KEY);
+  });
+
   beforeEach(() => {
     jest.clearAllMocks();
+    // Pin the date format so assertions like '12/01/2023' don't depend on
+    // the host machine's/CI runner's default Intl locale (getBrowserLocaleDateFormat
+    // falls back to it and can resolve to a DD/MM order on non-US locales).
+    localStorage.setItem(DEFAULT_DATE_FORMAT_STORAGE_KEY, 'MM/dd/yyyy');
 
     mockUseTranslation.mockReturnValue({
       t: (key: string) => {
