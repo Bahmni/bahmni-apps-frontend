@@ -184,6 +184,7 @@ export const mockContextWithValidActions: SearchContextConfig = {
   locationAware: 'loggedInLocation',
   url: '/api/patient',
   pageSize: 10,
+  batchSize: 50,
   criteria: [],
   resultFields: [
     {
@@ -279,6 +280,7 @@ export const makeMockContextWithCriteria = (
   locationAware: 'loggedInLocation',
   url: '/test',
   pageSize: 10,
+  batchSize: 50,
   resultFields: [],
   criteria,
 });

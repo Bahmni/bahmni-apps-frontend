@@ -16,6 +16,7 @@
         "requiredPrivileges",
         "url",
         "pageSize",
+        "batchSize",
         "criteria",
         "resultFields"
       ],
@@ -52,6 +53,11 @@
           "type": "integer",
           "minimum": 1,
           "description": "Number of results per page"
+        },
+        "batchSize": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Number of results fetched per API call"
         },
         "criteria": {
           "type": "array",
