@@ -247,7 +247,19 @@ export const AddressInfo = ({ initialData, ref }: AddressInfoProps) => {
     const newErrors: Record<string, string> = {};
 
     levelsWithStrictEntry.forEach((level) => {
-      if (level.isStrictEntry && address[level.addressField]) {
+      const value = address[level.addressField];
+
+      if (level.required && !value?.trim()) {
+        const translationKey = getTranslationKey(level.addressField);
+        const translatedLabel = translationKey ? t(translationKey) : level.name;
+        newErrors[level.addressField] = t('REGISTRATION_FIELD_REQUIRED_ERROR', {
+          field: translatedLabel,
+        });
+        isValid = false;
+        return;
+      }
+
+      if (level.isStrictEntry && value) {
         const metadata = selectedMetadata[level.addressField];
 
         if (!metadata?.uuid && !metadata?.userGeneratedId) {
@@ -261,7 +273,7 @@ export const AddressInfo = ({ initialData, ref }: AddressInfoProps) => {
 
     setAddressErrors(newErrors);
     return isValid;
-  }, [levelsWithStrictEntry, address, selectedMetadata, t]);
+  }, [levelsWithStrictEntry, address, selectedMetadata, t, getTranslationKey]);
 
   const getData = useCallback((): PatientAddress => {
     const result: PatientAddress = {};
@@ -359,6 +371,7 @@ export const AddressInfo = ({ initialData, ref }: AddressInfoProps) => {
 
       const isDisabled = isFieldReadOnly(level);
       const fieldValue = address[fieldName] ?? '';
+      const error = addressErrors[fieldName];
       const translationKey = getTranslationKey(level.addressField);
       const translatedLabel = translationKey ? t(translationKey) : level.name;
 
@@ -377,7 +390,12 @@ export const AddressInfo = ({ initialData, ref }: AddressInfoProps) => {
             placeholder={translatedLabel}
             value={fieldValue}
             disabled={isDisabled}
-            onChange={(e) => handleFieldChange(fieldName, e.target.value)}
+            invalid={!!error}
+            invalidText={error}
+            onChange={(e) => {
+              handleFieldChange(fieldName, e.target.value);
+              setAddressErrors((prev) => ({ ...prev, [fieldName]: '' }));
+            }}
           />
         </div>
       );
@@ -386,6 +404,7 @@ export const AddressInfo = ({ initialData, ref }: AddressInfoProps) => {
       levelsWithStrictEntry,
       isFieldReadOnly,
       address,
+      addressErrors,
       handleFieldChange,
       t,
       getTranslationKey,

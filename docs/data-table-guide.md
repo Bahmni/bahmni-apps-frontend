@@ -21,7 +21,7 @@ pace.
 - ✅ Global search across all columns
 - ✅ Grouping with collapsible group rows
 - ✅ Row expansion with consumer-defined detail content
-- ✅ Pagination (client + manual/server-side)
+- ✅ Pagination — three modes: `default`, `manual`, `cursor`
 - ✅ Toolbar with title, description, and optional action button
 - ✅ Loading / empty / error states
 - ✅ Carbon Design System look + screen reader accessibility
@@ -32,6 +32,20 @@ pace.
 
 ```tsx
 import { DataTable, type DataTableColumn } from "@bahmni/design-system";
+```
+
+Pagination types are exported too, if you need to name one rather than pass it
+inline:
+
+```tsx
+import type {
+  DataTablePaginationConfig,   
+  DefaultPaginationConfig,
+  ManualPaginationConfig,
+  CursorPaginationConfig,
+  DataTableSetDirection,      
+  DataTableInstance,          
+} from "@bahmni/design-system";
 ```
 
 ---
@@ -102,15 +116,21 @@ fields. Everything else is opt-in.
 
 ### Pagination
 
-| Prop                | Type                                                | Description                                                |
-| ------------------- | --------------------------------------------------- | ---------------------------------------------------------- |
-| `enablePagination`  | `boolean`                                           | Renders the Carbon `Pagination` footer.                    |
-| `pageSize`          | `number`                                            | Default page size.                                         |
-| `pageSizes`         | `number[]`                                          | Available page sizes in the footer dropdown.               |
-| `page`              | `number`                                            | Controlled page number (1-based).                          |
-| `onPageChange`      | `(page: number, pageSize: number) => void`          | Fires on page or page-size change.                         |
-| `totalItems`        | `number`                                            | Required when `manualPagination`.                          |
-| `manualPagination`  | `boolean`                                           | Server-side mode — parent slices rows; DataTable doesn't.  |
+A single optional prop. Omit it for no pagination.
+
+| Prop         | Type                              | Description                                                        |
+| ------------ | --------------------------------- | ------------------------------------------------------------------ |
+| `pagination` | `DataTablePaginationConfig<T>`    | Discriminated union on `mode` |
+
+The three variants are mutually exclusive by construction, so you can't
+accidentally combine server-side and cursor settings:
+
+```ts
+type DataTablePaginationConfig<T> =
+  | DefaultPaginationConfig
+  | ManualPaginationConfig<T>
+  | CursorPaginationConfig<T>;
+```
 
 ---
 
@@ -314,28 +334,115 @@ alignment when some rows have details and others don't.
 
 ## Pagination
 
-### Client-side
+Pagination is opt-in via the single `pagination` prop. Omitting it renders no
+footer at all. Pick the mode by what you put in `rows`:
 
-The DataTable slices internally.
+| `mode`    | What you pass in `rows` | Who slices                     | Footer                                  |
+| --------- | ----------------------- | ------------------------------ | --------------------------------------- |
+| `default` | the whole dataset       | DataTable, in memory           | Carbon `Pagination` + page-size dropdown |
+| `manual`  | exactly one page        | nobody — you already sliced    | Carbon `Pagination` + page-size dropdown |
+| `cursor`  | one batch               | DataTable, *within the batch*  | `[Prev set] 4 5 6 [Next set]`            |
+
+### `default` — client-side
+
+You hand over every row; DataTable slices in memory. No callback, no
+refetching.
 
 ```tsx
-<DataTable ... enablePagination pageSize={10} pageSizes={[5, 10, 25, 50]} />
+<DataTable ... pagination={{ mode: "default", pageSize: 10, pageSizes: [5, 10, 25, 50] }} />
 ```
 
-### Server-side (manual)
+Both fields are optional — defaults are `10` and `[5, 10, 25, 50, 100]`.
 
-The parent fetches the right page; DataTable doesn't slice.
+### `manual` — offset / server-side
+
+You hand over exactly one page and refetch on change. `totalItems` is
+**required**, because the page count can't be derived from a single page.
+
+`page` is 1-based and fully controlled: DataTable renders whatever page you
+pass, and `onPageChange` tells you to fetch a different one.
 
 ```tsx
 <DataTable
   ...
-  enablePagination
-  manualPagination
-  page={currentPage}
-  pageSize={pageSize}
-  totalItems={totalFromServer}
-  onPageChange={(page, size) => refetch({ page, size })}
+  rows={currentPageRows}
+  pagination={{
+    mode: "manual",
+    page: currentPage,
+    pageSize,
+    totalItems: totalFromServer,
+    onPageChange: (page, size) => refetch({ page, size }),
+  }}
 />
+```
+
+### `cursor` — batch / set navigation
+
+For APIs that use a cursor instead of page numbers, the total number of records is usually not known.
+
+The API returns one batch of records at a time. DataTable handles pagination within that batch and provides Previous and Next buttons to move between batches.
+
+DataTable does not need to know about cursors, batch sizes, or which batch it is on. It only needs the page-number offset to display the correct page numbers.
+
+| Field                            | Description                                                                 |
+| -------------------------------- | --------------------------------------------------------------------------- |
+| `pageSize`                       | Rows per page **within** the loaded batch.                                  |
+| `startPage`                      | Page number the first page of this batch is labelled with. Defaults to `1`. |
+| `hasNext` / `hasPrevious`        | Whether to render each set button.                                          |
+| `onSetChange(direction, table)`  | `direction` is `'next' \| 'prev'`. Fetch the adjacent batch.            |
+| `previousLabel` / `nextLabel`    | Button text. Defaults to `'Previous set'` / `'Next set'` — **pass translated strings**, the design system has no i18n. |
+
+```tsx
+const pagesPerBatch = Math.max(Math.ceil(batchSize / pageSize), 1);
+
+<DataTable
+  ...
+  rows={currentBatchRows}
+  pagination={{
+    mode: "cursor",
+    pageSize,
+    startPage: currentSet * pagesPerBatch + 1,
+    hasNext: nextCursor !== null,
+    hasPrevious: currentSet > 0,
+    onSetChange: (direction, table) => {
+      fetchSet(direction);
+      table.resetColumnFilters();  
+    },
+    previousLabel: t("PREVIOUS_SET"),
+    nextLabel: t("NEXT_SET"),
+  }}
+/>
+```
+
+**Why you compute `startPage`.** Page numbers stay continuous across batches:
+with a 6-row batch shown 2 at a time, batch 0 is pages `1 2 3` and batch 1 is
+`4 5 6`. Batch size and batch index are fetch-strategy concerns, so they stay
+with you; the table just needs the offset.
+
+#### Resetting on navigation is the consumer's call
+
+DataTable never resets sorting or filters on your behalf — a table with no
+filterable columns shouldn't pay for a filter reset. Every pagination callback
+receives the live table instance so you decide:
+
+```tsx
+onSetChange: (direction, table) => {
+  fetchSet(direction);
+  table.resetColumnFilters();     
+  table.resetGlobalFilter();     
+  // sorting deliberately preserved across batches
+}
+```
+
+Page index is the one exception: it returns to the first page automatically
+whenever the `rows` reference changes, since the old page number may not exist
+in the new batch.
+
+To reset *everything* — including sorting — on a genuinely new query rather
+than a new batch, remount the table with a key:
+
+```tsx
+<DataTable key={searchId} ... />
 ```
 
 ---
@@ -440,8 +547,7 @@ const accessor = (row: ServiceRequest, key: string) => {
   renderCell={renderCell}
   accessor={accessor}
   enableGlobalSearch
-  enablePagination
-  pageSize={10}
+  pagination={{ mode: "default", pageSize: 10 }}
   renderExpandedContent={(row) => <RequestDetails row={row} />}
   shouldRowBeExpandable={(row) => row.hasDetails}
 />
@@ -456,7 +562,7 @@ Equivalent configurations for the older tables:
 | Existing                   | `DataTable` equivalent                                                        |
 | -------------------------- | ----------------------------------------------------------------------------- |
 | `SimpleDataTable`          | Bare `<DataTable columns rows ariaLabel />`.                                  |
-| `SortableDataTable`        | Add per-column `enableSorting` and (if needed) `enablePagination` props.      |
+| `SortableDataTable`        | Add per-column `enableSorting` and (if needed) `pagination={{ mode: 'default' \| 'manual', ... }}`. |
 | `ExpandableDataTable`      | Pass `renderExpandedContent` (and optionally `shouldRowBeExpandable`).        |
 | `ActionDataTable`          | Add `id`, `title`, `description`, `actionButtons` — sort/pagination inline.   |
 
