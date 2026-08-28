@@ -23,6 +23,8 @@ import {
   reconcileAdditionalCriteriaErrors,
   resolveRows,
   buildPayload,
+  buildPaginationMeta,
+  extractSearchPage,
   resultTransforms,
   validateConfigForActions,
   validateConfigForCriteria,
@@ -636,6 +638,7 @@ describe('validateConfigForCriteria', () => {
     requiredPrivileges: ['View Patients'],
     url: '/url',
     pageSize: 20,
+    batchSize: 100,
     resultFields: [{ translationKey: 'RF', expression: 'x' }],
   };
 
@@ -933,6 +936,92 @@ describe('buildPayload', () => {
     expect(result.criteria.conditions).toEqual([
       { field: 'patient.givenName', comparator: 'eq', value: 'John' },
     ]);
+  });
+
+  it('should include the pagination meta when it is supplied', () => {
+    const meta = buildPaginationMeta(100, null);
+    const result = buildPayload(
+      [mockResolvedScalarRow],
+      'patient',
+      undefined,
+      meta,
+    );
+    expect(result.meta).toEqual(meta);
+  });
+
+  it('should omit the meta key when no pagination meta is supplied', () => {
+    const result = buildPayload([mockResolvedScalarRow], 'patient');
+    expect(result).not.toHaveProperty('meta');
+  });
+});
+
+describe('buildPaginationMeta', () => {
+  it('should request the total count and use a null cursor for the first search request', () => {
+    expect(buildPaginationMeta(100, null)).toEqual({
+      includeTotalCount: true,
+      pagination: { limit: 100, sortOrder: 'desc', cursor: null },
+    });
+  });
+
+  it('should omit the direction from the first search request', () => {
+    expect(buildPaginationMeta(100, null).pagination).not.toHaveProperty(
+      'direction',
+    );
+  });
+
+  it('should skip the total count and include the cursor and direction when navigating between sets', () => {
+    expect(buildPaginationMeta(100, 'eyJpZCI6MjJ9', 'next')).toEqual({
+      includeTotalCount: false,
+      pagination: {
+        limit: 100,
+        sortOrder: 'desc',
+        cursor: 'eyJpZCI6MjJ9',
+        direction: 'next',
+      },
+    });
+  });
+});
+
+describe('extractSearchPage', () => {
+  it('should extract results, total count, and pagination cursors from the response', () => {
+    const data = {
+      context: 'patientProgram',
+      meta: {
+        timestamp: 1787203366489,
+        totalCount: 300,
+        pagination: { nextCursor: 'next-cursor', prevCursor: 'prev-cursor' },
+      },
+      results: [{ uuid: 'a' }, { uuid: 'b' }],
+      error: null,
+    };
+
+    expect(extractSearchPage(data)).toEqual({
+      results: [{ uuid: 'a' }, { uuid: 'b' }],
+      totalCount: 300,
+      nextCursor: 'next-cursor',
+      prevCursor: 'prev-cursor',
+    });
+  });
+
+  it('should return a null next cursor when the response represents the last set', () => {
+    const data = {
+      meta: {
+        totalCount: 1,
+        pagination: { nextCursor: null, prevCursor: 'prev-cursor' },
+      },
+      results: [{ uuid: 'a' }],
+    };
+
+    expect(extractSearchPage(data).nextCursor).toBeNull();
+  });
+
+  it('should return a null total count when the response omits pagination meta', () => {
+    expect(extractSearchPage({ results: [] })).toEqual({
+      results: [],
+      totalCount: null,
+      nextCursor: null,
+      prevCursor: null,
+    });
   });
 });
 

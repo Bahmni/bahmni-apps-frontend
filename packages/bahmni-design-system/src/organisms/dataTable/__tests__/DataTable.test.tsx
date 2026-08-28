@@ -247,8 +247,7 @@ describe('DataTable accessibility', () => {
         title="Recent Orders"
         description="Last 30 days"
         actionButtons={[{ label: 'Add', onClick: jest.fn() }]}
-        enablePagination
-        pageSize={5}
+        pagination={{ mode: 'default', pageSize: 5 }}
         renderExpandedContent={(row) => (
           <tr>
             <td colSpan={4}>{row.name}</td>
