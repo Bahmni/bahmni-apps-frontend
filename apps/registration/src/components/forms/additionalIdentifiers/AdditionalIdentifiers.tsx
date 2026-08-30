@@ -11,6 +11,7 @@ import { REGISTRATION_NAMESPACE } from '../../../constants/app';
 import { useIdentifierTypes } from '../../../hooks/useAdditionalIdentifiers';
 import type { AdditionalIdentifiersData } from '../../../models/patient';
 import { getTranslatedLabel } from '../../../utils/translation';
+import { RequiredAsterisk } from '../../common/RequiredAsterisk';
 import styles from './styles/index.module.scss';
 
 export interface AdditionalIdentifiersRef {
@@ -132,7 +133,9 @@ export const AdditionalIdentifiers = ({
           data-testid="additional-identifier-label"
         >
           {translatedName}
-          {isRequired && <span className={styles.requiredAsterisk}>*</span>}
+          {isRequired && (
+            <RequiredAsterisk className={styles.compactAsterisk} />
+          )}
         </span>
       );
     }
