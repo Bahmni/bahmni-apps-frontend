@@ -634,7 +634,9 @@ describe('ObservationForms', () => {
         />,
       );
 
-      expect(screen.getByText('No forms available')).toBeInTheDocument();
+      expect(
+        screen.getByText('translated_OBSERVATION_FORMS_NO_FORMS_AVAILABLE'),
+      ).toBeInTheDocument();
     });
   });
 
@@ -992,7 +994,9 @@ describe('ObservationForms', () => {
       expect(
         screen.queryByTestId('added-forms-section'),
       ).not.toBeInTheDocument();
-      expect(screen.getByText('No forms available')).toBeInTheDocument();
+      expect(
+        screen.getByText('translated_OBSERVATION_FORMS_NO_FORMS_AVAILABLE'),
+      ).toBeInTheDocument();
     });
   });
 });

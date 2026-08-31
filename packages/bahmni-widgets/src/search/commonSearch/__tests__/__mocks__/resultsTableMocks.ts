@@ -11,6 +11,18 @@ export const mockResultFields: ResultFieldConfig[] = [
   },
 ];
 
+export const mockResultFieldsWithFilter: ResultFieldConfig[] = [
+  {
+    translationKey: 'PATIENT_NAME',
+    expression: 'name',
+    filterType: 'text',
+  },
+  {
+    translationKey: 'PATIENT_AGE',
+    expression: 'age',
+  },
+];
+
 export const mockInvalidExpressionFields: ResultFieldConfig[] = [
   {
     translationKey: 'PATIENT_NAME',

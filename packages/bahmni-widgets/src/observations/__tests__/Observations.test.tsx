@@ -265,6 +265,37 @@ describe('Observations', () => {
         expect(screen.getByText('NO_OBSERVATIONS_FOUND')).toBeInTheDocument();
       });
     });
+
+    it('should show translated empty message when the bundle has entries but none are Observations for this section', async () => {
+      mockSearchConceptByName.mockResolvedValue({
+        uuid: 'concept-uuid-1',
+        display: 'Temperature',
+      } as any);
+      mockGetPatientObservationsWithEncounterBundle.mockResolvedValue({
+        resourceType: 'Bundle',
+        type: 'searchset',
+        entry: [
+          {
+            resource: {
+              resourceType: 'Encounter',
+              id: 'encounter-1',
+            },
+          },
+        ],
+      } as any);
+
+      const config = {
+        conceptNames: ['Temperature'],
+      };
+
+      createWrapper(<Observations config={config} />);
+
+      await waitFor(() => {
+        expect(
+          screen.getByText('NO_OBSERVATIONS_AVAILABLE'),
+        ).toBeInTheDocument();
+      });
+    });
   });
 
   describe('Observations Auto-Refresh', () => {
