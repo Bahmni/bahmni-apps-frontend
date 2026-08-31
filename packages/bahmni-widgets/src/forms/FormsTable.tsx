@@ -26,7 +26,13 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Bundle, Observation } from 'fhir/r4';
 import React, { useCallback, useMemo, useState } from 'react';
 import { usePatientUUID } from '../hooks/usePatientUUID';
-import { extractFormFieldPath, extractFormName } from '../observations/utils';
+import {
+  deriveConceptDatatypeMap,
+  deriveControlOrder,
+  deriveSectionMap,
+  extractFormFieldPath,
+  extractFormName,
+} from '../observations/utils';
 import { ObservationsRenderer } from '../observationsRenderer';
 import { WidgetProps } from '../registry/model';
 import { CONSULTATION_PAD_PRIVILEGES } from '../userPrivileges/consultationPadPrivileges';
@@ -210,80 +216,27 @@ const FormsTable: React.FC<WidgetProps> = ({
     });
   }, [fhirObservationBundle, selectedRecord?.formName]);
 
-  const controlOrder = useMemo(() => {
-    if (!formMetadata?.schema) return undefined;
-    const ids: string[] = [];
-    const collectIds = (controls: unknown[]) => {
-      (controls ?? []).forEach((ctrl: unknown) => {
-        const c = ctrl as { id?: number; controls?: unknown[] };
-        if (c.id != null) ids.push(String(c.id));
-        if (c.controls) collectIds(c.controls);
-      });
-    };
-    collectIds(
-      (formMetadata.schema as { controls?: unknown[] }).controls ?? [],
-    );
-    return ids.length > 0 ? ids : undefined;
-  }, [formMetadata]);
+  const controlOrder = useMemo(
+    () =>
+      formMetadata?.schema
+        ? deriveControlOrder(formMetadata.schema)
+        : undefined,
+    [formMetadata],
+  );
 
-  const sectionMap = useMemo(() => {
-    if (!formMetadata?.schema) return undefined;
-    const map: Record<string, string> = {};
+  const sectionMap = useMemo(
+    () =>
+      formMetadata?.schema ? deriveSectionMap(formMetadata.schema) : undefined,
+    [formMetadata],
+  );
 
-    const processControls = (
-      controls: unknown[],
-      currentSection: string | null,
-    ) => {
-      for (const ctrl of controls as {
-        id?: number;
-        type?: string;
-        label?: { value?: string };
-        controls?: unknown[];
-      }[]) {
-        if (ctrl.type === 'section') {
-          const sectionName = ctrl.label?.value ?? 'Section';
-          processControls(ctrl.controls ?? [], sectionName);
-        } else {
-          if (ctrl.id != null && currentSection) {
-            map[String(ctrl.id)] = currentSection;
-          }
-          if (ctrl.controls) {
-            processControls(ctrl.controls, currentSection);
-          }
-        }
-      }
-    };
-
-    processControls(
-      (formMetadata.schema as { controls?: unknown[] }).controls ?? [],
-      null,
-    );
-
-    return Object.keys(map).length > 0 ? map : undefined;
-  }, [formMetadata]);
-
-  const conceptDatatypeMap = useMemo(() => {
-    if (!formMetadata?.schema) return undefined;
-    const map: Record<string, string> = {};
-
-    const collectDatatypes = (controls: unknown[]) => {
-      (controls ?? []).forEach((ctrl: unknown) => {
-        const c = ctrl as {
-          concept?: { uuid?: string; datatype?: string };
-          controls?: unknown[];
-        };
-        if (c.concept?.uuid && c.concept?.datatype) {
-          map[c.concept.uuid] = c.concept.datatype;
-        }
-        if (c.controls) collectDatatypes(c.controls);
-      });
-    };
-
-    collectDatatypes(
-      (formMetadata.schema as { controls?: unknown[] }).controls ?? [],
-    );
-    return Object.keys(map).length > 0 ? map : undefined;
-  }, [formMetadata]);
+  const conceptDatatypeMap = useMemo(
+    () =>
+      formMetadata?.schema
+        ? deriveConceptDatatypeMap(formMetadata.schema)
+        : undefined,
+    [formMetadata],
+  );
 
   const modalErrorMessage = useMemo(() => {
     if (metadataError) {
