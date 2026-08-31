@@ -1,4 +1,4 @@
-import { DocumentReference, Encounter } from 'fhir/r4';
+import { DocumentReference, Encounter, Period } from 'fhir/r4';
 import { post } from '../api';
 import {
   FHIR_ENCOUNTER_CLASS_CODE_SYSTEM,
@@ -55,14 +55,43 @@ function buildDocumentReference(
   return documentReference;
 }
 
-function buildDocumentEncounter(
-  patientUuid: string,
-  visitUuid: string,
-  encounterTypeUuid: string,
-  locationUuid: string,
-  encounterTypeDisplay?: string,
-  authorPractitionerUuid?: string,
-): Encounter {
+const parseDate = (value?: string): Date | undefined => {
+  if (!value) {
+    return undefined;
+  }
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? undefined : date;
+};
+
+function encounterStartWithinVisit(visitPeriod?: Period): string {
+  const now = new Date();
+  const visitStart = parseDate(visitPeriod?.start);
+  if (!visitStart) {
+    return now.toISOString();
+  }
+  const visitEnd = parseDate(visitPeriod?.end);
+  // Inclusive on both bounds, and open-ended for a visit still in progress, as OpenMRS is.
+  const withinVisit = now >= visitStart && (!visitEnd || now <= visitEnd);
+  return (withinVisit ? now : visitStart).toISOString();
+}
+
+function buildDocumentEncounter({
+  patientUuid,
+  visitUuid,
+  encounterTypeUuid,
+  locationUuid,
+  encounterTypeDisplay,
+  authorPractitionerUuid,
+  visitPeriod,
+}: {
+  patientUuid: string;
+  visitUuid: string;
+  encounterTypeUuid: string;
+  locationUuid: string;
+  encounterTypeDisplay?: string;
+  authorPractitionerUuid?: string;
+  visitPeriod?: Period;
+}): Encounter {
   const encounter: Encounter = {
     resourceType: 'Encounter',
     status: 'finished',
@@ -96,7 +125,7 @@ function buildDocumentEncounter(
     location: [
       { location: { reference: `Location/${locationUuid}`, type: 'Location' } },
     ],
-    period: { start: new Date().toISOString() },
+    period: { start: encounterStartWithinVisit(visitPeriod) },
   };
   if (authorPractitionerUuid) {
     encounter.participant = [
@@ -137,17 +166,18 @@ export async function saveDocument(input: SaveDocumentInput): Promise<unknown> {
     );
   }
 
-  const { visitUuid, encounterTypeUuid, encounterTypeDisplay } =
+  const { visitUuid, encounterTypeUuid, encounterTypeDisplay, visitPeriod } =
     input.createEncounterInVisit;
   const encounterPlaceholder = `urn:uuid:${generateUUID()}`;
-  const encounter = buildDocumentEncounter(
-    input.patientUuid,
+  const encounter = buildDocumentEncounter({
+    patientUuid: input.patientUuid,
     visitUuid,
     encounterTypeUuid,
-    getUserLoginLocation().uuid,
+    locationUuid: getUserLoginLocation().uuid,
     encounterTypeDisplay,
-    input.authorPractitionerUuid,
-  );
+    authorPractitionerUuid: input.authorPractitionerUuid,
+    visitPeriod,
+  });
   const documentReference = buildDocumentReference(input, encounterPlaceholder);
 
   const bundle = createEncounterBundle([

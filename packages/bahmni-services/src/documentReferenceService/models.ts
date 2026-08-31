@@ -1,3 +1,5 @@
+import { Period } from 'fhir/r4';
+
 /**
  * Interface representing a single attachment within a document
  */
@@ -46,6 +48,7 @@ export interface CreateEncounterInVisit {
   visitUuid: string;
   encounterTypeUuid: string;
   encounterTypeDisplay?: string;
+  visitPeriod?: Period;
 }
 
 /** Where a document is attached: an existing encounter, or a new one created within a visit. */
