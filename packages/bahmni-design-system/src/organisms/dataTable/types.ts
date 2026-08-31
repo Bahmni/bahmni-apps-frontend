@@ -1,7 +1,10 @@
+import type { Table } from '@tanstack/react-table';
 import type { ReactNode } from 'react';
 import type { ButtonProps } from '../../atoms/button';
 
-export type FilterType = 'text' | 'select' | 'dateRange';
+export type DataTableInstance<T> = Table<T>;
+
+export type FilterType = 'text' | 'select' | 'dateRange' | 'numeric';
 
 export interface DataTableFilterOption {
   value: string;
@@ -28,6 +31,46 @@ export interface DataTableActionButton {
   props?: Partial<ButtonProps>;
 }
 
+export type DataTablePaginationConfig<T> =
+  | DefaultPaginationConfig
+  | ManualPaginationConfig<T>
+  | CursorPaginationConfig<T>;
+
+export interface DefaultPaginationConfig {
+  mode: 'default';
+  pageSize?: number;
+  pageSizes?: number[];
+}
+
+export interface ManualPaginationConfig<T> {
+  mode: 'manual';
+  page: number;
+  pageSize: number;
+  pageSizes?: number[];
+  totalItems: number;
+  onPageChange: (
+    page: number,
+    pageSize: number,
+    table: DataTableInstance<T>,
+  ) => void;
+}
+
+export type DataTableSetDirection = 'next' | 'prev';
+
+export interface CursorPaginationConfig<T> {
+  mode: 'cursor';
+  pageSize: number;
+  startPage?: number;
+  hasNext: boolean;
+  hasPrevious: boolean;
+  onSetChange: (
+    direction: DataTableSetDirection,
+    table: DataTableInstance<T>,
+  ) => void;
+  previousLabel?: string;
+  nextLabel?: string;
+}
+
 export interface DataTableProps<T extends { id: string }> {
   columns: DataTableColumn<T>[];
   rows: T[];
@@ -44,13 +87,7 @@ export interface DataTableProps<T extends { id: string }> {
   renderExpandedContent?: (row: T) => ReactNode;
   shouldRowBeExpandable?: (row: T) => boolean;
   initialExpandedRows?: string[];
-  enablePagination?: boolean;
-  pageSize?: number;
-  pageSizes?: number[];
-  page?: number;
-  onPageChange?: (page: number, pageSize: number) => void;
-  totalItems?: number;
-  manualPagination?: boolean;
+  pagination?: DataTablePaginationConfig<T>;
   id?: string;
   title?: string;
   description?: string;

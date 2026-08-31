@@ -50,6 +50,7 @@ export {
   type PersonAttributeConcept,
   type PatientSearchField,
   type AppointmentSearchField,
+  type AppointmentSearchResult,
   type ExpectedFieldConfig,
   type SearchActionConfig,
   AttributeFormat,
@@ -69,6 +70,8 @@ export {
   checkIfActiveVisitExists,
   createVisitForPatient,
   getActiveVisitByPatient,
+  getVisitLocationUUID,
+  createVisitWithFhirR4,
   type VisitType,
   type VisitTypes,
   type VisitData,
@@ -94,7 +97,11 @@ export {
   type AppointmentUnavailability,
   type CreateUnavailabilityRequest,
 } from './appointmentService';
-export { getFormattedError, getErrorKind } from './errorHandling';
+export {
+  getFormattedError,
+  getErrorKind,
+  PATIENT_NOT_FOUND_ERROR_KEY,
+} from './errorHandling';
 export type { ErrorKind } from './errorHandling';
 export {
   capitalize,
@@ -114,6 +121,8 @@ export {
   camelToScreamingSnakeCase,
   convertToSentenceCase,
   resolveComboBoxItems,
+  formatGender,
+  formatCountry,
 } from './utils';
 export {
   type FormatDateResult,
@@ -235,6 +244,9 @@ export {
   getPatientObservationsBundle,
   getPatientObservationsWithEncounterBundle,
   getPatientObservations,
+  getObservationsBundleByEncounterUuid,
+  groupObservationsByEncounter,
+  type EncounterGroup,
 } from './observationService';
 export {
   getCurrentProvider,
@@ -263,21 +275,24 @@ export {
 
 export {
   getActiveVisit,
+  getActiveVisitAtLoginLocation,
   getEncounterByUuid,
   getVisits,
   getPatientEncounters,
   getEncounterTypeByName,
   type EncounterTypeRef,
   shouldEnableEncounterFilter,
-  getObservationsBundleByEncounterUuid,
   createFhirEncounter,
   updateFhirEncounter,
+  buildEncounterResource,
+  type BuildEncounterResourceParams,
   type FormsEncounter,
 } from './encounterService';
 
 export {
   getEncountersAndVisitsForEOC,
   type EpisodeOfCareDataType,
+  getEpisodeOfCare,
 } from './episodeOfCareService';
 
 export {
@@ -290,6 +305,7 @@ export {
 export {
   dispatchAuditEvent,
   AUDIT_LOG_EVENT_DETAILS,
+  MODULE_LABELS,
   initializeAuditListener,
   type AuditEventType,
   logAuditEvent,
@@ -316,6 +332,7 @@ export {
   DATETIME_REGEX_PATTERN,
   INTERPRETATION_TO_CODE,
   FHIR_LAB_ORDER_CONCEPT_TYPE_EXTENSION_URL,
+  FHIR_EXT_MEDICATION_REQUEST_NOTE_CATEGORY,
 } from './constants/fhir';
 
 export {
@@ -333,18 +350,18 @@ export {
 export {
   fetchObservationForms,
   fetchFormMetadata,
+  fetchFormUuidByObservationDate,
   transformFormDataToObservations,
   transformObservationsToFormData,
   transformContainerObservationsToForm2Observations,
   convertImmutableToPlainObject,
   extractNotesFromFormData,
-  hasMissingMandatoryVisibleField,
+  formatDateForControl,
   getPatientFormData,
   type ObservationForm,
   type FormApiResponse,
   type ApiNameTranslation,
   type FormPrivilege,
-  type ApiFormPrivilege,
   type FormMetadata,
   type FormData,
   type FormControlData,
@@ -364,10 +381,12 @@ export { getServiceRequests } from './orderRequestService';
 export {
   getPatientPrograms,
   getPatientProgramsPage,
+  getAllPrograms,
   getProgramByUUID,
   getCurrentStateName,
   extractAttributes,
   updateProgramState,
+  type Program,
   type ProgramPage,
   type ProgramEnrollment,
   type PatientProgramsResponse,
@@ -451,3 +470,13 @@ export type {
   TemplateListResponse,
 } from './templateService';
 export { getTasks } from './taskService';
+export {
+  groupExtensionsByPoint,
+  filterExtensionsByPrivileges,
+  type Extension,
+  type SearchExtensionParam,
+  type SearchExtension,
+  type ActionExtensionParam,
+  type ActionExtension,
+  type ExtensionButtonKind,
+} from './extensions';

@@ -1,6 +1,5 @@
-import { type CDSSRule } from '@bahmni/services';
+import { type CDSSRule, Extension } from '@bahmni/services';
 import type { PrintOption } from '@bahmni/widgets';
-import type { Extension } from '../../extensions';
 
 export interface AllergyConceptMap {
   medicationAllergenUuid: string;
@@ -31,6 +30,7 @@ export interface InputControl<
 export interface ConsultationPad {
   allergyConceptMap: AllergyConceptMap;
   statDurationInMilliseconds?: number;
+  allowedVisitTypes?: string[];
   inputControls: InputControl[];
 }
 

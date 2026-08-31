@@ -4,4 +4,7 @@ export const KNOWN_FIELDS: string[] = [
   'endDate',
   'outcome',
   'state',
+  'careManager',
 ];
+
+export const EPISODE_OF_CARE_FIELDS: string[] = ['careManager'];

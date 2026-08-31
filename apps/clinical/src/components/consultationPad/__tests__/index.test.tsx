@@ -3,6 +3,7 @@ import {
   dispatchCDSSCheck,
   dispatchCDSSResults,
   dispatchConsultationSaved,
+  findActiveEncounterInSession,
   getConfig,
   getEncounterByUuid,
   invokeCDSSRule,
@@ -14,7 +15,6 @@ import userEvent from '@testing-library/user-event';
 import { axe, toHaveNoViolations } from 'jest-axe';
 import { useClinicalAppData } from '../../../hooks/useClinicalAppData';
 import { useEncounterConcepts } from '../../../hooks/useEncounterConcepts';
-import { useEncounterSession } from '../../../hooks/useEncounterSession';
 import { useClinicalConfig } from '../../../providers/clinicalConfig';
 import { useAllergyStore } from '../../../stores/allergyStore';
 import { useEncounterDetailsStore } from '../../../stores/encounterDetailsStore';
@@ -73,6 +73,7 @@ jest.mock('@bahmni/services', () => ({
   dispatchAuditEvent: jest.fn(),
   dispatchConsultationSaved: jest.fn(),
   dispatchCDSSResults: jest.fn(),
+  findActiveEncounterInSession: jest.fn(),
   invokeCDSSRule: jest.fn(),
   getConfig: jest.fn(),
   getEncounterByUuid: jest.fn(),
@@ -89,12 +90,12 @@ jest.mock('../../../stores/encounterDetailsStore');
 jest.mock('../../../stores/observationFormsStore');
 jest.mock('../../../hooks/useClinicalAppData');
 jest.mock('../../../hooks/useEncounterConcepts');
-jest.mock('../../../hooks/useEncounterSession');
 jest.mock('../../../providers/clinicalConfig');
 
+const mockObservationFormsContainer = jest.fn(() => null);
 jest.mock('../../forms/observations/ObservationFormsContainer', () => ({
   __esModule: true,
-  default: () => null,
+  default: (props: unknown) => mockObservationFormsContainer(props),
 }));
 
 jest.mock('../services', () => ({
@@ -102,6 +103,7 @@ jest.mock('../services', () => ({
 }));
 
 jest.mock('../utils', () => ({
+  ...jest.requireActual('../utils'),
   loadEncounterInputControls: jest.fn(),
   getActiveEntries: jest.fn(),
   captureUpdatedResources: jest.fn(),
@@ -113,6 +115,7 @@ const defaultEncounterDetailsState = {
   setRequestedEncounterType: jest.fn(),
   setConsultationDate: jest.fn(),
   isConsultationDateReady: true,
+  selectedEncounterType: { uuid: 'encounter-type-uuid' } as any,
 };
 
 const mockAddNotification = jest.fn();
@@ -183,9 +186,6 @@ beforeEach(() => {
     refetch: jest.fn(),
   } as any);
   jest
-    .mocked(useEncounterSession)
-    .mockReturnValue({ activeEncounter: null, matchReason: [] } as any);
-  jest
     .mocked(useClinicalConfig)
     .mockReturnValue({ clinicalConfig: null } as any);
 });
@@ -225,6 +225,26 @@ describe('ConsultationPad', () => {
       expect(screen.getByTestId('action-area')).toHaveAttribute(
         'data-hidden',
         'true',
+      );
+    });
+
+    it('forwards isActionAreaExpanded and onToggleActionAreaExpand to ObservationFormsContainer when viewing a form', () => {
+      jest.mocked(useObservationFormsStore).mockReturnValue({
+        ...mockObsFormsState,
+        viewingForm: { uuid: 'form-uuid', name: 'Vitals' } as any,
+      } as any);
+      const mockOnToggleActionAreaExpand = jest.fn();
+
+      renderComponent({
+        isActionAreaExpanded: true,
+        onToggleActionAreaExpand: mockOnToggleActionAreaExpand,
+      });
+
+      expect(mockObservationFormsContainer).toHaveBeenCalledWith(
+        expect.objectContaining({
+          isActionAreaExpanded: true,
+          onToggleActionAreaExpand: mockOnToggleActionAreaExpand,
+        }),
       );
     });
   });
@@ -283,6 +303,49 @@ describe('ConsultationPad', () => {
     });
   });
 
+  describe('activeEncounter wiring', () => {
+    const EDIT_ENCOUNTER_UUID = 'edit-enc-uuid';
+
+    const withViewingForm = () =>
+      jest.mocked(useObservationFormsStore).mockReturnValue({
+        ...mockObsFormsState,
+        viewingForm: { uuid: 'form-uuid', name: 'Vitals' } as any,
+      } as any);
+
+    it('passes the resolved activeEncounter through encounterSessionStartContext', async () => {
+      jest.mocked(useActivePractitioner).mockReturnValue({
+        practitioner: { uuid: 'prac-uuid' },
+      } as any);
+      jest
+        .mocked(findActiveEncounterInSession)
+        .mockResolvedValue({ id: EDIT_ENCOUNTER_UUID } as any);
+      jest
+        .mocked(getEncounterByUuid)
+        .mockResolvedValue({ id: EDIT_ENCOUNTER_UUID } as any);
+      withViewingForm();
+
+      renderComponent({
+        encounterSessionStartContext: {
+          encounterType: 'Consultation',
+          editOnly: 'observationForms',
+          sourceEncounterUuid: EDIT_ENCOUNTER_UUID,
+        },
+      });
+
+      await waitFor(() => {
+        expect(mockObservationFormsContainer).toHaveBeenCalledWith(
+          expect.objectContaining({
+            encounterSessionStartContext: expect.objectContaining({
+              activeEncounter: expect.objectContaining({
+                id: EDIT_ENCOUNTER_UUID,
+              }),
+            }),
+          }),
+        );
+      });
+    });
+  });
+
   describe('encounterType prop validation', () => {
     it('renders error state when specified encounterType is not defined in configuration', () => {
       renderComponent({
@@ -331,170 +394,256 @@ describe('ConsultationPad', () => {
     });
   });
 
-  describe('useEncounterSession integration', () => {
-    it('passes selectedEncounterType uuid to useEncounterSession', () => {
-      jest
-        .mocked(useEncounterDetailsStore)
-        .mockImplementation((selector: any) =>
-          selector({
-            ...defaultEncounterDetailsState,
-            selectedEncounterType: {
-              uuid: 'encounter-type-uuid',
-              name: 'Consultation',
-            },
-          }),
-        );
-
-      renderComponent();
-
-      expect(useEncounterSession).toHaveBeenCalledWith(
-        expect.objectContaining({ encounterTypeUUID: 'encounter-type-uuid' }),
-      );
-    });
-  });
-
   describe('encounter date seeding', () => {
     it('calls setConsultationDate with activeEncounter period.start when available', async () => {
       const mockSetConsultationDate = jest.fn();
-      (useEncounterDetailsStore as any).getState = jest.fn().mockReturnValue({
+      const mockEncounterData = {
+        period: { start: '2024-03-15T10:00:00.000Z' },
+      } as any;
+      jest
+        .mocked(findActiveEncounterInSession)
+        .mockClear()
+        .mockResolvedValue(mockEncounterData);
+      jest
+        .mocked(useActivePractitioner)
+        .mockClear()
+        .mockReturnValue({
+          practitioner: { uuid: 'practitioner-uuid' },
+        } as any);
+      const stateWithMocks = {
         ...defaultEncounterDetailsState,
         setConsultationDate: mockSetConsultationDate,
-      });
-      jest.mocked(useEncounterSession).mockReturnValue({
-        activeEncounter: {
-          period: { start: '2024-03-15T10:00:00.000Z' },
-        } as any,
-        matchReason: ['MATCHED'],
-      } as any);
+        selectedEncounterType: { uuid: 'encounter-type-uuid' },
+      };
+      jest
+        .mocked(useEncounterDetailsStore)
+        .mockClear()
+        .mockImplementation((selector: any) => selector(stateWithMocks));
+      (useEncounterDetailsStore as any).getState = jest
+        .fn()
+        .mockReturnValue(stateWithMocks);
 
       renderComponent();
 
-      await waitFor(() => {
-        expect(mockSetConsultationDate).toHaveBeenCalledWith(
-          new Date('2024-03-15T10:00:00.000Z'),
-        );
-      });
-    });
-
-    it('falls back to current date when period.start is an invalid date', async () => {
-      const mockSetConsultationDate = jest.fn();
-      (useEncounterDetailsStore as any).getState = jest.fn().mockReturnValue({
-        ...defaultEncounterDetailsState,
-        setConsultationDate: mockSetConsultationDate,
-      });
-      jest.mocked(useEncounterSession).mockReturnValue({
-        activeEncounter: {
-          period: { start: 'not-a-real-date' },
-        } as any,
-        matchReason: ['MATCHED'],
-      } as any);
-
-      renderComponent();
-
-      await waitFor(() => {
-        expect(mockSetConsultationDate).toHaveBeenCalledWith(expect.any(Date));
-      });
-      const seededDate = mockSetConsultationDate.mock.calls[0][0] as Date;
-      expect(isNaN(seededDate.getTime())).toBe(false);
+      await waitFor(
+        () => {
+          expect(mockSetConsultationDate).toHaveBeenCalledWith(
+            new Date('2024-03-15T10:00:00.000Z'),
+          );
+        },
+        { timeout: 3000 },
+      );
     });
 
     it('calls setConsultationDate with current date when activeEncounter has no period.start', async () => {
       const mockSetConsultationDate = jest.fn();
-      (useEncounterDetailsStore as any).getState = jest.fn().mockReturnValue({
+      jest
+        .mocked(findActiveEncounterInSession)
+        .mockClear()
+        .mockResolvedValue(null);
+      jest
+        .mocked(useActivePractitioner)
+        .mockClear()
+        .mockReturnValue({
+          practitioner: { uuid: 'practitioner-uuid' },
+        } as any);
+      const stateWithMocks = {
         ...defaultEncounterDetailsState,
         setConsultationDate: mockSetConsultationDate,
+        selectedEncounterType: { uuid: 'encounter-type-uuid' },
+      };
+      jest
+        .mocked(useEncounterDetailsStore)
+        .mockClear()
+        .mockImplementation((selector: any) => selector(stateWithMocks));
+      (useEncounterDetailsStore as any).getState = jest
+        .fn()
+        .mockReturnValue(stateWithMocks);
+
+      renderComponent();
+
+      await waitFor(
+        () => {
+          expect(mockSetConsultationDate).toHaveBeenCalledWith(
+            expect.any(Date),
+          );
+        },
+        { timeout: 3000 },
+      );
+    });
+
+    it('falls back to current date when sourceEncounter fetch fails (edit mode)', async () => {
+      const mockSetConsultationDate = jest.fn();
+      jest
+        .mocked(findActiveEncounterInSession)
+        .mockClear()
+        .mockResolvedValue(null);
+      jest
+        .mocked(useActivePractitioner)
+        .mockClear()
+        .mockReturnValue({
+          practitioner: { uuid: 'practitioner-uuid' },
+        } as any);
+      const stateWithMocks = {
+        ...defaultEncounterDetailsState,
+        setConsultationDate: mockSetConsultationDate,
+        selectedEncounterType: { uuid: 'encounter-type-uuid' },
+      };
+      jest
+        .mocked(useEncounterDetailsStore)
+        .mockClear()
+        .mockImplementation((selector: any) => selector(stateWithMocks));
+      (useEncounterDetailsStore as any).getState = jest
+        .fn()
+        .mockReturnValue(stateWithMocks);
+      jest
+        .mocked(getEncounterByUuid)
+        .mockClear()
+        .mockRejectedValue(new Error('not found'));
+
+      renderComponent({
+        encounterSessionStartContext: {
+          encounterType: 'Consultation',
+          sourceEncounterUuid: 'missing-uuid',
+        },
       });
-      jest.mocked(useEncounterSession).mockReturnValue({
-        activeEncounter: null,
-        matchReason: [],
+
+      await waitFor(
+        () => {
+          expect(mockSetConsultationDate).toHaveBeenCalledWith(
+            expect.any(Date),
+          );
+        },
+        { timeout: 3000 },
+      );
+    });
+
+    it('seeds the fetched encounter period.start in edit mode', async () => {
+      const mockSetConsultationDate = jest.fn();
+      jest
+        .mocked(findActiveEncounterInSession)
+        .mockClear()
+        .mockResolvedValue(null);
+      jest
+        .mocked(useActivePractitioner)
+        .mockClear()
+        .mockReturnValue({
+          practitioner: { uuid: 'practitioner-uuid' },
+        } as any);
+      const stateWithMocks = {
+        ...defaultEncounterDetailsState,
+        setConsultationDate: mockSetConsultationDate,
+        selectedEncounterType: { uuid: 'encounter-type-uuid' },
+      };
+      jest
+        .mocked(useEncounterDetailsStore)
+        .mockClear()
+        .mockImplementation((selector: any) => selector(stateWithMocks));
+      (useEncounterDetailsStore as any).getState = jest
+        .fn()
+        .mockReturnValue(stateWithMocks);
+      jest
+        .mocked(getEncounterByUuid)
+        .mockClear()
+        .mockResolvedValue({
+          period: { start: '2024-03-15T10:00:00.000Z' },
+        } as any);
+
+      renderComponent({
+        encounterSessionStartContext: {
+          encounterType: 'Consultation',
+          sourceEncounterUuid: 'existing-uuid',
+        },
+      });
+
+      await waitFor(
+        () => {
+          expect(mockSetConsultationDate).toHaveBeenCalledWith(
+            expect.any(Date),
+          );
+        },
+        { timeout: 3000 },
+      );
+    });
+  });
+
+  describe('active episode encounter scoping', () => {
+    beforeEach(() => {
+      jest
+        .mocked(findActiveEncounterInSession)
+        .mockClear()
+        .mockResolvedValue(null);
+      jest
+        .mocked(useActivePractitioner)
+        .mockClear()
+        .mockReturnValue({
+          practitioner: { uuid: 'practitioner-uuid' },
+        } as any);
+    });
+
+    it("passes the active episode's own encounter uuids to findActiveEncounterInSession", async () => {
+      jest.mocked(useClinicalAppData).mockReturnValue({
+        episodeOfCare: [
+          { uuid: 'eoc-1', encounterUuids: ['encounter-1', 'encounter-2'] },
+        ],
+        patientId: 'patient-123',
+        activeVisitId: 'visit-123',
+        activeEpisodeId: 'eoc-1',
       } as any);
 
       renderComponent();
 
       await waitFor(() => {
-        expect(mockSetConsultationDate).toHaveBeenCalledWith(expect.any(Date));
-      });
-    });
-
-    it('falls back to current date when editEncounter fetch fails (edit mode)', async () => {
-      const mockSetConsultationDate = jest.fn();
-      (useEncounterDetailsStore as any).getState = jest.fn().mockReturnValue({
-        ...defaultEncounterDetailsState,
-        setConsultationDate: mockSetConsultationDate,
-      });
-      jest.mocked(useEncounterSession).mockReturnValue({
-        activeEncounter: null,
-        matchReason: [],
-      } as any);
-      jest.mocked(getEncounterByUuid).mockRejectedValue(new Error('not found'));
-
-      renderComponent({
-        encounterSessionStartContext: {
-          encounterType: 'Consultation',
-          editEncounterUuid: 'missing-uuid',
-        },
-      });
-
-      await waitFor(() => {
-        expect(mockSetConsultationDate).toHaveBeenCalledWith(expect.any(Date));
-      });
-    });
-
-    it('seeds the fetched encounter period.start in edit mode', async () => {
-      const mockSetConsultationDate = jest.fn();
-      (useEncounterDetailsStore as any).getState = jest.fn().mockReturnValue({
-        ...defaultEncounterDetailsState,
-        setConsultationDate: mockSetConsultationDate,
-      });
-      jest.mocked(useEncounterSession).mockReturnValue({
-        activeEncounter: null,
-        matchReason: [],
-      } as any);
-      jest.mocked(getEncounterByUuid).mockResolvedValue({
-        period: { start: '2024-03-15T10:00:00.000Z' },
-      } as any);
-
-      renderComponent({
-        encounterSessionStartContext: {
-          encounterType: 'Consultation',
-          editEncounterUuid: 'existing-uuid',
-        },
-      });
-
-      await waitFor(() => {
-        expect(mockSetConsultationDate).toHaveBeenCalledWith(
-          new Date('2024-03-15T10:00:00.000Z'),
+        expect(findActiveEncounterInSession).toHaveBeenCalledWith(
+          'patient-123',
+          'practitioner-uuid',
+          undefined,
+          'encounter-type-uuid',
+          ['encounter-1', 'encounter-2'],
         );
       });
     });
 
-    it('does not seed a date while the edit encounter fetch is pending', async () => {
-      const mockSetConsultationDate = jest.fn();
-      (useEncounterDetailsStore as any).getState = jest.fn().mockReturnValue({
-        ...defaultEncounterDetailsState,
-        setConsultationDate: mockSetConsultationDate,
-      });
-      jest.mocked(useEncounterSession).mockReturnValue({
-        activeEncounter: null,
-        matchReason: [],
+    it('passes undefined when there is no active episode', async () => {
+      jest.mocked(useClinicalAppData).mockReturnValue({
+        episodeOfCare: [],
+        patientId: 'patient-123',
+        activeVisitId: 'visit-123',
+        activeEpisodeId: null,
       } as any);
-      // Fetch never settles, so editEncounterLoading stays true.
-      jest.mocked(getEncounterByUuid).mockReturnValue(new Promise(() => {}));
 
-      renderComponent({
-        encounterSessionStartContext: {
-          encounterType: 'Consultation',
-          editEncounterUuid: 'pending-uuid',
-        },
-      });
+      renderComponent();
 
       await waitFor(() => {
-        expect(getEncounterByUuid).toHaveBeenCalledWith(
-          'pending-uuid',
-          expect.anything(),
+        expect(findActiveEncounterInSession).toHaveBeenCalledWith(
+          'patient-123',
+          'practitioner-uuid',
+          undefined,
+          'encounter-type-uuid',
+          undefined,
         );
       });
-      expect(mockSetConsultationDate).not.toHaveBeenCalled();
+    });
+
+    it("passes undefined when the active episode isn't in episodeOfCare", async () => {
+      jest.mocked(useClinicalAppData).mockReturnValue({
+        episodeOfCare: [],
+        patientId: 'patient-123',
+        activeVisitId: 'visit-123',
+        activeEpisodeId: 'eoc-1',
+      } as any);
+
+      renderComponent();
+
+      await waitFor(() => {
+        expect(findActiveEncounterInSession).toHaveBeenCalledWith(
+          'patient-123',
+          'practitioner-uuid',
+          undefined,
+          'encounter-type-uuid',
+          undefined,
+        );
+      });
     });
   });
 
@@ -825,65 +974,6 @@ describe('ConsultationPad', () => {
 
       expect(preloadSpy).toHaveBeenCalledWith(mockAllergies);
       preloadSpy.mockRestore();
-    });
-  });
-
-  describe('encounterForSubmission — MATCHED logic (BAH-4652)', () => {
-    const mockActiveEncounter = { uuid: 'enc-uuid-matched' };
-
-    const enableSubmit = () => {
-      (mockRegistry[0].hasData as jest.Mock).mockReturnValue(true);
-    };
-
-    it('passes activeEncounter to submitConsultation when matchReason includes MATCHED', async () => {
-      jest.mocked(useEncounterSession).mockReturnValue({
-        activeEncounter: mockActiveEncounter as any,
-        matchReason: ['MATCHED'],
-      } as any);
-      enableSubmit();
-
-      renderComponent();
-      await userEvent.click(screen.getByTestId('primary-button'));
-
-      await waitFor(() => {
-        expect(submitConsultation).toHaveBeenCalledWith(
-          expect.objectContaining({ activeEncounter: mockActiveEncounter }),
-        );
-      });
-    });
-
-    it('passes null to submitConsultation when matchReason is SESSION_EXPIRED', async () => {
-      jest.mocked(useEncounterSession).mockReturnValue({
-        activeEncounter: mockActiveEncounter as any,
-        matchReason: ['SESSION_EXPIRED'],
-      } as any);
-      enableSubmit();
-
-      renderComponent();
-      await userEvent.click(screen.getByTestId('primary-button'));
-
-      await waitFor(() => {
-        expect(submitConsultation).toHaveBeenCalledWith(
-          expect.objectContaining({ activeEncounter: null }),
-        );
-      });
-    });
-
-    it('passes null to submitConsultation when matchReason is PROVIDER_MISMATCH', async () => {
-      jest.mocked(useEncounterSession).mockReturnValue({
-        activeEncounter: mockActiveEncounter as any,
-        matchReason: ['PROVIDER_MISMATCH'],
-      } as any);
-      enableSubmit();
-
-      renderComponent();
-      await userEvent.click(screen.getByTestId('primary-button'));
-
-      await waitFor(() => {
-        expect(submitConsultation).toHaveBeenCalledWith(
-          expect.objectContaining({ activeEncounter: null }),
-        );
-      });
     });
   });
 

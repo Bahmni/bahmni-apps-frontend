@@ -243,8 +243,9 @@ const LabInvestigation: React.FC<WidgetProps> = ({
                   key={test.id ?? `${group.date}-${test.testName}`}
                   test={test}
                   isOpen={openAccordionIndices.has(index)}
-                  hasProcessedReport={!!test.reportId}
-                  reportId={test.reportId}
+                  hasProcessedReport={
+                    !!test.reportIds && test.reportIds.length > 0
+                  }
                 />
               ))}
             </AccordionItem>

@@ -14,6 +14,7 @@ import {
   getBrowserLocaleDateFormat,
   convertTo24HourFormat,
   getTimeInMinutes,
+  isDate,
 } from '../date';
 
 const mockT = (key: string, options?: { count?: number }) => {
@@ -852,5 +853,27 @@ describe('getTimeInMinutes', () => {
     [undefined as unknown as string],
   ])('should return null for invalid input: %s', (input) => {
     expect(getTimeInMinutes(input)).toBeNull();
+  });
+});
+
+describe('isDate', () => {
+  it.each([
+    ['2026-02-04T00:00:00.000+0000'],
+    ['2023-01-15T10:30:00.000+00:00'],
+    ['2000-12-31T23:59:59.999Z'],
+    ['1999-06-01T00:00:00.000'],
+  ])('should return true for ISO date string: %s', (input) => {
+    expect(isDate(input)).toBe(true);
+  });
+
+  it.each([
+    ['Initial Stage'],
+    ['REG123456'],
+    [''],
+    ['2026-02-04'],
+    ['T00:00:00'],
+    ['not-a-date'],
+  ])('should return false for non-ISO-date string: %s', (input) => {
+    expect(isDate(input)).toBe(false);
   });
 });

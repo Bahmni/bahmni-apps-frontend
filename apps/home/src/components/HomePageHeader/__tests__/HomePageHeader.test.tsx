@@ -1,23 +1,17 @@
-import { render, screen } from '@testing-library/react';
+import { act, render, screen } from '@testing-library/react';
+import i18n from 'i18next';
 import { axe, toHaveNoViolations } from 'jest-axe';
 import { HomePageHeader } from '../HomePageHeader';
 
 expect.extend(toHaveNoViolations);
 
 jest.mock('@bahmni/design-system', () => ({
-  Header: ({ ariaLabel, extraContent }: any) => (
+  Header: ({ ariaLabel, brandPrefix, globalFeatures, userMenu }: any) => (
     <header aria-label={ariaLabel} data-testid="header">
-      {extraContent}
+      <div data-testid="brand">{brandPrefix}</div>
+      <div data-testid="global-features">{globalFeatures}</div>
+      <div data-testid="user-menu-slot">{userMenu}</div>
     </header>
-  ),
-}));
-
-jest.mock('@carbon/react', () => ({
-  HeaderName: ({ prefix }: any) => (
-    <div data-testid="header-name">{prefix}</div>
-  ),
-  HeaderGlobalBar: ({ children }: any) => (
-    <div data-testid="header-global-bar">{children}</div>
   ),
 }));
 
@@ -25,11 +19,8 @@ jest.mock('@bahmni/widgets', () => ({
   LocationSelector: () => (
     <div data-testid="location-selector">Location Selector</div>
   ),
-}));
-
-jest.mock('../../UserProfileMenu', () => ({
-  UserProfileMenu: () => (
-    <div data-testid="user-profile-menu">User Profile Menu</div>
+  UserGlobalAction: () => (
+    <div data-testid="user-global-action">User Global Action</div>
   ),
 }));
 
@@ -42,31 +33,51 @@ describe('HomePageHeader', () => {
     expect(header).toHaveAttribute('aria-label', 'Bahmni');
   });
 
-  it('renders Home branding', () => {
+  it('renders Home branding via brandPrefix', () => {
     render(<HomePageHeader />);
 
-    expect(screen.getByTestId('header-name')).toBeInTheDocument();
-    expect(screen.getByText('Home')).toBeInTheDocument();
+    expect(screen.getByTestId('brand')).toHaveTextContent('Home');
   });
 
-  it('renders location selector', () => {
-    render(<HomePageHeader />);
+  describe('locale change', () => {
+    afterEach(async () => {
+      await act(async () => {
+        await i18n.changeLanguage('en');
+      });
+    });
 
-    expect(screen.getByTestId('location-selector')).toBeInTheDocument();
+    it('renders translated brand text when the locale changes', async () => {
+      i18n.addResourceBundle(
+        'es',
+        'home',
+        { HOME_LABEL: 'Inicio' },
+        true,
+        true,
+      );
+      await act(async () => {
+        await i18n.changeLanguage('es');
+      });
+
+      render(<HomePageHeader />);
+
+      expect(screen.getByTestId('brand')).toHaveTextContent('Inicio');
+    });
   });
 
-  it('renders user profile menu', () => {
+  it('renders the location selector in the global features slot', () => {
     render(<HomePageHeader />);
 
-    expect(screen.getByTestId('user-profile-menu')).toBeInTheDocument();
+    const features = screen.getByTestId('global-features');
+    expect(features).toContainElement(screen.getByTestId('location-selector'));
   });
 
-  it('renders both location and user components in header global bar', () => {
+  it('renders the shared UserGlobalAction in the user menu slot', () => {
     render(<HomePageHeader />);
 
-    const globalBar = screen.getByTestId('header-global-bar');
-    expect(globalBar).toContainElement(screen.getByTestId('location-selector'));
-    expect(globalBar).toContainElement(screen.getByTestId('user-profile-menu'));
+    const userMenuSlot = screen.getByTestId('user-menu-slot');
+    expect(userMenuSlot).toContainElement(
+      screen.getByTestId('user-global-action'),
+    );
   });
 
   it('has no accessibility violations', async () => {

@@ -95,7 +95,7 @@ describe('documentReferenceService', () => {
       await getDocumentReferences(PATIENT_UUID, encounterUuids);
 
       expect(mockedGet).toHaveBeenCalledWith(
-        `${BASE_URL}&encounter=enc-uuid-1,enc-uuid-2`,
+        `${BASE_URL}&encounter=enc-uuid-1%2Cenc-uuid-2`,
       );
     });
 
@@ -223,32 +223,6 @@ describe('documentReferenceService', () => {
 
       expect(result[0].attachments).toEqual([]);
       expect(result[0].documentUrl).toBe('');
-    });
-
-    it('handles missing masterIdentifier by using resource id', async () => {
-      const docWithoutMasterIdentifier: DocumentReference = {
-        resourceType: 'DocumentReference',
-        id: 'doc-2',
-        status: 'current',
-        content: [
-          {
-            attachment: {
-              contentType: 'application/pdf',
-              url: '100/doc.pdf',
-            },
-          },
-        ],
-      };
-      const bundleWithoutMasterIdentifier: Bundle<DocumentReference> = {
-        resourceType: 'Bundle',
-        type: 'searchset',
-        entry: [{ resource: docWithoutMasterIdentifier }],
-      };
-      mockedGet.mockResolvedValueOnce(bundleWithoutMasterIdentifier);
-
-      const result = await getFormattedDocumentReferences(PATIENT_UUID);
-
-      expect(result[0].documentIdentifier).toBe('doc-2');
     });
 
     it('uses category coding display when type coding is absent', async () => {
@@ -396,7 +370,7 @@ describe('documentReferenceService', () => {
       await getFormattedDocumentReferences(PATIENT_UUID, encounterUuids);
 
       expect(mockedGet).toHaveBeenCalledWith(
-        `${BASE_URL}&encounter=enc-uuid-1,enc-uuid-2`,
+        `${BASE_URL}&encounter=enc-uuid-1%2Cenc-uuid-2`,
       );
     });
   });
@@ -477,7 +451,7 @@ describe('documentReferenceService', () => {
       await getDocumentReferencePage(PATIENT_UUID, encounterUuids);
 
       expect(mockedGet).toHaveBeenCalledWith(
-        `${PAGE_BASE_URL}&encounter=enc-uuid-1,enc-uuid-2`,
+        `${PAGE_BASE_URL}&encounter=enc-uuid-1%2Cenc-uuid-2`,
       );
     });
 

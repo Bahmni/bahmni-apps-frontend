@@ -3,6 +3,44 @@
 @use "@carbon/react/scss/theme" as *;
 
 .dataTableBody {
+  padding-block-start: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+
+  h2 {
+    @include type-style("heading-compact-02");
+  }
+
+  > div:first-child {
+    flex: 1;
+    align-content: center;
+    border-bottom: none;
+    padding-block: 0;
+    min-height: 3rem;
+  }
+
+  > section {
+    flex: 0 0 auto;
+    width: auto;
+
+    > div {
+      padding: 0;
+      min-height: auto;
+      justify-content: flex-end;
+    }
+  }
+
+  > section:first-child {
+    flex: 0 0 100%;
+  }
+
+  table {
+    table-layout: fixed;
+    width: 100%;
+  }
+
   td {
     @include type-style("body-compact-01");
     background-color: $background !important;
@@ -27,6 +65,10 @@
   }
   th {
     border-block: 1px solid $border-subtle !important;
+  }
+
+  td, th {
+    width: auto;
   }
 }
 
@@ -56,6 +98,65 @@
 .pagination {
   background-color: $background;
   border-top: 1px solid $border-subtle;
+}
+
+.setPagination {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: right;
+  gap: $spacing-02;
+  background-color: $layer-01;
+  border-top: 1px solid $border-subtle;
+}
+
+.setNavButton {
+  gap: $spacing-05;
+  display: flex;
+  align-items: center;
+  border: none !important;
+  outline: none !important;
+
+  &:focus,
+  &:focus-visible {
+    outline: none !important;
+    box-shadow: none !important;
+  }
+}
+
+.setPaginationPages {
+  display: flex;
+  align-items: center;
+  gap: $spacing-02;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.setPaginationPage {
+  @include type-style("body-compact-01");
+  min-width: $spacing-07;
+  padding: $spacing-02 $spacing-03;
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: $text-secondary;
+  cursor: pointer;
+
+  &:hover {
+    background-color: $layer-hover-01;
+  }
+
+  &:focus-visible {
+    outline: 2px solid $focus;
+    outline-offset: -2px;
+  }
+}
+
+.setPaginationPageActive {
+  @include type-style("heading-compact-01");
+  color: $text-primary;
+  border-bottom-color: $border-interactive;
 }
 
 .filterRow {

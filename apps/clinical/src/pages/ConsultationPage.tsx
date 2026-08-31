@@ -14,6 +14,7 @@ import {
   getFormattedPatientById,
   capitalize,
   hasPrivilege,
+  PATIENT_NOT_FOUND_ERROR_KEY,
 } from '@bahmni/services';
 import {
   ProgramDetails,
@@ -31,7 +32,7 @@ import React, {
   useState,
 } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import ConsultationPad from '../components/consultationPad/';
+import ConsultationPadContainer from '../components/consultationPadContainer';
 import DashboardContainer from '../components/dashboardContainer/DashboardContainer';
 import PatientHeader from '../components/patientHeader/PatientHeader';
 import PatientSearch from '../components/patientSearch/PatientSearch';
@@ -54,6 +55,7 @@ import {
   getDefaultDashboard,
   getSidebarItems,
   filterSectionsByPrivileges,
+  isPatientNotFoundError,
 } from './util';
 
 const addSectionIds = (config: DashboardConfig): DashboardConfig => {
@@ -82,6 +84,7 @@ const ConsultationPage: React.FC = () => {
   const { userPrivileges } = useUserPrivilege();
   const { addNotification } = useNotification();
   const [isActionAreaVisible, setIsActionAreaVisible] = useState(false);
+  const [isActionAreaExpanded, setIsActionAreaExpanded] = useState(false);
   const [encounterSessionStartContext, setEncounterSessionStartContext] =
     useState<EncounterSessionStartContext | null>(null);
 
@@ -89,6 +92,7 @@ const ConsultationPage: React.FC = () => {
     useCallback((event) => {
       setEncounterSessionStartContext(event);
       setIsActionAreaVisible(true);
+      setIsActionAreaExpanded(false);
     }, []),
   );
   const [isSearchOpen, setIsSearchOpen] = useState(false);
@@ -113,16 +117,49 @@ const ConsultationPage: React.FC = () => {
   const viewingForm = useObservationFormsStore((state) => state.viewingForm);
 
   const patientUUID = usePatientUUID();
-  const { data: patient } = useQuery({
+  const {
+    data: patient,
+    error: patientError,
+    isError: isPatientError,
+    isPending: isPatientPending,
+  } = useQuery({
     queryKey: ['patient', patientUUID],
     queryFn: () => getFormattedPatientById(patientUUID!),
     enabled: !!patientUUID,
   });
 
+  // Every patient fetch failure must produce visible feedback. A 400/404 — and
+  // a malformed UUID, which getPatientById rejects with the same key before it
+  // reaches the network — means the patient is missing; anything else is an
+  // unexpected failure we report generically. The key is derived from the
+  // classification rather than from the error's shape, because the api client
+  // rejects with a bare string for non-key errors and an `instanceof Error`
+  // guard would silently skip the one message this feature guarantees.
+  const patientErrorMessageKey = useMemo(() => {
+    if (!isPatientError) return null;
+    return isPatientNotFoundError(patientError)
+      ? PATIENT_NOT_FOUND_ERROR_KEY
+      : 'ERROR_FETCHING_PATIENT_DATA';
+  }, [isPatientError, patientError]);
+
+  // Only mount the patient-scoped content (patient header + dashboard widgets)
+  // once the patient is confirmed to exist. Those widgets each fetch data for
+  // the UUID as soon as they mount and raise their own error toasts, so
+  // rendering them for a missing patient would spam "Bad Request"/"Server Error"
+  // alongside the single "Patient not found" message. On failure the content
+  // area renders `error-loading-patient` instead, so the reason is stated in the
+  // page and not only in a toast that disappears. `patientUUID` is absent only
+  // outside the consultation route, where content should render as before.
+  const shouldRenderPatientContent = !patientUUID || !!patient;
+
   const breadcrumbItems = useMemo(
     () => [
-      { id: 'home', label: 'Home', href: BAHMNI_HOME_PATH },
-      { id: 'clinical', label: 'Clinical', href: BAHMNI_CLINICAL_PATH },
+      { id: 'home', label: t('HOME_LABEL'), href: BAHMNI_HOME_PATH },
+      {
+        id: 'clinical',
+        label: t('CLINICAL_LABEL'),
+        href: BAHMNI_CLINICAL_PATH,
+      },
       {
         id: 'current',
         label: patient?.fullName
@@ -185,6 +222,15 @@ const ConsultationPage: React.FC = () => {
       });
     }
   }, [dashboardConfigError]);
+
+  useEffect(() => {
+    if (!patientErrorMessageKey) return;
+    addNotification({
+      title: t('ERROR_DEFAULT_TITLE'),
+      message: t(patientErrorMessageKey),
+      type: 'error',
+    });
+  }, [patientErrorMessageKey, addNotification, t]);
 
   const filteredDashboardConfig = useMemo(() => {
     if (!dashboardConfig || !userPrivileges) return null;
@@ -296,7 +342,7 @@ const ConsultationPage: React.FC = () => {
             breadcrumbItems={breadcrumbItems}
             globalActions={globalActions}
             userMenu={<UserGlobalAction />}
-            sideNavItems={sidebarItems}
+            sideNavItems={isActionAreaExpanded ? [] : sidebarItems}
             activeSideNavItemId={activeItemId}
             onSideNavItemClick={handleItemClick}
             isRail={isActionAreaVisible}
@@ -314,33 +360,62 @@ const ConsultationPage: React.FC = () => {
               />
             }
           >
-            <div
-              id="section-sticky-header"
-              data-testid="section-sticky-header-test-id"
-              role="region"
-              aria-label={t('PATIENT_HEADER_SECTION')}
-              className={styles.stickySection}
-            >
-              <PatientHeader
-                isActionAreaVisible={isActionAreaVisible}
-                printOptions={filteredPrintOptions}
+            {patientUUID && isPatientPending && (
+              <Loading
+                id="loading-patient"
+                data-testid="loading-patient-test-id"
+                description={t('LOADING_PATIENT_DATA')}
+                role="status"
               />
-              {renderContextInformation()}
-            </div>
-            <DashboardContainer
-              sections={filteredDashboardConfig!.sections}
-              activeItemId={activeItemId}
-              scrollTrigger={scrollTrigger}
-            />
+            )}
+            {patientErrorMessageKey && (
+              <div
+                id="error-loading-patient"
+                data-testid="error-loading-patient-test-id"
+                role="alert"
+              >
+                {t(patientErrorMessageKey)}
+              </div>
+            )}
+            {shouldRenderPatientContent && (
+              <>
+                <div
+                  id="section-sticky-header"
+                  data-testid="section-sticky-header-test-id"
+                  role="region"
+                  aria-label={t('PATIENT_HEADER_SECTION')}
+                  className={styles.stickySection}
+                >
+                  <PatientHeader
+                    isActionAreaVisible={isActionAreaVisible}
+                    printOptions={filteredPrintOptions}
+                  />
+                  {renderContextInformation()}
+                </div>
+                <DashboardContainer
+                  sections={filteredDashboardConfig!.sections}
+                  activeItemId={activeItemId}
+                  scrollTrigger={scrollTrigger}
+                />
+              </>
+            )}
           </Suspense>
         }
         isActionAreaVisible={isActionAreaVisible}
+        isActionAreaExpanded={isActionAreaExpanded}
         layoutVariant={viewingForm ? 'extended' : 'default'}
         actionArea={
           encounterSessionStartContext && (
-            <ConsultationPad
+            <ConsultationPadContainer
               encounterSessionStartContext={encounterSessionStartContext}
-              onClose={() => setIsActionAreaVisible((prev) => !prev)}
+              onClose={() => {
+                setIsActionAreaVisible((prev) => !prev);
+                setIsActionAreaExpanded(false);
+              }}
+              isActionAreaExpanded={isActionAreaExpanded}
+              onToggleActionAreaExpand={() =>
+                setIsActionAreaExpanded((prev) => !prev)
+              }
             />
           )
         }

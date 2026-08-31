@@ -1,5 +1,6 @@
 @use "@carbon/react/scss/spacing" as *;
 @use "@carbon/react/scss/theme" as *;
+@use "@carbon/react/scss/type" as *;
 @use "@carbon/react/scss/breakpoint" as *;
 
 .fullWidth {
@@ -9,7 +10,7 @@
 .searchForm {
   display: flex;
   flex-wrap: wrap;
-  gap: $spacing-04;
+  gap: $spacing-05;
   align-items: flex-start;
 }
 
@@ -50,7 +51,8 @@
 
 .criterionClose {
   flex: 0 0 auto;
-  align-self: center;
+  align-self: start;
+  padding-top: calc($spacing-05 + 1px);
 }
 
 .rangeContainer {
@@ -61,9 +63,6 @@
 .footer {
   display: flex;
   justify-content: space-between;
-  padding-top: $spacing-05;
-  margin-top: $spacing-03;
-  border-top: 1px solid $border-subtle-02;
 }
 
 .rangeInputCol {
@@ -91,4 +90,52 @@
 
 .numericInput {
   margin-inline-end: 0;
+}
+
+.dataTable {
+  box-shadow: 0px 2px 6px 0px $shadow;
+  table {
+    table-layout: fixed;
+  }
+}
+
+.searchSummary {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: $spacing-03;
+  margin-block-start: $spacing-08;
+  margin-block-end: $spacing-05;
+}
+
+.summaryLabel {
+  @include type-style("body-compact-01");
+}
+
+.criteriaSummary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: $spacing-03;
+}
+
+.error {
+  @include type-style("body-compact-02");
+  padding: $spacing-07;
+  justify-self: center;
+  font-style: italic;
+}
+
+.searchCriteriaAccordion {
+  box-shadow: 0px 2px 6px 0px $shadow;
+}
+
+.searchCriteriaAccordionItem {
+  > div > div {
+  padding-inline: $spacing-06;
+  margin-inline-start: 0 !important;
+  }
+  > button:first-of-type {
+    background-color: $layer-01;
+  }
 }

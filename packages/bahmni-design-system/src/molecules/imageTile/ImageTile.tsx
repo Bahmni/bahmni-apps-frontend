@@ -2,7 +2,7 @@ import { Image } from '@carbon/icons-react';
 import classNames from 'classnames';
 import React, { useState } from 'react';
 import { Modal } from '../../atoms/modal';
-import { DOCUMENT_AUTH_BASE_URL } from '../shared/constants';
+import { resolveDocumentSrc } from '../shared/constants';
 import styles from './styles/ImageTile.module.scss';
 
 export interface ImageTileProps {
@@ -27,6 +27,7 @@ export const ImageTile: React.FC<ImageTileProps> = ({
   onModalClose,
 }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const finalSrc = resolveDocumentSrc(imageSrc);
 
   const handleThumbnailClick = () => {
     setIsModalOpen(true);
@@ -63,7 +64,7 @@ export const ImageTile: React.FC<ImageTileProps> = ({
             id={`${id}-thumbnail`}
             data-testid={`${id}-thumbnail-test-id`}
             aria-label={`${id}-thumbnail-aria-label`}
-            src={DOCUMENT_AUTH_BASE_URL + imageSrc}
+            src={finalSrc}
             alt={alt}
             className={styles.thumbnailImage}
             loading="lazy"
@@ -87,7 +88,7 @@ export const ImageTile: React.FC<ImageTileProps> = ({
               id={`${id}-modal-image`}
               data-testid={`${id}-modal-image-test-id`}
               aria-label={`${id}-modal-image-aria-label`}
-              src={DOCUMENT_AUTH_BASE_URL + imageSrc}
+              src={finalSrc}
               alt={alt}
               className={styles.modalImage}
             />

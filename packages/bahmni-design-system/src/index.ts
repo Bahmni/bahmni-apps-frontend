@@ -6,7 +6,7 @@ export {
   type BahmniThemeConfig,
 } from './utils/applyTheme';
 
-export { Close, Edit, TrashCan, Printer } from '@carbon/icons-react';
+export { Add, Close, Edit, TrashCan, Printer } from '@carbon/icons-react';
 
 export { ArrowRight, type ArrowRightProps } from './atoms/arrowRight';
 
@@ -53,11 +53,17 @@ export { RowCell, type RowCellProps } from './atoms/rowCell';
 export { NotificationContainer } from './molecules/notification';
 export {
   DataTable,
+  type DefaultPaginationConfig,
+  type CursorPaginationConfig,
   type DataTableActionButton,
   type DataTableColumn,
   type DataTableFilterOption,
+  type DataTableInstance,
+  type DataTablePaginationConfig,
+  type DataTableSetDirection,
   type DataTableProps,
   type FilterType,
+  type ManualPaginationConfig,
 } from './organisms/dataTable';
 export {
   SortableDataTable,

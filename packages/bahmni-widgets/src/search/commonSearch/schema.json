@@ -14,16 +14,17 @@
         "context",
         "translationKey",
         "requiredPrivileges",
-        "locationAware",
         "url",
         "pageSize",
-        "criteria"
+        "batchSize",
+        "criteria",
+        "resultFields"
       ],
       "additionalProperties": false,
       "properties": {
         "context": {
           "type": "string",
-          "enum": ["patient", "appointment", "episodeOfCare"],
+          "enum": ["patient", "appointment", "patientProgram"],
           "description": "The context this search configuration applies to"
         },
         "translationKey": {
@@ -53,11 +54,68 @@
           "minimum": 1,
           "description": "Number of results per page"
         },
+        "batchSize": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Number of results fetched per API call"
+        },
         "criteria": {
           "type": "array",
           "items": { "$ref": "#/definitions/criterionConfig" },
           "minItems": 1,
           "description": "Search criteria available in this context"
+        },
+        "resultFields": {
+          "type": "array",
+          "items": { "$ref": "#/definitions/resultFieldConfig" },
+          "minItems": 1,
+          "description": "Defines the columns shown in the results table after a successful search"
+        },
+        "actions": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/definitions/actionConfig" },
+          "description": "Actions available in this context. Optional at the context level, but required when any resultField references an action key. Each action key must be unique within the context."
+        }
+      }
+    },
+    "resultFieldConfig": {
+      "type": "object",
+      "required": ["translationKey", "expression"],
+      "additionalProperties": false,
+      "properties": {
+        "translationKey": {
+          "type": "string",
+          "minLength": 1,
+          "description": "i18n key for the column header"
+        },
+        "expression": {
+          "type": "string",
+          "minLength": 1,
+          "description": "JSONata expression evaluated against each result item to extract the column value"
+        },
+        "enableSort": {
+          "type": "boolean",
+          "description": "When true, the column header is clickable to sort results client-side"
+        },
+        "sortOrder": {
+          "type": "string",
+          "enum": ["asc", "desc"],
+          "description": "Direction the results are sorted by this column before any user interaction"
+        },
+        "filterType": {
+          "type": "string",
+          "enum": ["text", "select", "dateRange", "numeric"],
+          "description": "When present, a filter control appears for this column"
+        },
+        "action": {
+          "type": "string",
+          "description": "Key of an action defined in the context's actions array. When the referenced action has type navigate, the cell renders as a link. If the user holds none of the action's required privileges, the cell renders as plain text. Referencing a key not present in the actions array is a config error and blocks the widget."
+        },
+        "transform": {
+          "type": "string",
+          "enum": ["formatDate", "formatTime", "formatDateTime", "formatAge", "formatGender", "formatCountry", "formatSearchResult"],
+          "description": "Name of a transform applied to the extracted value before display"
         }
       }
     },
@@ -66,6 +124,11 @@
       "required": ["field", "translationKey", "input"],
       "additionalProperties": false,
       "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Human-readable identifier for this criterion, unique within its context. Referenced by other criteria's additionalCriteria list. When omitted, an identifier is auto-derived from field.key/keyType."
+        },
         "field": { "$ref": "#/definitions/fieldConfig" },
         "default": {
           "type": "boolean",
@@ -76,7 +139,14 @@
           "minLength": 1,
           "description": "i18n key for the criterion label"
         },
-        "input": { "$ref": "#/definitions/inputConfig" }
+        "input": { "$ref": "#/definitions/inputConfig" },
+        "additionalCriteria": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 },
+          "minItems": 1,
+          "uniqueItems": true,
+          "description": "IDs of other criteria in this context that qualify as a sufficient companion when this criterion would otherwise be the only one active. When set and no other active criterion's id appears in this list, the search is blocked."
+        }
       }
     },
     "fieldConfig": {
@@ -111,7 +181,12 @@
       "additionalProperties": false,
       "properties": {
         "kind": { "type": "string", "const": "text" },
-        "placeholderTranslationKey": { "type": "string", "minLength": 1 }
+        "placeholderTranslationKey": { "type": "string", "minLength": 1 },
+        "regex": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Optional regular expression. When provided, the value is validated against this pattern on search submission."
+        }
       }
     },
     "dateInput": {
@@ -191,6 +266,36 @@
         "valueSet": {
           "type": "string",
           "description": "UUID of the concept value set to restrict lookup results"
+        }
+      }
+    },
+    "actionConfig": {
+      "oneOf": [
+        { "$ref": "#/definitions/navigateAction" }
+      ]
+    },
+    "navigateAction": {
+      "type": "object",
+      "required": ["key", "type", "navigationURL"],
+      "additionalProperties": true,
+      "properties": {
+        "key": {
+          "type": "string",
+          "description": "Unique identifier for this action within the context. Referenced by resultField entries via their action field."
+        },
+        "type": {
+          "type": "string",
+          "const": "navigate",
+          "description": "Renders the column cell as a link navigating to navigationURL."
+        },
+        "navigationURL": {
+          "type": "string",
+          "description": "URL template for navigation. Placeholders use {expression} syntax where the content must be a valid JSONata expression evaluated against the result row. For example, {uuid} resolves the uuid field; {patient.uuid} resolves a nested field."
+        },
+        "requiredPrivileges": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Privileges required to activate this action. Any one suffices. An empty array makes the action available to all users."
         }
       }
     }

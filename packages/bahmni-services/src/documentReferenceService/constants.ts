@@ -15,7 +15,7 @@ export const PATIENT_DOCUMENT_REFERENCES_URL = (
 ): string => {
   const baseUrl = `${OPENMRS_FHIR_R4}/DocumentReference?patient=${patientUuid}&_sort=-_lastUpdated&_count=${count}&_getpagesoffset=${offset}`;
   if (encounterUuids && encounterUuids.length > 0) {
-    return `${baseUrl}&encounter=${encounterUuids.join(',')}`;
+    return `${baseUrl}&encounter=${encodeURIComponent(encounterUuids.join(','))}`;
   }
   return baseUrl;
 };

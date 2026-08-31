@@ -1,42 +1,57 @@
 import {
+  dispatchAuditEvent,
   getConfig,
   getCurrentUserPrivileges,
   getUserLoginLocation,
+  post,
 } from '@bahmni/services';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { render, screen, waitFor } from '@testing-library/react';
+import {
+  act,
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+} from '@testing-library/react';
 import React from 'react';
-import { useNotification } from '../../../notification';
 import CommonSearchWidget from '../CommonSearchWidget';
-import { CriterionConfig, CriterionRow, SearchContextConfig } from '../models';
+import { CriterionRow, SearchContextConfig } from '../models';
 import {
   mockCommonSearchWidgetConfig,
+  mockCommonSearchWidgetConfigWithoutLocationAware,
+  mockCommonSearchWidgetConfigWithRange,
   mockMultiContextConfig,
-  mockNumericRangeCriterionConfig,
   mockPrivilegeViewAppointments,
   mockPrivilegeViewPatients,
   mockRowWithEmptyValue,
   mockRowWithRangeOrderError,
   mockRowWithValidValue,
-  mockTextCriterionConfig,
   mockWidgetLocation,
 } from './__mocks__/commonSearchWidgetMocks';
+
+const mockPost = post as jest.Mock;
+const mockDispatchAuditEvent = dispatchAuditEvent as jest.Mock;
+
+const mockAddNotification = jest.fn();
+jest.mock('../../../notification', () => ({
+  useNotification: () => ({ addNotification: mockAddNotification }),
+}));
 
 jest.mock('@bahmni/services', () => ({
   ...jest.requireActual('@bahmni/services'),
   getConfig: jest.fn(),
   getCurrentUserPrivileges: jest.fn(),
   getUserLoginLocation: jest.fn(),
+  post: jest.fn(),
+  dispatchAuditEvent: jest.fn(),
 }));
 
-jest.mock('../../../notification');
-
 let capturedOnSearch:
-  | ((rows: CriterionRow[], criteria: CriterionConfig[]) => CriterionRow[])
+  | ((rows: CriterionRow[], context: SearchContextConfig) => CriterionRow[])
   | null = null;
 let capturedConfig: SearchContextConfig[] | null = null;
 
-jest.mock('../SearchForm', () => ({
+jest.mock('../components/SearchForm', () => ({
   __esModule: true,
   default: ({ onSearch, config }: any) => {
     capturedOnSearch = onSearch;
@@ -45,7 +60,28 @@ jest.mock('../SearchForm', () => ({
   },
 }));
 
-const mockAddNotification = jest.fn();
+jest.mock('../components/SearchSummary', () => ({
+  __esModule: true,
+  default: () => <div data-testid="search-summary" />,
+}));
+
+let capturedCursorPagination: {
+  currentSet: number;
+  searchId: string;
+  hasNextSet: boolean;
+  hasPreviousSet: boolean;
+  onSetChange: (direction: 'next' | 'prev') => void;
+} | null = null;
+let capturedTotalCount: number | undefined;
+
+jest.mock('../components/ResultsTable', () => ({
+  __esModule: true,
+  default: ({ cursorPagination, totalCount }: any) => {
+    capturedCursorPagination = cursorPagination;
+    capturedTotalCount = totalCount;
+    return <div data-testid="results-table" />;
+  },
+}));
 
 describe('CommonSearchWidget', () => {
   let queryClient: QueryClient;
@@ -57,9 +93,7 @@ describe('CommonSearchWidget', () => {
     jest.clearAllMocks();
     capturedOnSearch = null;
     capturedConfig = null;
-    (useNotification as jest.Mock).mockReturnValue({
-      addNotification: mockAddNotification,
-    });
+    mockPost.mockResolvedValue({ results: [] });
     (getUserLoginLocation as jest.Mock).mockReturnValue(mockWidgetLocation);
     (getCurrentUserPrivileges as jest.Mock).mockResolvedValue(
       mockPrivilegeViewPatients,
@@ -262,27 +296,417 @@ describe('CommonSearchWidget', () => {
       );
     };
 
-    it('does not call addNotification when rows have validation errors', async () => {
+    it('calls post with url and built payload when all rows are valid', async () => {
       await renderAndWait();
-      capturedOnSearch!([mockRowWithEmptyValue], [mockTextCriterionConfig]);
-      expect(mockAddNotification).not.toHaveBeenCalled();
-    });
-
-    it('calls addNotification with success type when all rows are valid', async () => {
-      await renderAndWait();
-      capturedOnSearch!([mockRowWithValidValue], [mockTextCriterionConfig]);
-      expect(mockAddNotification).toHaveBeenCalledWith(
-        expect.objectContaining({ type: 'success' }),
+      await act(async () => {
+        capturedOnSearch!(
+          [mockRowWithValidValue],
+          mockCommonSearchWidgetConfig[0],
+        );
+      });
+      expect(mockPost).toHaveBeenCalledWith(
+        mockCommonSearchWidgetConfig[0].url,
+        expect.objectContaining({
+          entity: mockCommonSearchWidgetConfig[0].context,
+        }),
       );
+      const [, payload] = mockPost.mock.calls[0];
+      expect(payload.criteria.conditions).toContainEqual({
+        field: 'location.uuid',
+        comparator: 'eq',
+        value: mockWidgetLocation.uuid,
+      });
     });
 
-    it('does not call addNotification when range order error exists', async () => {
+    it('omits the location condition when the context has no locationAware', async () => {
+      (getConfig as jest.Mock).mockResolvedValueOnce(
+        mockCommonSearchWidgetConfigWithoutLocationAware,
+      );
+      render(
+        <CommonSearchWidget extensionParams={{ configUrl: '/api/config' }} />,
+        { wrapper },
+      );
+      await waitFor(() =>
+        expect(screen.getByTestId('search-form')).toBeInTheDocument(),
+      );
+      await act(async () => {
+        capturedOnSearch!(
+          [mockRowWithValidValue],
+          mockCommonSearchWidgetConfigWithoutLocationAware[0],
+        );
+      });
+      const [, payload] = mockPost.mock.calls[0];
+      expect(
+        payload.criteria.conditions.some(
+          (c: { field?: string }) => c.field === 'location.uuid',
+        ),
+      ).toBe(false);
+    });
+
+    it('does not call post when rows have validation errors', async () => {
       await renderAndWait();
       capturedOnSearch!(
-        [mockRowWithRangeOrderError],
-        [mockNumericRangeCriterionConfig],
+        [mockRowWithEmptyValue],
+        mockCommonSearchWidgetConfig[0],
       );
-      expect(mockAddNotification).not.toHaveBeenCalled();
+      expect(mockPost).not.toHaveBeenCalled();
+    });
+
+    it('does not call post when range order error exists', async () => {
+      (getConfig as jest.Mock).mockResolvedValueOnce(
+        mockCommonSearchWidgetConfigWithRange,
+      );
+      render(
+        <CommonSearchWidget extensionParams={{ configUrl: '/api/config' }} />,
+        { wrapper },
+      );
+      await waitFor(() =>
+        expect(screen.getByTestId('search-form')).toBeInTheDocument(),
+      );
+      capturedOnSearch!(
+        [mockRowWithRangeOrderError],
+        mockCommonSearchWidgetConfigWithRange[0],
+      );
+      expect(mockPost).not.toHaveBeenCalled();
+    });
+
+    it('shows loading overlay over search form while search is in progress', async () => {
+      mockPost.mockReturnValue(new Promise(() => {}));
+      await renderAndWait();
+      await act(async () => {
+        capturedOnSearch!(
+          [mockRowWithValidValue],
+          mockCommonSearchWidgetConfig[0],
+        );
+      });
+      expect(
+        screen.getByTestId('common-search-loading-overlay-test-id'),
+      ).toBeInTheDocument();
+      expect(screen.getByTestId('search-form')).toBeInTheDocument();
+    });
+
+    it('hides loading overlay, shows error toast and returns to search form when search API fails', async () => {
+      mockPost.mockRejectedValue(new Error('Network error'));
+      await renderAndWait();
+      await act(async () => {
+        capturedOnSearch!(
+          [mockRowWithValidValue],
+          mockCommonSearchWidgetConfig[0],
+        );
+      });
+      expect(
+        screen.queryByTestId('common-search-loading-overlay-test-id'),
+      ).not.toBeInTheDocument();
+      expect(screen.getByTestId('search-form')).toBeInTheDocument();
+      expect(screen.queryByTestId('search-summary')).not.toBeInTheDocument();
+      expect(screen.queryByTestId('results-table')).not.toBeInTheDocument();
+      expect(mockAddNotification).toHaveBeenCalledWith({
+        title: 'ERROR_DEFAULT_TITLE',
+        message: 'COMMON_SEARCH_API_ERROR_MESSAGE',
+        type: 'error',
+        timeout: 5000,
+      });
+    });
+
+    it.each([
+      { context: 'patient' as const, expectedEventType: 'SEARCHED_PATIENT' },
+      {
+        context: 'appointment' as const,
+        expectedEventType: 'SEARCHED_APPOINTMENT',
+      },
+      {
+        context: 'patientProgram' as const,
+        expectedEventType: 'SEARCHED_PATIENT_PROGRAM',
+      },
+    ])(
+      'dispatches $expectedEventType audit event on successful $context search',
+      async ({ context, expectedEventType }) => {
+        const contextConfig = { ...mockCommonSearchWidgetConfig[0], context };
+        (getConfig as jest.Mock).mockResolvedValueOnce([contextConfig]);
+        render(
+          <CommonSearchWidget extensionParams={{ configUrl: '/api/config' }} />,
+          { wrapper },
+        );
+        await screen.findByTestId('search-form');
+        await act(async () => {
+          capturedOnSearch!([mockRowWithValidValue], contextConfig);
+        });
+        expect(mockDispatchAuditEvent).toHaveBeenCalledWith({
+          eventType: expectedEventType,
+        });
+      },
+    );
+
+    it('does not dispatch audit event when validation fails', async () => {
+      await renderAndWait();
+      capturedOnSearch!(
+        [mockRowWithEmptyValue],
+        mockCommonSearchWidgetConfig[0],
+      );
+      expect(mockDispatchAuditEvent).not.toHaveBeenCalled();
+    });
+
+    it('does not dispatch audit event when search API fails', async () => {
+      mockPost.mockRejectedValue(new Error('Network error'));
+      await renderAndWait();
+      await act(async () => {
+        capturedOnSearch!(
+          [mockRowWithValidValue],
+          mockCommonSearchWidgetConfig[0],
+        );
+      });
+      expect(mockDispatchAuditEvent).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('accordion panel behavior', () => {
+    const renderAndSearch = async (results: unknown[] = [{ id: '1' }]) => {
+      mockPost.mockResolvedValue({ results });
+      (getConfig as jest.Mock).mockResolvedValueOnce(
+        mockCommonSearchWidgetConfig,
+      );
+      render(
+        <CommonSearchWidget extensionParams={{ configUrl: '/api/config' }} />,
+        { wrapper },
+      );
+      await screen.findByTestId('search-form');
+      await act(async () => {
+        capturedOnSearch!(
+          [mockRowWithValidValue],
+          mockCommonSearchWidgetConfig[0],
+        );
+      });
+    };
+
+    it('collapses accordion and show results table below accordion after successful search with results', async () => {
+      await renderAndSearch([{ id: '1' }]);
+      expect(
+        screen.getByRole('button', {
+          name: 'COMMON_SEARCH_MODIFY_SEARCH_BUTTON',
+        }),
+      ).toHaveAttribute('aria-expanded', 'false');
+      expect(screen.getByTestId('search-summary')).toBeInTheDocument();
+      expect(screen.getByTestId('results-table')).toBeInTheDocument();
+    });
+
+    it('keeps accordion open after search returns empty results', async () => {
+      await renderAndSearch([]);
+      expect(
+        screen.getByRole('button', {
+          name: 'COMMON_SEARCH_MODIFY_SEARCH_BUTTON',
+        }),
+      ).toHaveAttribute('aria-expanded', 'true');
+    });
+
+    it('results table remains visible when accordion is toggled open', async () => {
+      await renderAndSearch([{ id: '1' }]);
+      fireEvent.click(
+        screen.getByRole('button', {
+          name: 'COMMON_SEARCH_MODIFY_SEARCH_BUTTON',
+        }),
+      );
+      expect(screen.getByTestId('search-summary')).toBeInTheDocument();
+      expect(screen.getByTestId('results-table')).toBeInTheDocument();
+    });
+
+    it('accordion title changes to modify search after first successful search', async () => {
+      await renderAndSearch([{ id: '1' }]);
+      expect(
+        screen.getByRole('button', {
+          name: 'COMMON_SEARCH_MODIFY_SEARCH_BUTTON',
+        }),
+      ).toBeInTheDocument();
+    });
+
+    it('accordion title shows select criteria before any search', async () => {
+      (getConfig as jest.Mock).mockResolvedValueOnce(
+        mockCommonSearchWidgetConfig,
+      );
+      render(
+        <CommonSearchWidget extensionParams={{ configUrl: '/api/config' }} />,
+        { wrapper },
+      );
+      await waitFor(() =>
+        expect(screen.getByTestId('search-form')).toBeInTheDocument(),
+      );
+      expect(
+        screen.getByRole('button', {
+          name: 'COMMON_SEARCH_SELECT_SEARCH_CRITERIA',
+        }),
+      ).toBeInTheDocument();
+    });
+  });
+
+  describe('cursor-set pagination', () => {
+    const context = mockCommonSearchWidgetConfig[0];
+
+    const responseWith = (
+      nextCursor: string | null,
+      prevCursor: string | null,
+      totalCount?: number,
+    ) => ({
+      context: context.context,
+      meta: {
+        ...(totalCount === undefined ? {} : { totalCount }),
+        pagination: { nextCursor, prevCursor },
+      },
+      results: [{ uuid: 'result-1' }],
+      error: null,
+    });
+
+    const search = async () => {
+      (getConfig as jest.Mock).mockResolvedValueOnce(
+        mockCommonSearchWidgetConfig,
+      );
+      render(
+        <CommonSearchWidget extensionParams={{ configUrl: '/api/config' }} />,
+        { wrapper },
+      );
+      await waitFor(() =>
+        expect(screen.getByTestId('search-form')).toBeInTheDocument(),
+      );
+      await act(async () => {
+        capturedOnSearch!([mockRowWithValidValue], context);
+      });
+    };
+
+    const metaOfCall = (index: number) => mockPost.mock.calls[index][1].meta;
+
+    beforeEach(() => {
+      capturedCursorPagination = null;
+      capturedTotalCount = undefined;
+    });
+
+    it('should request a full batch and total count when starting a new search', async () => {
+      mockPost.mockResolvedValue(responseWith('next-1', null, 300));
+      await search();
+
+      expect(metaOfCall(0)).toEqual({
+        includeTotalCount: true,
+        pagination: {
+          limit: context.batchSize,
+          sortOrder: 'desc',
+          cursor: null,
+        },
+      });
+    });
+
+    it('should send the next cursor and skip the total count when navigating to the next set', async () => {
+      mockPost.mockResolvedValue(responseWith('next-1', 'prev-1', 300));
+      await search();
+
+      await act(async () => {
+        capturedCursorPagination!.onSetChange('next');
+      });
+
+      expect(metaOfCall(1)).toEqual({
+        includeTotalCount: false,
+        pagination: {
+          limit: context.batchSize,
+          sortOrder: 'desc',
+          cursor: 'next-1',
+          direction: 'next',
+        },
+      });
+      expect(capturedCursorPagination!.currentSet).toBe(1);
+    });
+
+    it('should send the previous cursor when navigating back to the previous set', async () => {
+      mockPost.mockResolvedValue(responseWith('next-1', 'prev-1', 300));
+      await search();
+      await act(async () => {
+        capturedCursorPagination!.onSetChange('next');
+      });
+      await act(async () => {
+        capturedCursorPagination!.onSetChange('prev');
+      });
+
+      expect(metaOfCall(2).pagination).toMatchObject({
+        cursor: 'prev-1',
+        direction: 'prev',
+      });
+      expect(capturedCursorPagination!.currentSet).toBe(0);
+    });
+
+    it('should enable next-set navigation only when the server returns a next cursor', async () => {
+      mockPost
+        .mockResolvedValueOnce(responseWith('next-1', null, 300))
+        .mockResolvedValueOnce(responseWith(null, 'prev-1'));
+      await search();
+      expect(capturedCursorPagination!.hasNextSet).toBe(true);
+      expect(capturedCursorPagination!.hasPreviousSet).toBe(false);
+
+      await act(async () => {
+        capturedCursorPagination!.onSetChange('next');
+      });
+
+      expect(capturedCursorPagination!.hasNextSet).toBe(false);
+      expect(capturedCursorPagination!.hasPreviousSet).toBe(true);
+    });
+
+    it('should retain the same search ID across set navigation and generate a new one for each search', async () => {
+      mockPost.mockResolvedValue(responseWith('next-1', 'prev-1', 300));
+      await search();
+      const firstSearchId = capturedCursorPagination!.searchId;
+
+      await act(async () => {
+        capturedCursorPagination!.onSetChange('next');
+      });
+      expect(capturedCursorPagination!.searchId).toBe(firstSearchId);
+
+      await act(async () => {
+        capturedOnSearch!([mockRowWithValidValue], context);
+      });
+      expect(capturedCursorPagination!.searchId).not.toBe(firstSearchId);
+    });
+
+    it('should preserve the total count when a subsequent set response omits it', async () => {
+      mockPost
+        .mockResolvedValueOnce(responseWith('next-1', null, 300))
+        .mockResolvedValueOnce(responseWith(null, 'prev-1'));
+      await search();
+      expect(capturedTotalCount).toBe(300);
+
+      await act(async () => {
+        capturedCursorPagination!.onSetChange('next');
+      });
+
+      expect(capturedTotalCount).toBe(300);
+    });
+
+    it('should keep the current set visible and show an error when navigating to another set fails', async () => {
+      mockPost
+        .mockResolvedValueOnce(responseWith('next-1', null, 300))
+        .mockRejectedValueOnce(new Error('Network error'));
+      await search();
+
+      await act(async () => {
+        capturedCursorPagination!.onSetChange('next');
+      });
+
+      expect(screen.getByTestId('results-table')).toBeInTheDocument();
+      expect(mockAddNotification).toHaveBeenCalledWith({
+        title: 'ERROR_DEFAULT_TITLE',
+        message: 'COMMON_SEARCH_API_ERROR_MESSAGE',
+        type: 'error',
+        timeout: 5000,
+      });
+    });
+
+    it('should treat an error in a successful response as a search failure', async () => {
+      mockPost.mockResolvedValue({
+        ...responseWith('next-1', null, 300),
+        error: 'Something went wrong',
+      });
+      await search();
+
+      expect(screen.queryByTestId('results-table')).not.toBeInTheDocument();
+      expect(mockAddNotification).toHaveBeenCalledWith({
+        title: 'ERROR_DEFAULT_TITLE',
+        message: 'COMMON_SEARCH_API_ERROR_MESSAGE',
+        type: 'error',
+        timeout: 5000,
+      });
     });
   });
 });

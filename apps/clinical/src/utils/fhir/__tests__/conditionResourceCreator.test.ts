@@ -227,6 +227,39 @@ describe('conditionResourceCreator', () => {
       });
     });
 
+    it('should pass conceptSystem to createCoding when provided', () => {
+      const diagnosisConceptSystem = 'http://snomed.info/sct';
+
+      createEncounterDiagnosisResource(
+        diagnosisConceptUUID,
+        'provisional',
+        subjectReference,
+        encounterReference,
+        recorderReference,
+        recordedDate,
+        diagnosisConceptSystem,
+      );
+
+      expect(mockCreateCoding).toHaveBeenNthCalledWith(
+        1,
+        diagnosisConceptUUID,
+        diagnosisConceptSystem,
+      );
+    });
+
+    it('should call createCoding with uuid only when conceptSystem is omitted', () => {
+      createEncounterDiagnosisResource(
+        diagnosisConceptUUID,
+        'provisional',
+        subjectReference,
+        encounterReference,
+        recorderReference,
+        recordedDate,
+      );
+
+      expect(mockCreateCoding).toHaveBeenNthCalledWith(1, diagnosisConceptUUID);
+    });
+
     it('should always set resourceType to "Condition"', () => {
       const result = createEncounterDiagnosisResource(
         diagnosisConceptUUID,
@@ -519,6 +552,46 @@ describe('conditionResourceCreator', () => {
 
         expect(result.onsetDateTime).toBe(onsetDate.toISOString());
         expect(result.onsetDateTime).toBe('2024-01-10T08:00:00.000Z');
+      });
+    });
+
+    describe('Concept System Tests', () => {
+      it('should pass conceptSystem to createCoding when provided', () => {
+        const conditionConceptSystem = 'http://snomed.info/sct';
+
+        createEncounterConditionResource(
+          conditionConceptUUID,
+          subjectReference,
+          encounterReference,
+          recorderReference,
+          recordedDate,
+          onsetDate,
+          'active',
+          conditionConceptSystem,
+        );
+
+        expect(mockCreateCoding).toHaveBeenNthCalledWith(
+          1,
+          conditionConceptUUID,
+          conditionConceptSystem,
+        );
+      });
+
+      it('should call createCoding with uuid only when conceptSystem is omitted', () => {
+        createEncounterConditionResource(
+          conditionConceptUUID,
+          subjectReference,
+          encounterReference,
+          recorderReference,
+          recordedDate,
+          onsetDate,
+          'active',
+        );
+
+        expect(mockCreateCoding).toHaveBeenNthCalledWith(
+          1,
+          conditionConceptUUID,
+        );
       });
     });
 

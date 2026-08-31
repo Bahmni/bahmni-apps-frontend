@@ -26,6 +26,7 @@ export const DocumentUpload: React.FC<DocumentUploadProps> = ({
   encounterTypeName,
   saveTarget,
   documentTypes = [],
+  defaultOption,
   onSaved,
 }) => {
   const { t } = useTranslation();
@@ -44,12 +45,24 @@ export const DocumentUpload: React.FC<DocumentUploadProps> = ({
   const [selectedType, setSelectedType] = useState<DocumentType | null>(null);
   const [note, setNote] = useState('');
   const [showNote, setShowNote] = useState(false);
-  const [isUploading, setIsUploading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
 
-  const selectedOrDefaultType = selectedType ?? documentTypes[0] ?? null;
+  const selectedOrDefaultType =
+    selectedType ??
+    documentTypes.find(
+      (dt) =>
+        dt.label?.toLowerCase().trim() === defaultOption?.toLowerCase().trim(),
+    ) ??
+    documentTypes[0] ??
+    null;
 
   const resetPending = () => {
+    if (pending?.url?.startsWith('blob:')) {
+      URL.revokeObjectURL(pending.url);
+    }
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
     setPending(null);
     setSelectedType(null);
     setNote('');
@@ -60,7 +73,6 @@ export const DocumentUpload: React.FC<DocumentUploadProps> = ({
     event: React.ChangeEvent<HTMLInputElement>,
   ) => {
     const file = event.target.files?.[0];
-    event.target.value = '';
     if (!file) {
       return;
     }
@@ -86,34 +98,36 @@ export const DocumentUpload: React.FC<DocumentUploadProps> = ({
       return;
     }
 
-    setIsUploading(true);
-    try {
-      const { url } = await uploadDocument(
-        file,
-        encounterTypeName,
-        patientUuid,
-      );
-      setPending({ url, fileName: file.name, contentType: file.type });
-    } catch (error) {
-      addNotification({
-        title: t('DOCUMENT_UPLOAD_FAILED_TITLE'),
-        message: error instanceof Error ? error.message : String(error),
-        type: 'error',
-      });
-    } finally {
-      setIsUploading(false);
-    }
+    setPending({
+      url: URL.createObjectURL(file),
+      fileName: file.name,
+      contentType: file.type,
+    });
   };
 
   const handleSave = async () => {
     if (!pending) {
       return;
     }
+    const file = fileInputRef.current?.files?.[0];
+    if (!file) {
+      return;
+    }
     setIsSaving(true);
+    const blobUrl = pending.url?.startsWith('blob:') ? pending.url : null;
     try {
+      const { url } = await uploadDocument(
+        file,
+        encounterTypeName,
+        patientUuid,
+      );
+      if (blobUrl) {
+        URL.revokeObjectURL(blobUrl);
+      }
+      setPending((prev) => (prev ? { ...prev, url } : null));
       await saveDocument({
         patientUuid,
-        url: pending.url,
+        url,
         contentType: pending.contentType,
         title: pending.fileName,
         typeCode: selectedOrDefaultType?.id,
@@ -189,6 +203,7 @@ export const DocumentUpload: React.FC<DocumentUploadProps> = ({
                 label={t('DOCUMENT_UPLOAD_DISCARD')}
                 kind="ghost"
                 size="md"
+                disabled={isSaving}
                 onClick={resetPending}
               >
                 <Close />
@@ -233,19 +248,12 @@ export const DocumentUpload: React.FC<DocumentUploadProps> = ({
           data-testid="document-file-input"
           onChange={handleFileSelect}
         />
-        {isUploading ? (
-          <InlineLoading
-            data-testid="document-uploading"
-            description={t('DOCUMENT_UPLOAD_UPLOADING')}
-          />
-        ) : (
-          <Button
-            disabled={!!pending}
-            onClick={() => fileInputRef.current?.click()}
-          >
-            {t('DOCUMENT_UPLOAD_BUTTON')}
-          </Button>
-        )}
+        <Button
+          disabled={!!pending}
+          onClick={() => fileInputRef.current?.click()}
+        >
+          {t('DOCUMENT_UPLOAD_BUTTON')}
+        </Button>
       </div>
     </div>
   );

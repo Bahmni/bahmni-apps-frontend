@@ -8,6 +8,7 @@ import {
   Button,
   MenuButton,
   MenuItem,
+  Loading,
 } from '@bahmni/design-system';
 import {
   useTranslation,
@@ -16,12 +17,18 @@ import {
   formatDateTime,
   camelToScreamingSnakeCase,
   hasPrivilege,
+  getEpisodeOfCare,
 } from '@bahmni/services';
 import { useQuery } from '@tanstack/react-query';
 import React, { useMemo, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { useNotification } from '../notification';
 import { useUserPrivilege } from '../userPrivileges/useUserPrivilege';
-import { EDIT_PATIENT_PROGRAMS_PRIVILEGE, KNOWN_FIELDS } from './constants';
+import {
+  EDIT_PATIENT_PROGRAMS_PRIVILEGE,
+  EPISODE_OF_CARE_FIELDS,
+  KNOWN_FIELDS,
+} from './constants';
 import { ProgramDetailsViewModel, ProgramField } from './model';
 import styles from './styles/ProgramDetails.module.scss';
 import {
@@ -35,8 +42,17 @@ export const programsQueryKeys = (programUUID: string) =>
 const fetchProgramDetails = async (
   programUUID: string,
   programAttributes: string[],
+  hasEpisodeOfCareField: boolean,
 ): Promise<ProgramDetailsViewModel> => {
   const response = await getProgramByUUID(programUUID!);
+  if (hasEpisodeOfCareField && response.episodeUuid) {
+    const episodeOfCare = await getEpisodeOfCare(response.episodeUuid);
+    return createProgramDetailsViewModel(
+      response,
+      programAttributes,
+      episodeOfCare,
+    );
+  }
   return createProgramDetailsViewModel(response, programAttributes);
 };
 
@@ -68,9 +84,22 @@ const ProgramDetails: React.FC<ProgramDetailsProps> = ({
     [config?.fields],
   );
 
+  const hasEpisodeOfCareField = useMemo(
+    () =>
+      (config?.fields ?? []).some((field) =>
+        EPISODE_OF_CARE_FIELDS.includes(field.name),
+      ),
+    [config?.fields],
+  );
+
   const { data, isLoading, isError, refetch } = useQuery({
     queryKey: programsQueryKeys(programUUID!),
-    queryFn: () => fetchProgramDetails(programUUID!, programAttributes),
+    queryFn: () =>
+      fetchProgramDetails(
+        programUUID!,
+        programAttributes,
+        hasEpisodeOfCareField,
+      ),
     enabled: !!programUUID,
   });
 
@@ -118,7 +147,7 @@ const ProgramDetails: React.FC<ProgramDetailsProps> = ({
     );
   }, [config?.fields]);
 
-  if (isLoading || isUpdatingState) {
+  if (isLoading) {
     return (
       <div
         id="patient-programs-table-loading"
@@ -197,6 +226,10 @@ const ProgramDetails: React.FC<ProgramDetailsProps> = ({
     const raw = data?.attributes?.[field];
     if (!raw) return '-';
 
+    if (raw instanceof Date) {
+      return formatDateTime(raw, t).formattedResult;
+    }
+
     const fieldConfig = config?.fields?.find((f) => f.name === field);
     if (fieldConfig?.enableTranslation) {
       return t(
@@ -221,6 +254,8 @@ const ProgramDetails: React.FC<ProgramDetailsProps> = ({
         return data.outcomeName ?? '-';
       case 'state':
         return data.currentStateName ?? '-';
+      case 'careManager':
+        return data?.careManagerDisplay ?? '-';
     }
   };
 
@@ -279,6 +314,17 @@ const ProgramDetails: React.FC<ProgramDetailsProps> = ({
           </Column>
         ))}
       </Grid>
+      {isUpdatingState &&
+        createPortal(
+          <div
+            id="program-details-loading-overlay"
+            data-testid="program-details-loading-overlay-test-id"
+            aria-label="program-details-loading-overlay-aria-label"
+          >
+            <Loading active withOverlay />
+          </div>,
+          document.body,
+        )}
     </div>
   );
 };

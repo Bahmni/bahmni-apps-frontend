@@ -1,4 +1,7 @@
-import { formatDateTime } from '@bahmni/services';
+import {
+  formatDateTime,
+  FHIR_OBSERVATION_FORM_NAMESPACE_PATH_URL,
+} from '@bahmni/services';
 import { Observation, Bundle, Encounter } from 'fhir/r4';
 import { extractId, extractObservationValue } from '../utils/Observations';
 import {
@@ -7,6 +10,34 @@ import {
   ExtractedObservationsResult,
   ObservationsByEncounter,
 } from './models';
+
+export const extractFormFieldPath = (
+  observation: Observation | undefined,
+): string | undefined => {
+  if (!observation) return undefined;
+
+  const formPathExt = observation.extension?.find(
+    (ext) => ext.url === FHIR_OBSERVATION_FORM_NAMESPACE_PATH_URL,
+  );
+
+  return formPathExt?.valueString;
+};
+
+export const extractFormName = (
+  observation: Observation | undefined,
+): string | undefined => {
+  const valueString = extractFormFieldPath(observation);
+  if (!valueString) return undefined;
+
+  const name = valueString
+    .split('/')[0]
+    .split('^')
+    .pop()
+    ?.replace(/\.\d+$/, '');
+
+  if (!name) return undefined;
+  return name;
+};
 
 export const formatEncounterTitle = (
   encounterDetails: EncounterDetails | undefined,
@@ -22,6 +53,7 @@ export const formatEncounterTitle = (
 export const formatObservationValue = (
   observation: ExtractedObservation,
   t?: (key: string) => string,
+  conceptDatatypeMap?: Record<string, string>,
 ): string => {
   if (observation.observationValue?.value == null) {
     return '';
@@ -29,7 +61,20 @@ export const formatObservationValue = (
   const { value, unit, type } = observation.observationValue;
 
   if (type === 'dateTime') {
-    return formatDateTime(String(value), t).formattedResult;
+    const knownDatatype = observation.conceptId
+      ? conceptDatatypeMap?.[observation.conceptId]
+      : undefined;
+    const formatOne = (raw: string) => {
+      const hasTimeComponent =
+        knownDatatype != null
+          ? knownDatatype === 'Datetime'
+          : /T\d{2}:\d{2}:\d{2}/.test(raw) && !/T00:00:00/.test(raw);
+      return formatDateTime(raw, t, hasTimeComponent).formattedResult;
+    };
+    // After add-more/multi-select grouping, repeated dateTime obs are concatenated into a
+    // single string (e.g. "2024-01-01T.., 2024-02-01T.."). Format each date separately —
+    // passing the whole merged string to formatDateTime fails to parse and returns blank.
+    return String(value).split(', ').map(formatOne).join(', ');
   }
 
   if (type === 'boolean') {

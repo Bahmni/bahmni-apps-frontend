@@ -1,0 +1,37 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`SearchSummary Snapshot matches snapshot 1`] = `
+<div>
+  <div
+    class="searchSummary"
+    data-testid="search-summary-test-id"
+    id="search-summary"
+  >
+    <p
+      class="summaryLabel"
+      data-testid="search-summary-context-label-test-id"
+      id="search-summary-context-label"
+    >
+      COMMON_SEARCH_SELECTED_CRITERIA_LABEL
+    </p>
+    <div
+      class="criteriaSummary"
+      data-testid="search-summary-context-test-id"
+      id="search-summary-context"
+    >
+      <div
+        class="cds--tag cds--tag--green"
+        id="tag-id-_r_b_"
+      >
+        <span
+          class="cds--tag__label"
+          dir="auto"
+          title="APPOINTMENT_NUMBER: AP000H7"
+        >
+          APPOINTMENT_NUMBER: AP000H7
+        </span>
+      </div>
+    </div>
+  </div>
+</div>
+`;

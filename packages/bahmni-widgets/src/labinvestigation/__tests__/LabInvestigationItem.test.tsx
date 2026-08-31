@@ -270,13 +270,13 @@ describe('LabInvestigationItem', () => {
 
     mockGetDiagnosticReportBundle.mockResolvedValue(mockBundle);
 
+    const testWithReports = {
+      ...baseLabTest,
+      reportIds: ['report-1'],
+    };
+
     renderWithQueryClient(
-      <LabInvestigationItem
-        test={baseLabTest}
-        isOpen
-        hasProcessedReport
-        reportId="report-1"
-      />,
+      <LabInvestigationItem test={testWithReports} isOpen hasProcessedReport />,
     );
 
     expect(
@@ -292,6 +292,143 @@ describe('LabInvestigationItem', () => {
         ),
       ).not.toBeInTheDocument();
       expect(screen.getByText('Hemoglobin')).toBeInTheDocument();
+    });
+  });
+
+  it('fetches and merges results from multiple diagnostic reports', async () => {
+    const mockBundle1: Bundle = {
+      resourceType: 'Bundle',
+      type: 'collection',
+      entry: [
+        {
+          resource: {
+            resourceType: 'DiagnosticReport',
+            id: 'report-1',
+            status: 'final',
+            code: { text: 'CBC' },
+          },
+        },
+        {
+          resource: {
+            resourceType: 'Observation',
+            id: 'obs-1',
+            status: 'final',
+            code: { text: 'Hemoglobin' },
+            valueQuantity: { value: 14.5, unit: 'g/dL' },
+          },
+        },
+      ],
+    };
+
+    const mockBundle2: Bundle = {
+      resourceType: 'Bundle',
+      type: 'collection',
+      entry: [
+        {
+          resource: {
+            resourceType: 'DiagnosticReport',
+            id: 'report-2',
+            status: 'final',
+            code: { text: 'CBC' },
+          },
+        },
+        {
+          resource: {
+            resourceType: 'Observation',
+            id: 'obs-2',
+            status: 'final',
+            code: { text: 'WBC Count' },
+            valueQuantity: { value: 8.5, unit: 'K/uL' },
+          },
+        },
+      ],
+    };
+
+    mockGetDiagnosticReportBundle
+      .mockResolvedValueOnce(mockBundle1)
+      .mockResolvedValueOnce(mockBundle2);
+
+    const testWithMultipleReports = {
+      ...baseLabTest,
+      reportIds: ['report-1', 'report-2'],
+    };
+
+    renderWithQueryClient(
+      <LabInvestigationItem
+        test={testWithMultipleReports}
+        isOpen
+        hasProcessedReport
+      />,
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText('Hemoglobin')).toBeInTheDocument();
+      expect(screen.getByText('WBC Count')).toBeInTheDocument();
+    });
+
+    expect(mockGetDiagnosticReportBundle).toHaveBeenCalledTimes(2);
+    expect(mockGetDiagnosticReportBundle).toHaveBeenCalledWith('report-1');
+    expect(mockGetDiagnosticReportBundle).toHaveBeenCalledWith('report-2');
+  });
+
+  it('handles undefined reportIds gracefully', async () => {
+    renderWithQueryClient(
+      <LabInvestigationItem
+        test={baseLabTest}
+        isOpen
+        hasProcessedReport={false}
+      />,
+    );
+
+    expect(screen.getByText('Results Pending ....')).toBeInTheDocument();
+
+    expect(mockGetDiagnosticReportBundle).not.toHaveBeenCalled();
+  });
+
+  it('handles error when fetching multiple reports', async () => {
+    const mockBundle1: Bundle = {
+      resourceType: 'Bundle',
+      type: 'collection',
+      entry: [
+        {
+          resource: {
+            resourceType: 'DiagnosticReport',
+            id: 'report-1',
+            status: 'final',
+            code: { text: 'CBC' },
+          },
+        },
+        {
+          resource: {
+            resourceType: 'Observation',
+            id: 'obs-1',
+            status: 'final',
+            code: { text: 'Hemoglobin' },
+            valueQuantity: { value: 14.5, unit: 'g/dL' },
+          },
+        },
+      ],
+    };
+
+    mockGetDiagnosticReportBundle
+      .mockResolvedValueOnce(mockBundle1)
+      .mockRejectedValueOnce(new Error('Failed to fetch report'));
+
+    const testWithMultipleReports = {
+      ...baseLabTest,
+      reportIds: ['report-1', 'report-2'],
+    };
+
+    renderWithQueryClient(
+      <LabInvestigationItem
+        test={testWithMultipleReports}
+        isOpen
+        hasProcessedReport
+      />,
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText('Error loading results')).toBeInTheDocument();
     });
   });
 
