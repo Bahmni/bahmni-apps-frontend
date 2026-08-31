@@ -145,7 +145,7 @@ describe('Observations', () => {
   });
 
   describe('Error handling with notifications', () => {
-    it('should show error notification when concept search fails', async () => {
+    it('should show generic error notification when concept search fails', async () => {
       mockSearchConceptByName.mockRejectedValue(new Error('Concept not found'));
 
       const config = {
@@ -157,7 +157,26 @@ describe('Observations', () => {
       await waitFor(() => {
         expect(mockAddNotification).toHaveBeenCalledWith({
           title: 'ERROR_DEFAULT_TITLE',
-          message: 'ERROR_FETCHING_CONCEPT',
+          message: 'ERROR_FETCHING_OBSERVATIONS',
+          type: 'error',
+        });
+      });
+    });
+
+    it('should show only one error notification when multiple concepts fail', async () => {
+      mockSearchConceptByName.mockRejectedValue(new Error('Concept not found'));
+
+      const config = {
+        conceptNames: ['InvalidConcept1', 'InvalidConcept2', 'InvalidConcept3'],
+      };
+
+      createWrapper(<Observations config={config} />);
+
+      await waitFor(() => {
+        expect(mockAddNotification).toHaveBeenCalledTimes(1);
+        expect(mockAddNotification).toHaveBeenCalledWith({
+          title: 'ERROR_DEFAULT_TITLE',
+          message: 'ERROR_FETCHING_OBSERVATIONS',
           type: 'error',
         });
       });

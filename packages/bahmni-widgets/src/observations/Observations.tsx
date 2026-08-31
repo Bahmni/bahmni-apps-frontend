@@ -74,20 +74,20 @@ const Observations: React.FC<WidgetProps> = ({
   });
 
   useEffect(() => {
-    conceptQueries.forEach((query, index) => {
-      if (query.isError && !notifiedIndices.current.has(index)) {
-        const conceptName = conceptNames[index];
-        addNotification({
-          title: t('ERROR_DEFAULT_TITLE'),
-          message: t('ERROR_FETCHING_CONCEPT', { conceptName }),
-          type: 'error',
-        });
-        notifiedIndices.current.add(index);
-      } else if (!query.isError) {
-        notifiedIndices.current.delete(index);
-      }
-    });
-  }, [conceptQueries, conceptNames]);
+    const hasAnyError = conceptQueries.some((query) => query.isError);
+    const hasNotified = notifiedIndices.current.size > 0;
+
+    if (hasAnyError && !hasNotified) {
+      addNotification({
+        title: t('ERROR_DEFAULT_TITLE'),
+        message: t('ERROR_FETCHING_OBSERVATIONS'),
+        type: 'error',
+      });
+      notifiedIndices.current.add(0);
+    } else if (!hasAnyError && hasNotified) {
+      notifiedIndices.current.clear();
+    }
+  }, [conceptQueries, addNotification, t]);
 
   const fetchedUuids = useMemo(() => {
     return conceptQueries
@@ -163,7 +163,7 @@ const Observations: React.FC<WidgetProps> = ({
         type: 'error',
       });
     }
-  }, [isObservationsError]);
+  }, [isObservationsError, addNotification, t]);
 
   const groupedData = useMemo(() => {
     if (!observations) return [];
