@@ -7,7 +7,7 @@ import { ORDER_PRIORITY } from '../../../models/ordersConfig';
 import useOrdersStore from '../../../stores/ordersStore';
 import { OrderFulfillmentSlider } from '../OrderFulfillmentSlider';
 
-const mockCreateTask = jest.fn();
+const mockCreateOrUpdateTask = jest.fn();
 const mockGetCurrentProvider = jest.fn();
 const mockGetObservationByConceptName = jest.fn();
 
@@ -15,7 +15,7 @@ jest.mock('@bahmni/services', () => ({
   useTranslation: () => ({
     t: (key: string) => key,
   }),
-  createTask: (...args: unknown[]) => mockCreateTask(...args),
+  createOrUpdateTask: (...args: unknown[]) => mockCreateOrUpdateTask(...args),
   getCurrentProvider: (...args: unknown[]) => mockGetCurrentProvider(...args),
   getObservationByConceptName: (...args: unknown[]) =>
     mockGetObservationByConceptName(...args),
@@ -1064,7 +1064,7 @@ describe('OrderFulfillmentSlider', () => {
     };
 
     it('shows success notification with timeout on successful save', async () => {
-      mockCreateTask.mockResolvedValue({});
+      mockCreateOrUpdateTask.mockResolvedValue({});
       useOrdersConfig.mockReturnValue(mockConfig);
 
       renderWithIntl(
@@ -1092,7 +1092,7 @@ describe('OrderFulfillmentSlider', () => {
     });
 
     it('shows error notification with timeout on save failure', async () => {
-      mockCreateTask.mockRejectedValue(new Error('Network error'));
+      mockCreateOrUpdateTask.mockRejectedValue(new Error('Network error'));
       useOrdersConfig.mockReturnValue(mockConfig);
 
       renderWithIntl(
@@ -1120,7 +1120,7 @@ describe('OrderFulfillmentSlider', () => {
     });
 
     it('calls onSaveSuccess callback after successful save', async () => {
-      mockCreateTask.mockResolvedValue({});
+      mockCreateOrUpdateTask.mockResolvedValue({});
       useOrdersConfig.mockReturnValue(mockConfig);
       const mockOnSaveSuccess = jest.fn();
 
@@ -1145,7 +1145,7 @@ describe('OrderFulfillmentSlider', () => {
     });
 
     it('saves New order immediately without adding notes (auto-acknowledged)', async () => {
-      mockCreateTask.mockResolvedValue({});
+      mockCreateOrUpdateTask.mockResolvedValue({});
       useOrdersConfig.mockReturnValue(mockConfig);
       renderWithIntl(
         <OrderFulfillmentSlider
@@ -1156,12 +1156,16 @@ describe('OrderFulfillmentSlider', () => {
       );
       fireEvent.click(screen.getByText('SAVE'));
       await waitFor(() => {
-        expect(mockCreateTask).toHaveBeenCalledWith('order-1', 'requested', {
-          notes: undefined,
-          ownerUuid: undefined,
-          encounterUuid: undefined,
-          patientUuid: 'patient-uuid-1',
-        });
+        expect(mockCreateOrUpdateTask).toHaveBeenCalledWith(
+          'order-1',
+          'requested',
+          {
+            notes: undefined,
+            ownerUuid: undefined,
+            encounterUuid: undefined,
+            patientUuid: 'patient-uuid-1',
+          },
+        );
         expect(mockAddNotification).toHaveBeenCalledWith(
           expect.objectContaining({ type: 'success' }),
         );
@@ -1169,7 +1173,7 @@ describe('OrderFulfillmentSlider', () => {
     });
 
     it('saves with draft status when New is selected from a non-New order', async () => {
-      mockCreateTask.mockResolvedValue({});
+      mockCreateOrUpdateTask.mockResolvedValue({});
       useOrdersConfig.mockReturnValue(mockConfig);
       const inProgressOrder: Order = { ...mockOrder, status: 'In Progress' };
       renderWithIntl(
@@ -1190,7 +1194,7 @@ describe('OrderFulfillmentSlider', () => {
       });
       fireEvent.click(screen.getByText('SAVE'));
       await waitFor(() => {
-        expect(mockCreateTask).toHaveBeenCalledWith(
+        expect(mockCreateOrUpdateTask).toHaveBeenCalledWith(
           'order-1',
           'draft',
           expect.objectContaining({ patientUuid: 'patient-uuid-1' }),
@@ -1202,7 +1206,7 @@ describe('OrderFulfillmentSlider', () => {
     });
 
     it('does not call onSaveSuccess on save failure', async () => {
-      mockCreateTask.mockRejectedValue(new Error('Network error'));
+      mockCreateOrUpdateTask.mockRejectedValue(new Error('Network error'));
       useOrdersConfig.mockReturnValue(mockConfig);
       const mockOnSaveSuccess = jest.fn();
 

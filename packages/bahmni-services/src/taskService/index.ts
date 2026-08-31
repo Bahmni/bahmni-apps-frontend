@@ -1,2 +1,2 @@
-export { getTasks, createTask } from './taskService';
+export { getTasks, createTask, createOrUpdateTask } from './taskService';
 export type { CreateTaskPayload, CreateTaskOptions } from './models';

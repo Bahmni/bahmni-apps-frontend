@@ -513,6 +513,7 @@ export {
 export * from './orders';
 export {
   createTask,
+  createOrUpdateTask,
   type CreateTaskPayload,
   type CreateTaskOptions,
 } from './taskService';
