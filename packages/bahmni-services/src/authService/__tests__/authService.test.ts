@@ -68,5 +68,31 @@ describe('authService', () => {
         expect(globalThis.location.href).toBe('');
       });
     });
+
+    describe('when the session has already expired (401)', () => {
+      const unauthorizedError = {
+        isAxiosError: true,
+        response: { status: 401 },
+      };
+
+      beforeEach(() => {
+        (del as jest.Mock).mockRejectedValue(unauthorizedError);
+      });
+
+      it('should reject with the error', async () => {
+        await expect(logout()).rejects.toBe(unauthorizedError);
+      });
+
+      it('should still clear local cookies so no stale session lingers', async () => {
+        await expect(logout()).rejects.toBe(unauthorizedError);
+        expect(deleteCookie).toHaveBeenCalledWith(BAHMNI_USER_COOKIE_NAME);
+        expect(deleteCookie).toHaveBeenCalledWith(BAHMNI_USER_LOCATION_COOKIE);
+      });
+
+      it('should not redirect itself, leaving that to the api client interceptor', async () => {
+        await expect(logout()).rejects.toBe(unauthorizedError);
+        expect(globalThis.location.href).toBe('');
+      });
+    });
   });
 });
