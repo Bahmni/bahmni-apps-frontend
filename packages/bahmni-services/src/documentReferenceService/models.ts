@@ -1,4 +1,4 @@
-import { Encounter } from 'fhir/r4';
+import { Encounter, Period } from 'fhir/r4';
 
 /**
  * Interface representing a single attachment within a document
@@ -48,6 +48,7 @@ export interface CreateEncounterInVisit {
   visitUuid: string;
   encounterTypeUuid: string;
   encounterTypeDisplay?: string;
+  visitPeriod?: Period;
 }
 
 /** An existing document encounter to attach a batch to. */

@@ -248,6 +248,7 @@ describe('DocumentsSection', () => {
         visitUuid: 'visit-2',
         encounterTypeUuid: 'doc-enc-type-uuid',
         encounterTypeDisplay: 'Patient Document',
+        visitPeriod: { start: '2026-06-20T09:00:00Z' },
       },
     });
   });
