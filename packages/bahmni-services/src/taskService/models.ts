@@ -3,6 +3,7 @@ export interface CreateTaskPayload {
   intent: string;
   status: string;
   basedOn: Array<{ reference: string }>;
+  id?: string;
   for?: { reference: string };
   note?: Array<{ text: string }>;
   owner?: { reference: string };

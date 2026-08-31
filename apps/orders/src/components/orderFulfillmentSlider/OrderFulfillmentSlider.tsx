@@ -2,11 +2,12 @@ import { SaveAndCancelButtons } from '@bahmni/design-system';
 import {
   useTranslation,
   Provider,
-  createTask,
+  createOrUpdateTask,
   getCurrentProvider,
   getObservationByConceptName,
   ObservationData,
   TabStatus,
+  type CreateTaskOptions,
 } from '@bahmni/services';
 import { useNotification } from '@bahmni/widgets';
 import { Close } from '@carbon/icons-react';
@@ -172,41 +173,86 @@ export const OrderFulfillmentSlider: React.FC<OrderFulfillmentSliderProps> = ({
     return value !== undefined && value !== null ? String(value) : '';
   };
 
-  const hasChanges =
-    status !== (order?.status ?? '') ||
-    owner !== (order?.ownerUuid ?? '') ||
-    Boolean(notes.trim());
+  const detectChanges = (currentEncounterUuid: string | null) => {
+    const initialStatus = order?.status ?? '';
+    const initialOwner = order?.ownerUuid ?? '';
+    const initialNotes = (order?.note ?? '').trim();
+    const currentNotes = notes.trim();
+
+    return {
+      statusChanged: status !== initialStatus,
+      ownerChanged: owner !== initialOwner,
+      notesChanged: currentNotes !== initialNotes,
+      encounterChanged: currentEncounterUuid !== null,
+    };
+  };
+
+  const buildUpdateOptions = (
+    encounterUuid: string | null,
+  ): CreateTaskOptions => {
+    const changes = detectChanges(encounterUuid);
+
+    const options: CreateTaskOptions = {
+      patientUuid: order!.patientUuid,
+      conceptUuid: ordersTableConfig?.orderFulfillmentConceptUuid,
+    };
+
+    if (changes.notesChanged) {
+      options.notes = notes.trim() || undefined;
+    }
+
+    if (changes.ownerChanged) {
+      options.ownerUuid = owner || undefined;
+    }
+
+    if (changes.encounterChanged) {
+      options.encounterUuid = encounterUuid;
+    }
+
+    return options;
+  };
+
+  const { statusChanged, ownerChanged, notesChanged } = (() => {
+    const changes = detectChanges(null);
+    return changes;
+  })();
+  const hasChanges = statusChanged || ownerChanged || notesChanged;
+
+  const getEncounterUuid = async (): Promise<string | null> => {
+    const encounterTypeUuid =
+      ordersTableConfig?.fulfillmentEncounterTypeUuid ?? '';
+
+    if (!encounterTypeUuid || !currentUser?.uuid || !currentLocation?.uuid) {
+      return null;
+    }
+
+    const provider = await getCurrentProvider(currentUser.uuid);
+    if (!provider?.uuid) {
+      return null;
+    }
+
+    return ensureEncounterForActiveVisit({
+      patientUuid: order!.patientUuid,
+      practitionerUuid: provider.uuid,
+      locationUuid: currentLocation.uuid,
+      encounterTypeUuid,
+    });
+  };
 
   const handleSave = async () => {
     const fhirStatus = UI_STATUS_TO_FHIR_TASK_STATUS[status as OrderStatus];
     if (!fhirStatus || !order) {
       return;
     }
+
     try {
       setIsSaving(true);
 
-      const encounterTypeUuid =
-        ordersTableConfig?.fulfillmentEncounterTypeUuid ?? '';
+      const encounterUuid = await getEncounterUuid();
+      const updateOptions = buildUpdateOptions(encounterUuid);
 
-      let encounterUuid: string | null = null;
-      if (encounterTypeUuid && currentUser?.uuid && currentLocation?.uuid) {
-        const provider = await getCurrentProvider(currentUser.uuid);
-        if (provider?.uuid) {
-          encounterUuid = await ensureEncounterForActiveVisit({
-            patientUuid: order.patientUuid,
-            practitionerUuid: provider.uuid,
-            locationUuid: currentLocation.uuid,
-            encounterTypeUuid,
-          });
-        }
-      }
+      await createOrUpdateTask(order.id, fhirStatus, updateOptions);
 
-      await createTask(order.id, fhirStatus, {
-        notes: notes.trim() || undefined,
-        ownerUuid: owner || undefined,
-        encounterUuid: encounterUuid ?? undefined,
-        patientUuid: order.patientUuid,
-      });
       addNotification({
         title: t('ORDER_SAVE_SUCCESS'),
         message: '',
