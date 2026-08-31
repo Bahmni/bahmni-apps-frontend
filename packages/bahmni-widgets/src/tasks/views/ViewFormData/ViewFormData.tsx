@@ -1,5 +1,7 @@
 import { DataTable, Modal } from '@bahmni/design-system';
 import {
+  fetchFormMetadata,
+  fetchObservationForms,
   formatDateTime,
   getEncounterByUuid,
   getObservationsBundleByEncounterUuid,
@@ -7,11 +9,18 @@ import {
   groupObservationsByEncounter,
   useTranslation,
   type EncounterGroup,
+  type FormMetadata,
+  type ObservationForm,
 } from '@bahmni/services';
 import { useQueries, useQuery } from '@tanstack/react-query';
 import type { Bundle, Encounter, Observation } from 'fhir/r4';
 import React, { useMemo } from 'react';
-import { extractFormFieldPath } from '../../../observations/utils';
+import {
+  deriveConceptDatatypeMap,
+  deriveControlOrder,
+  deriveSectionMap,
+  extractFormFieldPath,
+} from '../../../observations/utils';
 import { ObservationsRenderer } from '../../../observationsRenderer';
 import { extractId } from '../../../utils/Observations';
 import type { TaskView, TaskViewModel } from '../../models';
@@ -148,6 +157,45 @@ const ViewFormData: React.FC<ViewFormDataProps> = ({
   const isLoading = isLoadingObservations || isLoadingEncounters;
   const error = observationsError ?? encountersError;
 
+  const { data: publishedForms = [] } = useQuery<ObservationForm[]>({
+    queryKey: ['observationForms'],
+    queryFn: () => fetchObservationForms(),
+    enabled: open && !!formName,
+  });
+
+  const formUuid = useMemo(() => {
+    if (!formName) return undefined;
+    return publishedForms.find(
+      (form) => form.name.toLowerCase() === formName.toLowerCase(),
+    )?.uuid;
+  }, [publishedForms, formName]);
+
+  const { data: formMetadata } = useQuery<FormMetadata>({
+    queryKey: ['formMetadata', formUuid],
+    queryFn: () => fetchFormMetadata(formUuid!),
+    enabled: open && !!formUuid,
+  });
+
+  const controlOrder = useMemo(
+    () =>
+      formMetadata?.schema
+        ? deriveControlOrder(formMetadata.schema)
+        : undefined,
+    [formMetadata],
+  );
+  const sectionMap = useMemo(
+    () =>
+      formMetadata?.schema ? deriveSectionMap(formMetadata.schema) : undefined,
+    [formMetadata],
+  );
+  const conceptDatatypeMap = useMemo(
+    () =>
+      formMetadata?.schema
+        ? deriveConceptDatatypeMap(formMetadata.schema)
+        : undefined,
+    [formMetadata],
+  );
+
   const renderEncounterGroup = (group: EncounterGroup) => {
     return (
       <div key={group.encounterUuid} className={styles.encounterGroup}>
@@ -159,6 +207,9 @@ const ViewFormData: React.FC<ViewFormDataProps> = ({
         <ObservationsRenderer
           observations={group.observations}
           testIdPrefix={`encounter-${group.encounterUuid}-observations`}
+          controlOrder={controlOrder}
+          sectionMap={sectionMap}
+          conceptDatatypeMap={conceptDatatypeMap}
         />
       </div>
     );
