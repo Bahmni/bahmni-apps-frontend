@@ -5,10 +5,9 @@
 .rowCell {
   display: flex;
   flex-direction: row;
-  align-items: center;
   width: 100%;
-  gap: 0.5rem;
-  padding: 0.5rem;
+  gap: $spacing-03;;
+  padding: $spacing-03 !important;
   min-block-size: $spacing-08;
 }
 
@@ -16,16 +15,29 @@
   @include type-style("body-compact-01");
   flex: 0 0 30%;
   max-width: 30%;
+  display: flex;
+  flex-direction: column;
+}
+
+.secondaryHeader {
+  @include type-style("body-compact-01");
+  color: $text-secondary;
 }
 
 .value {
   @include type-style("body-compact-01");
-  flex: 0 0 50%;
-  max-width: 50%;
+  flex: 0 0 30%;
+  max-width: 30%;
 }
 
 .info {
   @include type-style("body-compact-01");
-  flex: 0 0 20%;
-  max-width: 20%;
+  margin-left:auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.secondaryInfo {
+  @include type-style("body-compact-01");
+  color: $text-secondary;
 }

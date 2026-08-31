@@ -13,18 +13,57 @@ describe('RowCell Component', () => {
     expect(screen.getByTestId('test-row-value')).toHaveTextContent('John Doe');
   });
 
-  it('renders with optional info', () => {
+  it('renders with optional info containing primary and secondary', () => {
     render(
       <RowCell
         header="Status"
         value="Active"
-        info="Last updated"
+        info={{ primary: 'Last updated', secondary: '2 days ago' }}
         testId="test-row"
       />,
     );
 
-    expect(screen.getByTestId('test-row-info')).toHaveTextContent(
+    expect(screen.getByTestId('test-row-info-primary')).toHaveTextContent(
       'Last updated',
+    );
+    expect(screen.getByTestId('test-row-info-secondary')).toHaveTextContent(
+      '2 days ago',
+    );
+  });
+
+  it('renders only primary info when secondary is not provided', () => {
+    render(
+      <RowCell
+        header="Status"
+        value="Active"
+        info={{ primary: 'Last updated' }}
+        testId="test-row"
+      />,
+    );
+
+    expect(screen.getByTestId('test-row-info-primary')).toHaveTextContent(
+      'Last updated',
+    );
+    expect(
+      screen.queryByTestId('test-row-info-secondary'),
+    ).not.toBeInTheDocument();
+  });
+
+  it('renders only secondary info when primary is not provided', () => {
+    render(
+      <RowCell
+        header="Status"
+        value="Active"
+        info={{ secondary: '2 days ago' }}
+        testId="test-row"
+      />,
+    );
+
+    expect(
+      screen.queryByTestId('test-row-info-primary'),
+    ).not.toBeInTheDocument();
+    expect(screen.getByTestId('test-row-info-secondary')).toHaveTextContent(
+      '2 days ago',
     );
   });
 
@@ -84,7 +123,7 @@ describe('RowCell Component', () => {
       <RowCell
         header="Name"
         value="John Doe"
-        info="Additional info"
+        info={{ primary: 'Additional info', secondary: 'More details' }}
         testId="test-row"
       />,
     );

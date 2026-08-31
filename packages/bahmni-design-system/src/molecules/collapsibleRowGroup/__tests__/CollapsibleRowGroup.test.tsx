@@ -9,7 +9,12 @@ describe('CollapsibleRowGroup Component', () => {
   const mockRows = [
     { index: 0, header: 'Name', value: 'John Doe' },
     { index: 1, header: 'Age', value: '30' },
-    { index: 2, header: 'Status', value: 'Active', info: 'Last updated today' },
+    {
+      index: 2,
+      header: 'Status',
+      value: 'Active',
+      info: { primary: 'Last updated today' },
+    },
   ];
 
   it('renders with title and rows', () => {
@@ -48,7 +53,7 @@ describe('CollapsibleRowGroup Component', () => {
     render(<CollapsibleRowGroup title="Test Group" rows={mockRows} />);
 
     expect(
-      screen.getByTestId('collapsible-row-group-test-id-row-2-info'),
+      screen.getByTestId('collapsible-row-group-test-id-row-2-info-primary'),
     ).toHaveTextContent('Last updated today');
   });
 
