@@ -9,7 +9,7 @@ exports[`ObsByEncounter Snapshot should match snapshot for ObsByEncounter 1`] = 
   >
     <div
       aria-label="encounter-enc-1-aria-label"
-      class="_container_iixgz_1"
+      class="_container_73unp_1"
       data-testid="encounter-enc-1-test-id"
       id="encounter-enc-1"
     >
@@ -17,7 +17,7 @@ exports[`ObsByEncounter Snapshot should match snapshot for ObsByEncounter 1`] = 
         class="cds--accordion cds--accordion--start cds--accordion--lg cds--layout--size-lg"
       >
         <li
-          class="cds--accordion__item cds--accordion__item--active _accordion_iixgz_5"
+          class="cds--accordion__item cds--accordion__item--active _accordion_73unp_5"
           data-testid="encounter-enc-1-test-id-accordion-item"
         >
           <button
@@ -57,19 +57,19 @@ exports[`ObsByEncounter Snapshot should match snapshot for ObsByEncounter 1`] = 
             >
               <div
                 aria-label="encounter-enc-1-rows-aria-label"
-                class="_rows_iixgz_36"
+                class="_rows_73unp_35"
                 data-testid="encounter-enc-1-rows-test-id"
                 id="encounter-enc-1-rows"
               >
                 <div
                   aria-label="obs-Temperature-0-0"
-                  class="_rowCell_ajzol_1"
+                  class="_rowCell_7ajkm_1"
                   data-testid="obs-Temperature-0-0"
                   id="obs-Temperature-0-0"
                 >
                   <div
                     aria-label="obs-Temperature-0-0-header"
-                    class="_header_ajzol_11"
+                    class="_header_7ajkm_10"
                     data-testid="obs-Temperature-0-0-header"
                     id="obs-Temperature-0-0-header"
                   >
@@ -77,7 +77,7 @@ exports[`ObsByEncounter Snapshot should match snapshot for ObsByEncounter 1`] = 
                   </div>
                   <div
                     aria-label="obs-Temperature-0-0-value"
-                    class="_value_ajzol_20"
+                    class="_value_7ajkm_29"
                     data-testid="obs-Temperature-0-0-value"
                     id="obs-Temperature-0-0-value"
                   >
@@ -85,16 +85,22 @@ exports[`ObsByEncounter Snapshot should match snapshot for ObsByEncounter 1`] = 
                   </div>
                   <div
                     aria-label="obs-Temperature-0-0-info"
-                    class="_info_ajzol_29"
+                    class="_info_7ajkm_38"
                     data-testid="obs-Temperature-0-0-info"
                     id="obs-Temperature-0-0-info"
                   >
-                    Recorded by Dr. Smith
+                    <span
+                      aria-label="obs-Temperature-0-0-info-primary"
+                      data-testid="obs-Temperature-0-0-info-primary"
+                      id="obs-Temperature-0-0-info-primary"
+                    >
+                      Recorded by Dr. Smith
+                    </span>
                   </div>
                 </div>
                 <div
                   aria-label="grouped-obs-Blood Pressure-0-aria-label"
-                  class="_container_iixgz_1"
+                  class="_container_73unp_1"
                   data-testid="grouped-obs-Blood Pressure-0-test-id"
                   id="grouped-obs-Blood Pressure-0"
                 >
@@ -102,7 +108,7 @@ exports[`ObsByEncounter Snapshot should match snapshot for ObsByEncounter 1`] = 
                     class="cds--accordion cds--accordion--start cds--accordion--lg cds--layout--size-lg"
                   >
                     <li
-                      class="cds--accordion__item cds--accordion__item--active _accordion_iixgz_5"
+                      class="cds--accordion__item cds--accordion__item--active _accordion_73unp_5"
                       data-testid="grouped-obs-Blood Pressure-0-test-id-accordion-item"
                     >
                       <button
@@ -142,19 +148,19 @@ exports[`ObsByEncounter Snapshot should match snapshot for ObsByEncounter 1`] = 
                         >
                           <div
                             aria-label="grouped-obs-Blood Pressure-0-rows-aria-label"
-                            class="_rows_iixgz_36"
+                            class="_rows_73unp_35"
                             data-testid="grouped-obs-Blood Pressure-0-rows-test-id"
                             id="grouped-obs-Blood Pressure-0-rows"
                           >
                             <div
                               aria-label="obs-Systolic-0-0"
-                              class="_rowCell_ajzol_1"
+                              class="_rowCell_7ajkm_1"
                               data-testid="obs-Systolic-0-0"
                               id="obs-Systolic-0-0"
                             >
                               <div
                                 aria-label="obs-Systolic-0-0-header"
-                                class="_header_ajzol_11"
+                                class="_header_7ajkm_10"
                                 data-testid="obs-Systolic-0-0-header"
                                 id="obs-Systolic-0-0-header"
                               >
@@ -162,7 +168,7 @@ exports[`ObsByEncounter Snapshot should match snapshot for ObsByEncounter 1`] = 
                               </div>
                               <div
                                 aria-label="obs-Systolic-0-0-value"
-                                class="_value_ajzol_20"
+                                class="_value_7ajkm_29"
                                 data-testid="obs-Systolic-0-0-value"
                                 id="obs-Systolic-0-0-value"
                               >
@@ -170,11 +176,17 @@ exports[`ObsByEncounter Snapshot should match snapshot for ObsByEncounter 1`] = 
                               </div>
                               <div
                                 aria-label="obs-Systolic-0-0-info"
-                                class="_info_ajzol_29"
+                                class="_info_7ajkm_38"
                                 data-testid="obs-Systolic-0-0-info"
                                 id="obs-Systolic-0-0-info"
                               >
-                                Recorded by Dr. Smith
+                                <span
+                                  aria-label="obs-Systolic-0-0-info-primary"
+                                  data-testid="obs-Systolic-0-0-info-primary"
+                                  id="obs-Systolic-0-0-info-primary"
+                                >
+                                  Recorded by Dr. Smith
+                                </span>
                               </div>
                             </div>
                           </div>

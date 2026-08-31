@@ -757,7 +757,7 @@ describe('observationUtils', () => {
       const result = transformObservationToRowCell(observation, 0);
       expect(result).toEqual({
         index: 0,
-        header: 'Temperature',
+        header: { primary: 'Temperature' },
         value: '98.6 °F',
         provider: 'Dr. Smith',
       });
@@ -776,7 +776,7 @@ describe('observationUtils', () => {
       const result = transformObservationToRowCell(observation, 1);
       expect(result).toEqual({
         index: 1,
-        header: 'Fever',
+        header: { primary: 'Fever' },
         value: 'High',
         provider: undefined,
       });
@@ -787,7 +787,10 @@ describe('observationUtils', () => {
         mockObservationWithBothRangesHavingUnits,
         0,
       );
-      expect(result.header).toBe('Blood Glucose (70 mg/dL - 100 mg/dL)');
+      expect(result.header).toEqual({
+        primary: 'Blood Glucose',
+        secondary: '(70 mg/dL - 100 mg/dL)',
+      });
     });
 
     it('should format header with both ranges using obs unit', () => {
@@ -795,7 +798,10 @@ describe('observationUtils', () => {
         mockObservationWithBothRangesUsingObsUnit,
         0,
       );
-      expect(result.header).toBe('Hemoglobin (12 g/dL - 16 g/dL)');
+      expect(result.header).toEqual({
+        primary: 'Hemoglobin',
+        secondary: '(12 g/dL - 16 g/dL)',
+      });
     });
 
     it('should format header with mixed units', () => {
@@ -803,7 +809,10 @@ describe('observationUtils', () => {
         mockObservationWithMixedUnits,
         0,
       );
-      expect(result.header).toBe('Temperature (97 °F - 99 °F)');
+      expect(result.header).toEqual({
+        primary: 'Temperature',
+        secondary: '(97 °F - 99 °F)',
+      });
     });
 
     it('should format header with only low range having unit', () => {
@@ -811,7 +820,10 @@ describe('observationUtils', () => {
         mockObservationWithOnlyLowWithUnit,
         0,
       );
-      expect(result.header).toBe('Systolic BP (>90 mmHg)');
+      expect(result.header).toEqual({
+        primary: 'Systolic BP',
+        secondary: '(>90 mmHg)',
+      });
     });
 
     it('should format header with only low range using obs unit', () => {
@@ -819,7 +831,10 @@ describe('observationUtils', () => {
         mockObservationWithOnlyLowUsingObsUnit,
         0,
       );
-      expect(result.header).toBe('Heart Rate (>60 bpm)');
+      expect(result.header).toEqual({
+        primary: 'Heart Rate',
+        secondary: '(>60 bpm)',
+      });
     });
 
     it('should format header with only high range having unit', () => {
@@ -827,7 +842,10 @@ describe('observationUtils', () => {
         mockObservationWithOnlyHighWithUnit,
         0,
       );
-      expect(result.header).toBe('Cholesterol (<200 mg/dL)');
+      expect(result.header).toEqual({
+        primary: 'Cholesterol',
+        secondary: '(<200 mg/dL)',
+      });
     });
 
     it('should format header with only high range using obs unit', () => {
@@ -835,7 +853,10 @@ describe('observationUtils', () => {
         mockObservationWithOnlyHighUsingObsUnit,
         0,
       );
-      expect(result.header).toBe('Blood Sugar (<140 mg/dL)');
+      expect(result.header).toEqual({
+        primary: 'Blood Sugar',
+        secondary: '(<140 mg/dL)',
+      });
     });
 
     it('should format header with no reference range', () => {
@@ -843,7 +864,7 @@ describe('observationUtils', () => {
         mockObservationWithNoReferenceRange,
         0,
       );
-      expect(result.header).toBe('Notes');
+      expect(result.header).toEqual({ primary: 'Notes' });
     });
 
     it('should format header with empty reference range', () => {
@@ -851,7 +872,7 @@ describe('observationUtils', () => {
         mockObservationWithEmptyReferenceRange,
         0,
       );
-      expect(result.header).toBe('Comments');
+      expect(result.header).toEqual({ primary: 'Comments' });
     });
 
     it('should format header with no units', () => {
@@ -859,7 +880,10 @@ describe('observationUtils', () => {
         mockObservationWithNoUnits,
         0,
       );
-      expect(result.header).toBe('Count (2 - 10)');
+      expect(result.header).toEqual({
+        primary: 'Count',
+        secondary: '(2 - 10)',
+      });
     });
 
     it('should format header when observationValue is undefined', () => {
@@ -867,7 +891,7 @@ describe('observationUtils', () => {
         mockObservationWithoutObservationValue,
         0,
       );
-      expect(result.header).toBe('Notes Only');
+      expect(result.header).toEqual({ primary: 'Notes Only' });
       expect(result.value).toBe('');
     });
   });
