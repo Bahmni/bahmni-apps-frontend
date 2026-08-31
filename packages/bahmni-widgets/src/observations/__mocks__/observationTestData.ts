@@ -964,3 +964,157 @@ export const buildFormObservation = (
     },
   ],
 });
+
+export const mockLatestObservationsBundle: Bundle<Observation | Encounter> = {
+  resourceType: 'Bundle',
+  type: 'searchset',
+  total: 3,
+  entry: [
+    {
+      fullUrl: 'http://localhost/openmrs/ws/fhir2/R4/Observation/obs-latest-1',
+      resource: {
+        resourceType: 'Observation',
+        id: 'obs-latest-1',
+        status: 'final',
+        code: {
+          text: 'Temperature',
+          coding: [{ code: 'temp-uuid', display: 'Temperature' }],
+        },
+        valueQuantity: {
+          value: 98.6,
+          unit: '°F',
+        },
+        effectiveDateTime: '2026-08-30T10:00:00+00:00',
+        encounter: {
+          reference: 'Encounter/enc-latest-1',
+        },
+      },
+    },
+    {
+      fullUrl: 'http://localhost/openmrs/ws/fhir2/R4/Observation/obs-latest-2',
+      resource: {
+        resourceType: 'Observation',
+        id: 'obs-latest-2',
+        status: 'final',
+        code: {
+          text: 'Pulse',
+          coding: [{ code: 'pulse-uuid', display: 'Pulse' }],
+        },
+        valueQuantity: {
+          value: 72,
+          unit: 'beats/min',
+        },
+        effectiveDateTime: '2026-08-30T10:00:00+00:00',
+        encounter: {
+          reference: 'Encounter/enc-latest-1',
+        },
+      },
+    },
+    {
+      fullUrl: 'http://localhost/openmrs/ws/fhir2/R4/Encounter/enc-latest-1',
+      resource: {
+        resourceType: 'Encounter',
+        id: 'enc-latest-1',
+        status: 'finished',
+        class: { code: 'AMB' },
+        type: [{ coding: [{ display: 'Consultation' }] }],
+        period: { start: '2026-08-30T10:00:00+00:00' },
+        participant: [{ individual: { display: 'Dr. Latest' } }],
+      },
+    },
+  ],
+};
+
+export const mockLatestObservationsWithMultipleEncounters: Bundle<
+  Observation | Encounter
+> = {
+  resourceType: 'Bundle',
+  type: 'searchset',
+  total: 5,
+  entry: [
+    {
+      fullUrl: 'http://localhost/openmrs/ws/fhir2/R4/Observation/obs-multi-1',
+      resource: {
+        resourceType: 'Observation',
+        id: 'obs-multi-1',
+        status: 'final',
+        code: {
+          text: 'Temperature',
+          coding: [{ code: 'temp-uuid', display: 'Temperature' }],
+        },
+        valueQuantity: {
+          value: 98.6,
+          unit: '°F',
+        },
+        effectiveDateTime: '2026-08-30T10:00:00+00:00',
+        encounter: {
+          reference: 'Encounter/enc-multi-1',
+        },
+      },
+    },
+    {
+      fullUrl: 'http://localhost/openmrs/ws/fhir2/R4/Observation/obs-multi-2',
+      resource: {
+        resourceType: 'Observation',
+        id: 'obs-multi-2',
+        status: 'final',
+        code: {
+          text: 'Pulse',
+          coding: [{ code: 'pulse-uuid', display: 'Pulse' }],
+        },
+        valueQuantity: {
+          value: 80,
+          unit: 'beats/min',
+        },
+        effectiveDateTime: '2026-08-29T10:00:00+00:00',
+        encounter: {
+          reference: 'Encounter/enc-multi-2',
+        },
+      },
+    },
+    {
+      fullUrl: 'http://localhost/openmrs/ws/fhir2/R4/Observation/obs-multi-3',
+      resource: {
+        resourceType: 'Observation',
+        id: 'obs-multi-3',
+        status: 'final',
+        code: {
+          text: 'Blood Pressure',
+          coding: [{ code: 'bp-uuid', display: 'Blood Pressure' }],
+        },
+        valueQuantity: {
+          value: 120,
+          unit: 'mmHg',
+        },
+        effectiveDateTime: '2026-08-30T10:00:00+00:00',
+        encounter: {
+          reference: 'Encounter/enc-multi-1',
+        },
+      },
+    },
+    {
+      fullUrl: 'http://localhost/openmrs/ws/fhir2/R4/Encounter/enc-multi-1',
+      resource: {
+        resourceType: 'Encounter',
+        id: 'enc-multi-1',
+        status: 'finished',
+        class: { code: 'AMB' },
+        type: [{ coding: [{ display: 'Consultation' }] }],
+        period: { start: '2026-08-30T10:00:00+00:00' },
+        participant: [{ individual: { display: 'Dr. Multi' } }],
+      },
+    },
+    {
+      fullUrl: 'http://localhost/openmrs/ws/fhir2/R4/Encounter/enc-multi-2',
+      resource: {
+        resourceType: 'Encounter',
+        id: 'enc-multi-2',
+        status: 'finished',
+        class: { code: 'AMB' },
+        type: [{ coding: [{ display: 'Consultation' }] }],
+        period: { start: '2026-08-29T10:00:00+00:00' },
+        participant: [{ individual: { display: 'Dr. Multi' } }],
+      },
+    },
+  ],
+};

@@ -1,21 +1,25 @@
 import {
   searchConceptByName,
-  useTranslation,
   getPatientObservationsWithEncounterBundle,
+  getPatientLatestObservations,
   useSubscribeConsultationSaved,
 } from '@bahmni/services';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, screen, waitFor } from '@testing-library/react';
 import { usePatientUUID } from '../../hooks/usePatientUUID';
 import { useNotification } from '../../notification';
-import { mockBundleWithMixedObservations } from '../__mocks__/observationTestData';
+import {
+  mockBundleWithMixedObservations,
+  mockLatestObservationsBundle,
+  mockLatestObservationsWithMultipleEncounters,
+} from '../__mocks__/observationTestData';
 import Observations from '../Observations';
 
 jest.mock('@bahmni/services', () => ({
   ...jest.requireActual('@bahmni/services'),
   searchConceptByName: jest.fn(),
-  useTranslation: jest.fn(),
   getPatientObservationsWithEncounterBundle: jest.fn(),
+  getPatientLatestObservations: jest.fn(),
   useSubscribeConsultationSaved: jest.fn(),
 }));
 
@@ -39,14 +43,15 @@ const mockGetPatientObservationsWithEncounterBundle =
   getPatientObservationsWithEncounterBundle as jest.MockedFunction<
     typeof getPatientObservationsWithEncounterBundle
   >;
+const mockGetPatientLatestObservations =
+  getPatientLatestObservations as jest.MockedFunction<
+    typeof getPatientLatestObservations
+  >;
 const mockUsePatientUUID = usePatientUUID as jest.MockedFunction<
   typeof usePatientUUID
 >;
 const mockUseNotification = useNotification as jest.MockedFunction<
   typeof useNotification
->;
-const mockUseTranslation = useTranslation as jest.MockedFunction<
-  typeof useTranslation
 >;
 const mockUseSubscribeConsultationSaved =
   useSubscribeConsultationSaved as jest.MockedFunction<
@@ -74,9 +79,6 @@ describe('Observations', () => {
     mockUsePatientUUID.mockReturnValue('patient-uuid-123');
     mockUseNotification.mockReturnValue({
       addNotification: mockAddNotification,
-    } as any);
-    mockUseTranslation.mockReturnValue({
-      t: (key: string) => key,
     } as any);
   });
 
@@ -209,62 +211,54 @@ describe('Observations', () => {
   });
 
   describe('Empty states', () => {
-    it('should show empty message when no observations are returned', async () => {
-      mockSearchConceptByName.mockResolvedValue({
-        uuid: 'concept-uuid-1',
-        display: 'Temperature',
-      } as any);
-      mockGetPatientObservationsWithEncounterBundle.mockResolvedValue({
-        resourceType: 'Bundle',
-        type: 'searchset',
-        entry: [],
-      } as any);
+    it.each([
+      {
+        description: 'when no observations are returned',
+        config: { conceptNames: ['Temperature'] },
+        setupMocks: () => {
+          mockSearchConceptByName.mockResolvedValue({
+            uuid: 'concept-uuid-1',
+            display: 'Temperature',
+          } as any);
+          mockGetPatientObservationsWithEncounterBundle.mockResolvedValue({
+            resourceType: 'Bundle',
+            type: 'searchset',
+            entry: [],
+          } as any);
+        },
+      },
+      {
+        description: 'when no concept UUIDs are provided',
+        config: { conceptNames: [], conceptUuid: [] },
+        setupMocks: () => {},
+      },
+      {
+        description: 'when observations bundle has no entries',
+        config: { conceptNames: ['Temperature'] },
+        setupMocks: () => {
+          mockSearchConceptByName.mockResolvedValue({
+            uuid: 'concept-uuid-1',
+            display: 'Temperature',
+          } as any);
+          mockGetPatientObservationsWithEncounterBundle.mockResolvedValue({
+            resourceType: 'Bundle',
+            type: 'searchset',
+            entry: [],
+          } as any);
+        },
+      },
+    ])(
+      'should show empty message $description',
+      async ({ config, setupMocks }) => {
+        setupMocks();
 
-      const config = {
-        conceptNames: ['Temperature'],
-      };
+        createWrapper(<Observations config={config} />);
 
-      createWrapper(<Observations config={config} />);
-
-      await waitFor(() => {
-        expect(screen.getByText('NO_OBSERVATIONS_FOUND')).toBeInTheDocument();
-      });
-    });
-
-    it('should show empty message when no concept UUIDs are provided', async () => {
-      const config = {
-        conceptNames: [],
-        conceptUuid: [],
-      };
-
-      createWrapper(<Observations config={config} />);
-
-      await waitFor(() => {
-        expect(screen.getByText('NO_OBSERVATIONS_FOUND')).toBeInTheDocument();
-      });
-    });
-
-    it('should show empty message when observations bundle has no entries', async () => {
-      mockSearchConceptByName.mockResolvedValue({
-        uuid: 'concept-uuid-1',
-        display: 'Temperature',
-      } as any);
-      mockGetPatientObservationsWithEncounterBundle.mockResolvedValue({
-        resourceType: 'Bundle',
-        type: 'searchset',
-        entry: [],
-      } as any);
-
-      const config = {
-        conceptNames: ['Temperature'],
-      };
-
-      createWrapper(<Observations config={config} />);
-
-      await waitFor(() => {
-        expect(screen.getByText('NO_OBSERVATIONS_FOUND')).toBeInTheDocument();
-      });
-    });
+        await waitFor(() => {
+          expect(screen.getByText('NO_OBSERVATIONS_FOUND')).toBeInTheDocument();
+        });
+      },
+    );
   });
 
   describe('Observations Auto-Refresh', () => {
@@ -274,9 +268,6 @@ describe('Observations', () => {
       mockUsePatientUUID.mockReturnValue('patient-uuid-123');
       mockUseNotification.mockReturnValue({
         addNotification: mockAddNotification,
-      } as any);
-      mockUseTranslation.mockReturnValue({
-        t: (key: string) => key,
       } as any);
     });
 
@@ -455,6 +446,217 @@ describe('Observations', () => {
         },
         { timeout: 500 },
       );
+    });
+  });
+
+  describe('Scope Configurations', () => {
+    describe('API function calls based on scope', () => {
+      it.each([
+        {
+          scope: 'latest' as const,
+          mockResponse: mockLatestObservationsBundle,
+          expectedArgs: ['patient-uuid-123', ['temp-uuid'], undefined, true],
+        },
+        {
+          scope: 'latest-encounter' as const,
+          mockResponse: mockLatestObservationsWithMultipleEncounters,
+          expectedArgs: ['patient-uuid-123', ['temp-uuid'], undefined, true],
+        },
+      ])(
+        'should call getPatientLatestObservations when scope is $scope',
+        async ({ scope, mockResponse, expectedArgs }) => {
+          mockSearchConceptByName.mockResolvedValue({
+            uuid: 'temp-uuid',
+            display: 'Temperature',
+          } as any);
+          mockGetPatientLatestObservations.mockResolvedValue(mockResponse);
+
+          const config = {
+            conceptNames: ['Temperature'],
+            scope,
+          };
+
+          createWrapper(<Observations config={config} />);
+
+          await waitFor(() => {
+            expect(mockGetPatientLatestObservations).toHaveBeenCalledWith(
+              ...expectedArgs,
+            );
+          });
+        },
+      );
+
+      it('should call getPatientObservationsWithEncounterBundle when scope is all', async () => {
+        mockSearchConceptByName.mockResolvedValue({
+          uuid: 'temp-uuid',
+          display: 'Temperature',
+        } as any);
+        mockGetPatientObservationsWithEncounterBundle.mockResolvedValue(
+          mockBundleWithMixedObservations,
+        );
+
+        const config = {
+          conceptNames: ['Temperature'],
+          scope: 'all' as const,
+        };
+
+        createWrapper(<Observations config={config} />);
+
+        await waitFor(() => {
+          expect(
+            mockGetPatientObservationsWithEncounterBundle,
+          ).toHaveBeenCalledWith('patient-uuid-123', ['temp-uuid'], undefined);
+        });
+      });
+    });
+
+    describe('Scope-specific behavior', () => {
+      it.each([
+        {
+          scope: 'latest' as const,
+          mockResponse: mockLatestObservationsBundle,
+          expectedObservations: ['Temperature', 'Pulse'],
+        },
+        {
+          scope: 'latest-encounter' as const,
+          mockResponse: mockLatestObservationsWithMultipleEncounters,
+          expectedObservations: ['Temperature', 'Blood Pressure'],
+        },
+      ])(
+        'should display observations for scope $scope',
+        async ({ scope, mockResponse, expectedObservations }) => {
+          mockSearchConceptByName.mockResolvedValue({
+            uuid: 'temp-uuid',
+            display: 'Temperature',
+          } as any);
+          mockGetPatientLatestObservations.mockResolvedValue(mockResponse);
+
+          const config = {
+            conceptNames: ['Temperature'],
+            scope,
+          };
+
+          createWrapper(<Observations config={config} />);
+
+          await waitFor(() => {
+            expectedObservations.forEach((obs) => {
+              expect(screen.getByText(obs)).toBeInTheDocument();
+            });
+          });
+        },
+      );
+
+      it('should call getPatientLatestObservations with encounterUuids when provided', async () => {
+        mockSearchConceptByName.mockResolvedValue({
+          uuid: 'temp-uuid',
+          display: 'Temperature',
+        } as any);
+        mockGetPatientLatestObservations.mockResolvedValue(
+          mockLatestObservationsBundle,
+        );
+
+        const config = {
+          conceptNames: ['Temperature'],
+          scope: 'latest' as const,
+        };
+
+        createWrapper(
+          <Observations config={config} encounterUuids={['enc-1', 'enc-2']} />,
+        );
+
+        await waitFor(() => {
+          expect(mockGetPatientLatestObservations).toHaveBeenCalledWith(
+            'patient-uuid-123',
+            ['temp-uuid'],
+            ['enc-1', 'enc-2'],
+            true,
+          );
+        });
+      });
+
+      it.each([
+        { scope: 'latest' as const },
+        { scope: 'latest-encounter' as const },
+      ])(
+        'should show loading state when observations are loading for scope $scope',
+        async ({ scope }) => {
+          mockSearchConceptByName.mockResolvedValue({
+            uuid: 'temp-uuid',
+            display: 'Temperature',
+          } as any);
+          mockGetPatientLatestObservations.mockReturnValue(
+            new Promise(() => {}) as any,
+          );
+
+          const config = {
+            conceptNames: ['Temperature'],
+            scope,
+          };
+
+          createWrapper(<Observations config={config} />);
+
+          await waitFor(() => {
+            expect(
+              screen.getByTestId('observations-table-skeleton'),
+            ).toBeInTheDocument();
+          });
+        },
+      );
+
+      it.each([
+        { scope: 'latest' as const },
+        { scope: 'latest-encounter' as const },
+      ])(
+        'should show error when observations fetch fails for scope $scope',
+        async ({ scope }) => {
+          mockSearchConceptByName.mockResolvedValue({
+            uuid: 'temp-uuid',
+            display: 'Temperature',
+          } as any);
+          mockGetPatientLatestObservations.mockRejectedValue(
+            new Error('Fetch failed'),
+          );
+
+          const config = {
+            conceptNames: ['Temperature'],
+            scope,
+          };
+
+          createWrapper(<Observations config={config} />);
+
+          await waitFor(() => {
+            expect(mockAddNotification).toHaveBeenCalledWith({
+              title: 'ERROR_DEFAULT_TITLE',
+              message: 'ERROR_FETCHING_OBSERVATIONS',
+              type: 'error',
+            });
+          });
+        },
+      );
+    });
+
+    describe('Default behavior (no scope)', () => {
+      it('should call getPatientObservationsWithEncounterBundle when scope is not specified', async () => {
+        mockSearchConceptByName.mockResolvedValue({
+          uuid: 'temp-uuid',
+          display: 'Temperature',
+        } as any);
+        mockGetPatientObservationsWithEncounterBundle.mockResolvedValue(
+          mockBundleWithMixedObservations,
+        );
+
+        const config = {
+          conceptNames: ['Temperature'],
+        };
+
+        createWrapper(<Observations config={config} />);
+
+        await waitFor(() => {
+          expect(
+            mockGetPatientObservationsWithEncounterBundle,
+          ).toHaveBeenCalledWith('patient-uuid-123', ['temp-uuid'], undefined);
+        });
+      });
     });
   });
 });
