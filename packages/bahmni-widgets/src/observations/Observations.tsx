@@ -106,6 +106,11 @@ const Observations: React.FC<WidgetProps> = ({
 
   const useLastN = scope === 'latest' || scope === 'latest-encounter';
 
+  const emptyEncounterFilter = shouldEnableEncounterFilter(
+    episodeOfCareUuids,
+    encounterUuids,
+  );
+
   const {
     data: observations,
     isLoading: isLoadingObservations,
@@ -133,7 +138,10 @@ const Observations: React.FC<WidgetProps> = ({
           );
     },
     enabled:
-      !!patientUUID && allConceptUuids.length > 0 && areConceptQueriesComplete,
+      !!patientUUID &&
+      allConceptUuids.length > 0 &&
+      areConceptQueriesComplete &&
+      !emptyEncounterFilter,
   });
 
   // Smart refetch: only refetch if one of the updated concepts matches our configured concepts
@@ -184,19 +192,13 @@ const Observations: React.FC<WidgetProps> = ({
     { key: 'form', header: 'form' },
   ];
 
-  const emptyEncounterFilter = shouldEnableEncounterFilter(
-    episodeOfCareUuids,
-    encounterUuids,
-  );
-
   const isLoading = isLoadingObservations || !areConceptQueriesComplete;
   const hasError = isObservationsError && areConceptQueriesComplete;
   const isEmpty =
     (!observations ||
       observations.entry?.length === 0 ||
       allConceptUuids.length === 0) &&
-    areConceptQueriesComplete &&
-    !emptyEncounterFilter;
+    areConceptQueriesComplete;
 
   const errorMessage = hasError ? t('ERROR_FETCHING_OBSERVATIONS') : null;
   const emptyMessage = isEmpty ? t('NO_OBSERVATIONS_FOUND') : undefined;
