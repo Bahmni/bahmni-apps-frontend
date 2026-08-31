@@ -242,7 +242,7 @@ const Observations: React.FC<WidgetProps> = ({
           ariaLabel={t('OBSERVATIONS')}
           loading={isLoading}
           errorStateMessage={errorMessage}
-          emptyStateMessage={emptyMessage}
+          emptyStateMessage={emptyMessage ?? t('NO_OBSERVATIONS_AVAILABLE')}
           dataTestId="observations-table"
         />
       )}

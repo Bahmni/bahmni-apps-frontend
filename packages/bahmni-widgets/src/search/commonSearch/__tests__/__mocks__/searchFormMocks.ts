@@ -31,6 +31,7 @@ export const mockPatientContext: SearchContextConfig = {
   locationAware: 'loggedInLocation',
   url: '/openmrs/ws/rest/v1/patient/search',
   pageSize: 20,
+  batchSize: 100,
   resultFields: mockResultFields,
   criteria: [
     {
@@ -75,6 +76,7 @@ export const mockAppointmentContext: SearchContextConfig = {
   locationAware: 'allowedLocation',
   url: '/openmrs/ws/rest/v1/appointment/search',
   pageSize: 10,
+  batchSize: 50,
   resultFields: mockResultFields,
   criteria: [
     {
@@ -107,6 +109,7 @@ export const mockContextNoDefaults: SearchContextConfig = {
   locationAware: 'loggedInLocation',
   url: '/openmrs/ws/rest/v1/program/search',
   pageSize: 10,
+  batchSize: 50,
   resultFields: mockResultFields,
   criteria: [
     {
@@ -138,6 +141,7 @@ export const mockPatientContextWithRangeNumeric: SearchContextConfig = {
   locationAware: 'loggedInLocation',
   url: '/openmrs/ws/rest/v1/patient/search',
   pageSize: 20,
+  batchSize: 100,
   resultFields: mockResultFields,
   criteria: [
     {
@@ -161,6 +165,7 @@ export const mockContextMultipleDefaults: SearchContextConfig = {
   locationAware: 'loggedInLocation',
   url: '/openmrs/ws/rest/v1/patient/search',
   pageSize: 20,
+  batchSize: 100,
   resultFields: mockResultFields,
   criteria: [
     {
@@ -197,6 +202,7 @@ export const mockPatientContextWithRegex: SearchContextConfig = {
   locationAware: 'loggedInLocation',
   url: '/openmrs/ws/rest/v1/patient/search',
   pageSize: 20,
+  batchSize: 100,
   resultFields: mockResultFields,
   criteria: [
     {
@@ -219,6 +225,7 @@ export const mockPatientContextWithoutLocationAware: SearchContextConfig = {
   requiredPrivileges: ['View Patients'],
   url: '/openmrs/ws/rest/v1/patientSearch',
   pageSize: 20,
+  batchSize: 100,
   resultFields: mockResultFields,
   criteria: [
     {
