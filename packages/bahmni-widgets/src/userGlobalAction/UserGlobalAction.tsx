@@ -1,5 +1,6 @@
 import { Menu, MenuItem, SkeletonPlaceholder } from '@bahmni/design-system';
 import {
+  getErrorKind,
   getFormattedError,
   hasPrivilege,
   useTranslation,
@@ -55,6 +56,7 @@ export const UserGlobalAction = () => {
   const { userPrivileges } = useUserPrivilege();
   const { addNotification } = useNotification();
   const [isOpen, setIsOpen] = useState(false);
+  const [pendingActionId, setPendingActionId] = useState<string | null>(null);
   const registry = useUserActionRegistry();
   const { getActions, version } = registry;
   const hasRegistered = useRef(false);
@@ -204,10 +206,20 @@ export const UserGlobalAction = () => {
             data-testid={`user-global-action-${action.id}-test-id`}
             key={action.id}
             label={t(action.label)}
+            disabled={pendingActionId === action.id}
             onClick={async () => {
+              setPendingActionId(action.id);
               try {
                 await action.onClick();
               } catch (error) {
+                // eslint-disable-next-line no-console
+                console.error(`User action "${action.id}" failed:`, error);
+                // A 401 means the session already ended server-side — the api
+                // client interceptor has already redirected to the login page,
+                // so surfacing a toast here would just flash before navigation.
+                if (getErrorKind(error) === 'unauthorized') {
+                  return;
+                }
                 // Surface a toast so failures (e.g. logout) are visible to the
                 // user, not just logged — parity with the old Home user menu.
                 // The message comes from getFormattedError so backend-derived
@@ -217,8 +229,8 @@ export const UserGlobalAction = () => {
                   message: getFormattedError(error).message,
                   type: 'error',
                 });
-                // eslint-disable-next-line no-console
-                console.error(`User action "${action.id}" failed:`, error);
+              } finally {
+                setPendingActionId(null);
               }
             }}
             testId={`user-action-${action.id}`}
