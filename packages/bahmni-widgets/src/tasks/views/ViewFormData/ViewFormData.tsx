@@ -17,12 +17,7 @@ import type { Bundle, Encounter, Observation } from 'fhir/r4';
 import React, { useMemo } from 'react';
 import { extractFormFieldPath } from '../../../observations/utils';
 import { ObservationsRenderer } from '../../../observationsRenderer';
-import {
-  deriveConceptDatatypeMap,
-  deriveControlOrder,
-  deriveSectionMap,
-  extractId,
-} from '../../../utils/Observations';
+import { deriveFormSchemaData, extractId } from '../../../utils/Observations';
 import type { TaskView, TaskViewModel } from '../../models';
 import { extractFormNameFromTask } from '../../utils';
 import styles from './ViewFormData.module.scss';
@@ -176,23 +171,8 @@ const ViewFormData: React.FC<ViewFormDataProps> = ({
     enabled: open && !!formUuid,
   });
 
-  const controlOrder = useMemo(
-    () =>
-      formMetadata?.schema
-        ? deriveControlOrder(formMetadata.schema)
-        : undefined,
-    [formMetadata],
-  );
-  const sectionMap = useMemo(
-    () =>
-      formMetadata?.schema ? deriveSectionMap(formMetadata.schema) : undefined,
-    [formMetadata],
-  );
-  const conceptDatatypeMap = useMemo(
-    () =>
-      formMetadata?.schema
-        ? deriveConceptDatatypeMap(formMetadata.schema)
-        : undefined,
+  const { controlOrder, sectionMap, conceptDatatypeMap } = useMemo(
+    () => deriveFormSchemaData(formMetadata?.schema),
     [formMetadata],
   );
 

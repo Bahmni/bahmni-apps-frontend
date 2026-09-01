@@ -12,6 +12,7 @@ import {
   deriveConceptDatatypeMap,
   deriveSectionMap,
   deriveControlOrder,
+  deriveFormSchemaData,
 } from '../Observations';
 
 describe('Observations Utils', () => {
@@ -1113,6 +1114,28 @@ describe('Observations Utils', () => {
         expect(
           deriveConceptDatatypeMap({ controls: [{ id: 1 }] }),
         ).toBeUndefined();
+      });
+    });
+
+    describe('deriveFormSchemaData', () => {
+      it('combines controlOrder, sectionMap and conceptDatatypeMap for the same schema', () => {
+        expect(deriveFormSchemaData(schemaWithSections)).toEqual({
+          controlOrder: ['100', '1', '2', '3'],
+          sectionMap: { '1': 'Vitals', '2': 'Vitals' },
+          conceptDatatypeMap: {
+            'concept-1': 'Numeric',
+            'concept-2': 'Datetime',
+            'concept-3': 'Text',
+          },
+        });
+      });
+
+      it('returns undefined fields when the schema has no controls', () => {
+        expect(deriveFormSchemaData({ controls: [] })).toEqual({
+          controlOrder: undefined,
+          sectionMap: undefined,
+          conceptDatatypeMap: undefined,
+        });
       });
     });
   });

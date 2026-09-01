@@ -32,11 +32,7 @@ import { WidgetProps } from '../registry/model';
 import { CONSULTATION_PAD_PRIVILEGES } from '../userPrivileges/consultationPadPrivileges';
 import { useHasPrivilege } from '../userPrivileges/useHasPrivilege';
 import { useUserPrivilege } from '../userPrivileges/useUserPrivilege';
-import {
-  deriveConceptDatatypeMap,
-  deriveControlOrder,
-  deriveSectionMap,
-} from '../utils/Observations';
+import { deriveFormSchemaData } from '../utils/Observations';
 import { FormRecordViewModel, GroupedFormRecords } from './models';
 import styles from './styles/FormsTable.module.scss';
 
@@ -215,25 +211,8 @@ const FormsTable: React.FC<WidgetProps> = ({
     });
   }, [fhirObservationBundle, selectedRecord?.formName]);
 
-  const controlOrder = useMemo(
-    () =>
-      formMetadata?.schema
-        ? deriveControlOrder(formMetadata.schema)
-        : undefined,
-    [formMetadata],
-  );
-
-  const sectionMap = useMemo(
-    () =>
-      formMetadata?.schema ? deriveSectionMap(formMetadata.schema) : undefined,
-    [formMetadata],
-  );
-
-  const conceptDatatypeMap = useMemo(
-    () =>
-      formMetadata?.schema
-        ? deriveConceptDatatypeMap(formMetadata.schema)
-        : undefined,
+  const { controlOrder, sectionMap, conceptDatatypeMap } = useMemo(
+    () => deriveFormSchemaData(formMetadata?.schema),
     [formMetadata],
   );
 

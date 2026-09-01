@@ -365,3 +365,15 @@ export const deriveConceptDatatypeMap = (
   const entries = collectConceptDatatypeEntries(getSchemaControls(schema));
   return entries.length > 0 ? Object.fromEntries(entries) : undefined;
 };
+
+export interface FormSchemaData {
+  controlOrder: string[] | undefined;
+  sectionMap: Record<string, string> | undefined;
+  conceptDatatypeMap: Record<string, string> | undefined;
+}
+
+export const deriveFormSchemaData = (schema: unknown): FormSchemaData => ({
+  controlOrder: deriveControlOrder(schema),
+  sectionMap: deriveSectionMap(schema),
+  conceptDatatypeMap: deriveConceptDatatypeMap(schema),
+});
