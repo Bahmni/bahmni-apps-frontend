@@ -40,9 +40,6 @@ import {
   transformObservationToRowCell,
   extractFormFieldPath,
   extractFormName,
-  deriveControlOrder,
-  deriveSectionMap,
-  deriveConceptDatatypeMap,
 } from '../utils';
 
 jest.mock('@bahmni/services', () => ({
