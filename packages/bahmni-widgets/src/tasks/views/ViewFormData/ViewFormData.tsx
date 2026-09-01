@@ -15,14 +15,14 @@ import {
 import { useQueries, useQuery } from '@tanstack/react-query';
 import type { Bundle, Encounter, Observation } from 'fhir/r4';
 import React, { useMemo } from 'react';
+import { extractFormFieldPath } from '../../../observations/utils';
+import { ObservationsRenderer } from '../../../observationsRenderer';
 import {
   deriveConceptDatatypeMap,
   deriveControlOrder,
   deriveSectionMap,
-  extractFormFieldPath,
-} from '../../../observations/utils';
-import { ObservationsRenderer } from '../../../observationsRenderer';
-import { extractId } from '../../../utils/Observations';
+  extractId,
+} from '../../../utils/Observations';
 import type { TaskView, TaskViewModel } from '../../models';
 import { extractFormNameFromTask } from '../../utils';
 import styles from './ViewFormData.module.scss';

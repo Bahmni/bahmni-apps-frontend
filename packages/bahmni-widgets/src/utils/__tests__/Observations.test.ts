@@ -9,6 +9,9 @@ import {
   sortObservationsByControlOrder,
   groupMultiSelectObservations,
   transformObservations,
+  deriveConceptDatatypeMap,
+  deriveSectionMap,
+  deriveControlOrder,
 } from '../Observations';
 
 describe('Observations Utils', () => {
@@ -1044,6 +1047,73 @@ describe('Observations Utils', () => {
       expect(members[0].display).toBe('Systolic');
       expect(members[1].display).toBe('Diastolic');
       expect(members[2].display).toBe('Body position');
+    });
+  });
+
+  describe('form schema derivation (View mode <-> Add/Update mode parity)', () => {
+    const schemaWithSections = {
+      controls: [
+        {
+          id: 100,
+          type: 'section',
+          label: { value: 'Vitals' },
+          controls: [
+            { id: 1, concept: { uuid: 'concept-1', datatype: 'Numeric' } },
+            { id: 2, concept: { uuid: 'concept-2', datatype: 'Datetime' } },
+          ],
+        },
+        { id: 3, concept: { uuid: 'concept-3', datatype: 'Text' } },
+      ],
+    };
+
+    describe('deriveControlOrder', () => {
+      it('collects control ids in schema (Add/Update display) order, including nested ones', () => {
+        expect(deriveControlOrder(schemaWithSections)).toEqual([
+          '100',
+          '1',
+          '2',
+          '3',
+        ]);
+      });
+
+      it('returns undefined when the schema has no controls', () => {
+        expect(deriveControlOrder({ controls: [] })).toBeUndefined();
+        expect(deriveControlOrder(undefined)).toBeUndefined();
+      });
+    });
+
+    describe('deriveSectionMap', () => {
+      it('maps each leaf control id to its enclosing section label', () => {
+        expect(deriveSectionMap(schemaWithSections)).toEqual({
+          '1': 'Vitals',
+          '2': 'Vitals',
+        });
+      });
+
+      it('excludes controls that are not nested under a section', () => {
+        const sectionMap = deriveSectionMap(schemaWithSections);
+        expect(sectionMap).not.toHaveProperty('3');
+      });
+
+      it('returns undefined when no control belongs to a section', () => {
+        expect(deriveSectionMap({ controls: [{ id: 1 }] })).toBeUndefined();
+      });
+    });
+
+    describe('deriveConceptDatatypeMap', () => {
+      it('maps each control concept uuid to its datatype, including nested ones', () => {
+        expect(deriveConceptDatatypeMap(schemaWithSections)).toEqual({
+          'concept-1': 'Numeric',
+          'concept-2': 'Datetime',
+          'concept-3': 'Text',
+        });
+      });
+
+      it('returns undefined when no control has a concept', () => {
+        expect(
+          deriveConceptDatatypeMap({ controls: [{ id: 1 }] }),
+        ).toBeUndefined();
+      });
     });
   });
 });
