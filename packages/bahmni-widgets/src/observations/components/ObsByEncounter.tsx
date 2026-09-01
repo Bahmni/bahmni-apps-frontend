@@ -8,6 +8,7 @@ import {
 import { getValueType, useTranslation, formatDateTime } from '@bahmni/services';
 import React from 'react';
 import { ExtractedObservation, ObservationsByEncounter } from '../models';
+import styles from '../styles/Observations.module.scss';
 import { formatEncounterTitle, transformObservationToRowCell } from '../utils';
 
 export interface ObsByEncounterProps {
@@ -52,14 +53,32 @@ const renderObservation = (
   if (valueType === 'PDF')
     valueToDisplay = <FileTile id={`${value}-pdf`} src={value} />;
 
-  const info = {
-    primary: t('OBSERVATIONS_RECORDED_BY', {
-      provider: rowData.provider,
-    }),
-    secondary: observation.effectiveDateTime
-      ? formatDateTime(observation.effectiveDateTime, t, true).formattedResult
-      : undefined,
-  };
+  const header = (
+    <div className={styles.wrapper}>
+      <span>{rowData.header.display}</span>
+      {rowData.header.referenceRange && (
+        <span className={styles.secondary}>
+          {rowData.header.referenceRange}
+        </span>
+      )}
+    </div>
+  );
+
+  const primaryInfo = t('OBSERVATIONS_RECORDED_BY', {
+    provider: rowData.provider,
+  });
+  const secondaryInfo = observation.effectiveDateTime
+    ? formatDateTime(observation.effectiveDateTime, t, true).formattedResult
+    : undefined;
+
+  const info = (
+    <div className={styles.wrapper}>
+      <span>{primaryInfo}</span>
+      {secondaryInfo && (
+        <span className={styles.secondary}>{secondaryInfo}</span>
+      )}
+    </div>
+  );
 
   const obsName = observation.display;
   const isAbnormal = observation.observationValue?.isAbnormal;
@@ -71,7 +90,7 @@ const renderObservation = (
   return (
     <RowCell
       key={`obs-${observation.id}`}
-      header={rowData.header}
+      header={header}
       value={valueToDisplay}
       info={info}
       id={testIdBase}

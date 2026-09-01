@@ -755,12 +755,10 @@ describe('observationUtils', () => {
       };
 
       const result = transformObservationToRowCell(observation, 0);
-      expect(result).toEqual({
-        index: 0,
-        header: { primary: 'Temperature' },
-        value: '98.6 °F',
-        provider: 'Dr. Smith',
-      });
+      expect(result.index).toBe(0);
+      expect(result.value).toBe('98.6 °F');
+      expect(result.provider).toBe('Dr. Smith');
+      expect(result.header).toEqual({ display: 'Temperature' });
     });
 
     it('should transform observation without provider', () => {
@@ -774,12 +772,10 @@ describe('observationUtils', () => {
       };
 
       const result = transformObservationToRowCell(observation, 1);
-      expect(result).toEqual({
-        index: 1,
-        header: { primary: 'Fever' },
-        value: 'High',
-        provider: undefined,
-      });
+      expect(result.index).toBe(1);
+      expect(result.value).toBe('High');
+      expect(result.provider).toBeUndefined();
+      expect(result.header).toEqual({ display: 'Fever' });
     });
 
     it('should format header with both ranges having units', () => {
@@ -788,8 +784,8 @@ describe('observationUtils', () => {
         0,
       );
       expect(result.header).toEqual({
-        primary: 'Blood Glucose',
-        secondary: '(70 mg/dL - 100 mg/dL)',
+        display: 'Blood Glucose',
+        referenceRange: '(70 mg/dL - 100 mg/dL)',
       });
     });
 
@@ -799,8 +795,8 @@ describe('observationUtils', () => {
         0,
       );
       expect(result.header).toEqual({
-        primary: 'Hemoglobin',
-        secondary: '(12 g/dL - 16 g/dL)',
+        display: 'Hemoglobin',
+        referenceRange: '(12 g/dL - 16 g/dL)',
       });
     });
 
@@ -810,8 +806,8 @@ describe('observationUtils', () => {
         0,
       );
       expect(result.header).toEqual({
-        primary: 'Temperature',
-        secondary: '(97 °F - 99 °F)',
+        display: 'Temperature',
+        referenceRange: '(97 °F - 99 °F)',
       });
     });
 
@@ -821,8 +817,8 @@ describe('observationUtils', () => {
         0,
       );
       expect(result.header).toEqual({
-        primary: 'Systolic BP',
-        secondary: '(>90 mmHg)',
+        display: 'Systolic BP',
+        referenceRange: '(>90 mmHg)',
       });
     });
 
@@ -832,8 +828,8 @@ describe('observationUtils', () => {
         0,
       );
       expect(result.header).toEqual({
-        primary: 'Heart Rate',
-        secondary: '(>60 bpm)',
+        display: 'Heart Rate',
+        referenceRange: '(>60 bpm)',
       });
     });
 
@@ -843,8 +839,8 @@ describe('observationUtils', () => {
         0,
       );
       expect(result.header).toEqual({
-        primary: 'Cholesterol',
-        secondary: '(<200 mg/dL)',
+        display: 'Cholesterol',
+        referenceRange: '(<200 mg/dL)',
       });
     });
 
@@ -854,8 +850,8 @@ describe('observationUtils', () => {
         0,
       );
       expect(result.header).toEqual({
-        primary: 'Blood Sugar',
-        secondary: '(<140 mg/dL)',
+        display: 'Blood Sugar',
+        referenceRange: '(<140 mg/dL)',
       });
     });
 
@@ -864,7 +860,7 @@ describe('observationUtils', () => {
         mockObservationWithNoReferenceRange,
         0,
       );
-      expect(result.header).toEqual({ primary: 'Notes' });
+      expect(result.header).toEqual({ display: 'Notes' });
     });
 
     it('should format header with empty reference range', () => {
@@ -872,7 +868,7 @@ describe('observationUtils', () => {
         mockObservationWithEmptyReferenceRange,
         0,
       );
-      expect(result.header).toEqual({ primary: 'Comments' });
+      expect(result.header).toEqual({ display: 'Comments' });
     });
 
     it('should format header with no units', () => {
@@ -881,8 +877,8 @@ describe('observationUtils', () => {
         0,
       );
       expect(result.header).toEqual({
-        primary: 'Count',
-        secondary: '(2 - 10)',
+        display: 'Count',
+        referenceRange: '(2 - 10)',
       });
     });
 
@@ -891,7 +887,7 @@ describe('observationUtils', () => {
         mockObservationWithoutObservationValue,
         0,
       );
-      expect(result.header).toEqual({ primary: 'Notes Only' });
+      expect(result.header).toEqual({ display: 'Notes Only' });
       expect(result.value).toBe('');
     });
   });

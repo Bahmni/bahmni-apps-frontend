@@ -3,17 +3,9 @@ import React from 'react';
 import styles from './styles/index.module.scss';
 
 export interface RowCellProps {
-  header:
-    | React.ReactNode
-    | {
-        primary?: string;
-        secondary?: string;
-      };
+  header: React.ReactNode;
   value: React.ReactNode;
-  info?: {
-    primary?: string;
-    secondary?: string;
-  };
+  info?: React.ReactNode;
   id?: string;
   testId?: string;
   ariaLabel?: string;
@@ -29,17 +21,6 @@ export const RowCell: React.FC<RowCellProps> = ({
   ariaLabel = 'row-cell-aria-label',
   className,
 }) => {
-  const isHeaderObject = (
-    h: RowCellProps['header'],
-  ): h is { primary?: string; secondary?: string } => {
-    return (
-      typeof h === 'object' &&
-      h !== null &&
-      'primary' in h &&
-      !React.isValidElement(h)
-    );
-  };
-
   return (
     <div
       className={classNames(styles.rowCell, className)}
@@ -53,31 +34,7 @@ export const RowCell: React.FC<RowCellProps> = ({
         data-testid={`${testId}-header`}
         aria-label={`${ariaLabel}-header`}
       >
-        {isHeaderObject(header) ? (
-          <>
-            {header.primary && (
-              <span
-                id={`${id}-header-primary`}
-                data-testid={`${testId}-header-primary`}
-                aria-label={`${ariaLabel}-header-primary`}
-              >
-                {header.primary}
-              </span>
-            )}
-            {header.secondary && (
-              <span
-                id={`${id}-header-secondary`}
-                data-testid={`${testId}-header-secondary`}
-                aria-label={`${ariaLabel}-header-secondary`}
-                className={styles.secondaryHeader}
-              >
-                {header.secondary}
-              </span>
-            )}
-          </>
-        ) : (
-          header
-        )}
+        {header}
       </div>
       <div
         className={styles.value}
@@ -87,32 +44,14 @@ export const RowCell: React.FC<RowCellProps> = ({
       >
         {value}
       </div>
-      {info && (info.primary ?? info.secondary) && (
+      {info && (
         <div
           className={styles.info}
           id={`${id}-info`}
           data-testid={`${testId}-info`}
           aria-label={`${ariaLabel}-info`}
         >
-          {info.primary && (
-            <span
-              id={`${id}-info-primary`}
-              data-testid={`${testId}-info-primary`}
-              aria-label={`${ariaLabel}-info-primary`}
-            >
-              {info.primary}
-            </span>
-          )}
-          {info.secondary && (
-            <span
-              id={`${id}-info-secondary`}
-              data-testid={`${testId}-info-secondary`}
-              aria-label={`${ariaLabel}-info-secondary`}
-              className={styles.secondaryInfo}
-            >
-              {info.secondary}
-            </span>
-          )}
+          {info}
         </div>
       )}
     </div>

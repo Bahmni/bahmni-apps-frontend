@@ -13,57 +13,39 @@ describe('RowCell Component', () => {
     expect(screen.getByTestId('test-row-value')).toHaveTextContent('John Doe');
   });
 
-  it('renders with optional info containing primary and secondary', () => {
+  it('renders with optional info', () => {
     render(
       <RowCell
         header="Status"
         value="Active"
-        info={{ primary: 'Last updated', secondary: '2 days ago' }}
+        info={
+          <div>
+            <span>Last updated</span>
+            <span>2 days ago</span>
+          </div>
+        }
         testId="test-row"
       />,
     );
 
-    expect(screen.getByTestId('test-row-info-primary')).toHaveTextContent(
+    expect(screen.getByTestId('test-row-info')).toHaveTextContent(
       'Last updated',
     );
-    expect(screen.getByTestId('test-row-info-secondary')).toHaveTextContent(
-      '2 days ago',
-    );
+    expect(screen.getByTestId('test-row-info')).toHaveTextContent('2 days ago');
   });
 
-  it('renders only primary info when secondary is not provided', () => {
+  it('renders info with single value', () => {
     render(
       <RowCell
         header="Status"
         value="Active"
-        info={{ primary: 'Last updated' }}
+        info={<div>Last updated</div>}
         testId="test-row"
       />,
     );
 
-    expect(screen.getByTestId('test-row-info-primary')).toHaveTextContent(
+    expect(screen.getByTestId('test-row-info')).toHaveTextContent(
       'Last updated',
-    );
-    expect(
-      screen.queryByTestId('test-row-info-secondary'),
-    ).not.toBeInTheDocument();
-  });
-
-  it('renders only secondary info when primary is not provided', () => {
-    render(
-      <RowCell
-        header="Status"
-        value="Active"
-        info={{ secondary: '2 days ago' }}
-        testId="test-row"
-      />,
-    );
-
-    expect(
-      screen.queryByTestId('test-row-info-primary'),
-    ).not.toBeInTheDocument();
-    expect(screen.getByTestId('test-row-info-secondary')).toHaveTextContent(
-      '2 days ago',
     );
   });
 
@@ -123,7 +105,12 @@ describe('RowCell Component', () => {
       <RowCell
         header="Name"
         value="John Doe"
-        info={{ primary: 'Additional info', secondary: 'More details' }}
+        info={
+          <div>
+            <span>Additional info</span>
+            <span>More details</span>
+          </div>
+        }
         testId="test-row"
       />,
     );

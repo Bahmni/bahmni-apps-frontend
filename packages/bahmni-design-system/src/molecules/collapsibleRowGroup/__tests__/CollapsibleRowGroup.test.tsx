@@ -13,7 +13,7 @@ describe('CollapsibleRowGroup Component', () => {
       index: 2,
       header: 'Status',
       value: 'Active',
-      info: { primary: 'Last updated today' },
+      info: 'Last updated today',
     },
   ];
 
@@ -53,7 +53,7 @@ describe('CollapsibleRowGroup Component', () => {
     render(<CollapsibleRowGroup title="Test Group" rows={mockRows} />);
 
     expect(
-      screen.getByTestId('collapsible-row-group-test-id-row-2-info-primary'),
+      screen.getByTestId('collapsible-row-group-test-id-row-2-info'),
     ).toHaveTextContent('Last updated today');
   });
 

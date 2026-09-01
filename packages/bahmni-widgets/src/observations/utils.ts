@@ -94,22 +94,24 @@ export const formatObservationValue = (
   return baseValue;
 };
 
-const formatObservationHeader = (
+export const formatObservationHeader = (
   observation: ExtractedObservation,
-): { primary: string; secondary?: string } => {
+): { display: string; referenceRange?: string } => {
   const display = observation.display!;
 
   if (!observation.observationValue) {
-    return { primary: String(display) };
+    return { display };
   }
 
   const { unit, referenceRange } = observation.observationValue;
 
   if (!referenceRange) {
-    return { primary: String(display) };
+    return { display };
   }
 
   const { low, high } = referenceRange;
+
+  let referenceRangeText = '';
 
   if (low && high) {
     const lowStr = low.unit
@@ -122,28 +124,27 @@ const formatObservationHeader = (
       : unit
         ? `${high.value} ${unit}`
         : String(high.value);
-    return { primary: display, secondary: `(${lowStr} - ${highStr})` };
-  }
-
-  if (low) {
+    referenceRangeText = `(${lowStr} - ${highStr})`;
+  } else if (low) {
     const lowStr = low.unit
       ? `${low.value} ${low.unit}`
       : unit
         ? `${low.value} ${unit}`
         : String(low.value);
-    return { primary: display, secondary: `(>${lowStr})` };
-  }
-
-  if (high) {
+    referenceRangeText = `(>${lowStr})`;
+  } else if (high) {
     const highStr = high.unit
       ? `${high.value} ${high.unit}`
       : unit
         ? `${high.value} ${unit}`
         : String(high.value);
-    return { primary: display, secondary: `(<${highStr})` };
+    referenceRangeText = `(<${highStr})`;
   }
 
-  return { primary: display };
+  return {
+    display,
+    referenceRange: referenceRangeText || undefined,
+  };
 };
 
 export const transformObservationToRowCell = (

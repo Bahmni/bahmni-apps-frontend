@@ -30,7 +30,7 @@ jest.mock('../utils', () => ({
   ...jest.requireActual('../utils'),
   transformObservationToRowCell: jest.fn((obs, index) => ({
     index,
-    header: obs.display,
+    header: { display: obs.display },
     value: '120 mmHg',
     provider: 'Dr. Smith',
   })),

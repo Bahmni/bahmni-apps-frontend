@@ -63,21 +63,27 @@ exports[`ObsByEncounter Snapshot should match snapshot for ObsByEncounter 1`] = 
               >
                 <div
                   aria-label="obs-Temperature-0-0"
-                  class="_rowCell_1o9ni_1"
+                  class="_rowCell_obn1n_1"
                   data-testid="obs-Temperature-0-0"
                   id="obs-Temperature-0-0"
                 >
                   <div
                     aria-label="obs-Temperature-0-0-header"
-                    class="_header_1o9ni_10"
+                    class="_header_obn1n_10"
                     data-testid="obs-Temperature-0-0-header"
                     id="obs-Temperature-0-0-header"
                   >
-                    Temperature
+                    <div
+                      class="wrapper"
+                    >
+                      <span>
+                        Temperature
+                      </span>
+                    </div>
                   </div>
                   <div
                     aria-label="obs-Temperature-0-0-value"
-                    class="_value_1o9ni_29"
+                    class="_value_obn1n_21"
                     data-testid="obs-Temperature-0-0-value"
                     id="obs-Temperature-0-0-value"
                   >
@@ -85,17 +91,17 @@ exports[`ObsByEncounter Snapshot should match snapshot for ObsByEncounter 1`] = 
                   </div>
                   <div
                     aria-label="obs-Temperature-0-0-info"
-                    class="_info_1o9ni_38"
+                    class="_info_obn1n_30"
                     data-testid="obs-Temperature-0-0-info"
                     id="obs-Temperature-0-0-info"
                   >
-                    <span
-                      aria-label="obs-Temperature-0-0-info-primary"
-                      data-testid="obs-Temperature-0-0-info-primary"
-                      id="obs-Temperature-0-0-info-primary"
+                    <div
+                      class="wrapper"
                     >
-                      Recorded by Dr. Smith
-                    </span>
+                      <span>
+                        Recorded by Dr. Smith
+                      </span>
+                    </div>
                   </div>
                 </div>
                 <div
@@ -154,21 +160,27 @@ exports[`ObsByEncounter Snapshot should match snapshot for ObsByEncounter 1`] = 
                           >
                             <div
                               aria-label="obs-Systolic-0-0"
-                              class="_rowCell_1o9ni_1"
+                              class="_rowCell_obn1n_1"
                               data-testid="obs-Systolic-0-0"
                               id="obs-Systolic-0-0"
                             >
                               <div
                                 aria-label="obs-Systolic-0-0-header"
-                                class="_header_1o9ni_10"
+                                class="_header_obn1n_10"
                                 data-testid="obs-Systolic-0-0-header"
                                 id="obs-Systolic-0-0-header"
                               >
-                                Systolic
+                                <div
+                                  class="wrapper"
+                                >
+                                  <span>
+                                    Systolic
+                                  </span>
+                                </div>
                               </div>
                               <div
                                 aria-label="obs-Systolic-0-0-value"
-                                class="_value_1o9ni_29"
+                                class="_value_obn1n_21"
                                 data-testid="obs-Systolic-0-0-value"
                                 id="obs-Systolic-0-0-value"
                               >
@@ -176,17 +188,17 @@ exports[`ObsByEncounter Snapshot should match snapshot for ObsByEncounter 1`] = 
                               </div>
                               <div
                                 aria-label="obs-Systolic-0-0-info"
-                                class="_info_1o9ni_38"
+                                class="_info_obn1n_30"
                                 data-testid="obs-Systolic-0-0-info"
                                 id="obs-Systolic-0-0-info"
                               >
-                                <span
-                                  aria-label="obs-Systolic-0-0-info-primary"
-                                  data-testid="obs-Systolic-0-0-info-primary"
-                                  id="obs-Systolic-0-0-info-primary"
+                                <div
+                                  class="wrapper"
                                 >
-                                  Recorded by Dr. Smith
-                                </span>
+                                  <span>
+                                    Recorded by Dr. Smith
+                                  </span>
+                                </div>
                               </div>
                             </div>
                           </div>
