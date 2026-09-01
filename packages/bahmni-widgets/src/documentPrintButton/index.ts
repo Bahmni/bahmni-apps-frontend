@@ -1,2 +1,2 @@
 export { DocumentPrintButton } from './DocumentPrintButton';
-export type { PrintOption } from './DocumentPrintButton';
+export type { PrintOption, PrintOptionCategory } from './DocumentPrintButton';

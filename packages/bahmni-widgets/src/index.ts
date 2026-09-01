@@ -7,7 +7,7 @@ export {
 
 // Widget Components
 export { DocumentPrintButton } from './documentPrintButton';
-export type { PrintOption } from './documentPrintButton';
+export type { PrintOption, PrintOptionCategory } from './documentPrintButton';
 export { DocumentUpload, renderDocumentTile } from './documentUpload';
 export type {
   DocumentUploadProps,
