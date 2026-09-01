@@ -32,9 +32,11 @@ describe('authService', () => {
         (del as jest.Mock).mockResolvedValue({});
       });
 
-      it('should invalidate the server-side session', async () => {
+      it('should invalidate the server-side session with a request timeout', async () => {
         await logout();
-        expect(del).toHaveBeenCalledWith(SESSION_URL);
+        expect(del).toHaveBeenCalledWith(SESSION_URL, {
+          timeout: expect.any(Number),
+        });
       });
 
       it('should clear login cookies', async () => {
