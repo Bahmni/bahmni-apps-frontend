@@ -171,7 +171,7 @@ const Observations: React.FC<WidgetProps> = ({
         type: 'error',
       });
     }
-  }, [isObservationsError, addNotification, t]);
+  }, [isObservationsError]);
 
   const groupedData = useMemo(() => {
     if (!observations) return [];
