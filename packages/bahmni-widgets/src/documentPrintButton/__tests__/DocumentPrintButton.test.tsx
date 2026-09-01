@@ -1,7 +1,9 @@
 import { notificationService, renderAsHtml } from '@bahmni/services';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import type { Encounter } from 'fhir/r4';
 import React from 'react';
+import { useActivePractitioner } from '../../activePractitioner';
 import { DocumentPrintButton } from '../DocumentPrintButton';
 import { printViaIframe } from '../printViaIframe';
 
@@ -40,6 +42,15 @@ jest.mock('@bahmni/services', () => ({
   getFormattedError: jest
     .fn()
     .mockReturnValue({ title: 'Print Error', message: 'Failed to print' }),
+  getUserLoginLocation: jest.fn(() => {
+    throw new Error('no login location cookie');
+  }),
+  getPatientEncounters: jest.fn(),
+  formatDateTime: jest.fn().mockReturnValue({ formattedResult: '01-Jan-2024' }),
+}));
+
+jest.mock('../../activePractitioner', () => ({
+  useActivePractitioner: jest.fn(() => ({ practitioner: null })),
 }));
 
 jest.mock('../printViaIframe', () => ({
@@ -48,6 +59,11 @@ jest.mock('../printViaIframe', () => ({
 
 const mockRenderAsHtml = renderAsHtml as jest.Mock;
 const mockPrintViaIframe = printViaIframe as jest.Mock;
+const mockUseActivePractitioner = useActivePractitioner as jest.Mock;
+const mockGetUserLoginLocation =
+  jest.requireMock('@bahmni/services').getUserLoginLocation;
+const mockGetPatientEncounters =
+  jest.requireMock('@bahmni/services').getPatientEncounters;
 
 const singleOption = [
   { translationKey: 'PRINT_SUMMARY', templateId: 'summary' },
@@ -56,11 +72,32 @@ const multipleOptions = [
   { translationKey: 'PRINT_SUMMARY', templateId: 'summary' },
   { translationKey: 'PRINT_PRESCRIPTION', templateId: 'prescription' },
 ];
-const renderContext = { patientUuid: 'abc-123' };
+const categorizedOption = [
+  {
+    translationKey: 'PRINT_PRESCRIPTION_BY_ENCOUNTER',
+    templateId: 'prescription-encounter',
+    category: 'PRESCRIPTION' as const,
+  },
+];
+const renderContext = { patientUuid: 'abc-123', patientUUID: 'abc-123' };
+
+const buildEncounter = (id: string, start: string): Encounter => ({
+  resourceType: 'Encounter',
+  id,
+  status: 'finished',
+  class: {},
+  type: [{ text: `Consultation ${id}` }],
+  period: { start },
+});
 
 beforeEach(() => {
   jest.clearAllMocks();
   mockRenderAsHtml.mockResolvedValue('<html><body>Print</body></html>');
+  mockUseActivePractitioner.mockReturnValue({ practitioner: null });
+  mockGetUserLoginLocation.mockImplementation(() => {
+    throw new Error('no login location cookie');
+  });
+  mockGetPatientEncounters.mockResolvedValue([]);
 });
 
 describe('DocumentPrintButton', () => {
@@ -325,6 +362,167 @@ describe('DocumentPrintButton', () => {
           'Failed to print',
         ),
       );
+    });
+  });
+
+  describe('ambient context enrichment', () => {
+    it('merges providerUuid and locationUuid into the render context when resolvable', async () => {
+      mockUseActivePractitioner.mockReturnValue({
+        practitioner: { uuid: 'prov-1' },
+      });
+      mockGetUserLoginLocation.mockReturnValue({
+        uuid: 'loc-1',
+        name: 'Location 1',
+      });
+
+      render(
+        <DocumentPrintButton
+          printOptions={singleOption}
+          renderContext={renderContext}
+        />,
+      );
+
+      await userEvent.click(screen.getByText('PRINT_SUMMARY'));
+
+      await waitFor(() =>
+        expect(mockRenderAsHtml).toHaveBeenCalledWith(
+          expect.objectContaining({
+            context: {
+              ...renderContext,
+              providerUuid: 'prov-1',
+              locationUuid: 'loc-1',
+            },
+          }),
+        ),
+      );
+    });
+
+    it('omits providerUuid/locationUuid when they cannot be resolved', async () => {
+      render(
+        <DocumentPrintButton
+          printOptions={singleOption}
+          renderContext={renderContext}
+        />,
+      );
+
+      await userEvent.click(screen.getByText('PRINT_SUMMARY'));
+
+      await waitFor(() =>
+        expect(mockRenderAsHtml).toHaveBeenCalledWith(
+          expect.objectContaining({ context: renderContext }),
+        ),
+      );
+    });
+  });
+
+  describe('category picker flow (PRESCRIPTION)', () => {
+    it('opens the picker instead of printing immediately', async () => {
+      mockGetPatientEncounters.mockResolvedValue([
+        buildEncounter('enc-1', '2024-01-01T10:00:00Z'),
+      ]);
+
+      render(
+        <DocumentPrintButton
+          printOptions={categorizedOption}
+          renderContext={renderContext}
+        />,
+      );
+
+      await userEvent.click(
+        screen.getByText('PRINT_PRESCRIPTION_BY_ENCOUNTER'),
+      );
+
+      expect(mockRenderAsHtml).not.toHaveBeenCalled();
+      expect(
+        await screen.findByTestId('category-selection-modal'),
+      ).toBeInTheDocument();
+      expect(await screen.findByText('Consultation enc-1')).toBeInTheDocument();
+    });
+
+    it('shows the empty-state message when there are no encounters', async () => {
+      mockGetPatientEncounters.mockResolvedValue([]);
+
+      render(
+        <DocumentPrintButton
+          printOptions={categorizedOption}
+          renderContext={renderContext}
+        />,
+      );
+
+      await userEvent.click(
+        screen.getByText('PRINT_PRESCRIPTION_BY_ENCOUNTER'),
+      );
+
+      expect(
+        await screen.findByText('NO_ENCOUNTERS_FOUND'),
+      ).toBeInTheDocument();
+    });
+
+    it('prints with encounterUuid merged into the context when an encounter is selected', async () => {
+      mockGetPatientEncounters.mockResolvedValue([
+        buildEncounter('enc-1', '2024-01-01T10:00:00Z'),
+      ]);
+
+      render(
+        <DocumentPrintButton
+          printOptions={categorizedOption}
+          renderContext={renderContext}
+        />,
+      );
+
+      await userEvent.click(
+        screen.getByText('PRINT_PRESCRIPTION_BY_ENCOUNTER'),
+      );
+      await userEvent.click(await screen.findByText('Consultation enc-1'));
+
+      await waitFor(() =>
+        expect(mockRenderAsHtml).toHaveBeenCalledWith(
+          expect.objectContaining({
+            templateId: 'prescription-encounter',
+            context: { ...renderContext, encounterUuid: 'enc-1' },
+          }),
+        ),
+      );
+    });
+
+    it('prints nothing when the picker is cancelled', async () => {
+      mockGetPatientEncounters.mockResolvedValue([
+        buildEncounter('enc-1', '2024-01-01T10:00:00Z'),
+      ]);
+
+      render(
+        <DocumentPrintButton
+          printOptions={categorizedOption}
+          renderContext={renderContext}
+        />,
+      );
+
+      await userEvent.click(
+        screen.getByText('PRINT_PRESCRIPTION_BY_ENCOUNTER'),
+      );
+      await screen.findByTestId('category-selection-modal');
+      await userEvent.click(screen.getByText('PRINT_MODAL_CANCEL'));
+
+      expect(
+        screen.queryByTestId('category-selection-modal'),
+      ).not.toBeInTheDocument();
+      expect(mockRenderAsHtml).not.toHaveBeenCalled();
+    });
+
+    it('does not open the picker for a non-categorized option', async () => {
+      render(
+        <DocumentPrintButton
+          printOptions={singleOption}
+          renderContext={renderContext}
+        />,
+      );
+
+      await userEvent.click(screen.getByText('PRINT_SUMMARY'));
+
+      expect(
+        screen.queryByTestId('category-selection-modal'),
+      ).not.toBeInTheDocument();
+      await waitFor(() => expect(mockRenderAsHtml).toHaveBeenCalled());
     });
   });
 });
