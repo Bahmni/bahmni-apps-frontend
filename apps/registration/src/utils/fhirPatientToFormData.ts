@@ -82,7 +82,8 @@ function populateContactAttributesFromTelecom(
     .filter((cp) => cp.system === 'phone' && cp.value)
     .sort(
       (a, b) =>
-        (a.rank ?? Number.MAX_SAFE_INTEGER) - (b.rank ?? Number.MAX_SAFE_INTEGER),
+        (a.rank ?? Number.MAX_SAFE_INTEGER) -
+        (b.rank ?? Number.MAX_SAFE_INTEGER),
     );
   const emailContactPoint = telecom.find(
     (cp) => cp.system === 'email' && cp.value,
