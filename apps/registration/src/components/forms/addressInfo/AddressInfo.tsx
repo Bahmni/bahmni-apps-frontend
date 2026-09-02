@@ -18,6 +18,7 @@ import type {
 } from '../../../hooks/useAddressFields';
 import { useAddressFieldsWithConfig } from '../../../hooks/useAddressFieldsWithConfig';
 import { useAddressSuggestions } from '../../../hooks/useAddressSuggestions';
+import { RequiredAsterisk } from '../../common/RequiredAsterisk';
 import { AddressAutocompleteField } from './AddressAutocompleteField';
 import styles from './styles/index.module.scss';
 
@@ -385,7 +386,14 @@ export const AddressInfo = ({ initialData, ref }: AddressInfoProps) => {
             id={fieldName}
             data-testid={`address-free-text-input-${fieldName}`}
             labelText={
-              level.required ? `${translatedLabel} *` : translatedLabel
+              level.required ? (
+                <>
+                  {translatedLabel}
+                  <RequiredAsterisk />
+                </>
+              ) : (
+                translatedLabel
+              )
             }
             placeholder={translatedLabel}
             value={fieldValue}
