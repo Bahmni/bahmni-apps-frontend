@@ -320,7 +320,7 @@ const collectControlIds = (controls: FormSchemaControl[]): string[] =>
     ...collectControlIds(ctrl.controls ?? []),
   ]);
 
-export const deriveControlOrder = (schema: unknown): string[] | undefined => {
+const deriveControlOrder = (schema: unknown): string[] | undefined => {
   const ids = collectControlIds(getSchemaControls(schema));
   return ids.length > 0 ? ids : undefined;
 };
@@ -343,7 +343,7 @@ const collectSectionEntries = (
     ];
   });
 
-export const deriveSectionMap = (
+const deriveSectionMap = (
   schema: unknown,
 ): Record<string, string> | undefined => {
   const entries = collectSectionEntries(getSchemaControls(schema), null);
@@ -359,14 +359,14 @@ const collectConceptDatatypeEntries = (
     ...collectConceptDatatypeEntries(ctrl.controls ?? []),
   ]);
 
-export const deriveConceptDatatypeMap = (
+const deriveConceptDatatypeMap = (
   schema: unknown,
 ): Record<string, string> | undefined => {
   const entries = collectConceptDatatypeEntries(getSchemaControls(schema));
   return entries.length > 0 ? Object.fromEntries(entries) : undefined;
 };
 
-export interface FormSchemaData {
+interface FormSchemaData {
   controlOrder: string[] | undefined;
   sectionMap: Record<string, string> | undefined;
   conceptDatatypeMap: Record<string, string> | undefined;

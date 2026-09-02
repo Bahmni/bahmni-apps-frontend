@@ -9,9 +9,6 @@ import {
   sortObservationsByControlOrder,
   groupMultiSelectObservations,
   transformObservations,
-  deriveConceptDatatypeMap,
-  deriveSectionMap,
-  deriveControlOrder,
   deriveFormSchemaData,
 } from '../Observations';
 
@@ -1067,9 +1064,9 @@ describe('Observations Utils', () => {
       ],
     };
 
-    describe('deriveControlOrder', () => {
+    describe('deriveFormSchemaData', () => {
       it('collects control ids in schema (Add/Update display) order, including nested ones', () => {
-        expect(deriveControlOrder(schemaWithSections)).toEqual([
+        expect(deriveFormSchemaData(schemaWithSections).controlOrder).toEqual([
           '100',
           '1',
           '2',
@@ -1077,61 +1074,33 @@ describe('Observations Utils', () => {
         ]);
       });
 
-      it('returns undefined when the schema has no controls', () => {
-        expect(deriveControlOrder({ controls: [] })).toBeUndefined();
-        expect(deriveControlOrder(undefined)).toBeUndefined();
-      });
-    });
-
-    describe('deriveSectionMap', () => {
-      it('maps each leaf control id to its enclosing section label', () => {
-        expect(deriveSectionMap(schemaWithSections)).toEqual({
+      it('maps each leaf control id to its enclosing section label, excluding controls not nested under a section', () => {
+        expect(deriveFormSchemaData(schemaWithSections).sectionMap).toEqual({
           '1': 'Vitals',
           '2': 'Vitals',
         });
       });
 
-      it('excludes controls that are not nested under a section', () => {
-        const sectionMap = deriveSectionMap(schemaWithSections);
-        expect(sectionMap).not.toHaveProperty('3');
-      });
-
-      it('returns undefined when no control belongs to a section', () => {
-        expect(deriveSectionMap({ controls: [{ id: 1 }] })).toBeUndefined();
-      });
-    });
-
-    describe('deriveConceptDatatypeMap', () => {
       it('maps each control concept uuid to its datatype, including nested ones', () => {
-        expect(deriveConceptDatatypeMap(schemaWithSections)).toEqual({
+        expect(
+          deriveFormSchemaData(schemaWithSections).conceptDatatypeMap,
+        ).toEqual({
           'concept-1': 'Numeric',
           'concept-2': 'Datetime',
           'concept-3': 'Text',
         });
       });
 
-      it('returns undefined when no control has a concept', () => {
-        expect(
-          deriveConceptDatatypeMap({ controls: [{ id: 1 }] }),
-        ).toBeUndefined();
-      });
-    });
-
-    describe('deriveFormSchemaData', () => {
-      it('combines controlOrder, sectionMap and conceptDatatypeMap for the same schema', () => {
-        expect(deriveFormSchemaData(schemaWithSections)).toEqual({
-          controlOrder: ['100', '1', '2', '3'],
-          sectionMap: { '1': 'Vitals', '2': 'Vitals' },
-          conceptDatatypeMap: {
-            'concept-1': 'Numeric',
-            'concept-2': 'Datetime',
-            'concept-3': 'Text',
-          },
+      it('returns undefined fields when the schema has no controls', () => {
+        expect(deriveFormSchemaData({ controls: [] })).toEqual({
+          controlOrder: undefined,
+          sectionMap: undefined,
+          conceptDatatypeMap: undefined,
         });
       });
 
-      it('returns undefined fields when the schema has no controls', () => {
-        expect(deriveFormSchemaData({ controls: [] })).toEqual({
+      it('returns undefined fields when the schema itself is undefined', () => {
+        expect(deriveFormSchemaData(undefined)).toEqual({
           controlOrder: undefined,
           sectionMap: undefined,
           conceptDatatypeMap: undefined,
