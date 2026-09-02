@@ -5,9 +5,10 @@ import {
   VideoTile,
   FileTile,
 } from '@bahmni/design-system';
-import { getValueType, useTranslation } from '@bahmni/services';
+import { getValueType, useTranslation, formatDateTime } from '@bahmni/services';
 import React from 'react';
 import { ExtractedObservation, ObservationsByEncounter } from '../models';
+import styles from '../styles/Observations.module.scss';
 import { formatEncounterTitle, transformObservationToRowCell } from '../utils';
 
 export interface ObsByEncounterProps {
@@ -21,7 +22,7 @@ const renderObservation = (
   index: number,
   encounterIndex: number,
   title: string,
-  t: (key: string, options?: { provider?: string }) => string,
+  t: (key: string, options?: unknown) => string,
   hideThumbnail?: boolean,
 ) => {
   const rowData = transformObservationToRowCell(observation, index, t);
@@ -52,9 +53,32 @@ const renderObservation = (
   if (valueType === 'PDF')
     valueToDisplay = <FileTile id={`${value}-pdf`} src={value} />;
 
-  const info = t('OBSERVATIONS_RECORDED_BY', {
+  const header = (
+    <div className={styles.wrapper}>
+      <span>{rowData.header.display}</span>
+      {rowData.header.referenceRange && (
+        <span className={styles.secondary}>
+          {rowData.header.referenceRange}
+        </span>
+      )}
+    </div>
+  );
+
+  const primaryInfo = t('OBSERVATIONS_RECORDED_BY', {
     provider: rowData.provider,
   });
+  const secondaryInfo = observation.effectiveDateTime
+    ? formatDateTime(observation.effectiveDateTime, t, true).formattedResult
+    : undefined;
+
+  const info = (
+    <div className={styles.wrapper}>
+      <span>{primaryInfo}</span>
+      {secondaryInfo && (
+        <span className={styles.secondary}>{secondaryInfo}</span>
+      )}
+    </div>
+  );
 
   const obsName = observation.display;
   const isAbnormal = observation.observationValue?.isAbnormal;
@@ -66,7 +90,7 @@ const renderObservation = (
   return (
     <RowCell
       key={`obs-${observation.id}`}
-      header={rowData.header}
+      header={header}
       value={valueToDisplay}
       info={info}
       id={testIdBase}
@@ -78,7 +102,7 @@ const renderObservation = (
 
 const renderGroupedObservation = (
   groupedObs: ExtractedObservation,
-  t: (key: string, options?: { provider?: string }) => string,
+  t: (key: string, options?: unknown) => string,
   isLatestEncounter: boolean,
   groupIndex: number,
   encounterIndex: number,

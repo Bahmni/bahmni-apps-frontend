@@ -243,6 +243,7 @@ export { USER_PINNED_PREFERENCE_URL } from './observationFormsService/constants'
 export {
   getPatientObservationsBundle,
   getPatientObservationsWithEncounterBundle,
+  getPatientLatestObservations,
   getPatientObservations,
   getObservationsBundleByEncounterUuid,
   groupObservationsByEncounter,
