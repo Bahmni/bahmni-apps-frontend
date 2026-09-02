@@ -1,5 +1,5 @@
 import axios, { AxiosError } from 'axios';
-import { getFormattedError } from '../utils';
+import { getFormattedError, getErrorKind } from '../utils';
 
 describe('getFormattedError', () => {
   // Mock axios.isAxiosError to properly detect our mock errors
@@ -325,13 +325,13 @@ describe('getFormattedError', () => {
       });
     });
 
-    it('should handle network errors (no response)', () => {
-      const error = {
-        message: 'Network Error',
-        isAxiosError: true,
-      } as AxiosError;
-
+    // These use real AxiosError instances (not plain object literals). A real
+    // AxiosError is an `instanceof Error`, which previously short-circuited the
+    // network/timeout branches. Constructing real instances guards against that
+    // regression.
+    it('should fall back to a generic message for network errors without a message', () => {
       jest.spyOn(axios, 'isAxiosError').mockReturnValue(true);
+      const error = new axios.AxiosError();
 
       const result = getFormattedError(error);
 
@@ -340,8 +340,21 @@ describe('getFormattedError', () => {
         message:
           'Unable to connect to the server. Please check your internet connection.',
       });
+    });
 
-      jest.restoreAllMocks();
+    it('should handle request timeout (ECONNABORTED) errors', () => {
+      jest.spyOn(axios, 'isAxiosError').mockReturnValue(true);
+      const error = new axios.AxiosError(
+        'timeout of 5000ms exceeded',
+        'ECONNABORTED',
+      );
+
+      const result = getFormattedError(error);
+
+      expect(result).toEqual({
+        title: 'Request Timeout',
+        message: 'Request timed out. Please try again.',
+      });
     });
 
     it('should handle null/undefined errors', () => {
@@ -424,5 +437,53 @@ describe('getFormattedError', () => {
         message: 'Nested error message',
       });
     });
+  });
+});
+
+describe('getErrorKind', () => {
+  it('classifies a 401 response as unauthorized', () => {
+    expect(
+      getErrorKind(
+        new AxiosError('', undefined, undefined, undefined, {
+          status: 401,
+        } as any),
+      ),
+    ).toBe('unauthorized');
+  });
+
+  it('classifies a 5xx response as server', () => {
+    expect(
+      getErrorKind(
+        new AxiosError('', undefined, undefined, undefined, {
+          status: 503,
+        } as any),
+      ),
+    ).toBe('server');
+  });
+
+  it('classifies a timeout (ECONNABORTED) with no response as timeout', () => {
+    expect(getErrorKind(new AxiosError('timeout', 'ECONNABORTED'))).toBe(
+      'timeout',
+    );
+  });
+
+  it('classifies an Axios error with no response as network', () => {
+    expect(getErrorKind(new AxiosError('Network Error'))).toBe('network');
+  });
+
+  it('classifies a non-5xx/non-401 response (e.g. 400) as unknown', () => {
+    expect(
+      getErrorKind(
+        new AxiosError('', undefined, undefined, undefined, {
+          status: 400,
+        } as any),
+      ),
+    ).toBe('unknown');
+  });
+
+  it('classifies a non-Axios error as unknown', () => {
+    expect(getErrorKind(new Error('boom'))).toBe('unknown');
+    expect(getErrorKind('some string')).toBe('unknown');
+    expect(getErrorKind(null)).toBe('unknown');
   });
 });
