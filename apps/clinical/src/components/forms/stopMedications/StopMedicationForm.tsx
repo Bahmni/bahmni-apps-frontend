@@ -120,6 +120,12 @@ const StopMedicationForm: React.FC<StopMedicationFormProps> = React.memo(
       }
     }, [medicationConfig?.stopMedicationFields, setFieldConfig]);
 
+    useEffect(() => {
+      if (isCancelVaccination) {
+        setStopDate(new Date());
+      }
+    }, [isCancelVaccination, setStopDate]);
+
     const { data: orderDates } = useQuery({
       queryKey: ['orderDates', stopMedication?.id],
       queryFn: () =>
