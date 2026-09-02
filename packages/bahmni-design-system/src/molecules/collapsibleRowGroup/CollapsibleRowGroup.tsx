@@ -6,9 +6,9 @@ import styles from './styles/CollapsibleRowGroup.module.scss';
 
 export interface RowData {
   index: number;
-  header: string;
+  header: React.ReactNode;
   value: React.ReactNode;
-  info?: string;
+  info?: React.ReactNode;
 }
 
 export interface CollapsibleRowGroupProps {
