@@ -598,7 +598,8 @@ describe('ObservationFormsPanel', () => {
           encounterSessionStartContext={{
             editOnly: 'observationForms',
             formName: 'Vitals',
-            editEncounterUuid: 'encounter-uuid-1',
+            sourceEncounterUuid: 'encounter-uuid-1',
+            activeEncounter: { id: 'encounter-uuid-1' } as any,
           }}
         />,
       );
