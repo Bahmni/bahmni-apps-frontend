@@ -3,7 +3,7 @@ import {
   Icon,
   ICON_SIZE,
   InlineNotification,
-  SkeletonText,
+  Loading,
   MenuItemDivider,
 } from '@bahmni/design-system';
 import {
@@ -30,7 +30,7 @@ import {
 } from '@bahmni/services';
 import { useActivePractitioner, usePatientUUID } from '@bahmni/widgets';
 import { useQuery } from '@tanstack/react-query';
-import type { Reference, Task } from 'fhir/r4';
+import type { Encounter, Reference, Task } from 'fhir/r4';
 import React, { useState, useRef, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
@@ -82,7 +82,6 @@ interface ObservationFormsContainerProps {
     basedOn?: Reference,
   ) => void;
   existingObservations?: Form2Observation[];
-  activeEncounterUuid?: string | null;
   directMode?: boolean;
   onDirectModeSubmit?: () => void | Promise<void>;
   onDirectModeCancel?: () => void;
@@ -97,7 +96,6 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
   onRemoveForm,
   onFormObservationsChange,
   existingObservations,
-  activeEncounterUuid,
   directMode = false,
   onDirectModeSubmit,
   onDirectModeCancel,
@@ -113,7 +111,22 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
 
   // Derive early so it can be used for hook initialisation below.
   const isEditMode =
-    encounterSessionStartContext?.editOnly === 'observationForms';
+    encounterSessionStartContext?.editOnly === 'observationForms' &&
+    !!encounterSessionStartContext?.sourceEncounterUuid;
+
+  const activeEncounter = encounterSessionStartContext?.activeEncounter as
+    | Encounter
+    | null
+    | undefined;
+  const sourceEncounterUuidFromContext =
+    encounterSessionStartContext?.sourceEncounterUuid as string | undefined;
+  const isCopyover: boolean | undefined =
+    !sourceEncounterUuidFromContext || activeEncounter === undefined
+      ? undefined
+      : activeEncounter?.id !== sourceEncounterUuidFromContext;
+  // Blank string (e.g. a locale with no translated copy yet) means "don't show".
+  const copyoverNoticeMessage =
+    isCopyover && t('OBSERVATION_FORM_COPYOVER_NOTICE').trim();
 
   // Tracks whether the form differs from its initial values — driven by CarbonContainer's
   // own setIsFormUpdated (uuid-based comparison against the observations it was mounted with).
@@ -153,10 +166,10 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
         ? mapGenderFromFhir(fhirPatient.gender)
         : undefined,
       activeVisitUuid: activeVisitId ?? undefined,
-      currentEncounterUuid: activeEncounterUuid ?? undefined,
+      currentEncounterUuid: activeEncounter?.id ?? undefined,
       getAgeDetails: () => ageDetails ?? AGE_DETAILS_DEFAULT,
     };
-  }, [fhirPatient, patientUUID, activeVisitId, activeEncounterUuid]);
+  }, [fhirPatient, patientUUID, activeVisitId, activeEncounter?.id]);
   const episodeOfCareUuids = episodeOfCare.map((eoc) => eoc.uuid);
   const { forms: allForms, isLoading: isAllFormsLoading } =
     useObservationFormsSearch('', episodeOfCareUuids);
@@ -571,12 +584,23 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
               <span>{viewingForm.name}</span>
             </div>
           )}
+          {isEditMode && viewingForm && copyoverNoticeMessage && (
+            <div className={styles.inlineNotificationWrapper}>
+              <InlineNotification
+                kind="info"
+                title={copyoverNoticeMessage}
+                lowContrast
+                hideCloseButton
+                testId="observation-form-copyover-notice"
+              />
+            </div>
+          )}
         </>
       )}
 
       {validationErrorType &&
         validationErrorType !== VALIDATION_STATE_SCRIPT_ERROR && (
-          <div className={styles.errorNotificationWrapper}>
+          <div className={styles.inlineNotificationWrapper}>
             <InlineNotification
               kind="error"
               title={t(
@@ -594,7 +618,7 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
 
       {validationErrorType === VALIDATION_STATE_SCRIPT_ERROR &&
         validationErrorMessage && (
-          <div className={styles.errorNotificationWrapper}>
+          <div className={styles.inlineNotificationWrapper}>
             <InlineNotification
               kind="error"
               title={t('OBSERVATION_FORM_SCRIPT_ERROR_TITLE')}
@@ -614,11 +638,14 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
         data-testid="observation-form-content"
       >
         {isLoadingMetadata || isPatientLoading ? (
-          <SkeletonText
-            width="100%"
-            lineCount={3}
-            data-testid="observation-form-loading"
-          />
+          <div className={styles.loadingWrapper}>
+            <Loading
+              description={t('OBSERVATION_FORM_LOADING_METADATA')}
+              role="status"
+              testId="observation-form-loading"
+              withOverlay={false}
+            />
+          </div>
         ) : error ? (
           <div>{error.message}</div>
         ) : formMetadata && patientUUID && patientContext ? (
@@ -667,7 +694,11 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
     <div
       onClick={handlePinToggle}
       className={`${styles.pinIconContainer} ${isCurrentFormPinned ? styles.pinned : styles.unpinned}`}
-      title={isCurrentFormPinned ? 'Unpin form' : 'Pin form'}
+      title={
+        isCurrentFormPinned
+          ? t('OBSERVATION_FORMS_UNPIN_TOOLTIP')
+          : t('OBSERVATION_FORMS_PIN_TOOLTIP')
+      }
     >
       <Icon id="pin-icon" name="fa-thumbtack" size={ICON_SIZE.SM} />
     </div>

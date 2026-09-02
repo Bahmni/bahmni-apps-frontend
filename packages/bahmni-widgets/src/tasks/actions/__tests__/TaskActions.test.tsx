@@ -510,7 +510,7 @@ describe('TaskActions', () => {
       ).not.toBeInTheDocument();
     });
 
-    it('resolves editEncounterUuid from the newest observation matching the task ServiceRequest', async () => {
+    it('resolves sourceEncounterUuid from the newest observation matching the task ServiceRequest', async () => {
       const user = userEvent.setup();
 
       render(
@@ -543,7 +543,7 @@ describe('TaskActions', () => {
             type: 'startConsultation',
             detail: expect.objectContaining({
               editOnly: 'observationForms',
-              editEncounterUuid: FILL_ENCOUNTER_UUID,
+              sourceEncounterUuid: FILL_ENCOUNTER_UUID,
               formName: 'Vitals',
               directFormMode: true,
               task: mockTaskViewModelCompleted.fhirResource,
@@ -587,6 +587,104 @@ describe('TaskActions', () => {
       expect(dispatchEventSpy).not.toHaveBeenCalledWith(
         expect.objectContaining({ type: 'startConsultation' }),
       );
+    });
+
+    it('shows the full-viewport loading overlay while the edit fetch is in flight, and clears it when done', async () => {
+      let resolveFetch: (value: never) => void = () => {};
+      mockGetPatientObservationsBundle.mockImplementation(
+        () =>
+          new Promise((resolve) => {
+            resolveFetch = resolve as (value: never) => void;
+          }),
+      );
+      const user = userEvent.setup();
+
+      render(
+        <TaskActions
+          task={mockTaskViewModelCompleted}
+          taskConfig={mockTaskConfigWithEditForm}
+        />,
+        { wrapper: createWrapper() },
+      );
+
+      await waitFor(() => {
+        expect(
+          screen.getByRole('button', { name: 'Edit Form' }),
+        ).toBeInTheDocument();
+      });
+
+      await user.click(screen.getByRole('button', { name: 'Edit Form' }));
+
+      const overlayTestId = `task-action-loading-overlay-${mockTaskViewModelCompleted.id}`;
+      await waitFor(() => {
+        expect(screen.getByTestId(overlayTestId)).toBeInTheDocument();
+      });
+
+      resolveFetch({
+        resourceType: 'Bundle',
+        type: 'searchset',
+        entry: [
+          { resource: buildFormObservation('obs-newest', FILL_ENCOUNTER_UUID) },
+        ],
+      } as never);
+
+      await waitFor(() => {
+        expect(screen.queryByTestId(overlayTestId)).not.toBeInTheDocument();
+      });
+    });
+
+    it('reuses the observationsByServiceRequest cache instead of refetching on edit click', async () => {
+      const queryClient = new QueryClient({
+        defaultOptions: { queries: { retry: false, staleTime: Infinity } },
+      });
+      queryClient.setQueryData(
+        ['observationsByServiceRequest', SERVICE_REQUEST_UUID_COMPLETED],
+        {
+          resourceType: 'Bundle',
+          type: 'searchset',
+          entry: [
+            {
+              resource: buildFormObservation('obs-cached', FILL_ENCOUNTER_UUID),
+            },
+          ],
+        },
+      );
+
+      const user = userEvent.setup();
+      const wrapper = ({ children }: { children: React.ReactNode }) => (
+        <QueryClientProvider client={queryClient}>
+          {children}
+        </QueryClientProvider>
+      );
+
+      render(
+        <TaskActions
+          task={mockTaskViewModelCompleted}
+          taskConfig={mockTaskConfigWithEditForm}
+        />,
+        { wrapper },
+      );
+
+      await waitFor(() => {
+        expect(
+          screen.getByRole('button', { name: 'Edit Form' }),
+        ).toBeInTheDocument();
+      });
+
+      await user.click(screen.getByRole('button', { name: 'Edit Form' }));
+
+      await waitFor(() => {
+        expect(dispatchEventSpy).toHaveBeenCalledWith(
+          expect.objectContaining({
+            type: 'startConsultation',
+            detail: expect.objectContaining({
+              sourceEncounterUuid: FILL_ENCOUNTER_UUID,
+            }),
+          }),
+        );
+      });
+
+      expect(mockGetPatientObservationsBundle).not.toHaveBeenCalled();
     });
   });
 

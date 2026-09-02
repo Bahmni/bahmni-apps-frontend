@@ -476,6 +476,19 @@ describe('ConsultationPadContainer', () => {
     expect(mockSetConsultationDate).toHaveBeenCalledWith(expect.any(Date));
   });
 
+  it('prefers encounterType from encounterSessionStartContext over config defaultEncounterType', () => {
+    jest
+      .mocked(useClinicalConfig)
+      .mockReturnValue(buildConfig(['OPD', 'IPD'], 'Consultation') as any);
+    renderComponent({
+      encounterSessionStartContext: {
+        isVisitActive: false,
+        encounterType: 'Examination',
+      },
+    });
+    expect(mockSetRequestedEncounterType).toHaveBeenCalledWith('Examination');
+  });
+
   it('sets requestedEncounterType from config defaultEncounterType, or null when absent', () => {
     jest
       .mocked(useClinicalConfig)
