@@ -120,4 +120,4 @@ export {
   LocationSelector,
 } from './location';
 
-export { deriveFormSchemaData } from "./utils/Observations"
+export { deriveFormSchemaData } from './utils/Observations';
