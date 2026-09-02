@@ -9,7 +9,7 @@ import { builtInFormSections } from './formSectionMap';
 import { FormControlRefs, FormControlData, FormControlGuards } from './models';
 import styles from './styles/index.module.scss';
 
-interface PatientRegisterSectionProps {
+interface SectionProps {
   section: RegistrationFormSection;
   refs: FormControlRefs;
   data: FormControlData;
@@ -19,7 +19,7 @@ interface PatientRegisterSectionProps {
   onToggle: () => void;
 }
 
-const PatientRegisterSection: React.FC<PatientRegisterSectionProps> = ({
+const Section: React.FC<SectionProps> = ({
   section,
   refs,
   data,
@@ -107,4 +107,4 @@ const PatientRegisterSection: React.FC<PatientRegisterSectionProps> = ({
   );
 };
 
-export default PatientRegisterSection;
+export default Section;
