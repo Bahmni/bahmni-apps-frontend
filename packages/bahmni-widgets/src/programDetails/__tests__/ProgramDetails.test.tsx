@@ -491,7 +491,7 @@ describe('ProgramDetails', () => {
     await userEvent.click(button);
 
     expect(
-      screen.getByTestId('program-details-loading-overlay-test-id'),
+      await screen.findByTestId('program-details-loading-overlay-test-id'),
     ).toBeInTheDocument();
     expect(
       screen.getByTestId('patient-programs-tile-test-id'),
