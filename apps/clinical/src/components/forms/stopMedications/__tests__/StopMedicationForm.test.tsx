@@ -1055,6 +1055,32 @@ describe('StopMedicationForm', () => {
       ).not.toBeDisabled();
     });
 
+    it('refreshes stopDate to today on mount so the disabled date input is prepopulated', async () => {
+      const setStopDate = jest.fn();
+      mockUseStopMedicationStore.mockReturnValue(
+        makeStoreMock({ setStopDate }) as any,
+      );
+
+      await act(async () => {
+        renderCancelForm();
+      });
+
+      expect(setStopDate).toHaveBeenCalledWith(expect.any(Date));
+    });
+
+    it('does not refresh stopDate on mount in stop-medication mode', async () => {
+      const setStopDate = jest.fn();
+      mockUseStopMedicationStore.mockReturnValue(
+        makeStoreMock({ setStopDate }) as any,
+      );
+
+      await act(async () => {
+        renderForm({ stopMedication: mockMedicationRequest });
+      });
+
+      expect(setStopDate).not.toHaveBeenCalled();
+    });
+
     it('passes CANCEL_VACCINATION_REASON_LABEL as both titleText and label of the reason dropdown', async () => {
       await act(async () => {
         renderCancelForm();
