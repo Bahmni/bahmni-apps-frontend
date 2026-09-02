@@ -99,8 +99,10 @@ export {
 } from './appointmentService';
 export {
   getFormattedError,
+  getErrorKind,
   PATIENT_NOT_FOUND_ERROR_KEY,
 } from './errorHandling';
+export type { ErrorKind } from './errorHandling';
 export {
   capitalize,
   generateId,

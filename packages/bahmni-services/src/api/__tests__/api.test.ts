@@ -153,7 +153,22 @@ describe('Public API Methods', () => {
 
         const result = await del('/api/patients/1');
 
-        expect(mockAxiosDelete).toHaveBeenCalledWith('/api/patients/1');
+        expect(mockAxiosDelete).toHaveBeenCalledWith(
+          '/api/patients/1',
+          undefined,
+        );
+        expect(result).toEqual(mockData);
+      });
+
+      it('should make DELETE request with options', async () => {
+        const mockData = { success: true };
+        mockAxiosDelete.mockResolvedValue({ data: mockData });
+
+        const result = await del('/api/session', { timeout: 10000 });
+
+        expect(mockAxiosDelete).toHaveBeenCalledWith('/api/session', {
+          timeout: 10000,
+        });
         expect(result).toEqual(mockData);
       });
 
@@ -162,7 +177,10 @@ describe('Public API Methods', () => {
         mockAxiosDelete.mockRejectedValue(error);
 
         await expect(del('/api/patients/1')).rejects.toThrow('Forbidden');
-        expect(mockAxiosDelete).toHaveBeenCalledWith('/api/patients/1');
+        expect(mockAxiosDelete).toHaveBeenCalledWith(
+          '/api/patients/1',
+          undefined,
+        );
       });
     });
   });

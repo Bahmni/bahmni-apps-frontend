@@ -337,6 +337,72 @@ describe('UserGlobalAction', () => {
       expect(consoleError).toHaveBeenCalled();
       consoleError.mockRestore();
     });
+
+    it('should not show a notification when the action fails with a 401 (session already ended)', async () => {
+      const consoleError = jest
+        .spyOn(console, 'error')
+        .mockImplementation(() => {});
+      const unauthorizedError = {
+        isAxiosError: true,
+        response: { status: 401 },
+      };
+      (registerDefaultActions as jest.Mock).mockImplementation((registry) => {
+        registry.registerAction({
+          id: 'user-logout-global-action',
+          label: 'USER_LOGOUT_GLOBAL_ACTION',
+          onClick: jest.fn().mockRejectedValue(unauthorizedError),
+        });
+      });
+
+      renderWithProviders(buildActivePractitionerValue());
+
+      await userEvent.click(
+        screen.getByTestId('user-global-action-button-test-id'),
+      );
+      await userEvent.click(
+        await screen.findByText('USER_LOGOUT_GLOBAL_ACTION'),
+      );
+
+      await waitFor(() => expect(consoleError).toHaveBeenCalled());
+      expect(mockAddNotification).not.toHaveBeenCalled();
+      consoleError.mockRestore();
+    });
+
+    it('should disable an action re-clicked while its previous invocation is still pending', async () => {
+      let rejectOnClick: (error: unknown) => void = () => {};
+      (registerDefaultActions as jest.Mock).mockImplementation((registry) => {
+        registry.registerAction({
+          id: 'user-logout-global-action',
+          label: 'USER_LOGOUT_GLOBAL_ACTION',
+          onClick: () =>
+            new Promise((_resolve, reject) => {
+              rejectOnClick = reject;
+            }),
+        });
+      });
+
+      renderWithProviders(buildActivePractitionerValue());
+      const button = screen.getByTestId('user-global-action-button-test-id');
+
+      // First click starts a pending invocation; the menu auto-closes on click.
+      await userEvent.click(button);
+      await userEvent.click(
+        await screen.findByText('USER_LOGOUT_GLOBAL_ACTION'),
+      );
+
+      // Reopening the menu while that invocation is still pending should show
+      // the item as disabled, guarding against a concurrent second call.
+      await userEvent.click(button);
+      const menuItem = await screen.findByTestId(
+        'user-action-user-logout-global-action',
+      );
+      expect(menuItem).toHaveAttribute('aria-disabled', 'true');
+
+      rejectOnClick(new Error('logout failed'));
+      await waitFor(() =>
+        expect(menuItem).toHaveAttribute('aria-disabled', 'false'),
+      );
+    });
   });
 
   describe('Action Filtering', () => {
