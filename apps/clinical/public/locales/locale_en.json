@@ -500,7 +500,6 @@
   "PINNED_FORMS_INVALID_DATA": "Invalid pinned Forms data",
   "PINNED_FORMS_USER_NOT_FOUND": "User not found",
   "NO_ENCOUNTERS_FOUND": "No encounters found",
-  "PRINT_MODAL_CANCEL": "Cancel",
   "PRINT_MODAL_FETCH_ENCOUNTERS_ERROR": "Unable to load encounters. Please try again.",
   "PRINT_MODAL_LOADING_ENCOUNTERS": "Loading encounters…",
   "PRINT_MODAL_PREPARING_DOCUMENT": "Preparing document…",

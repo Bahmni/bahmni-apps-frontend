@@ -122,7 +122,7 @@ describe('CategorySelectionModal', () => {
     expect(onSelect).toHaveBeenCalledWith(items[0]);
   });
 
-  it('calls onCancel when the cancel button is clicked', async () => {
+  it('calls onCancel when the modal close button is clicked', async () => {
     const picker = buildPicker();
     const onCancel = jest.fn();
 
@@ -136,7 +136,7 @@ describe('CategorySelectionModal', () => {
       />,
     );
 
-    await userEvent.click(screen.getByText('PRINT_MODAL_CANCEL'));
+    await userEvent.click(screen.getByRole('button', { name: 'Close' }));
     expect(onCancel).toHaveBeenCalled();
   });
 });

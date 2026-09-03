@@ -501,7 +501,7 @@ describe('DocumentPrintButton', () => {
         screen.getByText('PRINT_PRESCRIPTION_BY_ENCOUNTER'),
       );
       await screen.findByTestId('category-selection-modal');
-      await userEvent.click(screen.getByText('PRINT_MODAL_CANCEL'));
+      await userEvent.click(screen.getByRole('button', { name: 'Close' }));
 
       expect(
         screen.queryByTestId('category-selection-modal'),
