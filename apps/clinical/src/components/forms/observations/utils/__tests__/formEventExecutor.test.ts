@@ -166,7 +166,7 @@ describe('formEventExecutor', () => {
       expect(result).toEqual(mockObservations);
     });
 
-    it('should throw error with form name context when script execution fails', () => {
+    it('should throw the underlying validation message when script execution fails', () => {
       mockRunEventScript.mockImplementation(() => {
         throw new Error('Validation failed');
       });
@@ -177,9 +177,7 @@ describe('formEventExecutor', () => {
 
       expect(() =>
         executeOnFormSaveEvent(metadata, mockObservations, mockPatient),
-      ).toThrow(
-        'Error in onFormSave event for form "Test Form": Validation failed',
-      );
+      ).toThrow('Validation failed');
     });
 
     it('should handle script that throws plain object error', () => {
@@ -193,9 +191,7 @@ describe('formEventExecutor', () => {
 
       expect(() =>
         executeOnFormSaveEvent(metadata, mockObservations, mockPatient),
-      ).toThrow(
-        'Error in onFormSave event for form "Test Form": Custom validation error',
-      );
+      ).toThrow('Custom validation error');
     });
 
     it('should propagate errors from runEventScript', () => {
@@ -209,9 +205,7 @@ describe('formEventExecutor', () => {
 
       expect(() =>
         executeOnFormSaveEvent(metadata, mockObservations, mockPatient),
-      ).toThrow(
-        'Error in onFormSave event for form "Test Form": Helper failed',
-      );
+      ).toThrow('Helper failed');
     });
 
     it('should throw error when script is not a string', () => {
@@ -226,9 +220,7 @@ describe('formEventExecutor', () => {
 
       expect(() =>
         executeOnFormSaveEvent(metadata, mockObservations, mockPatient),
-      ).toThrow(
-        'Error in onFormSave event for form "Test Form": Invalid onFormSave script: not a string or empty',
-      );
+      ).toThrow('Invalid onFormSave script: not a string or empty');
     });
 
     it('should throw error when script is empty string', () => {
@@ -236,9 +228,7 @@ describe('formEventExecutor', () => {
 
       expect(() =>
         executeOnFormSaveEvent(metadata, mockObservations, mockPatient),
-      ).toThrow(
-        'Error in onFormSave event for form "Test Form": Invalid onFormSave script: not a string or empty',
-      );
+      ).toThrow('Invalid onFormSave script: not a string or empty');
     });
 
     it('should call runEventScript with the provided script', () => {
@@ -272,9 +262,7 @@ describe('formEventExecutor', () => {
 
       expect(() =>
         executeOnFormSaveEvent(metadata, mockObservations, mockPatient),
-      ).toThrow(
-        'Error in onFormSave event for form "Test Form": Unknown error occurred',
-      );
+      ).toThrow('Unknown error occurred');
     });
   });
 });
