@@ -72,8 +72,6 @@ export const executeOnFormSaveEvent = (
             ? String(error.message)
             : 'Unknown error occurred';
 
-    const formattedError = `Error in onFormSave event for form "${metadata.name}": ${errorMessage}`;
-
-    throw new Error(formattedError);
+    throw new Error(errorMessage);
   }
 };
