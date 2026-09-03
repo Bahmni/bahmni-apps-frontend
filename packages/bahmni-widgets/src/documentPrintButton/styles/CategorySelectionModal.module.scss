@@ -1,0 +1,73 @@
+@use "@carbon/react/scss/spacing" as *;
+@use "@carbon/react/scss/theme" as *;
+@use "@carbon/react/scss/type" as *;
+
+// Modal.Body already applies $spacing-05 inline padding, matching the
+// modal header's start position — items/messages must not pad inline
+// again, or their text starts further right than the heading.
+.modal {
+  :global(.cds--modal-content) {
+    padding-block-end: $spacing-05;
+  }
+
+  // Carbon's preset sizes jump straight from ~24-48% (xs) to ~36-60% (sm) of
+  // the viewport — too narrow or too wide for a short, single-column list
+  // like this one. A fixed width keeps it comfortably sized at any
+  // viewport, rather than stretching wide dividers over near-empty rows.
+  :global(.cds--modal-container) {
+    inline-size: 32rem;
+    max-inline-size: 90vw;
+  }
+}
+
+.itemList {
+  display: flex;
+  flex-direction: column;
+}
+
+.item {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-02;
+  width: 100%;
+  text-align: left;
+  border-bottom: 1px solid $border-subtle-02;
+
+  // Carbon's own `.cds--tile--clickable` rule sets `padding`/`background`
+  // at the same specificity as a single module class, so a plain `.item`
+  // override can lose the cascade depending on stylesheet load order.
+  // Compounding both classes raises specificity so ours always wins.
+  // `background-color` is reset to transparent because Carbon's tile
+  // background otherwise tracks the ambient `--cds-layer` custom property,
+  // which flips light/dark depending on how deeply this modal happens to
+  // be nested — a flat row, not a card, is what this list is meant to be.
+  &:global(.cds--tile--clickable) {
+    padding-block: $spacing-04;
+    padding-inline: 0;
+    background-color: transparent;
+
+    &:hover {
+      background-color: $layer-hover-01;
+    }
+  }
+
+  &:last-child {
+    border-bottom: none;
+  }
+}
+
+.itemPrimary {
+  @include type-style("body-compact-02");
+  color: $text-primary;
+}
+
+.itemSecondary {
+  @include type-style("body-compact-01");
+  color: $text-secondary;
+}
+
+.stateMessage {
+  @include type-style("body-compact-01");
+  color: $text-secondary;
+  padding-block: $spacing-05;
+}

@@ -1,12 +1,8 @@
-import {
-  Button,
-  ClickableTile,
-  InlineLoading,
-  Modal,
-} from '@bahmni/design-system';
+import { ClickableTile, InlineLoading, Modal } from '@bahmni/design-system';
 import { useTranslation } from '@bahmni/services';
 import { useEffect, useState } from 'react';
 import type { CategoryPicker } from './categoryPickers/types';
+import styles from './styles/CategorySelectionModal.module.scss';
 
 export interface CategorySelectionModalProps<TItem> {
   open: boolean;
@@ -64,40 +60,41 @@ export function CategorySelectionModal<TItem>({
       onRequestClose={onCancel}
       modalHeading={t(picker.heading)}
       passiveModal
+      className={styles.modal}
       testId="category-selection-modal"
     >
-      <Modal.Body>
-        {loading && (
-          <InlineLoading description={t('PRINT_MODAL_LOADING_ENCOUNTERS')} />
-        )}
-        {!loading && error && (
-          <div>{t('PRINT_MODAL_FETCH_ENCOUNTERS_ERROR')}</div>
-        )}
-        {!loading && !error && items.length === 0 && (
-          <div>{t(picker.emptyStateMessage)}</div>
-        )}
-        {!loading &&
-          !error &&
-          items.map((item) => {
+      {loading && (
+        <InlineLoading description={t('PRINT_MODAL_LOADING_ENCOUNTERS')} />
+      )}
+      {!loading && error && (
+        <div className={styles.stateMessage}>
+          {t('PRINT_MODAL_FETCH_ENCOUNTERS_ERROR')}
+        </div>
+      )}
+      {!loading && !error && items.length === 0 && (
+        <div className={styles.stateMessage}>{t(picker.emptyStateMessage)}</div>
+      )}
+      {!loading && !error && items.length > 0 && (
+        <div className={styles.itemList}>
+          {items.map((item) => {
             const { primary, secondary } = picker.renderItem(item, t);
             const key = picker.getItemKey(item);
             return (
               <ClickableTile
                 key={key}
+                className={styles.item}
                 onClick={() => onSelect(item)}
                 testId={`category-selection-item-${key}`}
               >
-                <div>{primary}</div>
-                {secondary && <div>{secondary}</div>}
+                <div className={styles.itemPrimary}>{primary}</div>
+                {secondary && (
+                  <div className={styles.itemSecondary}>{secondary}</div>
+                )}
               </ClickableTile>
             );
           })}
-      </Modal.Body>
-      <div>
-        <Button kind="secondary" onClick={onCancel}>
-          {t('PRINT_MODAL_CANCEL')}
-        </Button>
-      </div>
+        </div>
+      )}
     </Modal>
   );
 }
