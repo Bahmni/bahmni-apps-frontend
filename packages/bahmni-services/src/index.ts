@@ -28,6 +28,8 @@ export {
   getPatientProfile,
   getPersonAttributeTypes,
   getRelationshipTypes,
+  getObservationByConceptName,
+  calculateDaysSince,
   type FormattedPatientData,
   type PatientSearchResult,
   type PatientSearchResultBundle,
@@ -53,6 +55,7 @@ export {
   type AppointmentSearchResult,
   type ExpectedFieldConfig,
   type SearchActionConfig,
+  type ObservationData,
   AttributeFormat,
   AttributeInputType,
   getInputTypeForFormat,
@@ -225,7 +228,18 @@ export {
   ORDER_TYPE_QUERY_KEY,
 } from './investigationService';
 
-export { getConfig } from './configService';
+export {
+  getConfig,
+  getOrdersConfig,
+  getOrdersTableConfig,
+  type OrdersConfig,
+  type OrderExtension,
+  type OrderExtensionParams,
+  type OrdersTableConfig,
+  type OrderColumnConfig,
+  type OrderStatusOption,
+  type TabStatus,
+} from './configService';
 
 export {
   getCurrentUser,
@@ -287,7 +301,10 @@ export {
   updateFhirEncounter,
   buildEncounterResource,
   type BuildEncounterResourceParams,
+  getFormsDataByEncounterUuid,
+  createOrderFulfillmentEncounter,
   type FormsEncounter,
+  type OrderFulfillmentEncounterParams,
 } from './encounterService';
 
 export {
@@ -481,3 +498,11 @@ export {
   type ActionExtension,
   type ExtensionButtonKind,
 } from './extensions';
+
+export * from './orders';
+export {
+  createTask,
+  createOrUpdateTask,
+  type CreateTaskPayload,
+  type CreateTaskOptions,
+} from './taskService';

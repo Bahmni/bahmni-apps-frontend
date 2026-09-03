@@ -12,7 +12,7 @@
     "typecheck:affected": "nx affected --target=typecheck",
     "test": "nx run-many --target=test --all --parallel=1",
     "test:affected": "nx affected --target=test --parallel=1",
-    "test:coverage": "nx run-many --target=test --coverage --parallel=1 && node scripts/merge-coverage-reports.js",
+    "test:coverage": "nx run-many --target=test --coverage --parallel=1 --exclude=distro && node scripts/merge-coverage-reports.js",
     "test:watch": "nx run-many --target=test --coverage --watch",
     "build": "nx run-many --target=build --all",
     "build:affected": "nx affected --target=build",
@@ -26,6 +26,8 @@
     "@types/fhir": "^0.0.41",
     "browser-image-compression": "^2.0.2",
     "cmdk": "^1.1.1",
+    "fast-uri": "3.1.2",
+    "moment": "^2.30.1",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-router-dom": "^7.15.0",
@@ -118,7 +120,8 @@
     "path-to-regexp": "0.1.13",
     "picomatch": "4.0.4",
     "fast-uri": "3.1.5",
-    "immutable": "4.3.9"
+    "immutable": "4.3.9",
+    "axios": "^1.15.2"
   },
   "workspaces": [
     "apps/*",

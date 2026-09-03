@@ -1,6 +1,14 @@
 import Ajv from 'ajv';
 import { get } from '../api';
-import { ERROR_MESSAGES } from './constants';
+import {
+  ERROR_MESSAGES,
+  ORDERS_CONFIG_URL,
+  ORDERS_TABLE_CONFIG_URL,
+} from './constants';
+import { OrdersConfig } from './models/ordersConfig';
+import { OrdersTableConfig } from './models/ordersTableConfig';
+import ordersConfigSchema from './schemas/ordersConfig.schema.json';
+import ordersTableConfigSchema from './schemas/ordersTableConfig.schema.json';
 
 /**
  * Fetches and validates configuration from a URL against a JSON schema.
@@ -28,6 +36,51 @@ export const getConfig = async <T>(
 
   return config;
 };
+
+/**
+ * Fetches and validates orders extension configuration from the server
+ *
+ * @returns Validated orders configuration object or null if invalid/error
+ * @throws Error if fetch fails or validation fails
+ */
+export const getOrdersConfig = async (): Promise<OrdersConfig | null> => {
+  return getConfig<OrdersConfig>(ORDERS_CONFIG_URL, ordersConfigSchema);
+};
+
+/**
+ * Fetches and validates orders table configuration from the server
+ *
+ * @returns Validated orders table configuration object or null if invalid/error
+ */
+export const getOrdersTableConfig =
+  async (): Promise<OrdersTableConfig | null> => {
+    try {
+      // Fetch the full app.json
+      const appConfig = await fetchConfig<{
+        config: OrdersTableConfig;
+      }>(ORDERS_TABLE_CONFIG_URL);
+
+      if (!appConfig?.config) {
+        return null;
+      }
+
+      // Extract the table config from the nested config property
+      const tableConfig = appConfig.config;
+
+      // Validate the extracted config
+      const isValid = await validateConfig(
+        tableConfig,
+        ordersTableConfigSchema,
+      );
+      if (!isValid) {
+        return null;
+      }
+
+      return tableConfig;
+    } catch {
+      return null;
+    }
+  };
 
 const fetchConfig = async <T>(configPath: string): Promise<T | null> => {
   return await get<T>(configPath);

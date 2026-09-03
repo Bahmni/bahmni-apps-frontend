@@ -19,6 +19,8 @@ export {
   getPatientProfile,
   getRelationshipTypes,
   getPersonAttributeTypes,
+  getObservationByConceptName,
+  calculateDaysSince,
 } from './patientService';
 export {
   type FormattedPatientData,
@@ -46,6 +48,7 @@ export {
   type AppointmentSearchResult,
   type ExpectedFieldConfig,
   type SearchActionConfig,
+  type ObservationData,
 } from './models';
 export {
   AttributeFormat,

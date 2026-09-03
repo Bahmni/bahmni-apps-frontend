@@ -30,6 +30,8 @@ import {
   getAddressHierarchyEntries,
   getPatientProfile,
   fetchPatientPhotoFromUrl,
+  calculateDaysSince,
+  getObservationByConceptName,
 } from '../patientService';
 
 jest.mock('../../api');
@@ -1578,6 +1580,176 @@ describe('Patient Service', () => {
       await expect(fetchPatientPhotoFromUrl(PHOTO_URL)).rejects.toThrow(
         'Network error',
       );
+    });
+  });
+
+  describe('calculateDaysSince', () => {
+    beforeEach(() => {
+      jest.useFakeTimers();
+      jest.setSystemTime(new Date('2025-02-20'));
+    });
+
+    afterEach(() => {
+      jest.useRealTimers();
+    });
+
+    it('should calculate days since date correctly', () => {
+      const result = calculateDaysSince('2025-02-10');
+      expect(result).toBe(10);
+    });
+
+    it('should return 0 for date on today', () => {
+      const result = calculateDaysSince('2025-02-20');
+      expect(result).toBe(0);
+    });
+
+    it('should return null for empty or invalid input', () => {
+      expect(calculateDaysSince('')).toBeNull();
+      expect(calculateDaysSince('not-a-date')).toBeNull();
+      expect(calculateDaysSince(null as any)).toBeNull();
+    });
+
+    it('should return null for future date', () => {
+      const result = calculateDaysSince('2025-12-31');
+      expect(result).toBeNull();
+    });
+
+    it('should calculate 28 days threshold correctly', () => {
+      const result = calculateDaysSince('2025-01-23');
+      expect(result).toBe(28);
+    });
+  });
+
+  describe('getObservationByConceptName', () => {
+    const patientUuid = 'patient-123-uuid';
+    const conceptName = 'LMP Date';
+
+    beforeEach(() => {
+      jest.clearAllMocks();
+      jest.useFakeTimers();
+      jest.setSystemTime(new Date('2025-02-20'));
+    });
+
+    afterEach(() => {
+      jest.useRealTimers();
+    });
+
+    it('should fetch and return ObservationData for date observation', async () => {
+      mockedGet.mockResolvedValueOnce({
+        results: [
+          {
+            value: '2025-01-15T08:30:00',
+            auditInfo: { dateCreated: '2025-01-15T10:00:00.000+0000' },
+          },
+        ],
+      });
+
+      const result = await getObservationByConceptName(
+        patientUuid,
+        conceptName,
+      );
+
+      expect(result).toEqual({
+        date: '2025-01-15',
+        daysSince: expect.any(Number),
+      });
+      expect(mockedGet).toHaveBeenCalled();
+    });
+
+    it('should return most recently created observation when multiple exist', async () => {
+      mockedGet.mockResolvedValueOnce({
+        results: [
+          {
+            value: '2024-11-01T00:00:00',
+            auditInfo: { dateCreated: '2024-11-01T08:00:00.000+0000' },
+          },
+          {
+            value: '2025-01-15T00:00:00',
+            auditInfo: { dateCreated: '2025-01-15T10:00:00.000+0000' },
+          },
+          {
+            value: '2024-06-01T00:00:00',
+            auditInfo: { dateCreated: '2024-06-01T06:00:00.000+0000' },
+          },
+        ],
+      });
+
+      const result = await getObservationByConceptName(
+        patientUuid,
+        conceptName,
+      );
+
+      expect(result).toEqual({
+        date: '2025-01-15',
+        daysSince: expect.any(Number),
+      });
+    });
+
+    it('should return display string for coded observation', async () => {
+      mockedGet.mockResolvedValueOnce({
+        results: [
+          {
+            value: { uuid: 'coded-concept-uuid', display: 'Yes' },
+            auditInfo: { dateCreated: '2025-01-15T10:00:00.000+0000' },
+          },
+        ],
+      });
+
+      const result = await getObservationByConceptName(
+        patientUuid,
+        'Has the Patient begun Menstruating?',
+      );
+
+      expect(result).toBe('Yes');
+    });
+
+    it('should return null when no observations found', async () => {
+      mockedGet.mockResolvedValueOnce({ results: [] });
+
+      const result = await getObservationByConceptName(
+        patientUuid,
+        conceptName,
+      );
+
+      expect(result).toBeNull();
+    });
+
+    it('should return null for invalid or empty patientUuid', async () => {
+      const result1 = await getObservationByConceptName('', conceptName);
+      const result2 = await getObservationByConceptName('   ', conceptName);
+
+      expect(result1).toBeNull();
+      expect(result2).toBeNull();
+      expect(mockedGet).not.toHaveBeenCalled();
+    });
+
+    it('should return null on API error', async () => {
+      mockedGet.mockRejectedValueOnce(new Error('API Error'));
+
+      const result = await getObservationByConceptName(
+        patientUuid,
+        conceptName,
+      );
+
+      expect(result).toBeNull();
+    });
+
+    it('should return null when obs value is neither a date string nor a coded object', async () => {
+      mockedGet.mockResolvedValueOnce({
+        results: [
+          {
+            value: null,
+            auditInfo: { dateCreated: '2025-01-15T10:00:00.000+0000' },
+          },
+        ],
+      });
+
+      const result = await getObservationByConceptName(
+        patientUuid,
+        conceptName,
+      );
+
+      expect(result).toBeNull();
     });
   });
 });

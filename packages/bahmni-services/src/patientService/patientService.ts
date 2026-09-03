@@ -1,6 +1,8 @@
+import { differenceInDays, parseISO } from 'date-fns';
 import { Patient } from 'fhir/r4';
 import { get, post, put } from '../api';
 import { APP_PROPERTY_URL } from '../applicationConfigService/constants';
+import { OPENMRS_REST_V1 } from '../constants/app';
 import { BIRTH_TIME_EXT_URL } from '../constants/fhir';
 import { PATIENT_NOT_FOUND_ERROR_KEY } from '../errorHandling';
 import { getUserLoginLocation } from '../userService';
@@ -491,3 +493,67 @@ export const getPersonAttributeTypes =
   async (): Promise<PersonAttributeTypesResponse> => {
     return get<PersonAttributeTypesResponse>(PERSON_ATTRIBUTE_TYPES_URL);
   };
+
+/**
+ * Calculate the number of days between a date and today using date-fns
+ * @param dateStr - ISO date string (e.g. "2024-03-15")
+ * @returns Number of days since the date, or null if the date is invalid
+ */
+export const calculateDaysSince = (dateStr: string): number | null => {
+  if (!dateStr) return null;
+  try {
+    const date = parseISO(dateStr);
+    const daysDiff = differenceInDays(new Date(), date);
+    return daysDiff >= 0 ? daysDiff : null;
+  } catch {
+    return null;
+  }
+};
+
+/**
+ * Fetch an observation by concept name from Bahmni
+ * Returns ObservationData for date observations or string for coded observations
+ * @param patientUuid - The UUID of the patient
+ * @param conceptName - The name of the concept to fetch
+ * @returns Promise<ObservationData | string | null> - The observation data or null if not found
+ */
+export const getObservationByConceptName = async (
+  patientUuid: string,
+  conceptName: string,
+): Promise<import('./models').ObservationData | string | null> => {
+  if (!patientUuid?.trim()) return null;
+
+  try {
+    interface BahmniObservation {
+      value?: string | Record<string, unknown> | null;
+      display?: string | null;
+      auditInfo?: { dateCreated: string };
+    }
+
+    const url = `${OPENMRS_REST_V1}/obs?patient=${patientUuid}&concept=${encodeURIComponent(conceptName)}&v=custom:(uuid,value,display,auditInfo:(dateCreated))`;
+    const response = await get<{ results: BahmniObservation[] }>(url);
+
+    if (!response?.results?.length) return null;
+
+    const sortedObs = [...response.results].sort(
+      (a, b) =>
+        new Date(b.auditInfo?.dateCreated ?? 0).getTime() -
+        new Date(a.auditInfo?.dateCreated ?? 0).getTime(),
+    );
+    const obs = sortedObs[0];
+
+    if (obs.value && typeof obs.value === 'string' && obs.value.includes('-')) {
+      const isoDate = obs.value.split('T')[0];
+      const daysSince = calculateDaysSince(isoDate);
+      return daysSince !== null ? { date: isoDate, daysSince } : null;
+    }
+
+    if (obs.value && typeof obs.value === 'object' && 'display' in obs.value) {
+      return (obs.value.display as string) ?? null;
+    }
+
+    return null;
+  } catch {
+    return null;
+  }
+};
