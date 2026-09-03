@@ -181,6 +181,70 @@ describe('convertFhirToPersonAttributes', () => {
     );
     expect(result).toBeUndefined();
   });
+
+  it('should prefer telecom over extensions for phone and email', () => {
+    const patient: Patient = {
+      ...baseFhirPatient,
+      telecom: [
+        { system: 'phone', value: '+91999', rank: 1 },
+        { system: 'email', value: 'from-telecom@t.com' },
+      ],
+    };
+    const result = convertFhirToPersonAttributes(patient, personAttributes);
+    expect(result).toEqual({
+      phoneNumber: '+91999',
+      email: 'from-telecom@t.com',
+    });
+  });
+
+  it('should fall back to extension for a field not present in telecom', () => {
+    const patient: Patient = {
+      ...baseFhirPatient,
+      telecom: [{ system: 'phone', value: '+91999', rank: 1 }],
+    };
+    const result = convertFhirToPersonAttributes(patient, personAttributes);
+    expect(result).toEqual({ phoneNumber: '+91999', email: 'j@t.com' });
+  });
+
+  it('should map a second phone telecom entry to alternatePhoneNumber when configured', () => {
+    const attributesWithAlternate: PersonAttributeType[] = [
+      ...personAttributes,
+      {
+        uuid: 'p3',
+        name: 'alternatePhoneNumber',
+        format: 'java.lang.String',
+        sortWeight: 3,
+        description: null,
+        concept: null,
+      },
+    ];
+    const patient: Patient = {
+      ...baseFhirPatient,
+      extension: [],
+      telecom: [
+        { system: 'phone', value: '+91111', rank: 1 },
+        { system: 'phone', value: '+91222', use: 'home', rank: 2 },
+        { system: 'email', value: 'from-telecom@t.com' },
+      ],
+    };
+    const result = convertFhirToPersonAttributes(
+      patient,
+      attributesWithAlternate,
+    );
+    expect(result).toEqual({
+      phoneNumber: '+91111',
+      alternatePhoneNumber: '+91222',
+      email: 'from-telecom@t.com',
+    });
+  });
+
+  it('should return undefined when neither telecom nor extensions have data', () => {
+    const result = convertFhirToPersonAttributes(
+      { ...baseFhirPatient, extension: [], telecom: [] },
+      personAttributes,
+    );
+    expect(result).toBeUndefined();
+  });
 });
 
 describe('convertFhirToAddressData', () => {
