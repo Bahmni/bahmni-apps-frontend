@@ -51,7 +51,7 @@ let capturedOnSearch:
   | null = null;
 let capturedConfig: SearchContextConfig[] | null = null;
 
-jest.mock('../SearchForm', () => ({
+jest.mock('../components/SearchForm', () => ({
   __esModule: true,
   default: ({ onSearch, config }: any) => {
     capturedOnSearch = onSearch;
@@ -60,14 +60,27 @@ jest.mock('../SearchForm', () => ({
   },
 }));
 
-jest.mock('../SearchSummary', () => ({
+jest.mock('../components/SearchSummary', () => ({
   __esModule: true,
   default: () => <div data-testid="search-summary" />,
 }));
 
-jest.mock('../ResultsTable', () => ({
+let capturedCursorPagination: {
+  currentSet: number;
+  searchId: string;
+  hasNextSet: boolean;
+  hasPreviousSet: boolean;
+  onSetChange: (direction: 'next' | 'prev') => void;
+} | null = null;
+let capturedTotalCount: number | undefined;
+
+jest.mock('../components/ResultsTable', () => ({
   __esModule: true,
-  default: () => <div data-testid="results-table" />,
+  default: ({ cursorPagination, totalCount }: any) => {
+    capturedCursorPagination = cursorPagination;
+    capturedTotalCount = totalCount;
+    return <div data-testid="results-table" />;
+  },
 }));
 
 describe('CommonSearchWidget', () => {
@@ -521,6 +534,179 @@ describe('CommonSearchWidget', () => {
           name: 'COMMON_SEARCH_SELECT_SEARCH_CRITERIA',
         }),
       ).toBeInTheDocument();
+    });
+  });
+
+  describe('cursor-set pagination', () => {
+    const context = mockCommonSearchWidgetConfig[0];
+
+    const responseWith = (
+      nextCursor: string | null,
+      prevCursor: string | null,
+      totalCount?: number,
+    ) => ({
+      context: context.context,
+      meta: {
+        ...(totalCount === undefined ? {} : { totalCount }),
+        pagination: { nextCursor, prevCursor },
+      },
+      results: [{ uuid: 'result-1' }],
+      error: null,
+    });
+
+    const search = async () => {
+      (getConfig as jest.Mock).mockResolvedValueOnce(
+        mockCommonSearchWidgetConfig,
+      );
+      render(
+        <CommonSearchWidget extensionParams={{ configUrl: '/api/config' }} />,
+        { wrapper },
+      );
+      await waitFor(() =>
+        expect(screen.getByTestId('search-form')).toBeInTheDocument(),
+      );
+      await act(async () => {
+        capturedOnSearch!([mockRowWithValidValue], context);
+      });
+    };
+
+    const metaOfCall = (index: number) => mockPost.mock.calls[index][1].meta;
+
+    beforeEach(() => {
+      capturedCursorPagination = null;
+      capturedTotalCount = undefined;
+    });
+
+    it('should request a full batch and total count when starting a new search', async () => {
+      mockPost.mockResolvedValue(responseWith('next-1', null, 300));
+      await search();
+
+      expect(metaOfCall(0)).toEqual({
+        includeTotalCount: true,
+        pagination: {
+          limit: context.batchSize,
+          sortOrder: 'desc',
+          cursor: null,
+        },
+      });
+    });
+
+    it('should send the next cursor and skip the total count when navigating to the next set', async () => {
+      mockPost.mockResolvedValue(responseWith('next-1', 'prev-1', 300));
+      await search();
+
+      await act(async () => {
+        capturedCursorPagination!.onSetChange('next');
+      });
+
+      expect(metaOfCall(1)).toEqual({
+        includeTotalCount: false,
+        pagination: {
+          limit: context.batchSize,
+          sortOrder: 'desc',
+          cursor: 'next-1',
+          direction: 'next',
+        },
+      });
+      expect(capturedCursorPagination!.currentSet).toBe(1);
+    });
+
+    it('should send the previous cursor when navigating back to the previous set', async () => {
+      mockPost.mockResolvedValue(responseWith('next-1', 'prev-1', 300));
+      await search();
+      await act(async () => {
+        capturedCursorPagination!.onSetChange('next');
+      });
+      await act(async () => {
+        capturedCursorPagination!.onSetChange('prev');
+      });
+
+      expect(metaOfCall(2).pagination).toMatchObject({
+        cursor: 'prev-1',
+        direction: 'prev',
+      });
+      expect(capturedCursorPagination!.currentSet).toBe(0);
+    });
+
+    it('should enable next-set navigation only when the server returns a next cursor', async () => {
+      mockPost
+        .mockResolvedValueOnce(responseWith('next-1', null, 300))
+        .mockResolvedValueOnce(responseWith(null, 'prev-1'));
+      await search();
+      expect(capturedCursorPagination!.hasNextSet).toBe(true);
+      expect(capturedCursorPagination!.hasPreviousSet).toBe(false);
+
+      await act(async () => {
+        capturedCursorPagination!.onSetChange('next');
+      });
+
+      expect(capturedCursorPagination!.hasNextSet).toBe(false);
+      expect(capturedCursorPagination!.hasPreviousSet).toBe(true);
+    });
+
+    it('should retain the same search ID across set navigation and generate a new one for each search', async () => {
+      mockPost.mockResolvedValue(responseWith('next-1', 'prev-1', 300));
+      await search();
+      const firstSearchId = capturedCursorPagination!.searchId;
+
+      await act(async () => {
+        capturedCursorPagination!.onSetChange('next');
+      });
+      expect(capturedCursorPagination!.searchId).toBe(firstSearchId);
+
+      await act(async () => {
+        capturedOnSearch!([mockRowWithValidValue], context);
+      });
+      expect(capturedCursorPagination!.searchId).not.toBe(firstSearchId);
+    });
+
+    it('should preserve the total count when a subsequent set response omits it', async () => {
+      mockPost
+        .mockResolvedValueOnce(responseWith('next-1', null, 300))
+        .mockResolvedValueOnce(responseWith(null, 'prev-1'));
+      await search();
+      expect(capturedTotalCount).toBe(300);
+
+      await act(async () => {
+        capturedCursorPagination!.onSetChange('next');
+      });
+
+      expect(capturedTotalCount).toBe(300);
+    });
+
+    it('should keep the current set visible and show an error when navigating to another set fails', async () => {
+      mockPost
+        .mockResolvedValueOnce(responseWith('next-1', null, 300))
+        .mockRejectedValueOnce(new Error('Network error'));
+      await search();
+
+      await act(async () => {
+        capturedCursorPagination!.onSetChange('next');
+      });
+
+      expect(screen.getByTestId('results-table')).toBeInTheDocument();
+      expect(mockAddNotification).toHaveBeenCalledWith({
+        title: 'ERROR_DEFAULT_TITLE',
+        message: 'COMMON_SEARCH_API_ERROR_MESSAGE',
+        type: 'error',
+        timeout: 5000,
+      });
+    });
+
+    it('should treat an error in a successful response as a search failure', async () => {
+      mockPost.mockResolvedValue({
+        ...responseWith('next-1', null, 300),
+        error: 'Something went wrong',
+      });
+      await search();
+
+      expect(screen.queryByTestId('results-table')).not.toBeInTheDocument();
+      expect(mockAddNotification).toHaveBeenCalledWith({
+        title: 'ERROR_DEFAULT_TITLE',
+        message: 'COMMON_SEARCH_API_ERROR_MESSAGE',
+        type: 'error',
+        timeout: 5000,
+      });
     });
   });
 });

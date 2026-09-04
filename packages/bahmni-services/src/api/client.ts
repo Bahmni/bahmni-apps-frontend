@@ -17,8 +17,8 @@ client.interceptors.request.use(
     return config;
   },
   function (error) {
-    const { title, message } = getFormattedError(error);
-    return Promise.reject(`${title}: ${message}`);
+    const { message } = getFormattedError(error);
+    throw new Error(message);
   },
 );
 
@@ -36,24 +36,25 @@ client.interceptors.response.use(
       }
       return response;
     } catch (error) {
-      const { title, message } = getFormattedError(error);
-      return Promise.reject(`${title}: ${message}`);
+      const { message } = getFormattedError(error);
+      throw new Error(message);
     }
   },
-  function (error) {
+  async function (error) {
     if (axios.isAxiosError(error) && error.response?.status === 401) {
       globalThis.location.href = LOGIN_PATH;
-      return Promise.reject(error);
+      throw error;
     }
-    const { title, message } = getFormattedError(error);
-
-    // If message is a translation key (starts with ERROR_ or other uppercase patterns),
-    // return just the key without wrapping it with the title
-    if (message.startsWith('ERROR_') || /^[A-Z_]+$/.test(message)) {
-      return Promise.reject(new Error(message));
+    if (axios.isAxiosError(error) && error.response?.data instanceof Blob) {
+      try {
+        const text = await (error.response.data as Blob).text();
+        error.response.data = JSON.parse(text);
+      } catch {
+        // leave as blob if unparseable
+      }
     }
-
-    return Promise.reject(`${title}: ${message}`);
+    const { message } = getFormattedError(error);
+    throw new Error(message);
   },
 );
 

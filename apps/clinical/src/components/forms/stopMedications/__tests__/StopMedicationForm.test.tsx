@@ -11,6 +11,7 @@ import StopMedicationForm from '../StopMedicationForm';
 let capturedDropdownOnChange:
   | ((args: { selectedItem: { uuid: string; display: string } | null }) => void)
   | null = null;
+let capturedDropdownProps: any = null;
 
 jest.mock('@bahmni/design-system', () => {
   const actual = jest.requireActual('@bahmni/design-system');
@@ -18,6 +19,7 @@ jest.mock('@bahmni/design-system', () => {
     ...actual,
     Dropdown: jest.fn((props: any) => {
       capturedDropdownOnChange = props.onChange;
+      capturedDropdownProps = props;
       return (
         <div
           data-testid="stop-medication-reason-dropdown"
@@ -96,6 +98,7 @@ function buildStoreMock(overrides: Record<string, unknown> = {}) {
     setNote: jest.fn(),
     setMedicationToStop: jest.fn(),
     setFieldConfig: jest.fn(),
+    setInputControlKey: jest.fn(),
     ...overrides,
   };
 }
@@ -127,6 +130,7 @@ describe('StopMedicationForm', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     capturedDropdownOnChange = null;
+    capturedDropdownProps = null;
     mockUseQuery.mockImplementation(defaultQueryMock as any);
     mockUseStopMedicationStore.mockReturnValue(makeStoreMock() as any);
   });
@@ -249,6 +253,41 @@ describe('StopMedicationForm', () => {
       });
 
       expect(setMedicationToStop).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('setInputControlKey side effect', () => {
+    it('calls setInputControlKey with inputControlConfig.type', async () => {
+      const setInputControlKey = jest.fn();
+      mockUseStopMedicationStore.mockReturnValue(
+        makeStoreMock({ setInputControlKey }) as any,
+      );
+
+      await act(async () => {
+        render(
+          <StopMedicationForm
+            encounterSessionStartContext={{
+              stopMedication: mockMedicationRequest,
+            }}
+            inputControlConfig={{ type: 'cancelVaccination' } as any}
+          />,
+        );
+      });
+
+      expect(setInputControlKey).toHaveBeenCalledWith('cancelVaccination');
+    });
+
+    it('calls setInputControlKey with "stopMedications" when inputControlConfig is absent', async () => {
+      const setInputControlKey = jest.fn();
+      mockUseStopMedicationStore.mockReturnValue(
+        makeStoreMock({ setInputControlKey }) as any,
+      );
+
+      await act(async () => {
+        renderForm({ stopMedication: mockMedicationRequest });
+      });
+
+      expect(setInputControlKey).toHaveBeenCalledWith('stopMedications');
     });
   });
 
@@ -966,6 +1005,103 @@ describe('StopMedicationForm', () => {
 
       // Restore original mock
       designSystem.TextAreaWClose = originalTextAreaWClose;
+    });
+  });
+
+  describe('cancel vaccination mode (inputControlConfig.type === "cancelVaccination")', () => {
+    const cancelInputControlConfig = { type: 'cancelVaccination' } as any;
+
+    const renderCancelForm = () =>
+      render(
+        <StopMedicationForm
+          encounterSessionStartContext={{
+            stopMedication: mockMedicationRequest,
+          }}
+          inputControlConfig={cancelInputControlConfig}
+        />,
+      );
+
+    it('renders CANCEL_VACCINATION_FORM_TITLE instead of STOP_MEDICATION_FORM_TITLE', async () => {
+      await act(async () => {
+        renderCancelForm();
+      });
+
+      expect(
+        screen.getByText('CANCEL_VACCINATION_FORM_TITLE'),
+      ).toBeInTheDocument();
+      expect(
+        screen.queryByText('STOP_MEDICATION_FORM_TITLE'),
+      ).not.toBeInTheDocument();
+    });
+
+    it('renders the date label as CANCEL_VACCINATION_DATE_LABEL and disables the date input', async () => {
+      await act(async () => {
+        renderCancelForm();
+      });
+
+      expect(
+        screen.getByText('CANCEL_VACCINATION_DATE_LABEL'),
+      ).toBeInTheDocument();
+      expect(screen.getByTestId('stop-medication-date-input')).toBeDisabled();
+    });
+
+    it('does not disable the date input in stop-medication mode', async () => {
+      await act(async () => {
+        renderForm({ stopMedication: mockMedicationRequest });
+      });
+
+      expect(
+        screen.getByTestId('stop-medication-date-input'),
+      ).not.toBeDisabled();
+    });
+
+    it('refreshes stopDate to today on mount so the disabled date input is prepopulated', async () => {
+      const setStopDate = jest.fn();
+      mockUseStopMedicationStore.mockReturnValue(
+        makeStoreMock({ setStopDate }) as any,
+      );
+
+      await act(async () => {
+        renderCancelForm();
+      });
+
+      expect(setStopDate).toHaveBeenCalledWith(expect.any(Date));
+    });
+
+    it('does not refresh stopDate on mount in stop-medication mode', async () => {
+      const setStopDate = jest.fn();
+      mockUseStopMedicationStore.mockReturnValue(
+        makeStoreMock({ setStopDate }) as any,
+      );
+
+      await act(async () => {
+        renderForm({ stopMedication: mockMedicationRequest });
+      });
+
+      expect(setStopDate).not.toHaveBeenCalled();
+    });
+
+    it('passes CANCEL_VACCINATION_REASON_LABEL as both titleText and label of the reason dropdown', async () => {
+      await act(async () => {
+        renderCancelForm();
+      });
+
+      expect(capturedDropdownProps?.titleText).toBe(
+        'CANCEL_VACCINATION_REASON_LABEL',
+      );
+      expect(capturedDropdownProps?.label).toBe(
+        'CANCEL_VACCINATION_REASON_LABEL',
+      );
+    });
+
+    it('renders the CANCEL_VACCINATION_ADD_NOTE link text before a note is added', async () => {
+      await act(async () => {
+        renderCancelForm();
+      });
+
+      expect(
+        screen.getByTestId('stop-medication-add-note-link'),
+      ).toHaveTextContent('CANCEL_VACCINATION_ADD_NOTE');
     });
   });
 });

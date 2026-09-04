@@ -3,6 +3,7 @@ import { get } from '../api';
 import {
   FHIR_OBSERVATION_URL,
   FHIR_OBSERVATIONS_BY_ENCOUNTER_URL,
+  FHIR_OBSERVATION_LASTN_URL,
 } from './constants';
 
 export async function getPatientObservationsBundle(
@@ -17,9 +18,33 @@ export async function getPatientObservationsBundle(
 export async function getPatientObservationsWithEncounterBundle(
   patientUuid: string,
   conceptCodes: string[],
+  encounterUuids?: string[],
 ): Promise<Bundle<Observation | Encounter>> {
-  const url = FHIR_OBSERVATION_URL(patientUuid, conceptCodes, undefined, true);
+  const url = FHIR_OBSERVATION_URL(
+    patientUuid,
+    conceptCodes,
+    undefined,
+    true,
+    encounterUuids,
+  );
   return await get<Bundle<Observation | Encounter>>(url);
+}
+
+export async function getPatientLatestObservations(
+  patientUuid: string,
+  conceptCodes: string[],
+  encounterUuids?: string[],
+  includeEncounter?: boolean,
+): Promise<Bundle<Observation | Encounter>> {
+  const url = FHIR_OBSERVATION_LASTN_URL(
+    patientUuid,
+    conceptCodes,
+    encounterUuids,
+    includeEncounter,
+  );
+
+  const result = await get<Bundle<Observation | Encounter>>(url);
+  return result;
 }
 
 export async function getPatientObservations(
@@ -42,9 +67,10 @@ export async function getPatientObservations(
 
 export async function getObservationsBundleByEncounterUuid(
   encounterUUID: string,
+  basedOn?: string,
 ): Promise<Bundle<Observation>> {
   return await get<Bundle<Observation>>(
-    FHIR_OBSERVATIONS_BY_ENCOUNTER_URL(encounterUUID),
+    FHIR_OBSERVATIONS_BY_ENCOUNTER_URL(encounterUUID, basedOn),
   );
 }
 export interface EncounterGroup {

@@ -32,7 +32,14 @@ describe('handleAction', () => {
   });
 
   it('does not dispatch any event for unknown action types', () => {
-    handleAction(multipleActionsMock[1], undefined);
+    const unknownAction = {
+      label: 'Unknown',
+      type: 'unknown-action-type',
+      encounterType: 'Consultation',
+      requiredPrivilege: ['privilege1'],
+    };
+
+    handleAction(unknownAction, fhirMedicationRequestMock);
     expect(dispatchSpy).not.toHaveBeenCalled();
   });
 
@@ -58,7 +65,7 @@ describe('handleAction', () => {
           editMedications: [medWithEncounter],
           editOnly: 'medication',
           editTitle: 'MEDICATIONS_EDIT_FORM_TITLE',
-          editEncounterUuid: 'enc-uuid-1',
+          sourceEncounterUuid: 'enc-uuid-1',
         }),
       }),
     );
@@ -75,7 +82,7 @@ describe('handleAction', () => {
     handleAction(editAction, fhirMedicationRequestMock);
 
     const event = dispatchSpy.mock.calls[0][0] as CustomEvent;
-    expect(event.detail.editEncounterUuid).toBeUndefined();
+    expect(event.detail.sourceEncounterUuid).toBeUndefined();
   });
 
   it('does not dispatch edit event without fhirResource', () => {
@@ -115,7 +122,7 @@ describe('handleAction', () => {
             stopMedication: medWithEncounter,
             editOnly: 'stopMedications',
             editTitle: 'STOP_MEDICATION_FORM_TITLE',
-            editEncounterUuid: 'enc-uuid-42',
+            sourceEncounterUuid: 'enc-uuid-42',
           }),
         }),
       );
@@ -130,7 +137,7 @@ describe('handleAction', () => {
       handleAction(stopAction, medWithEncounter);
 
       const event = dispatchSpy.mock.calls[0][0] as CustomEvent;
-      expect(event.detail.editEncounterUuid).toBe('my-encounter-uuid');
+      expect(event.detail.sourceEncounterUuid).toBe('my-encounter-uuid');
     });
 
     it('does not dispatch stop event without fhirResource', () => {
@@ -141,6 +148,57 @@ describe('handleAction', () => {
 
     it('handles missing encounter reference for stop action', () => {
       handleAction(stopAction, fhirMedicationRequestMock);
+
+      const event = dispatchSpy.mock.calls[0][0] as CustomEvent;
+      expect(event.detail.sourceEncounterUuid).toBeUndefined();
+    });
+  });
+
+  describe('cancel action', () => {
+    const cancelAction = multipleActionsMock[1];
+
+    it('dispatches startConsultation with stopMedication and correct detail for cancelVaccination', () => {
+      const medWithEncounter: FhirMedicationRequest = {
+        ...fhirMedicationRequestMock,
+        encounter: { reference: 'Encounter/enc-uuid-99' },
+      };
+
+      handleAction(cancelAction, medWithEncounter);
+
+      expect(dispatchSpy).toHaveBeenCalledWith(
+        expect.objectContaining({
+          type: 'startConsultation',
+          detail: expect.objectContaining({
+            encounterType: cancelAction.encounterType,
+            stopMedication: medWithEncounter,
+            editOnly: 'cancelVaccination',
+            editTitle: 'CANCEL_VACCINATION_FORM_TITLE',
+            editEncounterUuid: 'enc-uuid-99',
+          }),
+        }),
+      );
+    });
+
+    it('extracts encounter UUID from fhirResource.encounter.reference', () => {
+      const medWithEncounter: FhirMedicationRequest = {
+        ...fhirMedicationRequestMock,
+        encounter: { reference: 'Encounter/cancel-encounter-uuid' },
+      };
+
+      handleAction(cancelAction, medWithEncounter);
+
+      const event = dispatchSpy.mock.calls[0][0] as CustomEvent;
+      expect(event.detail.editEncounterUuid).toBe('cancel-encounter-uuid');
+    });
+
+    it('does not dispatch cancel event without fhirResource', () => {
+      handleAction(cancelAction, undefined);
+
+      expect(dispatchSpy).not.toHaveBeenCalled();
+    });
+
+    it('handles missing encounter reference for cancel action', () => {
+      handleAction(cancelAction, fhirMedicationRequestMock);
 
       const event = dispatchSpy.mock.calls[0][0] as CustomEvent;
       expect(event.detail.editEncounterUuid).toBeUndefined();

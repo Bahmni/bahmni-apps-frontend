@@ -1,4 +1,6 @@
 import {
+  fetchFormMetadata,
+  fetchObservationForms,
   formatDateTime,
   getEncounterByUuid,
   getObservationsBundleByEncounterUuid,
@@ -27,6 +29,8 @@ jest.mock('@bahmni/services', () => ({
   getObservationsBundleByEncounterUuid: jest.fn(),
   getEncounterByUuid: jest.fn(),
   formatDateTime: jest.fn(),
+  fetchObservationForms: jest.fn(),
+  fetchFormMetadata: jest.fn(),
 }));
 
 jest.mock('../../../../observationsRenderer', () => ({
@@ -39,6 +43,10 @@ jest.mock('../../../../observationsRenderer', () => ({
   )),
 }));
 
+const { ObservationsRenderer: mockObservationsRenderer } = jest.requireMock(
+  '../../../../observationsRenderer',
+);
+
 const mockGetObservationsBundleByEncounterUuid =
   getObservationsBundleByEncounterUuid as jest.MockedFunction<
     typeof getObservationsBundleByEncounterUuid
@@ -48,6 +56,12 @@ const mockGetEncounterByUuid = getEncounterByUuid as jest.MockedFunction<
 >;
 const mockFormatDateTime = formatDateTime as jest.MockedFunction<
   typeof formatDateTime
+>;
+const mockFetchObservationForms = fetchObservationForms as jest.MockedFunction<
+  typeof fetchObservationForms
+>;
+const mockFetchFormMetadata = fetchFormMetadata as jest.MockedFunction<
+  typeof fetchFormMetadata
 >;
 
 const createWrapper = () => {
@@ -101,6 +115,7 @@ describe('ViewFormData', () => {
     mockFormatDateTime.mockReturnValue({
       formattedResult: '20/07/2026 09:59 AM',
     });
+    mockFetchObservationForms.mockResolvedValue([]);
   });
 
   describe('Modal rendering', () => {
@@ -381,15 +396,16 @@ describe('ViewFormData', () => {
         },
       ],
     ])(
-      'should display SkeletonPlaceholder when %s',
+      'should display the table skeleton loader when %s',
       async (_desc, setupMock) => {
         setupMock();
 
         renderComponent();
 
         await waitFor(() => {
-          const element = document.querySelector('.cds--skeleton__placeholder');
-          expect(element).toBeInTheDocument();
+          expect(
+            screen.getByTestId('view-form-loading-skeleton'),
+          ).toBeInTheDocument();
         });
       },
     );
@@ -498,6 +514,66 @@ describe('ViewFormData', () => {
           true,
         );
       });
+    });
+  });
+
+  describe('Form metadata (control order & sections passthrough)', () => {
+    beforeEach(() => {
+      mockGetPatientObservationsBundle.mockResolvedValue(
+        mockObservationAndEncounterBundle as Bundle<Observation>,
+      );
+      mockGetEncounterByUuid.mockResolvedValue(mockEncounterWithProvider);
+    });
+
+    it('should fetch and pass controlOrder/sectionMap derived from the matching form schema', async () => {
+      mockFetchObservationForms.mockResolvedValue([
+        { uuid: 'form-uuid-1', name: 'Vitals', id: 1, privileges: [] },
+      ]);
+      mockFetchFormMetadata.mockResolvedValue({
+        uuid: 'form-uuid-1',
+        name: 'Vitals',
+        version: '1',
+        published: true,
+        schema: {
+          controls: [
+            {
+              id: 100,
+              type: 'section',
+              label: { value: 'Vitals Section' },
+              controls: [{ id: 1 }, { id: 2 }],
+            },
+          ],
+        },
+      });
+
+      renderComponent();
+
+      await waitFor(() => {
+        expect(mockFetchFormMetadata).toHaveBeenCalledWith('form-uuid-1');
+      });
+
+      await waitFor(() => {
+        const lastCallProps = mockObservationsRenderer.mock.calls.at(-1)?.[0];
+        expect(lastCallProps.controlOrder).toEqual(['100', '1', '2']);
+        expect(lastCallProps.sectionMap).toEqual({
+          '1': 'Vitals Section',
+          '2': 'Vitals Section',
+        });
+      });
+    });
+
+    it('should not fetch form metadata when no published form matches the task form name', async () => {
+      mockFetchObservationForms.mockResolvedValue([
+        { uuid: 'other-uuid', name: 'Some Other Form', id: 2, privileges: [] },
+      ]);
+
+      renderComponent();
+
+      await waitFor(() => {
+        expect(screen.getByText('Pulse')).toBeInTheDocument();
+      });
+
+      expect(mockFetchFormMetadata).not.toHaveBeenCalled();
     });
   });
 });

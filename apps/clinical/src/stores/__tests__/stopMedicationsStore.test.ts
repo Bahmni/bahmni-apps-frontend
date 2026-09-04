@@ -386,6 +386,64 @@ describe('useStopMedicationStore', () => {
       // the code checks cfg.stopReason?.isVisible !== false
       expect(isValid!).toBe(true);
     });
+
+    it('should use STOP_MEDICATION_*_REQUIRED error keys when inputControlKey is "stopMedications"', () => {
+      const { result } = renderHook(() => useStopMedicationStore());
+
+      act(() => {
+        result.current.setMedicationToStop(mockMedicationRequest);
+        result.current.setStopDate(null as unknown as Date);
+      });
+
+      let isValid: boolean;
+      act(() => {
+        isValid = result.current.validate();
+      });
+
+      expect(isValid!).toBe(false);
+      expect(result.current.errors.stopDate).toBe(
+        'STOP_MEDICATION_DATE_REQUIRED',
+      );
+      expect(result.current.errors.stopReason).toBe(
+        'STOP_MEDICATION_REASON_REQUIRED',
+      );
+    });
+
+    it('should use CANCEL_VACCINATION_REASON_REQUIRED when inputControlKey is "cancelVaccination"', () => {
+      const { result } = renderHook(() => useStopMedicationStore());
+
+      act(() => {
+        result.current.setMedicationToStop(mockMedicationRequest);
+        result.current.setInputControlKey('cancelVaccination');
+      });
+
+      let isValid: boolean;
+      act(() => {
+        isValid = result.current.validate();
+      });
+
+      expect(isValid!).toBe(false);
+      expect(result.current.errors.stopReason).toBe(
+        'CANCEL_VACCINATION_REASON_REQUIRED',
+      );
+    });
+
+    it('should default to STOP_MEDICATION_*_REQUIRED error keys when inputControlKey is unset', () => {
+      const { result } = renderHook(() => useStopMedicationStore());
+
+      act(() => {
+        result.current.setMedicationToStop(mockMedicationRequest);
+        result.current.setStopDate(null as unknown as Date);
+      });
+
+      act(() => {
+        result.current.validate();
+      });
+
+      expect(result.current.errors.stopDate).toBe(
+        'STOP_MEDICATION_DATE_REQUIRED',
+      );
+    });
   });
 
   describe('hasData', () => {
@@ -421,6 +479,7 @@ describe('useStopMedicationStore', () => {
         result.current.setFieldConfig({
           note: { isMandatory: true },
         });
+        result.current.setInputControlKey('cancelVaccination');
       });
 
       act(() => {
@@ -436,6 +495,7 @@ describe('useStopMedicationStore', () => {
       expect(result.current.stopReason).toBeNull();
       expect(result.current.note).toBe('');
       expect(result.current.errors).toEqual({});
+      expect(result.current.inputControlKey).toBe('stopMedications');
       expect(result.current.stopDate.toDateString()).toBe(
         new Date().toDateString(),
       );

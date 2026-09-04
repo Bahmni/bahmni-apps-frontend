@@ -32,6 +32,7 @@ import { WidgetProps } from '../registry/model';
 import { CONSULTATION_PAD_PRIVILEGES } from '../userPrivileges/consultationPadPrivileges';
 import { useHasPrivilege } from '../userPrivileges/useHasPrivilege';
 import { useUserPrivilege } from '../userPrivileges/useUserPrivilege';
+import { deriveFormSchemaData } from '../utils/Observations';
 import { FormRecordViewModel, GroupedFormRecords } from './models';
 import styles from './styles/FormsTable.module.scss';
 
@@ -210,80 +211,10 @@ const FormsTable: React.FC<WidgetProps> = ({
     });
   }, [fhirObservationBundle, selectedRecord?.formName]);
 
-  const controlOrder = useMemo(() => {
-    if (!formMetadata?.schema) return undefined;
-    const ids: string[] = [];
-    const collectIds = (controls: unknown[]) => {
-      (controls ?? []).forEach((ctrl: unknown) => {
-        const c = ctrl as { id?: number; controls?: unknown[] };
-        if (c.id != null) ids.push(String(c.id));
-        if (c.controls) collectIds(c.controls);
-      });
-    };
-    collectIds(
-      (formMetadata.schema as { controls?: unknown[] }).controls ?? [],
-    );
-    return ids.length > 0 ? ids : undefined;
-  }, [formMetadata]);
-
-  const sectionMap = useMemo(() => {
-    if (!formMetadata?.schema) return undefined;
-    const map: Record<string, string> = {};
-
-    const processControls = (
-      controls: unknown[],
-      currentSection: string | null,
-    ) => {
-      for (const ctrl of controls as {
-        id?: number;
-        type?: string;
-        label?: { value?: string };
-        controls?: unknown[];
-      }[]) {
-        if (ctrl.type === 'section') {
-          const sectionName = ctrl.label?.value ?? 'Section';
-          processControls(ctrl.controls ?? [], sectionName);
-        } else {
-          if (ctrl.id != null && currentSection) {
-            map[String(ctrl.id)] = currentSection;
-          }
-          if (ctrl.controls) {
-            processControls(ctrl.controls, currentSection);
-          }
-        }
-      }
-    };
-
-    processControls(
-      (formMetadata.schema as { controls?: unknown[] }).controls ?? [],
-      null,
-    );
-
-    return Object.keys(map).length > 0 ? map : undefined;
-  }, [formMetadata]);
-
-  const conceptDatatypeMap = useMemo(() => {
-    if (!formMetadata?.schema) return undefined;
-    const map: Record<string, string> = {};
-
-    const collectDatatypes = (controls: unknown[]) => {
-      (controls ?? []).forEach((ctrl: unknown) => {
-        const c = ctrl as {
-          concept?: { uuid?: string; datatype?: string };
-          controls?: unknown[];
-        };
-        if (c.concept?.uuid && c.concept?.datatype) {
-          map[c.concept.uuid] = c.concept.datatype;
-        }
-        if (c.controls) collectDatatypes(c.controls);
-      });
-    };
-
-    collectDatatypes(
-      (formMetadata.schema as { controls?: unknown[] }).controls ?? [],
-    );
-    return Object.keys(map).length > 0 ? map : undefined;
-  }, [formMetadata]);
+  const { controlOrder, sectionMap, conceptDatatypeMap } = useMemo(
+    () => deriveFormSchemaData(formMetadata?.schema),
+    [formMetadata],
+  );
 
   const modalErrorMessage = useMemo(() => {
     if (metadataError) {
@@ -387,7 +318,7 @@ const FormsTable: React.FC<WidgetProps> = ({
         detail: {
           editOnly: 'observationForms',
           editTitle: 'EDIT_OBSERVATION_FORM_TITLE',
-          editEncounterUuid: record.encounterUuid,
+          sourceEncounterUuid: record.encounterUuid,
           formName: record.formName,
           directFormMode: true,
         },
