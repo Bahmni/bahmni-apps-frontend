@@ -1,6 +1,7 @@
 import {
   Accordion,
   AccordionItem,
+  Button,
   SkeletonPlaceholder,
 } from '@bahmni/design-system';
 import {
@@ -10,13 +11,16 @@ import {
   getFormattedError,
 } from '@bahmni/services';
 import {
+  ConfirmationModal,
+  DocumentSaveSummary,
   DocumentUpload,
+  DocumentUploadRef,
   renderDocumentTile,
   useNotification,
 } from '@bahmni/widgets';
-import { TextArea } from '@carbon/react';
+import { InlineLoading, TextArea } from '@carbon/react';
 import { useQuery } from '@tanstack/react-query';
-import React, { useEffect } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { BAHMNI_PATIENT_DOCUMENTS_NAMESPACE } from '../constants/app';
 import { useVisitDocuments } from '../hooks/useVisitDocuments';
@@ -32,6 +36,7 @@ interface DocumentsSectionProps {
   documentEncounterType: DocumentEncounterType;
   topLevelConcept?: string | null;
   defaultOption?: string | null;
+  searchHref?: string;
 }
 
 const renderTile = (document: DocumentViewModel) =>
@@ -47,6 +52,7 @@ export const DocumentsSection: React.FC<DocumentsSectionProps> = ({
   documentEncounterType,
   topLevelConcept,
   defaultOption,
+  searchHref,
 }) => {
   const { t } = useTranslation(BAHMNI_PATIENT_DOCUMENTS_NAMESPACE);
   const { addNotification } = useNotification();
@@ -54,6 +60,165 @@ export const DocumentsSection: React.FC<DocumentsSectionProps> = ({
     patientUuid,
     [documentEncounterType.uuid],
   );
+
+  const uploadHandles = useRef(new Map<string, DocumentUploadRef>());
+  // Cached per visit so the ref prop keeps a stable identity. An inline callback would make React
+  // detach and reattach every rendered handle on each re-render of this section, which also opens
+  // a window where uploadHandles has no entry for a visit that is on screen.
+  const uploadHandleRefs = useRef(
+    new Map<string, (handle: DocumentUploadRef | null) => void>(),
+  );
+  const uploadHandleRef = useCallback((visitKey: string) => {
+    const cached = uploadHandleRefs.current.get(visitKey);
+    if (cached) {
+      return cached;
+    }
+    const setHandle = (handle: DocumentUploadRef | null) => {
+      if (handle) {
+        uploadHandles.current.set(visitKey, handle);
+      } else {
+        uploadHandles.current.delete(visitKey);
+      }
+    };
+    uploadHandleRefs.current.set(visitKey, setHandle);
+    return setHandle;
+  }, []);
+  const [visitsWithPendingDocument, setVisitsWithPendingDocument] = useState<
+    string[]
+  >([]);
+  const [isSaving, setIsSaving] = useState(false);
+  const [isLeaveConfirmationOpen, setIsLeaveConfirmationOpen] = useState(false);
+  const isLeavingIntentionally = useRef(false);
+
+  const hasUnsavedDocuments = visitsWithPendingDocument.length > 0;
+
+  useEffect(() => {
+    if (!hasUnsavedDocuments) {
+      return;
+    }
+    const confirmUnload = (event: BeforeUnloadEvent) => {
+      if (isLeavingIntentionally.current) {
+        return;
+      }
+      event.preventDefault();
+      event.returnValue = '';
+    };
+    window.addEventListener('beforeunload', confirmUnload);
+    return () => window.removeEventListener('beforeunload', confirmUnload);
+  }, [hasUnsavedDocuments]);
+
+  const handleBackToSearch = (event: React.MouseEvent) => {
+    if (!hasUnsavedDocuments) {
+      return;
+    }
+    event.preventDefault();
+    setIsLeaveConfirmationOpen(true);
+  };
+
+  const leaveToSearch = () => {
+    setIsLeaveConfirmationOpen(false);
+    if (searchHref) {
+      // Only disarm the unload guard when we are actually navigating away. Setting it
+      // unconditionally would leave the user on the page with unsaved documents and no warning.
+      isLeavingIntentionally.current = true;
+      window.location.href = searchHref;
+    }
+  };
+
+  const handlePendingChange = useCallback(
+    (visitKey: string, hasPendingDocument: boolean) => {
+      setVisitsWithPendingDocument((previous) => {
+        if (previous.includes(visitKey) === hasPendingDocument) {
+          return previous;
+        }
+        return hasPendingDocument
+          ? [...previous, visitKey]
+          : previous.filter((key) => key !== visitKey);
+      });
+    },
+    [],
+  );
+
+  const visitKeys = visitGroups.map(
+    (group, index) => group.visit.id ?? `visit-${index}`,
+  );
+
+  const renderedVisitKeys = visitKeys.join('|');
+  useEffect(() => {
+    const stillRendered = new Set(renderedVisitKeys.split('|'));
+    setVisitsWithPendingDocument((previous) => {
+      const next = previous.filter((visitKey) => stillRendered.has(visitKey));
+      return next.length === previous.length ? previous : next;
+    });
+  }, [renderedVisitKeys]);
+
+  const notifySaveOutcome = (summaries: DocumentSaveSummary[]) => {
+    const savedCount = summaries.reduce(
+      (total, summary) => total + summary.savedCount,
+      0,
+    );
+    const failures = summaries.flatMap((summary) => summary.failures);
+    if (savedCount === 0 && failures.length === 0) {
+      return;
+    }
+
+    if (failures.length === 0) {
+      addNotification({
+        title: t('DOCUMENT_UPLOAD_SAVE_SUCCESS_TITLE'),
+        message:
+          savedCount === 1
+            ? t('DOCUMENT_UPLOAD_SAVE_SUCCESS_MESSAGE')
+            : t('DOCUMENT_UPLOAD_SAVE_SUCCESS_MESSAGE_MULTIPLE', {
+                count: savedCount,
+              }),
+        type: 'success',
+      });
+      return;
+    }
+
+    if (savedCount > 0) {
+      addNotification({
+        title: t('DOCUMENT_UPLOAD_SAVE_PARTIAL_TITLE'),
+        message: t('DOCUMENT_UPLOAD_SAVE_PARTIAL_MESSAGE', {
+          saved: savedCount,
+          total: savedCount + failures.length,
+          failed: failures.length,
+        }),
+        type: 'warning',
+      });
+      return;
+    }
+
+    addNotification({
+      title: t('DOCUMENT_UPLOAD_SAVE_FAILED_TITLE'),
+      message:
+        failures.length === 1
+          ? failures[0].message
+          : t('DOCUMENT_UPLOAD_SAVE_FAILED_MESSAGE_MULTIPLE', {
+              count: failures.length,
+            }),
+      type: 'error',
+    });
+  };
+
+  const handleSave = async () => {
+    setIsSaving(true);
+    try {
+      const summaries = await Promise.all(
+        visitsWithPendingDocument.map((visitKey) =>
+          uploadHandles.current.get(visitKey)?.save(),
+        ),
+      );
+      notifySaveOutcome(
+        summaries.filter(
+          (summary): summary is DocumentSaveSummary => !!summary,
+        ),
+      );
+      await refetch();
+    } finally {
+      setIsSaving(false);
+    }
+  };
 
   const { data: documentTypes, error: documentTypesError } = useQuery({
     queryKey: ['documentTypes', topLevelConcept],
@@ -107,29 +272,37 @@ export const DocumentsSection: React.FC<DocumentsSectionProps> = ({
             : '';
           let visitLabel = t('DOCUMENTS_VISIT');
           if (startDate && endDate) {
-            visitLabel = t('DOCUMENTS_VISIT_FROM_TO', {
-              start: startDate,
-              end: endDate,
-            });
+            // A visit that begins and ends on the same day reads better as "Visit on <date>" than
+            // as a range repeating one date twice. Compared on the formatted values rather than the
+            // raw timestamps, so the label can never disagree with the dates it would have shown.
+            visitLabel =
+              startDate === endDate
+                ? t('DOCUMENTS_VISIT_ON', { date: startDate })
+                : t('DOCUMENTS_VISIT_FROM_TO', {
+                    start: startDate,
+                    end: endDate,
+                  });
           } else if (startDate) {
-            visitLabel = t('DOCUMENTS_VISIT_FROM', { date: startDate });
+            visitLabel = t('DOCUMENTS_VISIT_ON', { date: startDate });
           }
-          const saveTarget = group.documentEncounterUuid
-            ? { encounterUuid: group.documentEncounterUuid }
+          const saveTarget = group.documentEncounter?.id
+            ? {
+                encounterUuid: group.documentEncounter.id,
+                existingEncounter: group.documentEncounter,
+              }
             : {
                 createEncounterInVisit: {
                   visitUuid: group.visit.id ?? '',
                   encounterTypeUuid: documentEncounterType.uuid,
                   encounterTypeDisplay: documentEncounterType.name,
+                  visitPeriod: period,
                 },
               };
 
+          const visitKey = visitKeys[index];
+
           return (
-            <AccordionItem
-              key={group.visit.id}
-              title={visitLabel}
-              open={index === 0}
-            >
+            <AccordionItem key={visitKey} title={visitLabel} open={index === 0}>
               {group.documents.length > 0 && (
                 <div className={styles.table}>
                   <div className={styles.headerRow}>
@@ -175,12 +348,50 @@ export const DocumentsSection: React.FC<DocumentsSectionProps> = ({
                 saveTarget={saveTarget}
                 documentTypes={documentTypes}
                 defaultOption={defaultOption}
-                onSaved={refetch}
+                onPendingChange={(hasPendingDocument) =>
+                  handlePendingChange(visitKey, hasPendingDocument)
+                }
+                ref={uploadHandleRef(visitKey)}
               />
             </AccordionItem>
           );
         })}
       </Accordion>
+      <div className={styles.footer}>
+        <Button
+          kind="tertiary"
+          href={searchHref}
+          onClick={handleBackToSearch}
+          testId="back-to-search"
+        >
+          {t('PATIENT_DOCUMENTS_BACK_TO_SEARCH')}
+        </Button>
+        {isSaving ? (
+          <InlineLoading
+            data-testid="save-documents-loading"
+            description={t('DOCUMENT_UPLOAD_SAVING')}
+          />
+        ) : (
+          <Button
+            onClick={handleSave}
+            disabled={!hasUnsavedDocuments}
+            testId="save-documents"
+          >
+            {t('DOCUMENT_UPLOAD_SAVE')}
+          </Button>
+        )}
+      </div>
+      <ConfirmationModal
+        open={isLeaveConfirmationOpen}
+        danger
+        testId="unsaved-documents-modal"
+        heading={t('PATIENT_DOCUMENTS_UNSAVED_MODAL_TITLE')}
+        body={t('PATIENT_DOCUMENTS_UNSAVED_MODAL_BODY')}
+        confirmLabel={t('PATIENT_DOCUMENTS_UNSAVED_MODAL_LEAVE')}
+        cancelLabel={t('PATIENT_DOCUMENTS_UNSAVED_MODAL_STAY')}
+        onConfirm={leaveToSearch}
+        onCancel={() => setIsLeaveConfirmationOpen(false)}
+      />
     </section>
   );
 };

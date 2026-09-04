@@ -1,4 +1,10 @@
-import { DocumentReference, Encounter } from 'fhir/r4';
+import {
+  BundleEntry,
+  DocumentReference,
+  Encounter,
+  FhirResource,
+  Period,
+} from 'fhir/r4';
 import { post } from '../api';
 import {
   FHIR_ENCOUNTER_CLASS_CODE_SYSTEM,
@@ -12,19 +18,24 @@ import {
 } from '../encounterBundle';
 import { getUserLoginLocation } from '../userService';
 import { generateUUID } from '../utils/utils';
-import { DOCUMENT_REFERENCE_URL } from './constants';
-import { CreateDocumentReferenceInput, SaveDocumentInput } from './models';
+import {
+  AttachToExistingEncounter,
+  CreateEncounterInVisit,
+  DocumentPayload,
+  SaveDocumentsInput,
+} from './models';
 
 // encounterReference is a concrete "Encounter/{uuid}" or a bundle-local "urn:uuid:..." placeholder.
 function buildDocumentReference(
-  input: SaveDocumentInput,
+  patientUuid: string,
+  input: DocumentPayload,
   encounterReference: string,
 ): DocumentReference {
   const documentReference: DocumentReference = {
     resourceType: 'DocumentReference',
     status: 'current',
     docStatus: 'final',
-    subject: { reference: `Patient/${input.patientUuid}` },
+    subject: { reference: `Patient/${patientUuid}` },
     content: [
       {
         attachment: {
@@ -55,14 +66,43 @@ function buildDocumentReference(
   return documentReference;
 }
 
-function buildDocumentEncounter(
-  patientUuid: string,
-  visitUuid: string,
-  encounterTypeUuid: string,
-  locationUuid: string,
-  encounterTypeDisplay?: string,
-  authorPractitionerUuid?: string,
-): Encounter {
+const parseDate = (value?: string): Date | undefined => {
+  if (!value) {
+    return undefined;
+  }
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? undefined : date;
+};
+
+function encounterStartWithinVisit(visitPeriod?: Period): string {
+  const now = new Date();
+  const visitStart = parseDate(visitPeriod?.start);
+  if (!visitStart) {
+    return now.toISOString();
+  }
+  const visitEnd = parseDate(visitPeriod?.end);
+  // Inclusive on both bounds, and open-ended for a visit still in progress, as OpenMRS is.
+  const withinVisit = now >= visitStart && (!visitEnd || now <= visitEnd);
+  return (withinVisit ? now : visitStart).toISOString();
+}
+
+function buildDocumentEncounter({
+  patientUuid,
+  visitUuid,
+  encounterTypeUuid,
+  locationUuid,
+  encounterTypeDisplay,
+  authorPractitionerUuid,
+  visitPeriod,
+}: {
+  patientUuid: string;
+  visitUuid: string;
+  encounterTypeUuid: string;
+  locationUuid: string;
+  encounterTypeDisplay?: string;
+  authorPractitionerUuid?: string;
+  visitPeriod?: Period;
+}): Encounter {
   const encounter: Encounter = {
     resourceType: 'Encounter',
     status: 'finished',
@@ -96,7 +136,7 @@ function buildDocumentEncounter(
     location: [
       { location: { reference: `Location/${locationUuid}`, type: 'Location' } },
     ],
-    period: { start: new Date().toISOString() },
+    period: { start: encounterStartWithinVisit(visitPeriod) },
   };
   if (authorPractitionerUuid) {
     encounter.participant = [
@@ -111,49 +151,81 @@ function buildDocumentEncounter(
   return encounter;
 }
 
-export async function createDocumentReference(
-  input: CreateDocumentReferenceInput,
-): Promise<DocumentReference> {
-  const documentReference = buildDocumentReference(
-    input,
-    `Encounter/${input.encounterUuid}`,
-  );
-  return post<DocumentReference>(DOCUMENT_REFERENCE_URL, documentReference);
+export async function saveDocuments({
+  patientUuid,
+  target,
+  documents,
+}: SaveDocumentsInput): Promise<unknown> {
+  if (documents.length === 0) {
+    return [];
+  }
+
+  const entries =
+    'encounterUuid' in target
+      ? existingEncounterEntries(patientUuid, target, documents)
+      : newEncounterEntries(
+          patientUuid,
+          target.createEncounterInVisit,
+          documents,
+        );
+
+  return post<unknown>(ENCOUNTER_BUNDLE_URL, createEncounterBundle(entries));
 }
 
-// With encounterUuid, POST a single DocumentReference. Otherwise create the document encounter and
-// the DocumentReference together in one atomic EncounterBundle transaction.
-export async function saveDocument(input: SaveDocumentInput): Promise<unknown> {
-  if (input.encounterUuid) {
-    return createDocumentReference({
-      ...input,
-      encounterUuid: input.encounterUuid,
-    });
-  }
+function documentEntries(
+  patientUuid: string,
+  documents: DocumentPayload[],
+  encounterReference: string,
+): Array<BundleEntry<FhirResource>> {
+  return documents.map((document) =>
+    createBundleEntry(
+      `urn:uuid:${generateUUID()}`,
+      buildDocumentReference(patientUuid, document, encounterReference),
+      'POST',
+    ),
+  );
+}
 
-  if (!input.createEncounterInVisit) {
-    throw new Error(
-      'saveDocument requires either encounterUuid or createEncounterInVisit',
-    );
-  }
+function existingEncounterEntries(
+  patientUuid: string,
+  target: AttachToExistingEncounter,
+  documents: DocumentPayload[],
+): Array<BundleEntry<FhirResource>> {
+  // fullUrl must equal the reference the documents carry, otherwise the server cannot resolve it:
+  // the endpoint requires exactly one Encounter entry and matches encounter references against
+  // bundle entry fullUrls.
+  const encounterReference = `Encounter/${target.encounterUuid}`;
+  return [
+    createBundleEntry(
+      encounterReference,
+      { ...target.existingEncounter, id: target.encounterUuid },
+      'PUT',
+      encounterReference,
+    ),
+    ...documentEntries(patientUuid, documents, encounterReference),
+  ];
+}
 
-  const { visitUuid, encounterTypeUuid, encounterTypeDisplay } =
-    input.createEncounterInVisit;
+function newEncounterEntries(
+  patientUuid: string,
+  createEncounterInVisit: CreateEncounterInVisit,
+  documents: DocumentPayload[],
+): Array<BundleEntry<FhirResource>> {
+  const { visitUuid, encounterTypeUuid, encounterTypeDisplay, visitPeriod } =
+    createEncounterInVisit;
   const encounterPlaceholder = `urn:uuid:${generateUUID()}`;
-  const encounter = buildDocumentEncounter(
-    input.patientUuid,
+  const encounter = buildDocumentEncounter({
+    patientUuid,
     visitUuid,
     encounterTypeUuid,
-    getUserLoginLocation().uuid,
+    locationUuid: getUserLoginLocation().uuid,
     encounterTypeDisplay,
-    input.authorPractitionerUuid,
-  );
-  const documentReference = buildDocumentReference(input, encounterPlaceholder);
+    authorPractitionerUuid: documents[0]?.authorPractitionerUuid,
+    visitPeriod,
+  });
 
-  const bundle = createEncounterBundle([
+  return [
     createBundleEntry(encounterPlaceholder, encounter, 'POST'),
-    createBundleEntry(`urn:uuid:${generateUUID()}`, documentReference, 'POST'),
-  ]);
-
-  return post<unknown>(ENCOUNTER_BUNDLE_URL, bundle);
+    ...documentEntries(patientUuid, documents, encounterPlaceholder),
+  ];
 }

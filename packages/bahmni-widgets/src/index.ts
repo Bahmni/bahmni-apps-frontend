@@ -11,6 +11,9 @@ export type { PrintOption } from './documentPrintButton';
 export { DocumentUpload, renderDocumentTile } from './documentUpload';
 export type {
   DocumentUploadProps,
+  DocumentUploadRef,
+  DocumentSaveSummary,
+  DocumentSaveFailure,
   DocumentSaveTarget,
   DocumentTileData,
 } from './documentUpload';
