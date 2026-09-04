@@ -222,9 +222,7 @@ describe('TaskViewResults', () => {
       );
 
       expect(
-        await screen.findByTestId(
-          `task-view-viewForm-${mockCompletedTask.id}`,
-        ),
+        await screen.findByTestId(`task-view-viewForm-${mockCompletedTask.id}`),
       ).toBeInTheDocument();
     });
 
@@ -272,9 +270,7 @@ describe('TaskViewResults', () => {
       );
 
       expect(
-        await screen.findByTestId(
-          `task-view-viewForm-${mockCompletedTask.id}`,
-        ),
+        await screen.findByTestId(`task-view-viewForm-${mockCompletedTask.id}`),
       ).toBeInTheDocument();
     });
 
@@ -324,9 +320,7 @@ describe('TaskViewResults', () => {
       );
 
       expect(
-        await screen.findByTestId(
-          `task-view-viewForm-${mockCompletedTask.id}`,
-        ),
+        await screen.findByTestId(`task-view-viewForm-${mockCompletedTask.id}`),
       ).toBeInTheDocument();
     });
   });
@@ -388,9 +382,7 @@ describe('TaskViewResults', () => {
         { wrapper: createWrapper() },
       );
 
-      await screen.findByTestId(
-        `task-view-viewForm-${mockCompletedTask.id}`,
-      );
+      await screen.findByTestId(`task-view-viewForm-${mockCompletedTask.id}`);
       expect(screen.queryByTestId('mocked-view')).not.toBeInTheDocument();
     });
   });
@@ -406,9 +398,7 @@ describe('TaskViewResults', () => {
       );
 
       expect(
-        await screen.findByTestId(
-          `task-view-viewForm-${mockCompletedTask.id}`,
-        ),
+        await screen.findByTestId(`task-view-viewForm-${mockCompletedTask.id}`),
       ).toBeInTheDocument();
     });
 
@@ -492,9 +482,7 @@ describe('TaskViewResults', () => {
       );
 
       expect(
-        await screen.findByTestId(
-          `task-view-viewForm-${mockCompletedTask.id}`,
-        ),
+        await screen.findByTestId(`task-view-viewForm-${mockCompletedTask.id}`),
       ).toBeInTheDocument();
 
       expect(
@@ -512,9 +500,7 @@ describe('TaskViewResults', () => {
       );
 
       expect(
-        await screen.findByTestId(
-          `task-view-viewForm-${mockCompletedTask.id}`,
-        ),
+        await screen.findByTestId(`task-view-viewForm-${mockCompletedTask.id}`),
       ).toBeInTheDocument();
     });
   });
