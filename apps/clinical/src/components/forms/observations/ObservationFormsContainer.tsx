@@ -48,9 +48,10 @@ import useObservationFormsSearch from '../../../hooks/useObservationFormsSearch'
 import { usePinnedObservationForms } from '../../../hooks/usePinnedObservationForms';
 import {
   extractVersionFromFormFieldPath,
+  findBasedOnFromObservations,
   injectMissingDeleteObs,
   markUnchangedObservations,
-  mergeObservationStatuses,
+  mergeObservationMetadata,
   restoreComplexValues,
 } from '../../../utils/fhir/observationReconciliation';
 import EncounterDetails from '../encounterDetails/EncounterDetails';
@@ -132,7 +133,6 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
   const [isFormUpdated, setIsFormUpdated] = React.useState(false);
 
   const task = encounterSessionStartContext?.task as Task | undefined;
-  const basedOn = task?.basedOn?.[0];
   const patientUUID = usePatientUUID();
   const { user } = useActivePractitioner();
   const { episodeOfCare, activeVisitId } = useClinicalAppData();
@@ -191,16 +191,20 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
     typeof CarbonContainer
   > | null>(null);
 
-  // One-way latch onto the first render with FHIR-enriched observations (uuid + status).
-  const statusSourceRef = useRef<Form2Observation[]>(
+  // One-way latch onto the first render with FHIR-enriched observations (uuid + status + basedOn).
+  const initialObservationsRef = useRef<Form2Observation[]>(
     existingObservations ?? [],
   );
   if (
-    !statusSourceRef.current.some((o) => !!o.uuid) &&
+    !initialObservationsRef.current.some((o) => !!o.uuid) &&
     existingObservations?.some((o) => !!o.uuid)
   ) {
-    statusSourceRef.current = existingObservations;
+    initialObservationsRef.current = existingObservations;
   }
+
+  const basedOn =
+    task?.basedOn?.[0] ??
+    findBasedOnFromObservations(initialObservationsRef.current);
 
   const {
     observations,
@@ -375,18 +379,21 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
               )
             : [];
 
-        mergeObservationStatuses(
+        mergeObservationMetadata(
           transformedObservations,
-          statusSourceRef.current,
+          initialObservationsRef.current,
         );
-        restoreComplexValues(transformedObservations, statusSourceRef.current);
+        restoreComplexValues(
+          transformedObservations,
+          initialObservationsRef.current,
+        );
         injectMissingDeleteObs(
           transformedObservations,
-          statusSourceRef.current,
+          initialObservationsRef.current,
         );
         markUnchangedObservations(
           transformedObservations,
-          statusSourceRef.current,
+          initialObservationsRef.current,
         );
 
         handleSaveForm(transformedObservations, validationErrorType);
@@ -449,18 +456,21 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
       setValidationErrorMessage(null);
 
       try {
-        mergeObservationStatuses(
+        mergeObservationMetadata(
           transformedObservations,
-          statusSourceRef.current,
+          initialObservationsRef.current,
         );
-        restoreComplexValues(transformedObservations, statusSourceRef.current);
+        restoreComplexValues(
+          transformedObservations,
+          initialObservationsRef.current,
+        );
         injectMissingDeleteObs(
           transformedObservations,
-          statusSourceRef.current,
+          initialObservationsRef.current,
         );
         markUnchangedObservations(
           transformedObservations,
-          statusSourceRef.current,
+          initialObservationsRef.current,
         );
 
         // Extract and append notes-only observations to the existing array
@@ -520,15 +530,21 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
         transformedObservations,
       );
 
-      mergeObservationStatuses(
+      mergeObservationMetadata(
         transformedObservations,
-        statusSourceRef.current,
+        initialObservationsRef.current,
       );
-      restoreComplexValues(transformedObservations, statusSourceRef.current);
-      injectMissingDeleteObs(transformedObservations, statusSourceRef.current);
+      restoreComplexValues(
+        transformedObservations,
+        initialObservationsRef.current,
+      );
+      injectMissingDeleteObs(
+        transformedObservations,
+        initialObservationsRef.current,
+      );
       markUnchangedObservations(
         transformedObservations,
-        statusSourceRef.current,
+        initialObservationsRef.current,
       );
 
       handleSaveForm(transformedObservations, validationErrorType);
@@ -641,7 +657,7 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
               // Use the version embedded in the saved observations' formFieldPath when editing.
               version:
                 extractVersionFromFormFieldPath(
-                  statusSourceRef.current[0]?.formFieldPath,
+                  initialObservationsRef.current[0]?.formFieldPath,
                 ) ??
                 formMetadata.version ??
                 '1',

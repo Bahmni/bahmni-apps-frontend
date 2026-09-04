@@ -1,8 +1,9 @@
 import {
   extractVersionFromFormFieldPath,
+  findBasedOnFromObservations,
   injectMissingDeleteObs,
   markUnchangedObservations,
-  mergeObservationStatuses,
+  mergeObservationMetadata,
   restoreComplexValues,
   valueFingerprint,
 } from '../observationReconciliation';
@@ -172,7 +173,7 @@ describe('restoreComplexValues', () => {
   });
 });
 
-describe('mergeObservationStatuses', () => {
+describe('mergeObservationMetadata', () => {
   const obs = (uuid: string, status?: string) => ({
     concept: { uuid: 'c1' },
     value: 'val',
@@ -181,18 +182,34 @@ describe('mergeObservationStatuses', () => {
     uuid,
     status,
   });
+  const basedOn = { reference: 'ServiceRequest/sr-1' };
 
   it('copies status from existing to transformed when uuids match', () => {
     const transformed = [obs('obs-1')];
     const existing = [obs('obs-1', 'final')];
-    mergeObservationStatuses(transformed, existing);
+    mergeObservationMetadata(transformed, existing);
     expect(transformed[0].status).toBe('final');
+  });
+
+  it('copies basedOn from existing to transformed when uuids match', () => {
+    const transformed = [obs('obs-1')];
+    const existing = [{ ...obs('obs-1'), basedOn }];
+    mergeObservationMetadata(transformed, existing);
+    expect(transformed[0].basedOn).toBe(basedOn);
+  });
+
+  it('copies both status and basedOn together', () => {
+    const transformed = [obs('obs-1')];
+    const existing = [{ ...obs('obs-1', 'final'), basedOn }];
+    mergeObservationMetadata(transformed, existing);
+    expect(transformed[0].status).toBe('final');
+    expect(transformed[0].basedOn).toBe(basedOn);
   });
 
   it('does not overwrite status when existing has none', () => {
     const transformed = [obs('obs-1', 'amended')];
     const existing = [obs('obs-1')];
-    mergeObservationStatuses(transformed, existing);
+    mergeObservationMetadata(transformed, existing);
     expect(transformed[0].status).toBe('amended');
   });
 
@@ -206,20 +223,21 @@ describe('mergeObservationStatuses', () => {
       },
     ];
     const existing = [obs('obs-1', 'final')];
-    mergeObservationStatuses(transformed, existing);
+    mergeObservationMetadata(transformed, existing);
     expect((transformed[0] as { status?: string }).status).toBeUndefined();
   });
 
-  it('recurses into group members', () => {
+  it('recurses into group members for both status and basedOn', () => {
     const child = obs('child-1');
-    const existingChild = obs('child-1', 'amended');
+    const existingChild = { ...obs('child-1', 'amended'), basedOn };
     const transformed = [{ ...obs('grp-1'), groupMembers: [child] }];
     const existing = [
       { ...obs('grp-1', 'final'), groupMembers: [existingChild] },
     ];
-    mergeObservationStatuses(transformed, existing);
+    mergeObservationMetadata(transformed, existing);
     expect(transformed[0].status).toBe('final');
     expect(child.status).toBe('amended');
+    expect(child.basedOn).toBe(basedOn);
   });
 });
 
@@ -316,5 +334,50 @@ describe('markUnchangedObservations', () => {
     const original = [dateTimeObs('obs-1', '2024-03-15T10:30:00')];
     markUnchangedObservations(transformed, original);
     expect(transformed[0].unchanged).toBeUndefined();
+  });
+});
+
+describe('findBasedOnFromObservations', () => {
+  const basedOn = { reference: 'ServiceRequest/sr-1' };
+  const obs = (uuid: string, extra: Record<string, unknown> = {}) => ({
+    concept: { uuid: 'c1' },
+    value: 'val',
+    obsDatetime: '2024-01-01',
+    formNamespace: 'Bahmni',
+    uuid,
+    ...extra,
+  });
+
+  it('returns undefined for undefined input', () => {
+    expect(findBasedOnFromObservations(undefined)).toBeUndefined();
+  });
+
+  it('returns undefined for empty array', () => {
+    expect(findBasedOnFromObservations([])).toBeUndefined();
+  });
+
+  it('returns the first basedOn found on a top-level leaf', () => {
+    const observations = [obs('obs-1'), obs('obs-2', { basedOn })];
+    expect(findBasedOnFromObservations(observations)).toBe(basedOn);
+  });
+
+  it('recurses into groupMembers to find basedOn on a nested child', () => {
+    const observations = [
+      {
+        ...obs('grp-1'),
+        groupMembers: [obs('child-1'), obs('child-2', { basedOn })],
+      },
+    ];
+    expect(findBasedOnFromObservations(observations)).toBe(basedOn);
+  });
+
+  it('returns undefined when no obs in the tree has basedOn', () => {
+    const observations = [
+      {
+        ...obs('grp-1'),
+        groupMembers: [obs('child-1'), obs('child-2')],
+      },
+    ];
+    expect(findBasedOnFromObservations(observations)).toBeUndefined();
   });
 });
