@@ -1,4 +1,4 @@
-import { hasPrivilege } from '@bahmni/services';
+import { fetchObservationForms, hasPrivilege } from '@bahmni/services';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
@@ -14,6 +14,7 @@ import {
 import {
   mockUserPrivileges,
   mockFHIRTaskWithInput,
+  mockObservationForms,
 } from '../../__tests__/__mocks__/taskActionsMocks';
 import { VITALS_TASK_CODE } from '../../__tests__/__mocks__/taskListMocks';
 import type { TaskViewModel } from '../../models';
@@ -22,8 +23,29 @@ import { handleTaskView } from '../viewHandlers';
 
 jest.mock('@bahmni/services', () => ({
   ...jest.requireActual('@bahmni/services'),
+  fetchObservationForms: jest.fn(),
   hasPrivilege: jest.fn(),
 }));
+
+const viewableObservationForms = [
+  {
+    ...mockObservationForms[0],
+    privileges: [
+      { privilegeName: 'Edit Vitals', editable: true, viewable: true },
+    ],
+  },
+  ...mockObservationForms.slice(1),
+];
+
+const nonViewableObservationForms = [
+  {
+    ...mockObservationForms[0],
+    privileges: [
+      { privilegeName: 'Edit Vitals', editable: true, viewable: false },
+    ],
+  },
+  ...mockObservationForms.slice(1),
+];
 
 jest.mock('../../../hooks/usePatientUUID', () => ({
   usePatientUUID: jest.fn(() => 'patient-uuid-123'),
@@ -41,6 +63,9 @@ jest.mock('../viewHandlers', () => ({
   )),
 }));
 
+const mockFetchObservationForms = fetchObservationForms as jest.MockedFunction<
+  typeof fetchObservationForms
+>;
 const mockHasPrivilege = hasPrivilege as jest.MockedFunction<
   typeof hasPrivilege
 >;
@@ -93,11 +118,12 @@ const mockRequestedTask = createTaskViewModel(
 describe('TaskViewResults', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    mockFetchObservationForms.mockResolvedValue(viewableObservationForms);
     mockHasPrivilege.mockReturnValue(true);
   });
 
   describe('Rendering', () => {
-    it('should render link when permitted views exist', () => {
+    it('should render link when permitted views exist', async () => {
       render(
         <TaskViewResults
           task={mockCompletedTask}
@@ -106,7 +132,7 @@ describe('TaskViewResults', () => {
         { wrapper: createWrapper() },
       );
 
-      const link = screen.getByTestId(
+      const link = await screen.findByTestId(
         `task-view-viewForm-${mockCompletedTask.id}`,
       );
       expect(link).toBeInTheDocument();
@@ -184,7 +210,7 @@ describe('TaskViewResults', () => {
   });
 
   describe('Privilege filtering', () => {
-    it('should show view when user has required privileges', () => {
+    it('should show view when user has required privileges', async () => {
       mockHasPrivilege.mockReturnValue(true);
 
       render(
@@ -196,11 +222,11 @@ describe('TaskViewResults', () => {
       );
 
       expect(
-        screen.getByTestId(`task-view-viewForm-${mockCompletedTask.id}`),
+        await screen.findByTestId(`task-view-viewForm-${mockCompletedTask.id}`),
       ).toBeInTheDocument();
     });
 
-    it('should not show view when user lacks required privileges', () => {
+    it('should not show view when user lacks required privileges', async () => {
       mockHasPrivilege.mockReturnValue(false);
 
       const { container } = render(
@@ -216,10 +242,13 @@ describe('TaskViewResults', () => {
         { wrapper: createWrapper() },
       );
 
+      await waitFor(() => {
+        expect(mockFetchObservationForms).toHaveBeenCalled();
+      });
       expect(container.textContent).toBe('-');
     });
 
-    it('should show view when no privileges are required', () => {
+    it('should show view when no privileges are required', async () => {
       const configWithNoPrivileges = [
         {
           taskCode: VITALS_TASK_CODE,
@@ -241,8 +270,28 @@ describe('TaskViewResults', () => {
       );
 
       expect(
-        screen.getByTestId(`task-view-viewForm-${mockCompletedTask.id}`),
+        await screen.findByTestId(`task-view-viewForm-${mockCompletedTask.id}`),
       ).toBeInTheDocument();
+    });
+
+    it('should not show view when form is not viewable by user', async () => {
+      mockFetchObservationForms.mockResolvedValue(nonViewableObservationForms);
+
+      const { container } = render(
+        <TaskViewResults
+          task={mockCompletedTask}
+          taskConfig={mockTaskConfigWithViews}
+        />,
+        { wrapper: createWrapper() },
+      );
+
+      await waitFor(() => {
+        expect(mockFetchObservationForms).toHaveBeenCalled();
+      });
+      expect(container.textContent).toBe('-');
+      expect(
+        screen.queryByTestId(`task-view-viewForm-${mockCompletedTask.id}`),
+      ).not.toBeInTheDocument();
     });
   });
 
@@ -261,7 +310,7 @@ describe('TaskViewResults', () => {
       expect(screen.queryByText('View Data')).not.toBeInTheDocument();
     });
 
-    it('should show view only for completed tasks', () => {
+    it('should show view only for completed tasks', async () => {
       render(
         <TaskViewResults
           task={mockCompletedTask}
@@ -271,7 +320,7 @@ describe('TaskViewResults', () => {
       );
 
       expect(
-        screen.getByTestId(`task-view-viewForm-${mockCompletedTask.id}`),
+        await screen.findByTestId(`task-view-viewForm-${mockCompletedTask.id}`),
       ).toBeInTheDocument();
     });
   });
@@ -288,7 +337,7 @@ describe('TaskViewResults', () => {
         { wrapper: createWrapper() },
       );
 
-      const link = screen.getByTestId(
+      const link = await screen.findByTestId(
         `task-view-viewForm-${mockCompletedTask.id}`,
       );
       await user.click(link);
@@ -314,7 +363,7 @@ describe('TaskViewResults', () => {
         { wrapper: createWrapper() },
       );
 
-      const link = screen.getByTestId(
+      const link = await screen.findByTestId(
         `task-view-viewForm-${mockCompletedTask.id}`,
       );
       await user.click(link);
@@ -324,7 +373,7 @@ describe('TaskViewResults', () => {
       });
     });
 
-    it('should not render view when not selected', () => {
+    it('should not render view when not selected', async () => {
       render(
         <TaskViewResults
           task={mockCompletedTask}
@@ -333,12 +382,13 @@ describe('TaskViewResults', () => {
         { wrapper: createWrapper() },
       );
 
+      await screen.findByTestId(`task-view-viewForm-${mockCompletedTask.id}`);
       expect(screen.queryByTestId('mocked-view')).not.toBeInTheDocument();
     });
   });
 
   describe('Form matching', () => {
-    it('should show view when task has matching form input', () => {
+    it('should show view when task has matching form input', async () => {
       render(
         <TaskViewResults
           task={mockCompletedTask}
@@ -348,7 +398,7 @@ describe('TaskViewResults', () => {
       );
 
       expect(
-        screen.getByTestId(`task-view-viewForm-${mockCompletedTask.id}`),
+        await screen.findByTestId(`task-view-viewForm-${mockCompletedTask.id}`),
       ).toBeInTheDocument();
     });
 
@@ -394,7 +444,7 @@ describe('TaskViewResults', () => {
   });
 
   describe('View selection', () => {
-    it('should render overflow menu when multiple views exist', () => {
+    it('should render overflow menu when multiple views exist', async () => {
       const configWithMultipleViews = [
         {
           taskCode: VITALS_TASK_CODE,
@@ -416,13 +466,13 @@ describe('TaskViewResults', () => {
         { wrapper: createWrapper() },
       );
 
-      const menu = screen.getByTestId(
+      const menu = await screen.findByTestId(
         `task-views-menu-${mockCompletedTask.id}`,
       );
       expect(menu).toBeInTheDocument();
     });
 
-    it('should show single Link when only one view exists', () => {
+    it('should show single Link when only one view exists', async () => {
       render(
         <TaskViewResults
           task={mockCompletedTask}
@@ -432,7 +482,7 @@ describe('TaskViewResults', () => {
       );
 
       expect(
-        screen.getByTestId(`task-view-viewForm-${mockCompletedTask.id}`),
+        await screen.findByTestId(`task-view-viewForm-${mockCompletedTask.id}`),
       ).toBeInTheDocument();
 
       expect(
@@ -440,7 +490,7 @@ describe('TaskViewResults', () => {
       ).not.toBeInTheDocument();
     });
 
-    it('should pass correct testId to link', () => {
+    it('should pass correct testId to link', async () => {
       render(
         <TaskViewResults
           task={mockCompletedTask}
@@ -450,7 +500,7 @@ describe('TaskViewResults', () => {
       );
 
       expect(
-        screen.getByTestId(`task-view-viewForm-${mockCompletedTask.id}`),
+        await screen.findByTestId(`task-view-viewForm-${mockCompletedTask.id}`),
       ).toBeInTheDocument();
     });
   });
