@@ -118,38 +118,50 @@ export const isFormActionVisible = (
 export const isViewFormDataVisible = (
   view: TaskView,
   task: TaskViewModel,
+  allForms: ObservationForm[],
   userPrivileges: UserPrivilege[] | null,
 ): boolean => {
-  if (view.type === TaskViewType.VIEW_FORM) {
-    if (task.status !== 'completed') {
-      return false;
-    }
+  if (view.type !== TaskViewType.VIEW_FORM) {
+    return false;
+  }
 
-    const formName = extractFormNameFromTask(
-      task,
-      view.handlerConfig.formInputCode,
-    );
+  if (task.status !== 'completed') {
+    return false;
+  }
 
-    if (!formName) {
-      return false;
-    }
+  const formName = extractFormNameFromTask(
+    task,
+    view.handlerConfig.formInputCode,
+  );
 
-    if (!userPrivileges || userPrivileges.length === 0) {
-      return false;
-    }
+  if (!formName) {
+    return false;
+  }
 
-    if (view.requiredPrivileges.length === 0) {
-      return true;
-    }
+  if (!userPrivileges || userPrivileges.length === 0) {
+    return false;
+  }
 
+  if (view.requiredPrivileges.length > 0) {
     const userPrivilegeNames = new Set(
       userPrivileges.map((privilege) => privilege.name),
     );
-
-    return view.requiredPrivileges.every((requiredPrivilege) =>
+    const hasAllRequired = view.requiredPrivileges.every((requiredPrivilege) =>
       userPrivilegeNames.has(requiredPrivilege),
     );
+    if (!hasAllRequired) {
+      return false;
+    }
   }
 
-  return false;
+  const matchingForm = allForms.find(
+    (form) => form.name.toLowerCase() === formName.toLowerCase(),
+  );
+  return matchingForm
+    ? canUserAccessForm(
+        userPrivileges,
+        matchingForm,
+        FormPermissionType.VIEWABLE,
+      )
+    : false;
 };

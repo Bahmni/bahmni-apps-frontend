@@ -1,10 +1,16 @@
 import { Link, OverflowMenu, OverflowMenuItem } from '@bahmni/design-system';
-import { hasPrivilege, useTranslation } from '@bahmni/services';
+import {
+  fetchObservationForms,
+  hasPrivilege,
+  type ObservationForm,
+  useTranslation,
+} from '@bahmni/services';
+import { useQuery } from '@tanstack/react-query';
 import React, { useMemo, useState } from 'react';
 import { usePatientUUID } from '../../hooks/usePatientUUID';
 import { useUserPrivilege } from '../../userPrivileges/useUserPrivilege';
 import type { TaskConfig, TaskView, TaskViewModel } from '../models';
-import { isViewFormDataVisible } from '../utils';
+import { hasViewFormConfig, isViewFormDataVisible } from '../utils';
 import { handleTaskView } from './viewHandlers';
 
 interface TaskViewResultsProps {
@@ -21,22 +27,33 @@ const TaskViewResults: React.FC<TaskViewResultsProps> = ({
   const patientUuid = usePatientUUID();
   const [selectedView, setSelectedView] = useState<TaskView | null>(null);
 
+  const shouldFetchForms = hasViewFormConfig(taskConfig, task.code);
+
+  const { data: allForms = [], isLoading: isFormsLoading } = useQuery<
+    ObservationForm[],
+    Error
+  >({
+    queryKey: ['observationForms'],
+    queryFn: () => fetchObservationForms(),
+    enabled: shouldFetchForms,
+  });
+
   const matchingConfig = useMemo(() => {
     if (!taskConfig) return null;
     return taskConfig.find((config) => config.taskCode === task.code);
   }, [taskConfig, task.code]);
 
   const permittedViews = useMemo(() => {
-    if (!matchingConfig?.views) return [];
+    if (!matchingConfig?.views || isFormsLoading) return [];
 
     return matchingConfig.views.filter((view) => {
       if (!hasPrivilege(userPrivileges, view.requiredPrivileges)) {
         return false;
       }
 
-      return isViewFormDataVisible(view, task, userPrivileges);
+      return isViewFormDataVisible(view, task, allForms, userPrivileges);
     });
-  }, [matchingConfig, userPrivileges, task]);
+  }, [matchingConfig, userPrivileges, allForms, isFormsLoading, task]);
 
   if (permittedViews.length === 0) {
     return <>-</>;
