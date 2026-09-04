@@ -1,8 +1,9 @@
 #!/usr/bin/env node
 
-const fs = require('fs');
-const path = require('path');
-const readline = require('readline');
+const fs = require('node:fs');
+const path = require('node:path');
+const readline = require('node:readline');
+const { execSync } = require('node:child_process');
 
 const rl = readline.createInterface({
   input: process.stdin,
@@ -76,7 +77,7 @@ function createDirectoryStructure(appPath) {
 function getPackageJsonTemplate(appNameKebab) {
   return JSON.stringify(
     {
-      name: `@bahmni/${appNameKebab}`,
+      name: `@bahmni/${appNameKebab}-app`,
       version: '0.0.1',
       type: 'module',
       main: './dist/index.js',
@@ -98,7 +99,7 @@ function getPackageJsonTemplate(appNameKebab) {
         'react-router-dom': '^7.5.3',
       },
       "author": "Thoughtworks Inc.",
-      "license": "MPLv2",
+      "license": "MPL-2.0",
       "files": [
         "dist",
         "README.md",
@@ -139,7 +140,7 @@ export default [
 }
 
 function getJestConfigTemplate(appNameKebab) {
-  return `export default {
+  return String.raw`export default {
   displayName: '@bahmni/${appNameKebab}',
   preset: '../../jest.preset.js',
   setupFilesAfterEnv: ['<rootDir>/setupTests.ts'],
@@ -149,7 +150,7 @@ function getJestConfigTemplate(appNameKebab) {
   moduleNameMapper: {
     '^i18next$': '<rootDir>/../../node_modules/i18next',
     '^react-i18next$': '<rootDir>/../../node_modules/react-i18next',
-    '\\\\.(css|scss)$': 'identity-obj-proxy',
+    '\\.(css|scss)$': 'identity-obj-proxy',
   },
 };
 `;
@@ -270,7 +271,7 @@ function getViteConfigTemplate(appNameKebab) {
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import dts from 'vite-plugin-dts';
-import * as path from 'path';
+import * as path from 'node:path';
 
 export default defineConfig(() => ({
   root: __dirname,
@@ -320,55 +321,49 @@ function getReadmeTemplate(appNameKebab, appNamePascal) {
   return `# @bahmni/${appNameKebab}
 
 ${appNamePascal} application for Bahmni.
-
-This library was generated with [Nx](https://nx.dev).
-
-## Running unit tests
-
-Run \`nx test @bahmni/${appNameKebab}\` to execute the unit tests via [Jest](https://jestjs.io/).
 `;
 }
 
 function getSetupTestsTemplate() {
-  return `import "@testing-library/jest-dom";
-import { TextEncoder, TextDecoder } from "util";
-import { initFontAwesome } from "@bahmni/design-system";
-import { toHaveNoViolations } from "jest-axe";
-import "./setupTests.i18n";
+  return `import '@testing-library/jest-dom';
+import { TextEncoder, TextDecoder } from 'node:util';
+import { initFontAwesome } from '@bahmni/design-system';
+import { toHaveNoViolations } from 'jest-axe';
+import './setupTests.i18n';
 
 expect.extend(toHaveNoViolations);
 
 initFontAwesome();
 
 // @ts-expect-error - Ignoring type issues with Node.js util TextEncoder
-global.TextEncoder = TextEncoder;
+globalThis.TextEncoder = TextEncoder;
 // @ts-expect-error - Ignoring type issues with Node.js util TextDecoder
-global.TextDecoder = TextDecoder;
+globalThis.TextDecoder = TextDecoder;
 `;
 }
 
 function getSetupTestsI18nTemplate(appConstantName, appNameKebab) {
-  return `import i18n from "i18next";
-import { initReactI18next } from "react-i18next";
-import enTranslations from "./public/locales/locale_en.json";
-import { ${appConstantName} } from "./src/constants/app";
+  return `import i18n from 'i18next';
+import { initReactI18next } from 'react-i18next';
+import enTranslations from './public/locales/locale_en.json';
+import { ${appConstantName} } from './src/constants/app';
 
 const initTestI18n = () => {
   i18n.use(initReactI18next).init({
-    lng: "en",
-    fallbackLng: "en",
+    lng: 'en',
+    fallbackLng: 'en',
     debug: false,
     ns: [${appConstantName}],
     defaultNS: ${appConstantName},
     resources: {
-      en: { [${appConstantName}]: enTranslations }
+      en: { [${appConstantName}]: enTranslations },
     },
     interpolation: {
-      escapeValue: false
+      escapeValue: false,
     },
     react: {
-      useSuspense: false
-    }
+      useSuspense: false,
+    },
   });
 
   return i18n;
@@ -379,35 +374,38 @@ export default initTestI18n();
 }
 
 function getConstantsAppTemplate(appConstantName, appNamespace) {
-  return `export const ${appConstantName} = "${appNamespace}";
+  return `export const ${appConstantName} = '${appNamespace}';
 `;
 }
 
-function getIndexTsTemplate() {
-  return `export { default } from "./App";
-export { App } from "./App";
+function getIndexTsTemplate(appNamePascal) {
+  return `import { ${appNamePascal}App } from './App';
+import '@bahmni/widgets/styles';
+import './styles.scss';
+
+export { ${appNamePascal}App };
 `;
 }
 
 function getAppTsxTemplate(appConstantName, appNamePascal) {
-  return `import { Loading, initFontAwesome } from "@bahmni/design-system";
-import { initAppI18n } from "@bahmni/services";
+  return `import { Loading, initFontAwesome } from '@bahmni/design-system';
+import { initAppI18n } from '@bahmni/services';
 import {
   NotificationProvider,
   NotificationServiceComponent,
   UserPrivilegeProvider,
-} from "@bahmni/widgets";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
-import { Suspense, useEffect, useState } from "react";
-import { Routes } from "react-router-dom";
-import { queryClientConfig } from "./config/tanstackQuery";
-import { ${appConstantName} } from "./constants/app";
-import { routes, renderRoutes } from "./routes";
+} from '@bahmni/widgets';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
+import { Suspense, useEffect, useState } from 'react';
+import { Routes } from 'react-router-dom';
+import { queryClientConfig } from './config/tanstackQuery';
+import { ${appConstantName} } from './constants/app';
+import { routes, renderRoutes } from './routes';
 
 const queryClient = new QueryClient(queryClientConfig);
 
-export function App() {
+export function ${appNamePascal}App() {
   const [isInitialized, setIsInitialized] = useState(false);
 
   useEffect(() => {
@@ -417,7 +415,7 @@ export function App() {
         initFontAwesome();
         setIsInitialized(true);
       } catch (error) {
-        console.error("Failed to initialize app:", error);
+        console.error('Failed to initialize app:', error);
         setIsInitialized(true);
       }
     };
@@ -443,12 +441,12 @@ export function App() {
   );
 }
 
-export default App;
+export default ${appNamePascal}App;
 `;
 }
 
 function getTanstackQueryConfigTemplate() {
-  return `import { QueryClientConfig } from "@tanstack/react-query";
+  return `import { QueryClientConfig } from '@tanstack/react-query';
 
 export const queryClientConfig: QueryClientConfig = {
   defaultOptions: {
@@ -470,7 +468,7 @@ export const queryClientConfig: QueryClientConfig = {
 }
 
 function getRouteModelTemplate() {
-  return `import { ComponentType, LazyExoticComponent } from "react";
+  return `import { ComponentType, LazyExoticComponent } from 'react';
 
 export interface RouteConfig {
   path: string;
@@ -483,19 +481,19 @@ export type Routes = RouteConfig[];
 }
 
 function getRoutesIndexTemplate() {
-  return `import { lazy } from "react";
-import { Navigate, Route } from "react-router-dom";
-import { Routes, RouteConfig } from "./model";
+  return `import { lazy } from 'react';
+import { Navigate, Route } from 'react-router-dom';
+import { Routes, RouteConfig } from './model';
 
 const IndexPage = lazy(() =>
-  import("../pages/Index").then((module) => ({ default: module.IndexPage })),
+  import('../pages/Index').then((module) => ({ default: module.IndexPage })),
 );
 
 export const routes: Routes = [
   {
-    path: "/",
+    path: '/',
     component: IndexPage,
-    name: "Index",
+    name: 'Index',
   },
 ];
 
@@ -511,25 +509,110 @@ export const renderRoutes = (routeConfigs: Routes) => {
 }
 
 function getIndexPageTemplate(appNamePascal) {
-  return `import React from "react";
-
-export const IndexPage: React.FC = () => {
-
+  return `export function IndexPage() {
   return (
     <div>
       <h1>Welcome to ${appNamePascal}</h1>
       <p>${appNamePascal} application for Bahmni</p>
     </div>
   );
-};
+}
 `;
+}
+
+function patchDistroAppTsx(distroPath, appNameKebab, appNamePascal) {
+  const filePath = path.join(distroPath, 'src/app/app.tsx');
+  let content = fs.readFileSync(filePath, 'utf8');
+
+  if (content.includes(`@bahmni/${appNameKebab}-app`)) {
+    console.log(`  ${colors.green}✔${colors.reset} distro/src/app/app.tsx skipped (already wired)`);
+    return;
+  }
+
+  const lazyImport = `const ${appNamePascal}App = lazy(() =>
+  import('@bahmni/${appNameKebab}-app').then((module) => ({
+    default: module.${appNamePascal}App,
+  })),
+);\n`;
+  const withLazy = content.replace('\nexport function App()', `\n${lazyImport}\nexport function App()`);
+  if (withLazy === content) throw new Error(`Pattern not found in ${filePath}: could not insert lazy import`);
+  content = withLazy;
+
+  const route = `          <Route path="/${appNameKebab}/*" element={<${appNamePascal}App />} />\n`;
+  const withRoute = content.replace('          <Route path="*"', `${route}          <Route path="*"`);
+  if (withRoute === content) throw new Error(`Pattern not found in ${filePath}: could not insert route`);
+  content = withRoute;
+
+  fs.writeFileSync(filePath, content);
+}
+
+function patchDistroWebpackConfig(distroPath, appNameKebab) {
+  const filePath = path.join(distroPath, 'webpack.config.js');
+  let content = fs.readFileSync(filePath, 'utf8');
+
+  if (content.includes(`@bahmni/${appNameKebab}-app`)) {
+    console.log(`  ${colors.green}✔${colors.reset} distro/webpack.config.js skipped (already wired)`);
+    return;
+  }
+
+  const withAlias = content.replace(
+    '      } : {},',
+    `        '@bahmni/${appNameKebab}-app': join(__dirname, '../apps/${appNameKebab}/src'),\n      } : {},`,
+  );
+  if (withAlias === content) throw new Error(`Pattern not found in ${filePath}: could not insert webpack alias`);
+  content = withAlias;
+
+  const newAsset = `          { input: isDevelopment ? '../apps/${appNameKebab}/public/locales' : '../apps/${appNameKebab}/dist/locales', glob: '**/*', output: '${appNameKebab}/locales' },`;
+  const withAsset = content.replace(
+    '\n        ],\n        styles:',
+    `\n${newAsset}\n        ],\n        styles:`,
+  );
+  if (withAsset === content) throw new Error(`Pattern not found in ${filePath}: could not insert asset entry`);
+  content = withAsset;
+
+  fs.writeFileSync(filePath, content);
+}
+
+function patchDistroTsconfig(distroPath, appNameKebab) {
+  const filePath = path.join(distroPath, 'tsconfig.json');
+  const tsconfig = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+
+  const appRef = { path: `../apps/${appNameKebab}` };
+  const insertBeforeIndex = tsconfig.references.findIndex(
+    (ref) => ref.path === './tsconfig.app.json',
+  );
+
+  if (insertBeforeIndex === -1) {
+    console.log(`  ${colors.yellow}⚠${colors.reset} tsconfig.app.json reference not found — appending reference to end`);
+    tsconfig.references.push(appRef);
+  } else {
+    tsconfig.references.splice(insertBeforeIndex, 0, appRef);
+  }
+
+  fs.writeFileSync(filePath, JSON.stringify(tsconfig, null, 2) + '\n');
+}
+
+function patchDistroFiles(distroPath, appNameKebab, appNamePascal) {
+  const patches = [
+    ['distro/src/app/app.tsx', () => patchDistroAppTsx(distroPath, appNameKebab, appNamePascal)],
+    ['distro/webpack.config.js', () => patchDistroWebpackConfig(distroPath, appNameKebab)],
+    ['distro/tsconfig.json', () => patchDistroTsconfig(distroPath, appNameKebab)],
+  ];
+
+  for (const [fileName, patch] of patches) {
+    try {
+      patch();
+      console.log(`  ${colors.green}✔${colors.reset} ${fileName}`);
+    } catch (error) {
+      console.log(`  ${colors.red}✘${colors.reset} ${fileName} — ${error.message}`);
+    }
+  }
 }
 
 function createAllFiles(appPath, transforms) {
   const {
     appNameKebab,
     appNamePascal,
-    appNameCamel,
     appConstantName,
     appNamespace,
   } = transforms;
@@ -556,7 +639,7 @@ function createAllFiles(appPath, transforms) {
       path: 'src/constants/app.ts',
       content: getConstantsAppTemplate(appConstantName, appNamespace),
     },
-    { path: 'src/index.ts', content: getIndexTsTemplate() },
+    { path: 'src/index.ts', content: getIndexTsTemplate(appNamePascal) },
     {
       path: 'src/App.tsx',
       content: getAppTsxTemplate(appConstantName, appNamePascal),
@@ -571,6 +654,7 @@ function createAllFiles(appPath, transforms) {
       path: 'src/pages/Index.tsx',
       content: getIndexPageTemplate(appNamePascal),
     },
+    { path: 'src/styles.scss', content: '// App global styles\n' },
     { path: 'public/locales/locale_en.json', content: '{}' },
     { path: 'public/locales/locale_es.json', content: '{}' },
   ];
@@ -639,14 +723,38 @@ async function main() {
     appNamespace,
   });
 
-  console.log(
-    `\n${colors.green}✔${colors.reset} Application created successfully\n`,
-  );
-  console.log('Next steps:');
-  console.log(`  1. yarn install`);
-  console.log(`  2. yarn build`);
-  console.log(`  3. lazyload your app in your distro`);
-  console.log(`  4. setup routes in your distro\n`);
+  const distroPath = path.join(process.cwd(), 'distro');
+  console.log('\nWiring up distro:');
+  patchDistroFiles(distroPath, appNameKebab, appNamePascal);
+
+  const rootDir = process.cwd();
+
+  let installSuccess = true;
+  let buildSuccess = true;
+
+  console.log('\nInstalling dependencies...');
+  try {
+    execSync('yarn install -W', { cwd: rootDir, stdio: 'inherit' });
+    console.log(`  ${colors.green}✔${colors.reset} yarn install`);
+  } catch (error) {
+    console.log(`  ${colors.red}✘${colors.reset} yarn install failed — ${error.message}`);
+    installSuccess = false;
+  }
+
+  console.log('\nBuilding...');
+  try {
+    execSync('yarn build', { cwd: rootDir, stdio: 'inherit' });
+    console.log(`  ${colors.green}✔${colors.reset} yarn build`);
+  } catch (error) {
+    console.log(`  ${colors.red}✘${colors.reset} yarn build failed — ${error.message}`);
+    buildSuccess = false;
+  }
+
+  if (installSuccess && buildSuccess) {
+    console.log(`\n${colors.green}✔${colors.reset} Application created successfully\n`);
+  } else {
+    console.log(`\n${colors.yellow}⚠${colors.reset} Application created with warnings. Please check the errors above.\n`);
+  }
 
   rl.close();
 }
