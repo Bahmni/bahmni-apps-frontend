@@ -94,20 +94,24 @@ export const formatObservationValue = (
   return baseValue;
 };
 
-const formatObservationHeader = (observation: ExtractedObservation): string => {
+export const formatObservationHeader = (
+  observation: ExtractedObservation,
+): { display: string; referenceRange?: string } => {
   const display = observation.display!;
 
   if (!observation.observationValue) {
-    return String(display);
+    return { display };
   }
 
   const { unit, referenceRange } = observation.observationValue;
 
   if (!referenceRange) {
-    return String(display);
+    return { display };
   }
 
   const { low, high } = referenceRange;
+
+  let referenceRangeText = '';
 
   if (low && high) {
     const lowStr = low.unit
@@ -120,28 +124,27 @@ const formatObservationHeader = (observation: ExtractedObservation): string => {
       : unit
         ? `${high.value} ${unit}`
         : String(high.value);
-    return `${display} (${lowStr} - ${highStr})`;
-  }
-
-  if (low) {
+    referenceRangeText = `(${lowStr} - ${highStr})`;
+  } else if (low) {
     const lowStr = low.unit
       ? `${low.value} ${low.unit}`
       : unit
         ? `${low.value} ${unit}`
         : String(low.value);
-    return `${display} (>${lowStr})`;
-  }
-
-  if (high) {
+    referenceRangeText = `(>${lowStr})`;
+  } else if (high) {
     const highStr = high.unit
       ? `${high.value} ${high.unit}`
       : unit
         ? `${high.value} ${unit}`
         : String(high.value);
-    return `${display} (<${highStr})`;
+    referenceRangeText = `(<${highStr})`;
   }
 
-  return display;
+  return {
+    display,
+    referenceRange: referenceRangeText || undefined,
+  };
 };
 
 export const transformObservationToRowCell = (
@@ -315,4 +318,35 @@ export function sortObservationsByEncounterDate(
 
     return new Date(dateB).getTime() - new Date(dateA).getTime();
   });
+}
+
+export function filterObservationsByLatestEncounter(
+  result: ExtractedObservationsResult,
+): ExtractedObservationsResult {
+  const allObs = [...result.observations, ...result.groupedObservations];
+
+  if (allObs.length === 0) return result;
+
+  const latestEncounterId = allObs.reduce(
+    (latestId, obs) => {
+      if (!latestId) return obs.encounter?.id;
+      const latestObs = allObs.find((o) => o.encounter?.id === latestId);
+      const latestTime =
+        latestObs?.effectiveDateTime ?? latestObs?.issued ?? '';
+      const currentTime = obs.effectiveDateTime ?? obs.issued ?? '';
+
+      return currentTime > latestTime ? obs.encounter?.id : latestId;
+    },
+    undefined as string | undefined,
+  );
+
+  if (!latestEncounterId) return result;
+
+  const filterByEncounter = (obs: ExtractedObservation) =>
+    obs.encounter?.id === latestEncounterId;
+
+  return {
+    observations: result.observations.filter(filterByEncounter),
+    groupedObservations: result.groupedObservations.filter(filterByEncounter),
+  };
 }
