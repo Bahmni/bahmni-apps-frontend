@@ -3,7 +3,7 @@ import {
   notificationService,
   renderAsHtml,
 } from '@bahmni/services';
-import { categoryPickers } from '../categoryPickers/prescriptionEncounterPicker';
+import { categoryPickers } from '../categoryPickers/types';
 import type { PrintOption } from '../categoryPickers/types';
 import {
   categoryPickerHandler,
@@ -46,9 +46,18 @@ describe('getHandlerFor', () => {
     expect(getHandlerFor(option)).toBe(directPrintHandler);
   });
 
-  it('returns directPrintHandler for an unrecognized category', () => {
-    expect(getHandlerFor({ ...option, category: 'UNKNOWN' as never })).toBe(
-      directPrintHandler,
+  it('shows an error notification, not directPrintHandler, for an unrecognized category', () => {
+    const handler = getHandlerFor({ ...option, category: 'UNKNOWN' });
+
+    expect(handler).not.toBe(directPrintHandler);
+    handler.trigger(
+      { ...option, category: 'UNKNOWN' },
+      { renderContext: {}, setIsPrinting: jest.fn(), openPicker: jest.fn() },
+    );
+
+    expect(notificationService.showError).toHaveBeenCalledWith(
+      'Print Error',
+      'Unrecognized print category: UNKNOWN',
     );
   });
 

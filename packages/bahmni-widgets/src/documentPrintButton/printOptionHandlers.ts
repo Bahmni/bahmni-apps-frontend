@@ -4,7 +4,7 @@ import {
   notificationService,
   renderAsHtml,
 } from '@bahmni/services';
-import { categoryPickers } from './categoryPickers/prescriptionEncounterPicker';
+import { categoryPickers } from './categoryPickers/types';
 import type { CategoryPicker, PrintOption } from './categoryPickers/types';
 import { printViaIframe } from './printViaIframe';
 
@@ -27,12 +27,14 @@ export async function printTemplate(
   option: PrintOption,
   renderContext: Record<string, string>,
   ctx: PrintTemplateContext,
+  extraData?: Record<string, unknown>,
 ): Promise<void> {
   ctx.setIsPrinting(true);
 
-  const data = ctx.getRenderData
+  const baseData = ctx.getRenderData
     ? await ctx.getRenderData(option.templateId)
     : ctx.renderData;
+  const data = extraData ? { ...baseData, ...extraData } : baseData;
 
   try {
     const html = await renderAsHtml({
@@ -61,7 +63,19 @@ export const categoryPickerHandler = (
   trigger: (option, ctx) => ctx.openPicker(picker, option),
 });
 
+const unrecognizedCategoryHandler = (category: string): PrintOptionHandler => ({
+  trigger: () =>
+    notificationService.showError(
+      'Print Error',
+      `Unrecognized print category: ${category}`,
+    ),
+});
+
 export function getHandlerFor(option: PrintOption): PrintOptionHandler {
-  const picker = option.category && categoryPickers[option.category];
-  return picker ? categoryPickerHandler(picker) : directPrintHandler;
+  if (!option.category) return directPrintHandler;
+
+  const picker = categoryPickers[option.category];
+  return picker
+    ? categoryPickerHandler(picker)
+    : unrecognizedCategoryHandler(option.category);
 }

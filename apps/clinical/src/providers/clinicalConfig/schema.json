@@ -213,7 +213,7 @@
               "properties": {
                 "translationKey": { "type": "string" },
                 "templateId": { "type": "string" },
-                "category": { "type": "string", "enum": ["PRESCRIPTION"] },
+                "category": { "type": "string"},
                 "privileges": {
                   "type": "array",
                   "items": { "type": "string" }

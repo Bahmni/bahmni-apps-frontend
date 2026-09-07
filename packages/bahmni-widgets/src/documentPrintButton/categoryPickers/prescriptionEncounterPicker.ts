@@ -1,6 +1,6 @@
 import { formatDateTime, getPatientEncounters } from '@bahmni/services';
 import type { Encounter } from 'fhir/r4';
-import type { CategoryPicker, PrintOptionCategory } from './types';
+import type { CategoryPicker } from './types';
 
 function encounterLabel(encounter: Encounter): string {
   return (
@@ -30,20 +30,18 @@ export const prescriptionEncounterPicker: CategoryPicker<Encounter> = {
 
   renderItem: (encounter, t) => {
     const start = encounter.period?.start;
+    const providerName = encounter.participant?.[0]?.individual?.display;
+    const dateTime = start
+      ? formatDateTime(start, t, true).formattedResult
+      : '';
     return {
       primary: encounterLabel(encounter),
-      secondary: start ? formatDateTime(start, t, true).formattedResult : '',
+      secondary: [dateTime, providerName].filter(Boolean).join(' | '),
     };
   },
 
   resolveSelection: (encounter, context) => ({
-    ...context,
-    encounterUuid: encounter.id ?? '',
+    context: { ...context, encounterUuid: encounter.id ?? '' },
+    data: { encounter },
   }),
-};
-
-export const categoryPickers: Partial<
-  Record<PrintOptionCategory, CategoryPicker<unknown>>
-> = {
-  PRESCRIPTION: prescriptionEncounterPicker as CategoryPicker<unknown>,
 };

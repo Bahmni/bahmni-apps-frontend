@@ -15,15 +15,11 @@ import {
 } from '@bahmni/services';
 import { useState } from 'react';
 import { useActivePractitioner } from '../activePractitioner';
-import type {
-  CategoryPicker,
-  PrintOption,
-  PrintOptionCategory,
-} from './categoryPickers/types';
+import type { CategoryPicker, PrintOption } from './categoryPickers/types';
 import { CategorySelectionModal } from './CategorySelectionModal';
 import { getHandlerFor, printTemplate } from './printOptionHandlers';
 
-export type { PrintOption, PrintOptionCategory };
+export type { PrintOption };
 
 interface DocumentPrintButtonProps {
   printOptions?: PrintOption[];
@@ -86,13 +82,14 @@ export const DocumentPrintButton = ({
   const handlePickerSelect = (item: unknown) => {
     if (!activePicker) return;
     const { picker, option } = activePicker;
-    const resolvedContext = picker.resolveSelection(item, enrichedContext);
+    const { context, data } = picker.resolveSelection(item, enrichedContext);
     setActivePicker(null);
-    void printTemplate(option, resolvedContext, {
-      renderData,
-      getRenderData,
-      setIsPrinting,
-    });
+    void printTemplate(
+      option,
+      context,
+      { renderData, getRenderData, setIsPrinting },
+      data,
+    );
   };
 
   if (items.length === 0) return null;

@@ -20,7 +20,9 @@ const buildPicker = (
   fetchItems: jest.fn().mockResolvedValue([]),
   getItemKey: (item) => item.id,
   renderItem: (item) => ({ primary: item.label }),
-  resolveSelection: (item, context) => ({ ...context, itemId: item.id }),
+  resolveSelection: (item, context) => ({
+    context: { ...context, itemId: item.id },
+  }),
   ...overrides,
 });
 
