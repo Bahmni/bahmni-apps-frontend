@@ -9,6 +9,7 @@ import { useQuery } from '@tanstack/react-query';
 import React, { useMemo, useState } from 'react';
 import { usePatientUUID } from '../../hooks/usePatientUUID';
 import { useUserPrivilege } from '../../userPrivileges/useUserPrivilege';
+import { TaskViewType } from '../constants';
 import type { TaskConfig, TaskView, TaskViewModel } from '../models';
 import { hasViewFormConfig, isViewFormDataVisible } from '../utils';
 import { handleTaskView } from './viewHandlers';
@@ -47,6 +48,10 @@ const TaskViewResults: React.FC<TaskViewResultsProps> = ({
     if (!matchingConfig?.views || isFormsLoading) return [];
 
     return matchingConfig.views.filter((view) => {
+      if (view.type !== TaskViewType.VIEW_FORM) {
+        return false;
+      }
+
       if (!hasPrivilege(userPrivileges, view.requiredPrivileges)) {
         return false;
       }

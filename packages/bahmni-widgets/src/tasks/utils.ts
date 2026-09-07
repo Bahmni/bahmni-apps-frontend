@@ -121,10 +121,6 @@ export const isViewFormDataVisible = (
   allForms: ObservationForm[],
   userPrivileges: UserPrivilege[] | null,
 ): boolean => {
-  if (view.type !== TaskViewType.VIEW_FORM) {
-    return false;
-  }
-
   if (task.status !== 'completed') {
     return false;
   }
