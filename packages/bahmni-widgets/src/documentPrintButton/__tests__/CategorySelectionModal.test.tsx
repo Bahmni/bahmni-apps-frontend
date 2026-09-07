@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from '@testing-library/react';
+import { act, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import type { CategoryPicker } from '../categoryPickers/types';
 import { CategorySelectionModal } from '../CategorySelectionModal';
@@ -139,6 +139,109 @@ describe('CategorySelectionModal', () => {
     );
 
     await userEvent.click(screen.getByRole('button', { name: 'Close' }));
+    expect(onCancel).toHaveBeenCalled();
+  });
+
+  it('selects the focused item when Enter is pressed (AC7)', async () => {
+    const items: FakeItem[] = [
+      { id: 'a', label: 'Item A' },
+      { id: 'b', label: 'Item B' },
+    ];
+    const picker = buildPicker({
+      fetchItems: jest.fn().mockResolvedValue(items),
+      renderItem: (item) => ({ primary: item.label, secondary: item.id }),
+    });
+    const onSelect = jest.fn();
+
+    render(
+      <CategorySelectionModal
+        open
+        picker={picker}
+        context={{}}
+        onSelect={onSelect}
+        onCancel={jest.fn()}
+      />,
+    );
+
+    const itemB = await screen.findByText('Item B');
+    act(() => {
+      itemB.closest('a')?.focus();
+    });
+    await userEvent.keyboard('{Enter}');
+
+    expect(onSelect).toHaveBeenCalledWith(items[1]);
+  });
+
+  it('selects the focused item when Space is pressed (AC7)', async () => {
+    const items: FakeItem[] = [{ id: 'a', label: 'Item A' }];
+    const picker = buildPicker({
+      fetchItems: jest.fn().mockResolvedValue(items),
+      renderItem: (item) => ({ primary: item.label, secondary: item.id }),
+    });
+    const onSelect = jest.fn();
+
+    render(
+      <CategorySelectionModal
+        open
+        picker={picker}
+        context={{}}
+        onSelect={onSelect}
+        onCancel={jest.fn()}
+      />,
+    );
+
+    const itemA = await screen.findByText('Item A');
+    act(() => {
+      itemA.closest('a')?.focus();
+    });
+    await userEvent.keyboard(' ');
+
+    expect(onSelect).toHaveBeenCalledWith(items[0]);
+  });
+
+  it('gives each item an accessible name derived from the picker data (AC8)', async () => {
+    const items: FakeItem[] = [{ id: 'a', label: 'Item A' }];
+    const picker = buildPicker({
+      fetchItems: jest.fn().mockResolvedValue(items),
+      renderItem: (item) => ({ primary: item.label, secondary: item.id }),
+    });
+
+    render(
+      <CategorySelectionModal
+        open
+        picker={picker}
+        context={{}}
+        onSelect={jest.fn()}
+        onCancel={jest.fn()}
+      />,
+    );
+
+    expect(
+      await screen.findByRole('button', { name: 'Item A, a' }),
+    ).toBeInTheDocument();
+  });
+
+  it('still closes on Escape when items are present', async () => {
+    const items: FakeItem[] = [{ id: 'a', label: 'Item A' }];
+    const picker = buildPicker({
+      fetchItems: jest.fn().mockResolvedValue(items),
+      renderItem: (item) => ({ primary: item.label, secondary: item.id }),
+    });
+    const onCancel = jest.fn();
+
+    render(
+      <CategorySelectionModal
+        open
+        picker={picker}
+        context={{}}
+        onSelect={jest.fn()}
+        onCancel={onCancel}
+      />,
+    );
+
+    await screen.findByText('Item A');
+    await userEvent.keyboard('{Escape}');
+
     expect(onCancel).toHaveBeenCalled();
   });
 });

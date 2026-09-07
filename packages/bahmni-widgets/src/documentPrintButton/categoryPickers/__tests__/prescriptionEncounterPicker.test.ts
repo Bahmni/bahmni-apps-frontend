@@ -2,9 +2,12 @@ import { formatDateTime, getPatientEncounters } from '@bahmni/services';
 import type { Encounter } from 'fhir/r4';
 import { prescriptionEncounterPicker } from '../prescriptionEncounterPicker';
 
+const DEFAULT_TIME_FORMAT = 'h:mm a';
+
 jest.mock('@bahmni/services', () => ({
   getPatientEncounters: jest.fn(),
   formatDateTime: jest.fn(),
+  DEFAULT_TIME_FORMAT: 'h:mm a',
 }));
 
 const mockGetPatientEncounters = getPatientEncounters as jest.Mock;
@@ -77,7 +80,7 @@ describe('prescriptionEncounterPicker', () => {
   describe('renderItem', () => {
     const t = (key: string) => key;
 
-    it('formats the start date via formatDateTime when period.start is present', () => {
+    it('formats the start date via formatDateTime with the dd-MMM-yyyy h:mm a format when period.start is present', () => {
       const encounter = buildEncounter('enc-1', '2024-01-01T10:00:00Z');
       const result = prescriptionEncounterPicker.renderItem(encounter, t);
 
@@ -85,10 +88,24 @@ describe('prescriptionEncounterPicker', () => {
         '2024-01-01T10:00:00Z',
         t,
         true,
+        `dd-MMM-yyyy ${DEFAULT_TIME_FORMAT}`,
       );
       expect(result).toEqual({
         primary: 'Consultation enc-1',
         secondary: '01-Jan-2024',
+      });
+    });
+
+    it('returns the exact dd-MMM-yyyy h:mm a formattedResult produced by formatDateTime', () => {
+      mockFormatDateTime.mockReturnValue({
+        formattedResult: '15-Aug-2024 2:30 PM',
+      });
+      const encounter = buildEncounter('enc-1', '2024-08-15T14:30:00Z');
+      const result = prescriptionEncounterPicker.renderItem(encounter, t);
+
+      expect(result).toEqual({
+        primary: 'Consultation enc-1',
+        secondary: '15-Aug-2024 2:30 PM',
       });
     });
 
@@ -114,6 +131,16 @@ describe('prescriptionEncounterPicker', () => {
       expect(result).toEqual({
         primary: 'Consultation enc-1',
         secondary: '01-Jan-2024 | Super Man',
+      });
+    });
+
+    it('omits the provider segment when no participant display name is present', () => {
+      const encounter = buildEncounter('enc-1', '2024-01-01T10:00:00Z');
+      const result = prescriptionEncounterPicker.renderItem(encounter, t);
+
+      expect(result).toEqual({
+        primary: 'Consultation enc-1',
+        secondary: '01-Jan-2024',
       });
     });
   });
