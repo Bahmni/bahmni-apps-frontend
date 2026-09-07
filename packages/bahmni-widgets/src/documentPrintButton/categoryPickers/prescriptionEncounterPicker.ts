@@ -1,6 +1,12 @@
-import { formatDateTime, getPatientEncounters } from '@bahmni/services';
+import {
+  DEFAULT_TIME_FORMAT,
+  formatDateTime,
+  getPatientEncounters,
+} from '@bahmni/services';
 import type { Encounter } from 'fhir/r4';
 import type { CategoryPicker } from './types';
+
+const ENCOUNTER_DATE_TIME_FORMAT = `dd-MMM-yyyy ${DEFAULT_TIME_FORMAT}`;
 
 function encounterLabel(encounter: Encounter): string {
   return (
@@ -13,7 +19,7 @@ function encounterLabel(encounter: Encounter): string {
 }
 
 export const prescriptionEncounterPicker: CategoryPicker<Encounter> = {
-  heading: 'SELECT_PRESCRIPTION_TO_PRINT',
+  heading: 'SELECT_ENCOUNTER_FOR_PRESCRIPTION_PRINT',
   emptyStateMessage: 'NO_ENCOUNTERS_FOUND',
 
   fetchItems: async (context) => {
@@ -32,7 +38,8 @@ export const prescriptionEncounterPicker: CategoryPicker<Encounter> = {
     const start = encounter.period?.start;
     const providerName = encounter.participant?.[0]?.individual?.display;
     const dateTime = start
-      ? formatDateTime(start, t, true).formattedResult
+      ? formatDateTime(start, t, true, ENCOUNTER_DATE_TIME_FORMAT)
+          .formattedResult
       : '';
     return {
       primary: encounterLabel(encounter),
