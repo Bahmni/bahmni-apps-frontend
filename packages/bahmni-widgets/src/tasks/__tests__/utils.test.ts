@@ -102,24 +102,24 @@ describe('isViewFormDataVisible', () => {
     status: 'completed',
   };
 
-  const viewableVitalsForm = {
+  const vitalsFormWithViewPriviledge = {
     ...mockObservationForms[0],
     privileges: [
       { privilegeName: 'Edit Vitals', editable: true, viewable: true },
     ],
   };
-  const nonViewableVitalsForm = {
+  const VitalsFormWithNonViewablePrivilage = {
     ...mockObservationForms[0],
     privileges: [
       { privilegeName: 'Edit Vitals', editable: true, viewable: false },
     ],
   };
   const viewableFormsList = [
-    viewableVitalsForm,
+    vitalsFormWithViewPriviledge,
     ...mockObservationForms.slice(1),
   ];
   const nonViewableFormsList = [
-    nonViewableVitalsForm,
+    VitalsFormWithNonViewablePrivilage,
     ...mockObservationForms.slice(1),
   ];
 

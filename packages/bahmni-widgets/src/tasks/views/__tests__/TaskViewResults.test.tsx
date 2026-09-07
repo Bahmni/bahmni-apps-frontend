@@ -27,7 +27,7 @@ jest.mock('@bahmni/services', () => ({
   hasPrivilege: jest.fn(),
 }));
 
-const viewableObservationForms = [
+const ObservationFormsWithViewablePrivilage = [
   {
     ...mockObservationForms[0],
     privileges: [
@@ -37,7 +37,7 @@ const viewableObservationForms = [
   ...mockObservationForms.slice(1),
 ];
 
-const nonViewableObservationForms = [
+const ObservationFormsWithNonViewablePrivilage = [
   {
     ...mockObservationForms[0],
     privileges: [
@@ -118,7 +118,9 @@ const mockRequestedTask = createTaskViewModel(
 describe('TaskViewResults', () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    mockFetchObservationForms.mockResolvedValue(viewableObservationForms);
+    mockFetchObservationForms.mockResolvedValue(
+      ObservationFormsWithViewablePrivilage,
+    );
     mockHasPrivilege.mockReturnValue(true);
   });
 
@@ -275,7 +277,9 @@ describe('TaskViewResults', () => {
     });
 
     it('should not show view when form is not viewable by user', async () => {
-      mockFetchObservationForms.mockResolvedValue(nonViewableObservationForms);
+      mockFetchObservationForms.mockResolvedValue(
+        ObservationFormsWithNonViewablePrivilage,
+      );
 
       const { container } = render(
         <TaskViewResults
