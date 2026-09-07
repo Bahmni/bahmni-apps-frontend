@@ -37,7 +37,7 @@ const ObservationFormsWithViewablePrivilage = [
   ...mockObservationForms.slice(1),
 ];
 
-const ObservationFormsWithNonViewablePrivilage = [
+const ObservationFormsWithoutViewPriviledge = [
   {
     ...mockObservationForms[0],
     privileges: [
@@ -278,7 +278,7 @@ describe('TaskViewResults', () => {
 
     it('should not show view when form is not viewable by user', async () => {
       mockFetchObservationForms.mockResolvedValue(
-        ObservationFormsWithNonViewablePrivilage,
+        ObservationFormsWithoutViewPriviledge,
       );
 
       const { container } = render(
