@@ -459,9 +459,8 @@ describe('DocumentPrintButton', () => {
     });
 
     it('prints with encounterUuid merged into the context when an encounter is selected', async () => {
-      mockGetPatientEncounters.mockResolvedValue([
-        buildEncounter('enc-1', '2024-01-01T10:00:00Z'),
-      ]);
+      const encounter = buildEncounter('enc-1', '2024-01-01T10:00:00Z');
+      mockGetPatientEncounters.mockResolvedValue([encounter]);
 
       render(
         <DocumentPrintButton
@@ -480,6 +479,7 @@ describe('DocumentPrintButton', () => {
           expect.objectContaining({
             templateId: 'prescription-encounter',
             context: { ...renderContext, encounterUuid: 'enc-1' },
+            data: { encounter },
           }),
         ),
       );

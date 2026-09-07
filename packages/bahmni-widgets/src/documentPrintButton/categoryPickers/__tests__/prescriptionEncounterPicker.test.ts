@@ -10,13 +10,20 @@ jest.mock('@bahmni/services', () => ({
 const mockGetPatientEncounters = getPatientEncounters as jest.Mock;
 const mockFormatDateTime = formatDateTime as jest.Mock;
 
-const buildEncounter = (id: string, start?: string): Encounter => ({
+const buildEncounter = (
+  id: string,
+  start?: string,
+  providerDisplay?: string,
+): Encounter => ({
   resourceType: 'Encounter',
   id,
   status: 'finished',
   class: {},
   type: [{ text: `Consultation ${id}` }],
   ...(start && { period: { start } }),
+  ...(providerDisplay && {
+    participant: [{ individual: { display: providerDisplay } }],
+  }),
 });
 
 beforeEach(() => {
@@ -95,6 +102,20 @@ describe('prescriptionEncounterPicker', () => {
         secondary: '',
       });
     });
+
+    it('appends the participant display name when present', () => {
+      const encounter = buildEncounter(
+        'enc-1',
+        '2024-01-01T10:00:00Z',
+        'Super Man',
+      );
+      const result = prescriptionEncounterPicker.renderItem(encounter, t);
+
+      expect(result).toEqual({
+        primary: 'Consultation enc-1',
+        secondary: '01-Jan-2024 | Super Man',
+      });
+    });
   });
 
   describe('resolveSelection', () => {
@@ -107,7 +128,10 @@ describe('prescriptionEncounterPicker', () => {
         context,
       );
 
-      expect(result).toEqual({ patientUUID: 'p-1', encounterUuid: 'enc-1' });
+      expect(result).toEqual({
+        context: { patientUUID: 'p-1', encounterUuid: 'enc-1' },
+        data: { encounter },
+      });
       expect(context).toEqual({ patientUUID: 'p-1' });
     });
   });
