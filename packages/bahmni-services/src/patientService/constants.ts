@@ -166,3 +166,10 @@ export const PERSON_ATTRIBUTE_TYPES_URL =
 // person attribute types to Patient.telecom ContactPoint system/use/rank.
 export const TELECOM_ATTRIBUTE_TYPE_MAP_PROPERTY =
   'fhir2Extension.telecomAttributeTypeMap';
+export const RELATED_PERSON_URL = OPENMRS_FHIR_R4 + '/RelatedPerson';
+
+export const RELATED_PERSONS_BY_PATIENT_URL = (patientUuid: string) =>
+  `${RELATED_PERSON_URL}?patient=Patient/${patientUuid}`;
+
+export const RELATED_PERSON_BY_ID_URL = (uuid: string) =>
+  `${RELATED_PERSON_URL}/${uuid}`;

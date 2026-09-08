@@ -1,5 +1,5 @@
 import { Patient } from 'fhir/r4';
-import { get, post, put } from '../api';
+import { del, get, post, put } from '../api';
 import { APP_PROPERTY_URL } from '../applicationConfigService/constants';
 import { BIRTH_TIME_EXT_URL } from '../constants/fhir';
 import { PATIENT_NOT_FOUND_ERROR_KEY } from '../errorHandling';
@@ -25,6 +25,9 @@ import {
   PERSON_ATTRIBUTE_TYPES_URL,
   RELATIONSHIP_TYPES_URL,
   TELECOM_ATTRIBUTE_TYPE_MAP_PROPERTY,
+  RELATED_PERSONS_BY_PATIENT_URL,
+  RELATED_PERSON_URL,
+  RELATED_PERSON_BY_ID_URL,
 } from './constants';
 import {
   PatientSearchField,
@@ -40,6 +43,8 @@ import {
   PersonAttributeTypesResponse,
   RelationshipTypesResponse,
   TelecomAttributeTypeMapping,
+  FhirRelatedPerson,
+  FhirRelatedPersonBundle,
 } from './models';
 
 export const mapGenderFromFhir = (fhirGender: string): string => {
@@ -540,3 +545,15 @@ export const getTelecomAttributeTypeMap = async (): Promise<
   );
   return parseTelecomAttributeTypeMap(response ? String(response) : null);
 };
+export const getRelatedPersonsByPatient = async (
+  patientUuid: string,
+): Promise<FhirRelatedPersonBundle> =>
+  get<FhirRelatedPersonBundle>(RELATED_PERSONS_BY_PATIENT_URL(patientUuid));
+
+export const createRelatedPerson = async (
+  payload: FhirRelatedPerson,
+): Promise<FhirRelatedPerson> =>
+  post<FhirRelatedPerson>(RELATED_PERSON_URL, payload);
+
+export const deleteRelatedPerson = async (uuid: string): Promise<void> =>
+  del<void>(RELATED_PERSON_BY_ID_URL(uuid));
