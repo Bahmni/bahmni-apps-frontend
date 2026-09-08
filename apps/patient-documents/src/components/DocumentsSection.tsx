@@ -121,6 +121,7 @@ export const DocumentsSection: React.FC<DocumentsSectionProps> = ({
                   visitUuid: group.visit.id ?? '',
                   encounterTypeUuid: documentEncounterType.uuid,
                   encounterTypeDisplay: documentEncounterType.name,
+                  visitPeriod: period,
                 },
               };
 
