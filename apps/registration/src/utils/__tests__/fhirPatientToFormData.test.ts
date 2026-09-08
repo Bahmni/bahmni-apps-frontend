@@ -69,6 +69,7 @@ const baseFhirPatient: Patient = {
       city: 'Delhi',
       state: 'Haryana',
       postalCode: '122001',
+      country: 'India',
       extension: [
         {
           url: 'http://fhir.openmrs.org/ext/address',
@@ -192,6 +193,7 @@ describe('convertFhirToAddressData', () => {
       cityVillage: 'Delhi',
       stateProvince: 'Haryana',
       postalCode: '122001',
+      country: 'India',
     });
   });
 
