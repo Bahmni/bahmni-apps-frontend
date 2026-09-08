@@ -102,6 +102,7 @@ export function convertFhirToAddressData(
   if (addr.district) data.countyDistrict = addr.district;
   if (addr.state) data.stateProvince = addr.state;
   if (addr.postalCode) data.postalCode = addr.postalCode;
+  if (addr.country) data.country = addr.country;
 
   const addrExt = addr.extension?.find((e) => e.url === ADDRESS_EXT_URL);
   if (addrExt?.extension) {
