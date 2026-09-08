@@ -276,6 +276,7 @@
   "GLOBAL_ACTION_USER": "Usuario",
   "HOME_LABEL": "Inicio",
   "IMMUNIZATION_HISTORY_WIDGET_ADD_BUTTON": "Agregar inmunización",
+  "IMMUNIZATION_HISTORY_WIDGET_ADD_WAIVER_BUTTON": "Agregar exención de inmunización",
   "IMMUNIZATION_HISTORY_WIDGET_ADMINISTERED_TABLE_ARIA": "Tabla de inmunizaciones administradas",
   "IMMUNIZATION_HISTORY_WIDGET_ADMINISTERED_TAB_TITLE": "Resumen de vacunación",
   "IMMUNIZATION_HISTORY_WIDGET_COL_ADMINISTERED_LOCATION": "Lugar de administración",
