@@ -51,7 +51,7 @@ import {
   findBasedOnFromObservations,
   injectMissingDeleteObs,
   markUnchangedObservations,
-  mergeObservationMetadata,
+  mergeObsExistingData,
   restoreComplexValues,
 } from '../../../utils/fhir/observationReconciliation';
 import EncounterDetails from '../encounterDetails/EncounterDetails';
@@ -379,7 +379,7 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
               )
             : [];
 
-        mergeObservationMetadata(
+        mergeObsExistingData(
           transformedObservations,
           initialObservationsRef.current,
         );
@@ -456,7 +456,7 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
       setValidationErrorMessage(null);
 
       try {
-        mergeObservationMetadata(
+        mergeObsExistingData(
           transformedObservations,
           initialObservationsRef.current,
         );
@@ -530,7 +530,7 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
         transformedObservations,
       );
 
-      mergeObservationMetadata(
+      mergeObsExistingData(
         transformedObservations,
         initialObservationsRef.current,
       );

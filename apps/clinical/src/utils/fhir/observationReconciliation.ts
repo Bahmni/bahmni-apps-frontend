@@ -71,10 +71,7 @@ export const restoreComplexValues = (
   transformed.forEach(restore);
 };
 
-/** Copies server-echo fields (status, basedOn) uuid-matched from `existing` onto `transformed`.
- *  CarbonContainer's getValue() drops both; PUT must echo them back or OpenMRS rejects the
- *  status field / silently strips the ServiceRequest linkage. */
-export const mergeObservationMetadata = (
+export const mergeObsExistingData = (
   transformed: Form2Observation[],
   existing: Form2Observation[],
 ): void => {
@@ -84,15 +81,11 @@ export const mergeObservationMetadata = (
     if (match?.status) obs.status = match.status;
     if (match?.basedOn) obs.basedOn = match.basedOn;
     if (obs.groupMembers && match?.groupMembers) {
-      mergeObservationMetadata(obs.groupMembers, match.groupMembers);
+      mergeObsExistingData(obs.groupMembers, match.groupMembers);
     }
   }
 };
 
-/** Walks the observations tree (including groupMembers) and returns the first `basedOn`
- *  reference found. Used to derive a form-level ServiceRequest linkage for NEW obs POSTed
- *  during an edit, when the dispatch context has no `task` (e.g. FormsTable edit path).
- *  Observations in a single form submission all share the same basedOn by construction. */
 export const findBasedOnFromObservations = (
   observations: Form2Observation[] | undefined,
 ): Reference | undefined => {

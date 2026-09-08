@@ -3,7 +3,7 @@ import {
   findBasedOnFromObservations,
   injectMissingDeleteObs,
   markUnchangedObservations,
-  mergeObservationMetadata,
+  mergeObsExistingData,
   restoreComplexValues,
   valueFingerprint,
 } from '../observationReconciliation';
@@ -173,7 +173,7 @@ describe('restoreComplexValues', () => {
   });
 });
 
-describe('mergeObservationMetadata', () => {
+describe('mergeObsExistingData', () => {
   const obs = (uuid: string, status?: string) => ({
     concept: { uuid: 'c1' },
     value: 'val',
@@ -187,21 +187,21 @@ describe('mergeObservationMetadata', () => {
   it('copies status from existing to transformed when uuids match', () => {
     const transformed = [obs('obs-1')];
     const existing = [obs('obs-1', 'final')];
-    mergeObservationMetadata(transformed, existing);
+    mergeObsExistingData(transformed, existing);
     expect(transformed[0].status).toBe('final');
   });
 
   it('copies basedOn from existing to transformed when uuids match', () => {
     const transformed = [obs('obs-1')];
     const existing = [{ ...obs('obs-1'), basedOn }];
-    mergeObservationMetadata(transformed, existing);
+    mergeObsExistingData(transformed, existing);
     expect(transformed[0].basedOn).toBe(basedOn);
   });
 
   it('copies both status and basedOn together', () => {
     const transformed = [obs('obs-1')];
     const existing = [{ ...obs('obs-1', 'final'), basedOn }];
-    mergeObservationMetadata(transformed, existing);
+    mergeObsExistingData(transformed, existing);
     expect(transformed[0].status).toBe('final');
     expect(transformed[0].basedOn).toBe(basedOn);
   });
@@ -209,7 +209,7 @@ describe('mergeObservationMetadata', () => {
   it('does not overwrite status when existing has none', () => {
     const transformed = [obs('obs-1', 'amended')];
     const existing = [obs('obs-1')];
-    mergeObservationMetadata(transformed, existing);
+    mergeObsExistingData(transformed, existing);
     expect(transformed[0].status).toBe('amended');
   });
 
@@ -223,7 +223,7 @@ describe('mergeObservationMetadata', () => {
       },
     ];
     const existing = [obs('obs-1', 'final')];
-    mergeObservationMetadata(transformed, existing);
+    mergeObsExistingData(transformed, existing);
     expect((transformed[0] as { status?: string }).status).toBeUndefined();
   });
 
@@ -234,7 +234,7 @@ describe('mergeObservationMetadata', () => {
     const existing = [
       { ...obs('grp-1', 'final'), groupMembers: [existingChild] },
     ];
-    mergeObservationMetadata(transformed, existing);
+    mergeObsExistingData(transformed, existing);
     expect(transformed[0].status).toBe('final');
     expect(child.status).toBe('amended');
     expect(child.basedOn).toBe(basedOn);
