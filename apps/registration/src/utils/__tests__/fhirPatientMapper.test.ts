@@ -248,6 +248,7 @@ describe('buildFhirPatient', () => {
         cityVillage: 'Gurgaon',
         stateProvince: 'Haryana',
         postalCode: '122001',
+        country: 'India',
       },
     });
     expect(result.address).toEqual([
@@ -256,6 +257,7 @@ describe('buildFhirPatient', () => {
         city: 'Gurgaon',
         state: 'Haryana',
         postalCode: '122001',
+        country: 'India',
         extension: [
           {
             url: 'http://fhir.openmrs.org/ext/address',
