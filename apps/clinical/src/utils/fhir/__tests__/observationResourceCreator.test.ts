@@ -284,7 +284,13 @@ describe('createObservationEntries', () => {
         uuid: 'parent-obs-uuid',
         status: 'final',
         basedOn: parentBasedOn,
-        groupMembers: [{ concept: { uuid: 'child-concept' }, value: 10 }],
+        groupMembers: [
+          {
+            concept: { uuid: 'child-concept' },
+            value: 10,
+            basedOn: parentBasedOn,
+          },
+        ],
       };
       (getFhirObservations as jest.Mock)
         .mockReturnValueOnce([mockEntry('urn:uuid:child')])
