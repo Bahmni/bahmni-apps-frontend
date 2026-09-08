@@ -303,3 +303,77 @@ export function transformObservations(
 
   return allObservations;
 }
+
+interface FormSchemaControl {
+  id?: number;
+  type?: string;
+  label?: { value?: string };
+  controls?: FormSchemaControl[];
+  concept?: { uuid?: string; datatype?: string };
+}
+
+const getSchemaControls = (schema: unknown): FormSchemaControl[] =>
+  (schema as { controls?: FormSchemaControl[] } | undefined)?.controls ?? [];
+const collectControlIds = (controls: FormSchemaControl[]): string[] =>
+  controls.flatMap((ctrl) => [
+    ...(ctrl.id != null ? [String(ctrl.id)] : []),
+    ...collectControlIds(ctrl.controls ?? []),
+  ]);
+
+const deriveControlOrder = (schema: unknown): string[] | undefined => {
+  const ids = collectControlIds(getSchemaControls(schema));
+  return ids.length > 0 ? ids : undefined;
+};
+const collectSectionEntries = (
+  controls: FormSchemaControl[],
+  currentSection: string | null,
+): [string, string][] =>
+  controls.flatMap((ctrl) => {
+    if (ctrl.type === 'section') {
+      const sectionName = ctrl.label?.value ?? 'Section';
+      return collectSectionEntries(ctrl.controls ?? [], sectionName);
+    }
+    const ownEntry: [string, string][] =
+      ctrl.id != null && currentSection
+        ? [[String(ctrl.id), currentSection]]
+        : [];
+    return [
+      ...ownEntry,
+      ...collectSectionEntries(ctrl.controls ?? [], currentSection),
+    ];
+  });
+
+const deriveSectionMap = (
+  schema: unknown,
+): Record<string, string> | undefined => {
+  const entries = collectSectionEntries(getSchemaControls(schema), null);
+  return entries.length > 0 ? Object.fromEntries(entries) : undefined;
+};
+const collectConceptDatatypeEntries = (
+  controls: FormSchemaControl[],
+): [string, string][] =>
+  controls.flatMap((ctrl) => [
+    ...(ctrl.concept?.uuid && ctrl.concept?.datatype
+      ? ([[ctrl.concept.uuid, ctrl.concept.datatype]] as [string, string][])
+      : []),
+    ...collectConceptDatatypeEntries(ctrl.controls ?? []),
+  ]);
+
+const deriveConceptDatatypeMap = (
+  schema: unknown,
+): Record<string, string> | undefined => {
+  const entries = collectConceptDatatypeEntries(getSchemaControls(schema));
+  return entries.length > 0 ? Object.fromEntries(entries) : undefined;
+};
+
+interface FormSchemaData {
+  controlOrder: string[] | undefined;
+  sectionMap: Record<string, string> | undefined;
+  conceptDatatypeMap: Record<string, string> | undefined;
+}
+
+export const deriveFormSchemaData = (schema: unknown): FormSchemaData => ({
+  controlOrder: deriveControlOrder(schema),
+  sectionMap: deriveSectionMap(schema),
+  conceptDatatypeMap: deriveConceptDatatypeMap(schema),
+});

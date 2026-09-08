@@ -2,6 +2,7 @@ import { ComboBox } from '@bahmni/design-system';
 import { useTranslation, type AddressHierarchyEntry } from '@bahmni/services';
 import { useMemo } from 'react';
 import type { AddressLevel } from '../../../hooks/useAddressFields';
+import { RequiredAsterisk } from '../../common/RequiredAsterisk';
 import styles from './styles/index.module.scss';
 
 interface AddressAutocompleteFieldProps {
@@ -67,7 +68,16 @@ export const AddressAutocompleteField = ({
       <ComboBox
         id={fieldName}
         data-testid={`address-autocomplete-combobox-${fieldName}`}
-        titleText={level.required ? `${translatedLabel} *` : translatedLabel}
+        titleText={
+          level.required ? (
+            <>
+              {translatedLabel}
+              <RequiredAsterisk />
+            </>
+          ) : (
+            translatedLabel
+          )
+        }
         placeholder={translatedLabel}
         items={suggestions}
         itemToString={itemToString}

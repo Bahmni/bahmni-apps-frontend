@@ -27,6 +27,7 @@ import {
   useGenderData,
   useIdentifierData,
 } from '../../../utils/identifierGenderUtils';
+import { RequiredAsterisk } from '../../common/RequiredAsterisk';
 import { PatientPhotoUpload } from '../../patientPhotoUpload/PatientPhotoUpload';
 import { createDateAgeHandlers } from './dateAgeUtils';
 
@@ -84,7 +85,7 @@ export const Profile = ({
     return (
       <>
         {t(labelKey)}
-        {isRequired && <span className={styles.requiredAsterisk}>*</span>}
+        {isRequired && <RequiredAsterisk />}
       </>
     );
   };
