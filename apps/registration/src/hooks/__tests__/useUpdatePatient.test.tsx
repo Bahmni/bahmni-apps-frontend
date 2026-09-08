@@ -1,5 +1,7 @@
 import {
   updateFhirPatient,
+  createRelatedPerson,
+  deleteRelatedPerson,
   dispatchAuditEvent,
   PersonAttributeType,
 } from '@bahmni/services';
@@ -13,6 +15,8 @@ import { useUpdatePatient } from '../useUpdatePatient';
 jest.mock('@bahmni/services', () => ({
   ...jest.requireActual('@bahmni/services'),
   updateFhirPatient: jest.fn(),
+  createRelatedPerson: jest.fn(),
+  deleteRelatedPerson: jest.fn(),
   dispatchAuditEvent: jest.fn(),
   getUserLoginLocation: () => ({ uuid: 'loc-uuid', name: 'Test Location' }),
   AUDIT_LOG_EVENT_DETAILS: {
@@ -37,6 +41,8 @@ jest.mock('../useAdditionalIdentifiers', () => ({
 }));
 
 const mockUpdateFhirPatient = updateFhirPatient as jest.Mock;
+const mockCreateRelatedPerson = createRelatedPerson as jest.Mock;
+const mockDeleteRelatedPerson = deleteRelatedPerson as jest.Mock;
 const mockUseNotification = useNotification as jest.Mock;
 const mockAddNotification = jest.fn();
 
@@ -118,6 +124,8 @@ describe('useUpdatePatient', () => {
     mockUseNotification.mockReturnValue({
       addNotification: mockAddNotification,
     });
+    mockCreateRelatedPerson.mockResolvedValue({});
+    mockDeleteRelatedPerson.mockResolvedValue({});
   });
 
   it('should call updateFhirPatient with UUID and FHIR payload', async () => {
@@ -244,6 +252,228 @@ describe('useUpdatePatient', () => {
         },
         { url: 'http://fhir.bahmni.org/ext/patient/email' },
       ]),
+    );
+  });
+
+  it('should call createRelatedPerson for new relationships', async () => {
+    mockUpdateFhirPatient.mockResolvedValue(mockFhirResponse);
+
+    const formDataWithNewRelationship = {
+      ...mockFormData,
+      relationships: [
+        {
+          id: '',
+          relationshipType: 'rel-type-uuid-1',
+          patientId: '',
+          patientUuid: 'related-patient-uuid-1',
+          patientName: 'Jane Smith',
+          tillDate: '',
+          isExisting: false,
+          isDeleted: false,
+        },
+      ],
+    };
+
+    const { result } = renderHook(() => useUpdatePatient(), {
+      wrapper: createWrapper(),
+    });
+    result.current.mutate(formDataWithNewRelationship);
+
+    await waitFor(() => {
+      expect(result.current.isSuccess).toBe(true);
+    });
+
+    expect(mockCreateRelatedPerson).toHaveBeenCalledTimes(1);
+    expect(mockCreateRelatedPerson).toHaveBeenCalledWith(
+      expect.objectContaining({
+        resourceType: 'RelatedPerson',
+        patient: { reference: 'Patient/patient-uuid-123' },
+        relationship: [
+          {
+            coding: [expect.objectContaining({ code: 'rel-type-uuid-1' })],
+          },
+        ],
+      }),
+    );
+    expect(mockDeleteRelatedPerson).not.toHaveBeenCalled();
+  });
+
+  it('should call deleteRelatedPerson for deleted existing relationships', async () => {
+    mockUpdateFhirPatient.mockResolvedValue(mockFhirResponse);
+
+    const formDataWithDeletedRelationship = {
+      ...mockFormData,
+      relationships: [
+        {
+          id: 'existing-related-person-uuid',
+          relationshipType: 'rel-type-uuid-1',
+          patientId: '',
+          patientUuid: 'related-patient-uuid-1',
+          patientName: 'Jane Smith',
+          tillDate: '',
+          isExisting: true,
+          isDeleted: true,
+        },
+      ],
+    };
+
+    const { result } = renderHook(() => useUpdatePatient(), {
+      wrapper: createWrapper(),
+    });
+    result.current.mutate(formDataWithDeletedRelationship);
+
+    await waitFor(() => {
+      expect(result.current.isSuccess).toBe(true);
+    });
+
+    expect(mockDeleteRelatedPerson).toHaveBeenCalledTimes(1);
+    expect(mockDeleteRelatedPerson).toHaveBeenCalledWith(
+      'existing-related-person-uuid',
+    );
+    expect(mockCreateRelatedPerson).not.toHaveBeenCalled();
+  });
+
+  it('should not call createRelatedPerson or deleteRelatedPerson for existing unchanged relationships', async () => {
+    mockUpdateFhirPatient.mockResolvedValue(mockFhirResponse);
+
+    const formDataWithUnchangedRelationship = {
+      ...mockFormData,
+      relationships: [
+        {
+          id: 'existing-related-person-uuid',
+          relationshipType: 'rel-type-uuid-1',
+          patientId: '',
+          patientUuid: 'related-patient-uuid-1',
+          patientName: 'Jane Smith',
+          tillDate: '',
+          isExisting: true,
+          isDeleted: false,
+        },
+      ],
+    };
+
+    const { result } = renderHook(() => useUpdatePatient(), {
+      wrapper: createWrapper(),
+    });
+    result.current.mutate(formDataWithUnchangedRelationship);
+
+    await waitFor(() => {
+      expect(result.current.isSuccess).toBe(true);
+    });
+
+    expect(mockCreateRelatedPerson).not.toHaveBeenCalled();
+    expect(mockDeleteRelatedPerson).not.toHaveBeenCalled();
+  });
+
+  it('should show error notification when createRelatedPerson rejects', async () => {
+    mockUpdateFhirPatient.mockResolvedValue(mockFhirResponse);
+    mockCreateRelatedPerson.mockRejectedValue(
+      new Error('Related person API error'),
+    );
+
+    const formDataWithNewRelationship = {
+      ...mockFormData,
+      relationships: [
+        {
+          id: '',
+          relationshipType: 'rel-type-uuid-1',
+          patientId: '',
+          patientUuid: 'related-patient-uuid-1',
+          patientName: 'Jane Smith',
+          tillDate: '',
+          isExisting: false,
+          isDeleted: false,
+        },
+      ],
+    };
+
+    const { result } = renderHook(() => useUpdatePatient(), {
+      wrapper: createWrapper(),
+    });
+    result.current.mutate(formDataWithNewRelationship);
+
+    await waitFor(() => {
+      expect(result.current.isError).toBe(true);
+    });
+
+    expect(mockAddNotification).toHaveBeenCalledWith(
+      expect.objectContaining({ type: 'error' }),
+    );
+  });
+
+  it('should not invalidate relatedPersons query when there are no relationship changes', async () => {
+    mockUpdateFhirPatient.mockResolvedValue(mockFhirResponse);
+
+    const formDataWithUnchangedRelationship = {
+      ...mockFormData,
+      relationships: [
+        {
+          id: 'existing-related-person-uuid',
+          relationshipType: 'rel-type-uuid-1',
+          patientId: '',
+          patientUuid: 'related-patient-uuid-1',
+          patientName: 'Jane Smith',
+          tillDate: '',
+          isExisting: true,
+          isDeleted: false,
+        },
+      ],
+    };
+
+    const { result } = renderHook(() => useUpdatePatient(), {
+      wrapper: createWrapper(),
+    });
+
+    const invalidateQueriesSpy = jest.spyOn(queryClient, 'invalidateQueries');
+
+    result.current.mutate(formDataWithUnchangedRelationship);
+
+    await waitFor(() => {
+      expect(result.current.isSuccess).toBe(true);
+    });
+
+    expect(invalidateQueriesSpy).not.toHaveBeenCalledWith(
+      expect.objectContaining({
+        queryKey: expect.arrayContaining(['relatedPersons']),
+      }),
+    );
+  });
+
+  it('should invalidate relatedPersons query when there are relationship changes', async () => {
+    mockUpdateFhirPatient.mockResolvedValue(mockFhirResponse);
+
+    const formDataWithNewRelationship = {
+      ...mockFormData,
+      relationships: [
+        {
+          id: '',
+          relationshipType: 'rel-type-uuid-1',
+          patientId: '',
+          patientUuid: 'related-patient-uuid-1',
+          patientName: 'Jane Smith',
+          tillDate: '',
+          isExisting: false,
+          isDeleted: false,
+        },
+      ],
+    };
+
+    const { result } = renderHook(() => useUpdatePatient(), {
+      wrapper: createWrapper(),
+    });
+
+    const invalidateQueriesSpy = jest.spyOn(queryClient, 'invalidateQueries');
+
+    result.current.mutate(formDataWithNewRelationship);
+
+    await waitFor(() => {
+      expect(result.current.isSuccess).toBe(true);
+    });
+
+    expect(invalidateQueriesSpy).toHaveBeenCalledWith(
+      expect.objectContaining({
+        queryKey: ['relatedPersons', 'patient-uuid-123'],
+      }),
     );
   });
 });

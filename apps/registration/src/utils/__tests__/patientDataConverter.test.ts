@@ -1,9 +1,13 @@
-import type { PatientProfileResponse } from '@bahmni/services';
+import type {
+  FhirRelatedPerson,
+  PatientProfileResponse,
+} from '@bahmni/services';
 import {
   convertToBasicInfoData,
   convertToPersonAttributesData,
   convertToAddressData,
   convertToRelationshipsData,
+  convertFhirRelatedPersonsToRelationshipData,
 } from '../patientDataConverter';
 
 const mockPatientData: PatientProfileResponse = {
@@ -270,6 +274,246 @@ describe('patientDataConverter', () => {
       const result = convertToRelationshipsData(mockDataWithRelationships);
 
       expect(result[0].patientName).toBe('Another Patient (XYZ789)');
+    });
+  });
+
+  describe('convertFhirRelatedPersonsToRelationshipData', () => {
+    it('should convert a FHIR RelatedPerson to RelationshipData', () => {
+      const fhirRelatedPersons: FhirRelatedPerson[] = [
+        {
+          id: 'related-person-uuid-1',
+          resourceType: 'RelatedPerson',
+          patient: { reference: 'Patient/patient-uuid-123' },
+          name: [{ given: ['Jane'], family: 'Smith' }],
+          relationship: [
+            {
+              coding: [
+                {
+                  system: 'http://fhir.bahmni.org/RelationshipType',
+                  code: 'rel-type-uuid-1',
+                  display: 'Parent',
+                },
+              ],
+            },
+          ],
+          extension: [
+            {
+              url: 'http://fhir.bahmni.org/ext/relatedPatient',
+              valueReference: { reference: 'Patient/related-patient-uuid-1' },
+            },
+          ],
+          period: { end: '2024-12-31' },
+        } as unknown as FhirRelatedPerson,
+      ];
+
+      const result =
+        convertFhirRelatedPersonsToRelationshipData(fhirRelatedPersons);
+
+      expect(result).toHaveLength(1);
+      expect(result[0].id).toBe('related-person-uuid-1');
+      expect(result[0].relationshipType).toBe('rel-type-uuid-1');
+      expect(result[0].relationshipTypeLabel).toBe('Parent');
+      expect(result[0].patientUuid).toBe('related-patient-uuid-1');
+      expect(result[0].patientName).toBe('Jane Smith');
+      expect(result[0].tillDate).toBe('2024-12-31');
+      expect(result[0].isExisting).toBe(true);
+    });
+
+    it('should convert multiple FHIR RelatedPersons to an array of RelationshipData', () => {
+      const fhirRelatedPersons: FhirRelatedPerson[] = [
+        {
+          id: 'related-person-uuid-1',
+          resourceType: 'RelatedPerson',
+          patient: { reference: 'Patient/patient-uuid-123' },
+          name: [{ given: ['Jane'], family: 'Smith' }],
+          relationship: [
+            {
+              coding: [
+                {
+                  system: 'http://fhir.bahmni.org/RelationshipType',
+                  code: 'rel-type-1',
+                  display: 'Parent',
+                },
+              ],
+            },
+          ],
+          extension: [
+            {
+              url: 'http://fhir.bahmni.org/ext/relatedPatient',
+              valueReference: { reference: 'Patient/rp-uuid-1' },
+            },
+          ],
+        } as unknown as FhirRelatedPerson,
+        {
+          id: 'related-person-uuid-2',
+          resourceType: 'RelatedPerson',
+          patient: { reference: 'Patient/patient-uuid-123' },
+          name: [{ given: ['Bob'], family: 'Jones' }],
+          relationship: [
+            {
+              coding: [
+                {
+                  system: 'http://fhir.bahmni.org/RelationshipType',
+                  code: 'rel-type-2',
+                  display: 'Child',
+                },
+              ],
+            },
+          ],
+          extension: [
+            {
+              url: 'http://fhir.bahmni.org/ext/relatedPatient',
+              valueReference: { reference: 'Patient/rp-uuid-2' },
+            },
+          ],
+        } as unknown as FhirRelatedPerson,
+      ];
+
+      const result =
+        convertFhirRelatedPersonsToRelationshipData(fhirRelatedPersons);
+
+      expect(result).toHaveLength(2);
+      expect(result[0].id).toBe('related-person-uuid-1');
+      expect(result[1].id).toBe('related-person-uuid-2');
+    });
+
+    it('should return undefined patientUuid when extension is missing', () => {
+      const fhirRelatedPersons: FhirRelatedPerson[] = [
+        {
+          id: 'related-person-uuid-1',
+          resourceType: 'RelatedPerson',
+          patient: { reference: 'Patient/patient-uuid-123' },
+          name: [{ given: ['Jane'], family: 'Smith' }],
+          relationship: [
+            {
+              coding: [
+                {
+                  system: 'http://fhir.bahmni.org/RelationshipType',
+                  code: 'rel-type-1',
+                  display: 'Parent',
+                },
+              ],
+            },
+          ],
+        } as unknown as FhirRelatedPerson,
+      ];
+
+      const result =
+        convertFhirRelatedPersonsToRelationshipData(fhirRelatedPersons);
+
+      expect(result).toHaveLength(1);
+      expect(result[0].patientUuid).toBeUndefined();
+    });
+
+    it('should return empty tillDate when period.end is absent', () => {
+      const fhirRelatedPersons: FhirRelatedPerson[] = [
+        {
+          id: 'related-person-uuid-1',
+          resourceType: 'RelatedPerson',
+          patient: { reference: 'Patient/patient-uuid-123' },
+          name: [{ given: ['Jane'], family: 'Smith' }],
+          relationship: [
+            {
+              coding: [
+                {
+                  system: 'http://fhir.bahmni.org/RelationshipType',
+                  code: 'rel-type-1',
+                  display: 'Parent',
+                },
+              ],
+            },
+          ],
+          extension: [
+            {
+              url: 'http://fhir.bahmni.org/ext/relatedPatient',
+              valueReference: { reference: 'Patient/rp-uuid-1' },
+            },
+          ],
+        } as unknown as FhirRelatedPerson,
+      ];
+
+      const result =
+        convertFhirRelatedPersonsToRelationshipData(fhirRelatedPersons);
+
+      expect(result[0].tillDate).toBe('');
+    });
+
+    it('should return empty tillDate when period.end is an invalid date', () => {
+      const fhirRelatedPersons: FhirRelatedPerson[] = [
+        {
+          id: 'related-person-uuid-1',
+          resourceType: 'RelatedPerson',
+          patient: { reference: 'Patient/patient-uuid-123' },
+          name: [{ given: ['Jane'], family: 'Smith' }],
+          relationship: [
+            {
+              coding: [
+                {
+                  system: 'http://fhir.bahmni.org/RelationshipType',
+                  code: 'rel-type-1',
+                  display: 'Parent',
+                },
+              ],
+            },
+          ],
+          extension: [
+            {
+              url: 'http://fhir.bahmni.org/ext/relatedPatient',
+              valueReference: { reference: 'Patient/rp-uuid-1' },
+            },
+          ],
+          period: { end: 'not-a-date' },
+        } as unknown as FhirRelatedPerson,
+      ];
+
+      const result =
+        convertFhirRelatedPersonsToRelationshipData(fhirRelatedPersons);
+
+      expect(result[0].tillDate).toBe('');
+    });
+
+    it('should filter out entries without an id', () => {
+      const fhirRelatedPersons: FhirRelatedPerson[] = [
+        {
+          resourceType: 'RelatedPerson',
+          patient: { reference: 'Patient/patient-uuid-123' },
+          name: [{ given: ['Jane'], family: 'Smith' }],
+          relationship: [
+            {
+              coding: [
+                {
+                  system: 'http://fhir.bahmni.org/RelationshipType',
+                  code: 'rel-type-1',
+                  display: 'Parent',
+                },
+              ],
+            },
+          ],
+        } as unknown as FhirRelatedPerson,
+        {
+          id: 'related-person-uuid-2',
+          resourceType: 'RelatedPerson',
+          patient: { reference: 'Patient/patient-uuid-123' },
+          name: [{ given: ['Bob'], family: 'Jones' }],
+          relationship: [
+            {
+              coding: [
+                {
+                  system: 'http://fhir.bahmni.org/RelationshipType',
+                  code: 'rel-type-2',
+                  display: 'Child',
+                },
+              ],
+            },
+          ],
+        } as unknown as FhirRelatedPerson,
+      ];
+
+      const result =
+        convertFhirRelatedPersonsToRelationshipData(fhirRelatedPersons);
+
+      expect(result).toHaveLength(1);
+      expect(result[0].id).toBe('related-person-uuid-2');
     });
   });
 });

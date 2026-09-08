@@ -19,6 +19,9 @@ export {
   getPatientProfile,
   getRelationshipTypes,
   getPersonAttributeTypes,
+  getRelatedPersonsByPatient,
+  createRelatedPerson,
+  deleteRelatedPerson,
 } from './patientService';
 export {
   type FormattedPatientData,
@@ -46,6 +49,8 @@ export {
   type AppointmentSearchResult,
   type ExpectedFieldConfig,
   type SearchActionConfig,
+  type FhirRelatedPerson,
+  type FhirRelatedPersonBundle,
 } from './models';
 export {
   AttributeFormat,
