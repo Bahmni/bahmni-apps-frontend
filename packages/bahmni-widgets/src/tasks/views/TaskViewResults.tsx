@@ -48,15 +48,14 @@ const TaskViewResults: React.FC<TaskViewResultsProps> = ({
     if (!matchingConfig?.views || isFormsLoading) return [];
 
     return matchingConfig.views.filter((view) => {
-      if (view.type !== TaskViewType.VIEW_FORM) {
-        return false;
-      }
-
       if (!hasPrivilege(userPrivileges, view.requiredPrivileges)) {
         return false;
       }
 
-      return isViewFormDataVisible(view, task, allForms, userPrivileges);
+      return (
+        view.type === TaskViewType.VIEW_FORM &&
+        isViewFormDataVisible(view, task, allForms, userPrivileges)
+      );
     });
   }, [matchingConfig, userPrivileges, allForms, isFormsLoading, task]);
 
