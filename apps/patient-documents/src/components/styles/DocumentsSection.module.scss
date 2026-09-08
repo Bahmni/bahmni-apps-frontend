@@ -45,7 +45,7 @@
 .headerRow,
 .docRow {
   display: grid;
-  grid-template-columns: 175px 1fr 173px;
+  grid-template-columns: 175px minmax(0, 1fr) 173px;
   align-items: center;
   gap: $spacing-05;
   padding-inline: $spacing-05;

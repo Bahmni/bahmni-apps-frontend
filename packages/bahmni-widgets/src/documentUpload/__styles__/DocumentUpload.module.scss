@@ -15,7 +15,7 @@
 // Grid matches the saved-docs table so tile, dropdown and actions line up under the headers.
 .pendingRow {
   display: grid;
-  grid-template-columns: 175px 1fr 173px;
+  grid-template-columns: 175px minmax(0, 1fr) 173px;
   align-items: center;
   gap: $spacing-05;
   padding: $spacing-05;
@@ -28,7 +28,8 @@
 .typeCell {
   :global(.cds--dropdown),
   :global(.cds--list-box) {
-    inline-size: 288px;
+    inline-size: 100%;
+    max-inline-size: 288px;
   }
 }
 
