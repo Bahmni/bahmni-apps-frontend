@@ -36,7 +36,7 @@ module.exports = (env, argv) => {
       proxy: [
         {
           context: (pathname) => !pathname.startsWith(publicPath),
-          target: 'https://localhost/',
+          target: 'https://bahmni.standard/',
           changeOrigin: true,
           secure: false,
           logLevel: 'debug',
