@@ -36,7 +36,9 @@ export const CommandPalette: React.FC = () => {
     patientActions,
     patientFieldsConfig,
     searchAnnotations,
+    portalContainer,
   } = useCommandPalette();
+  const container = portalContainer ?? document.body;
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedAnnotation, setSelectedAnnotation] =
     useState<SearchAnnotation | null>(null);
@@ -96,7 +98,7 @@ export const CommandPalette: React.FC = () => {
 
       if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
       if (patientActions.length < 2) return;
-      const highlighted = document.querySelector<HTMLElement>(
+      const highlighted = container.querySelector<HTMLElement>(
         '[data-patient-uuid][aria-selected="true"]',
       );
       if (!highlighted) return;
@@ -110,7 +112,7 @@ export const CommandPalette: React.FC = () => {
         );
       }
     },
-    [searchTerm, selectedAnnotation, patientActions],
+    [searchTerm, selectedAnnotation, patientActions, container],
   );
 
   const close = useCallback(() => {
@@ -320,6 +322,6 @@ export const CommandPalette: React.FC = () => {
         </Command>
       </dialog>
     </>,
-    document.body,
+    container,
   );
 };

@@ -1,6 +1,7 @@
 const { NxAppWebpackPlugin } = require('@nx/webpack/app-plugin');
 const { NxReactWebpackPlugin } = require('@nx/react/webpack-plugin');
 const { InjectManifest } = require('workbox-webpack-plugin');
+const CopyWebpackPlugin = require('copy-webpack-plugin');
 const webpack = require('webpack');
 const { join } = require('path');
 
@@ -72,6 +73,18 @@ module.exports = (env, argv) => {
         // Uncomment this line if you don't want to use SVGR
         // See: https://react-svgr.com/
         // svgr: false
+      }),
+      // info: { minimized: true } stops TerserPlugin from re-processing (and corrupting)
+      // this already-minified bundle. See docs/command-palette-angular-integration.md.
+      new CopyWebpackPlugin({
+        patterns: [
+          {
+            context: join(__dirname, '../apps/command-palette/dist-standalone'),
+            from: 'command-palette.js',
+            to: '.',
+            info: { minimized: true },
+          },
+        ],
       }),
       ...(!isDevelopment ? [
         new InjectManifest({

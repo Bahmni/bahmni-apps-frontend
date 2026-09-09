@@ -5,15 +5,17 @@ import { useCommandPaletteConfig } from '../../hooks/useCommandPaletteConfig';
 
 interface CommandPaletteProviderProps {
   children?: ReactNode;
+  portalContainer?: Element | DocumentFragment;
 }
 
 const EnabledCommandPaletteProvider: React.FC<CommandPaletteProviderProps> = ({
   children,
+  portalContainer,
 }) => {
   const config = useCommandPaletteConfig();
 
   return (
-    <WidgetCommandPaletteProvider {...config}>
+    <WidgetCommandPaletteProvider {...config} portalContainer={portalContainer}>
       {children}
     </WidgetCommandPaletteProvider>
   );
@@ -21,6 +23,7 @@ const EnabledCommandPaletteProvider: React.FC<CommandPaletteProviderProps> = ({
 
 export const CommandPaletteProvider: React.FC<CommandPaletteProviderProps> = ({
   children,
+  portalContainer,
 }) => {
   const isCommandPaletteEnabled =
     localStorage.getItem(COMMAND_PALETTE_ENABLED_STORAGE_KEY) === 'true';
@@ -30,7 +33,9 @@ export const CommandPaletteProvider: React.FC<CommandPaletteProviderProps> = ({
   }
 
   return (
-    <EnabledCommandPaletteProvider>{children}</EnabledCommandPaletteProvider>
+    <EnabledCommandPaletteProvider portalContainer={portalContainer}>
+      {children}
+    </EnabledCommandPaletteProvider>
   );
 };
 
