@@ -102,11 +102,33 @@ describe('isViewFormDataVisible', () => {
     status: 'completed',
   };
 
+  const vitalsFormWithViewPriviledge = {
+    ...mockObservationForms[0],
+    privileges: [
+      { privilegeName: 'Edit Vitals', editable: true, viewable: true },
+    ],
+  };
+  const VitalsFormWithoutViewPriviledge = {
+    ...mockObservationForms[0],
+    privileges: [
+      { privilegeName: 'Edit Vitals', editable: true, viewable: false },
+    ],
+  };
+  const FormsListWithViewablePrivilage = [
+    vitalsFormWithViewPriviledge,
+    ...mockObservationForms.slice(1),
+  ];
+  const FormsListWithoutViewPriviledge = [
+    VitalsFormWithoutViewPriviledge,
+    ...mockObservationForms.slice(1),
+  ];
+
   it.each([
     [
-      'completed task with form and privileges',
+      'completed task with form and viewable privilege',
       mockCompletedTask,
       mockViewFormView,
+      FormsListWithViewablePrivilage,
       mockUserPrivileges,
       true,
     ],
@@ -114,14 +136,23 @@ describe('isViewFormDataVisible', () => {
       'in-progress task',
       { ...mockCompletedTask, status: 'in-progress' },
       mockViewFormView,
+      FormsListWithViewablePrivilage,
       mockUserPrivileges,
       false,
     ],
-    ['null privileges', mockCompletedTask, mockViewFormView, null, false],
+    [
+      'null privileges',
+      mockCompletedTask,
+      mockViewFormView,
+      FormsListWithViewablePrivilage,
+      null,
+      false,
+    ],
     [
       'empty privileges',
       mockCompletedTask,
       mockViewFormView,
+      FormsListWithViewablePrivilage,
       mockEmptyUserPrivileges,
       false,
     ],
@@ -132,6 +163,7 @@ describe('isViewFormDataVisible', () => {
         fhirResource: { ...mockCompletedTask.fhirResource, input: [] },
       },
       mockViewFormView,
+      FormsListWithViewablePrivilage,
       mockUserPrivileges,
       false,
     ],
@@ -139,19 +171,42 @@ describe('isViewFormDataVisible', () => {
       'lacks required privilege',
       mockCompletedTask,
       mockViewFormViewRestricted,
+      FormsListWithViewablePrivilage,
       mockUserPrivileges,
       false,
     ],
     [
-      'no required privileges',
+      'no required privileges, form is viewable',
       mockCompletedTask,
       { ...mockViewFormView, requiredPrivileges: [] },
+      FormsListWithViewablePrivilage,
       mockUserPrivileges,
       true,
     ],
-  ])('should handle %s', (_desc, task, view, privileges, expected) => {
-    expect(isViewFormDataVisible(view, task, privileges)).toBe(expected);
-  });
+    [
+      'form not viewable by user',
+      mockCompletedTask,
+      mockViewFormView,
+      FormsListWithoutViewPriviledge,
+      mockUserPrivileges,
+      false,
+    ],
+    [
+      'no matching form in allForms',
+      mockCompletedTask,
+      mockViewFormView,
+      [],
+      mockUserPrivileges,
+      false,
+    ],
+  ])(
+    'should handle %s',
+    (_desc, task, view, allForms, privileges, expected) => {
+      expect(isViewFormDataVisible(view, task, allForms, privileges)).toBe(
+        expected,
+      );
+    },
+  );
 });
 
 describe('canUserAccessForm', () => {
