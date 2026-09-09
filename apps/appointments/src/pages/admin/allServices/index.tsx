@@ -22,7 +22,7 @@ import React, { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   ADMIN_TAB_PRIVILEGE,
-  MANAGE_APPOINTMENT_SERVICES_PRIVILEGE,
+  MANAGE_APPOINTMENT_SERVICES_PRIVILEGE_ALIASES,
   PATHS,
 } from '../../../constants/app';
 import { useAppointmentsConfig } from '../../../providers/appointmentsConfig';
@@ -53,7 +53,7 @@ const AllServicesPage: React.FC = () => {
   const canViewServices = hasPrivilege(userPrivileges, ADMIN_TAB_PRIVILEGE);
   const canManageServices = hasPrivilege(
     userPrivileges,
-    MANAGE_APPOINTMENT_SERVICES_PRIVILEGE,
+    MANAGE_APPOINTMENT_SERVICES_PRIVILEGE_ALIASES,
   );
 
   const attributeNames = useMemo(

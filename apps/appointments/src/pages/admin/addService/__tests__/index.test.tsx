@@ -6,7 +6,10 @@ import {
 } from '@tanstack/react-query';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { MANAGE_APPOINTMENT_SERVICES_PRIVILEGE } from '../../../../constants/app';
+import {
+  MANAGE_APPOINTMENT_SERVICES_PRIVILEGE,
+  MANAGE_APPOINTMENT_SERVICES_PRIVILEGE_LEGACY,
+} from '../../../../constants/app';
 import AddServicePage from '../index';
 import { useAddServiceStore } from '../stores';
 import { defaultRow } from './__mocks__/AddServicePageMocks';
@@ -101,6 +104,22 @@ describe('AddServicePage', () => {
       screen.queryByTestId('add-appointment-service-page-test-id'),
     ).not.toBeInTheDocument();
     expect(screen.queryByTestId('save-btn-test-id')).not.toBeInTheDocument();
+  });
+
+  it('should render the form when user has only the legacy manage services privilege', () => {
+    mockUseUserPrivilege.mockReturnValue({
+      userPrivileges: [{ name: MANAGE_APPOINTMENT_SERVICES_PRIVILEGE_LEGACY }],
+    });
+    renderPage();
+
+    expect(
+      screen.getByTestId('add-appointment-service-page-test-id'),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByTestId(
+        'add-appointment-service-no-manage-privilege-test-id',
+      ),
+    ).not.toBeInTheDocument();
   });
 
   it('should render page with title, service details, availability section, and action buttons', () => {

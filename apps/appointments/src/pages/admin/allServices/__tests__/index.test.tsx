@@ -9,6 +9,7 @@ import { axe, toHaveNoViolations } from 'jest-axe';
 import {
   ADMIN_TAB_PRIVILEGE,
   MANAGE_APPOINTMENT_SERVICES_PRIVILEGE,
+  MANAGE_APPOINTMENT_SERVICES_PRIVILEGE_LEGACY,
   PATHS,
 } from '../../../../constants/app';
 import { useAppointmentsConfig } from '../../../../providers/appointmentsConfig';
@@ -258,6 +259,14 @@ describe('AllServicesPage', () => {
         ],
         assertButton: (btn: HTMLElement) => expect(btn).not.toBeDisabled(),
       },
+      {
+        scenario: 'enabled when user has only the legacy manage privilege',
+        userPrivileges: [
+          { name: ADMIN_TAB_PRIVILEGE },
+          { name: MANAGE_APPOINTMENT_SERVICES_PRIVILEGE_LEGACY },
+        ],
+        assertButton: (btn: HTMLElement) => expect(btn).not.toBeDisabled(),
+      },
     ])(
       'should render delete button $scenario',
       ({ userPrivileges, assertButton }) => {
@@ -271,6 +280,48 @@ describe('AllServicesPage', () => {
         const deleteButtons = screen.getAllByTestId(/^delete-service-/);
         expect(deleteButtons).toHaveLength(mockAppointmentServices.length);
         deleteButtons.forEach(assertButton);
+      },
+    );
+  });
+
+  describe('Add button privilege', () => {
+    it.each([
+      {
+        scenario: 'disabled when user lacks manage privilege',
+        userPrivileges: [{ name: ADMIN_TAB_PRIVILEGE }],
+        assertButton: (btn: HTMLElement) => expect(btn).toBeDisabled(),
+      },
+      {
+        scenario: 'enabled when user has the manage privilege',
+        userPrivileges: [
+          { name: ADMIN_TAB_PRIVILEGE },
+          { name: MANAGE_APPOINTMENT_SERVICES_PRIVILEGE },
+        ],
+        assertButton: (btn: HTMLElement) => expect(btn).not.toBeDisabled(),
+      },
+      {
+        scenario: 'enabled when user has only the legacy manage privilege',
+        userPrivileges: [
+          { name: ADMIN_TAB_PRIVILEGE },
+          { name: MANAGE_APPOINTMENT_SERVICES_PRIVILEGE_LEGACY },
+        ],
+        assertButton: (btn: HTMLElement) => expect(btn).not.toBeDisabled(),
+      },
+    ])(
+      'should render add button $scenario',
+      ({ userPrivileges, assertButton }) => {
+        mockUseUserPrivilege.mockReturnValue({ userPrivileges });
+        (useQuery as jest.Mock).mockReturnValue({
+          data: mockAppointmentServices,
+          isError: false,
+          isLoading: false,
+        });
+        render(wrapper);
+        assertButton(
+          screen.getByTestId(
+            'all-services-action-data-table-action-button-test-id',
+          ),
+        );
       },
     );
   });
