@@ -14,7 +14,7 @@ import {
 } from '../../../constants/app';
 import AvailabilitySection from './components/AvailabilitySection';
 import ServiceDetailsSection from './components/DetailsSection';
-import { useAddServiceStore } from './stores';
+import { useServiceStore } from './stores';
 import styles from './styles/index.module.scss';
 
 const toSqlTime = (time: string) => `${time}:00`;
@@ -31,7 +31,7 @@ const AddServicePage: React.FC = () => {
     MANAGE_APPOINTMENT_SERVICES_PRIVILEGE_ALIASES,
   );
 
-  const { validate } = useAddServiceStore();
+  const { validate } = useServiceStore();
 
   const handleSave = async () => {
     if (!validate()) return;
@@ -43,7 +43,7 @@ const AddServicePage: React.FC = () => {
       specialityUuid,
       locationUuid,
       availabilityRows,
-    } = useAddServiceStore.getState();
+    } = useServiceStore.getState();
 
     const weeklyAvailability = availabilityRows.flatMap((row) =>
       row.daysOfWeek.map((day) => ({

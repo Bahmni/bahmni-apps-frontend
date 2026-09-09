@@ -16,7 +16,7 @@ import {
 import userEvent from '@testing-library/user-event';
 import { MANAGE_APPOINTMENT_SERVICES_PRIVILEGE } from '../../../../constants/app';
 import AddServicePage from '../index';
-import { useAddServiceStore } from '../stores';
+import { useServiceStore } from '../stores';
 
 jest.mock('react-router-dom', () => ({
   ...jest.requireActual('react-router-dom'),
@@ -47,7 +47,7 @@ const mockNavigate = jest.fn();
 const fillAvailabilityTimes = (startTime: string, endTime: string) => {
   act(() => {
     const { availabilityRows, updateAvailabilityRow } =
-      useAddServiceStore.getState();
+      useServiceStore.getState();
     updateAvailabilityRow(availabilityRows[0].id, 'startTime', startTime);
     updateAvailabilityRow(availabilityRows[0].id, 'endTime', endTime);
   });
@@ -61,7 +61,7 @@ describe('AddServicePage Integration', () => {
       defaultOptions: { queries: { retry: false, staleTime: 0 } },
     });
     jest.clearAllMocks();
-    useAddServiceStore.getState().reset();
+    useServiceStore.getState().reset();
     jest.mocked(getAllAppointmentServices).mockResolvedValue([]);
     jest.mocked(getAppointmentLocations).mockResolvedValue({ results: [] });
     jest.mocked(getAppointmentSpecialities).mockResolvedValue([]);

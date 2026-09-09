@@ -9,7 +9,7 @@ import {
 import { useTranslation } from '@bahmni/services';
 import React, { useCallback, useMemo } from 'react';
 import { DAYS_OF_WEEK } from '../constants';
-import { AvailabilityRow, useAddServiceStore } from '../stores';
+import { AvailabilityRow, useServiceStore } from '../stores';
 import styles from '../styles/index.module.scss';
 
 const AvailabilitySection: React.FC = () => {
@@ -21,7 +21,7 @@ const AvailabilitySection: React.FC = () => {
     toggleDayOfWeek,
     addAvailabilityRow,
     removeAvailabilityRow,
-  } = useAddServiceStore();
+  } = useServiceStore();
 
   const availabilityHeaders = useMemo(
     () => [

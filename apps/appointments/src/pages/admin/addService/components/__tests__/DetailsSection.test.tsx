@@ -5,7 +5,7 @@ import {
 } from '@tanstack/react-query';
 import { fireEvent, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { useAddServiceStore } from '../../stores';
+import { useServiceStore } from '../../stores';
 import DetailsSection from '../DetailsSection';
 import {
   mockExistingServices,
@@ -19,7 +19,7 @@ jest.mock('@tanstack/react-query', () => ({
 }));
 
 jest.mock('../../stores', () => ({
-  useAddServiceStore: jest.fn(),
+  useServiceStore: jest.fn(),
 }));
 
 const mockSetName = jest.fn();
@@ -57,7 +57,7 @@ describe('DetailsSection', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    jest.mocked(useAddServiceStore).mockReturnValue(defaultStoreState);
+    jest.mocked(useServiceStore).mockReturnValue(defaultStoreState);
     (useQuery as jest.Mock).mockImplementation(({ queryKey }) => {
       if (queryKey[0] === 'appointmentServices')
         return { data: mockExistingServices, isLoading: false, isError: false };
@@ -175,7 +175,7 @@ describe('DetailsSection', () => {
   ])(
     'should clear the stored uuid when $scenario selection is cleared',
     async ({ storeOverride, setter }) => {
-      jest.mocked(useAddServiceStore).mockReturnValue({
+      jest.mocked(useServiceStore).mockReturnValue({
         ...defaultStoreState,
         ...storeOverride,
       });
@@ -256,7 +256,7 @@ describe('DetailsSection', () => {
   );
 
   it('should show validation error on service name field when nameError is set', () => {
-    jest.mocked(useAddServiceStore).mockReturnValue({
+    jest.mocked(useServiceStore).mockReturnValue({
       ...defaultStoreState,
       nameError: 'ADMIN_ADD_SERVICE_VALIDATION_SERVICE_NAME_REQUIRED',
     });

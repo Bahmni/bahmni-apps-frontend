@@ -1,17 +1,17 @@
 import { generateId } from '@bahmni/services';
 import { DAYS_OF_WEEK } from '../../constants';
-import { useAddServiceStore } from '../index';
+import { useServiceStore } from '../index';
 
 jest.mock('@bahmni/services', () => ({
   ...jest.requireActual('@bahmni/services'),
   generateId: jest.fn(),
 }));
 
-const getStore = () => useAddServiceStore.getState();
+const getStore = () => useServiceStore.getState();
 
 const INITIAL_ROW_ID = 'row-1';
 
-describe('useAddServiceStore', () => {
+describe('useServiceStore', () => {
   let idCounter = 0;
 
   beforeEach(() => {

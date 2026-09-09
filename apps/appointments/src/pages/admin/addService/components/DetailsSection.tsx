@@ -14,7 +14,7 @@ import {
 } from '@bahmni/services';
 import { useQuery } from '@tanstack/react-query';
 import React, { useMemo } from 'react';
-import { useAddServiceStore } from '../stores';
+import { useServiceStore } from '../stores';
 import styles from '../styles/index.module.scss';
 
 const DetailsSection: React.FC = () => {
@@ -33,7 +33,7 @@ const DetailsSection: React.FC = () => {
     setDurationMins,
     setSpecialityUuid,
     setLocationUuid,
-  } = useAddServiceStore();
+  } = useServiceStore();
 
   const { data: existingServices = [] } = useQuery({
     queryKey: ['appointmentServices'],

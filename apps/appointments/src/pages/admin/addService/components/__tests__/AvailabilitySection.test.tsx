@@ -1,12 +1,12 @@
 import { fireEvent, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { DAYS_OF_WEEK } from '../../constants';
-import { useAddServiceStore } from '../../stores';
+import { useServiceStore } from '../../stores';
 import AvailabilitySection from '../AvailabilitySection';
 import { defaultRow } from './__mocks__/AvailabilitySectionMocks';
 
 jest.mock('../../stores', () => ({
-  useAddServiceStore: jest.fn(),
+  useServiceStore: jest.fn(),
 }));
 
 const ROW_ID = 'row-1';
@@ -27,7 +27,7 @@ const defaultStoreState = {
 describe('ServiceAvailabilitySection', () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    jest.mocked(useAddServiceStore).mockReturnValue(defaultStoreState);
+    jest.mocked(useServiceStore).mockReturnValue(defaultStoreState);
   });
 
   it('should render section title and availability table', () => {
@@ -203,7 +203,7 @@ describe('ServiceAvailabilitySection', () => {
   ])(
     'should display validation error text when $scenario',
     ({ rowOverride, expectedText }) => {
-      jest.mocked(useAddServiceStore).mockReturnValue({
+      jest.mocked(useServiceStore).mockReturnValue({
         ...defaultStoreState,
         availabilityRows: [{ ...defaultRow, ...rowOverride }],
       });

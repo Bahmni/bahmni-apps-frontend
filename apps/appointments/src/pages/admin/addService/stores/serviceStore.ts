@@ -9,7 +9,7 @@ import {
   validateRow,
 } from './utils';
 
-interface AddServiceState {
+interface ServiceState {
   name: string;
   nameError: string | null;
   description: string;
@@ -36,7 +36,7 @@ interface AddServiceState {
   reset: () => void;
 }
 
-export const useAddServiceStore = create<AddServiceState>((set, get) => ({
+export const useServiceStore = create<ServiceState>((set, get) => ({
   name: '',
   nameError: null,
   description: '',

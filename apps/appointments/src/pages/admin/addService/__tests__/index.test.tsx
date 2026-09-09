@@ -11,7 +11,7 @@ import {
   MANAGE_APPOINTMENT_SERVICES_PRIVILEGE_LEGACY,
 } from '../../../../constants/app';
 import AddServicePage from '../index';
-import { useAddServiceStore } from '../stores';
+import { useServiceStore } from '../stores';
 import { defaultRow } from './__mocks__/AddServicePageMocks';
 
 jest.mock('react-router-dom', () => ({
@@ -39,7 +39,7 @@ jest.mock('@tanstack/react-query', () => ({
 }));
 
 jest.mock('../stores', () => ({
-  useAddServiceStore: Object.assign(jest.fn(), { getState: jest.fn() }),
+  useServiceStore: Object.assign(jest.fn(), { getState: jest.fn() }),
 }));
 
 const mockNavigate = jest.fn();
@@ -74,8 +74,8 @@ describe('AddServicePage', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    jest.mocked(useAddServiceStore).mockReturnValue(defaultStoreState);
-    jest.mocked(useAddServiceStore.getState).mockReturnValue(defaultStoreState);
+    jest.mocked(useServiceStore).mockReturnValue(defaultStoreState);
+    jest.mocked(useServiceStore.getState).mockReturnValue(defaultStoreState);
     (useQuery as jest.Mock).mockReturnValue({
       data: undefined,
       isLoading: false,
@@ -225,7 +225,7 @@ describe('AddServicePage', () => {
     jest
       .mocked(createAppointmentService)
       .mockResolvedValue({} as AppointmentService);
-    jest.mocked(useAddServiceStore.getState).mockReturnValue({
+    jest.mocked(useServiceStore.getState).mockReturnValue({
       ...defaultStoreState,
       description: 'A description',
       durationMins: 30,
@@ -251,7 +251,7 @@ describe('AddServicePage', () => {
     jest
       .mocked(createAppointmentService)
       .mockResolvedValue({} as AppointmentService);
-    jest.mocked(useAddServiceStore.getState).mockReturnValue({
+    jest.mocked(useServiceStore.getState).mockReturnValue({
       ...defaultStoreState,
       availabilityRows: [
         {
