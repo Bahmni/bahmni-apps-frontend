@@ -35,7 +35,7 @@ import { useRegistrationConfig } from '../../providers/registrationConfig';
 import { RegistrationFormSection } from '../../providers/registrationConfig/models';
 import { FormControlRefs, FormControlData, FormControlGuards } from './models';
 import { validateAllSections, collectFormData } from './patientFormService';
-import PatientRegisterSection from './PatientRegisterSection';
+import Section from './Section';
 import styles from './styles/index.module.scss';
 
 const PatientRegister = () => {
@@ -363,7 +363,7 @@ const PatientRegister = () => {
             />
           </div>
           {sections.map((section) => (
-            <PatientRegisterSection
+            <Section
               key={section.name}
               section={section}
               refs={refs}
