@@ -17,7 +17,8 @@
     "build": "nx run-many --target=build --all",
     "build:affected": "nx affected --target=build",
     "clean": "nx reset && rm -rf dist coverage",
-    "prepare": "husky"
+    "prepare": "husky",
+    "bahmni-cli": "bash scripts/bahmni-cli.sh"
   },
   "private": true,
   "dependencies": {
