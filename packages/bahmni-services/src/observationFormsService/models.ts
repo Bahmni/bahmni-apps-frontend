@@ -1,3 +1,4 @@
+import type { Reference } from 'fhir/r4';
 import { ObservationFormTranslations } from '../i18n';
 
 export type { ObservationFormTranslations } from '../i18n';
@@ -63,6 +64,7 @@ export interface Form2Observation {
   unchanged?: boolean;
   /** Current FHIR status stored in OpenMRS (e.g. "final", "amended"); echoed back on PUT. */
   status?: string;
+  basedOn?: Reference;
   concept: { uuid: string; datatype?: string };
   value: string | number | boolean | ConceptValue | ComplexValue | null; // null for obsGroupControl parent observations
   obsDatetime?: string;
