@@ -6,7 +6,9 @@
 @use "@carbon/react/scss/breakpoint" as *;
 
 // ── Header bar background ────────────────────────────────────────────────────
-:global(.cds--header) {
+// Header.module.scss
+// html + .cds--header = (0,1,1) specificity vs Carbon's (0,1,0)
+:global(html .cds--header) {
   background-color: $background-brand;
   border-block-end-color: $background-brand;
 }
@@ -77,7 +79,9 @@
 
 :global(.cds--header .cds--breadcrumb-item::after),
 :global(.cds--header .cds--breadcrumb-item [aria-current="page"]),
-:global(.cds--header .cds--breadcrumb-item.cds--breadcrumb-item--current .cds--link) {
+:global(
+  .cds--header .cds--breadcrumb-item.cds--breadcrumb-item--current .cds--link
+) {
   color: $text-inverse;
   font-weight: 600;
 }
