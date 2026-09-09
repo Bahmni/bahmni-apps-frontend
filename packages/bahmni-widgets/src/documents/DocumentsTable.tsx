@@ -16,9 +16,9 @@ import { buildDocumentUrl, createDocumentHeaders } from './utils';
 const DEFAULT_DOCUMENT_FIELDS = [
   'documentIdentifier',
   'documentType',
+  'attachments',
   'uploadedOn',
   'uploadedBy',
-  'action',
 ];
 
 const IMAGE_EXTENSIONS_RE = /\.(jpg|jpeg|png|gif|webp|bmp|svg)$/i;
@@ -177,7 +177,7 @@ const DocumentsTable: React.FC<WidgetProps> = ({ config, encounterUuids }) => {
     () =>
       fields.map((field) => ({
         key: field,
-        sortable: field !== 'action',
+        sortable: field !== 'attachments',
       })),
     [fields],
   );
@@ -204,7 +204,7 @@ const DocumentsTable: React.FC<WidgetProps> = ({ config, encounterUuids }) => {
         }
         case 'uploadedBy':
           return doc.uploadedBy ?? t('DOCUMENTS_NOT_AVAILABLE');
-        case 'action': {
+        case 'attachments': {
           const hasAttachments =
             doc.attachments.length > 0 || !!doc.documentUrl;
           if (!hasAttachments) return '--';

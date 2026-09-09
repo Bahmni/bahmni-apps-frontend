@@ -121,7 +121,12 @@ export function usePinnedObservationForms(
     [userUuid],
   );
 
+  const refetch = useCallback(() => {
+    setIsInitialLoadComplete(false);
+    loadedForUserRef.current = null;
+  }, []);
+
   const isLoading = !isInitialLoadComplete;
 
-  return { pinnedForms, updatePinnedForms, isLoading, error };
+  return { pinnedForms, updatePinnedForms, isLoading, error, refetch };
 }

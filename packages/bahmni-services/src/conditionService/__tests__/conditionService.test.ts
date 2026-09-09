@@ -1,4 +1,12 @@
-import { get, put } from '../../api';
+import { Encounter } from 'fhir/r4';
+import { get, post } from '../../api';
+import { ENCOUNTER_BUNDLE_URL } from '../../encounterBundle';
+import {
+  createFhirEncounter,
+  getEncounterTypeByName,
+  getActiveVisit,
+} from '../../encounterService';
+import { getUserLoginLocation } from '../../userService';
 import {
   mockCondition,
   mockConditionBundle,
@@ -13,11 +21,102 @@ import {
 } from '../conditionService';
 
 jest.mock('../../api');
+jest.mock('../../userService');
+jest.mock('../../encounterService', () => ({
+  ...jest.requireActual('../../encounterService'),
+  createFhirEncounter: jest.fn(),
+  getEncounterTypeByName: jest.fn(),
+  getActiveVisit: jest.fn(),
+}));
+jest.mock('../../utils/utils', () => ({
+  ...jest.requireActual('../../utils/utils'),
+  generateUUID: jest.fn(() => 'test-uuid-1234'),
+}));
+
+const mockedPost = post as jest.MockedFunction<typeof post>;
+const mockedGetUserLoginLocation = getUserLoginLocation as jest.MockedFunction<
+  typeof getUserLoginLocation
+>;
+const mockedGetEncounterTypeByName =
+  getEncounterTypeByName as jest.MockedFunction<typeof getEncounterTypeByName>;
+const mockedGetActiveVisit = getActiveVisit as jest.MockedFunction<
+  typeof getActiveVisit
+>;
+const mockedCreateFhirEncounter = createFhirEncounter as jest.MockedFunction<
+  typeof createFhirEncounter
+>;
+
+const mockCreatedEncounter: Encounter = {
+  resourceType: 'Encounter',
+  id: 'created-enc-server-uuid',
+  status: 'in-progress',
+  class: {
+    system: 'http://terminology.hl7.org/CodeSystem/v3-ActCode',
+    code: 'AMB',
+  },
+};
+
+const mockBundleResponse = {
+  resourceType: 'Bundle',
+  type: 'transaction-response',
+  entry: [
+    {
+      response: {
+        status: '200 OK',
+        location: 'Encounter/mock-server-uuid/_history/1',
+      },
+    },
+    {
+      response: {
+        status: '200 OK',
+        location: 'Condition/cond-uuid/_history/1',
+      },
+    },
+  ],
+};
+
+/** A persisted encounter as returned by the session store in MATCHED and mismatch cases */
+const mockActiveEncounter: Encounter = {
+  resourceType: 'Encounter',
+  id: 'enc-session-123',
+  status: 'in-progress',
+  class: {
+    system: 'http://terminology.hl7.org/CodeSystem/v3-ActCode',
+    code: 'AMB',
+  },
+  type: [
+    {
+      coding: [
+        {
+          system: 'http://fhir.openmrs.org/code-system/encounter-type',
+          code: 'enc-type-uuid',
+          display: 'Consultation',
+        },
+      ],
+    },
+  ],
+  subject: { reference: 'Patient/02f47490-d657-48ee-98e7-4c9133ea168b' },
+  partOf: { reference: 'Encounter/visit-uuid-999', type: 'Encounter' },
+  period: { start: '2023-06-15T09:00:00.000Z' },
+  location: [
+    {
+      location: {
+        reference: 'Location/loc-uuid-abc',
+        type: 'Location',
+      },
+    },
+  ],
+};
 
 describe('conditionService', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     jest.spyOn(console, 'error').mockImplementation();
+    mockedPost.mockResolvedValue(mockBundleResponse);
+    mockedCreateFhirEncounter.mockResolvedValue(mockCreatedEncounter);
+    mockedGetUserLoginLocation.mockReturnValue({
+      uuid: 'login-location-uuid',
+    } as ReturnType<typeof getUserLoginLocation>);
   });
 
   describe('getConditionsBundle', () => {
@@ -158,61 +257,429 @@ describe('conditionService', () => {
   });
 
   describe('markConditionAsInactive', () => {
-    it('should PUT to the correct URL with clinicalStatus.code set to inactive', async () => {
-      const updatedCondition = {
-        ...mockCondition,
-        clinicalStatus: {
-          coding: [
-            {
-              system:
-                'http://terminology.hl7.org/CodeSystem/condition-clinical',
-              code: 'inactive',
-              display: 'Inactive',
-            },
-          ],
-          text: 'Inactive',
+    describe('no encounter context — throws', () => {
+      it('should throw when called with no activeEncounter and no encounterTypeName/patientUuid', async () => {
+        await expect(markConditionAsInactive(mockCondition)).rejects.toThrow(
+          'Unable to mark condition as inactive: no encounter context available',
+        );
+        expect(mockedPost).not.toHaveBeenCalled();
+      });
+
+      it('should throw when matched=true but activeEncounter has no id', async () => {
+        const encounterWithoutId = { ...mockActiveEncounter, id: undefined };
+        await expect(
+          markConditionAsInactive(
+            mockCondition,
+            encounterWithoutId as any,
+            true,
+          ),
+        ).rejects.toThrow(
+          'Unable to mark condition as inactive: no encounter context available',
+        );
+        expect(mockedPost).not.toHaveBeenCalled();
+      });
+    });
+
+    describe('matched=true — REUSE existing encounter (AC1)', () => {
+      it('should POST an EncounterBundle (not a plain PUT) when matched=true', async () => {
+        await markConditionAsInactive(mockCondition, mockActiveEncounter, true);
+
+        expect(mockedPost).toHaveBeenCalledTimes(1);
+        expect(mockedPost).toHaveBeenCalledWith(
+          ENCOUNTER_BUNDLE_URL,
+          expect.objectContaining({ resourceType: 'EncounterBundle' }),
+        );
+      });
+
+      it('bundle should contain exactly 2 entries: PUT Encounter + PUT Condition', async () => {
+        await markConditionAsInactive(mockCondition, mockActiveEncounter, true);
+
+        const bundle = mockedPost.mock.calls[0][1] as {
+          entry: Array<{
+            fullUrl: string;
+            resource: { resourceType: string };
+            request: { method: string; url: string };
+          }>;
+        };
+        expect(bundle.entry).toHaveLength(2);
+
+        const [encounterEntry, conditionEntry] = bundle.entry;
+        expect(encounterEntry.resource.resourceType).toBe('Encounter');
+        expect(encounterEntry.request.method).toBe('PUT');
+        expect(encounterEntry.request.url).toBe(
+          `Encounter/${mockActiveEncounter.id}`,
+        );
+        expect(encounterEntry.fullUrl).toBe(
+          `Encounter/${mockActiveEncounter.id}`,
+        );
+
+        expect(conditionEntry.resource.resourceType).toBe('Condition');
+        expect(conditionEntry.request.method).toBe('PUT');
+        expect(conditionEntry.request.url).toBe(
+          `Condition/${mockCondition.id}`,
+        );
+      });
+
+      it('condition entry should reference the existing encounter', async () => {
+        await markConditionAsInactive(mockCondition, mockActiveEncounter, true);
+
+        const bundle = mockedPost.mock.calls[0][1] as {
+          entry: Array<{ resource: { encounter?: { reference: string } } }>;
+        };
+        const conditionEntry = bundle.entry[1];
+        expect(conditionEntry.resource.encounter?.reference).toBe(
+          `Encounter/${mockActiveEncounter.id}`,
+        );
+      });
+
+      it('condition entry should have clinicalStatus inactive and category problem-list-item', async () => {
+        await markConditionAsInactive(mockCondition, mockActiveEncounter, true);
+
+        const bundle = mockedPost.mock.calls[0][1] as {
+          entry: Array<{
+            resource: {
+              clinicalStatus?: { coding?: Array<{ code: string }> };
+              category?: Array<{
+                coding?: Array<{ code: string }>;
+              }>;
+            };
+          }>;
+        };
+        const conditionResource = bundle.entry[1].resource;
+        expect(conditionResource.clinicalStatus?.coding?.[0]?.code).toBe(
+          'inactive',
+        );
+        expect(conditionResource.category?.[0]?.coding?.[0]?.code).toBe(
+          'problem-list-item',
+        );
+      });
+
+      it('encounter entry preserves id, period.start, location, and participant from the cached snapshot', async () => {
+        await markConditionAsInactive(
+          mockCondition,
+          mockActiveEncounter,
+          true,
+          undefined,
+          undefined,
+          'practitioner-uuid-ac1',
+        );
+
+        const bundle = mockedPost.mock.calls[0][1] as {
+          entry: Array<{
+            resource: {
+              id?: string;
+              period?: { start?: string };
+              location?: Array<{ location: { reference: string } }>;
+              participant?: Array<{ individual?: { reference: string } }>;
+            };
+          }>;
+        };
+        const encounterResource = bundle.entry[0].resource;
+        // id is grafted from the cached encounter
+        expect(encounterResource.id).toBe(mockActiveEncounter.id);
+        // period.start is preserved from the cached encounter, not overwritten with now
+        expect(encounterResource.period?.start).toBe(
+          mockActiveEncounter.period?.start,
+        );
+        // location is preserved from the cached encounter, not overwritten with login location
+        expect(encounterResource.location?.[0]?.location.reference).toBe(
+          'Location/loc-uuid-abc',
+        );
+        // participant: snapshot has none, so falls back to the supplied practitionerUUID
+        expect(encounterResource.participant?.[0]?.individual?.reference).toBe(
+          'Practitioner/practitioner-uuid-ac1',
+        );
+      });
+
+      it('should return the encounter with the existing id (AC1 reuses, no parse needed)', async () => {
+        const result = await markConditionAsInactive(
+          mockCondition,
+          mockActiveEncounter,
+          true,
+        );
+
+        expect(result.id).toBe(mockActiveEncounter.id);
+      });
+
+      it('should propagate POST failure (AC4)', async () => {
+        mockedPost.mockRejectedValueOnce(new Error('Server error'));
+
+        await expect(
+          markConditionAsInactive(mockCondition, mockActiveEncounter, true),
+        ).rejects.toThrow('Server error');
+      });
+    });
+
+    describe('matched=false with activeEncounter — CREATE NEW encounter (AC2)', () => {
+      it('should call createFhirEncounter then post a bundle when matched=false', async () => {
+        await markConditionAsInactive(
+          mockCondition,
+          mockActiveEncounter,
+          false,
+        );
+
+        expect(mockedCreateFhirEncounter).toHaveBeenCalledTimes(1);
+        expect(mockedPost).toHaveBeenCalledTimes(1);
+      });
+
+      it('should build encounter reusing type, partOf and subject from active encounter', async () => {
+        await markConditionAsInactive(
+          mockCondition,
+          mockActiveEncounter,
+          false,
+        );
+
+        const enc = mockedCreateFhirEncounter.mock.calls[0][0];
+        expect(enc.type?.[0]?.coding?.[0]?.code).toBe('enc-type-uuid');
+        expect(enc.partOf?.reference).toBe('Encounter/visit-uuid-999');
+        expect(enc.subject?.reference).toBe(
+          mockActiveEncounter.subject?.reference,
+        );
+      });
+
+      it('should build encounter with login location, in-progress status and AMB class', async () => {
+        await markConditionAsInactive(
+          mockCondition,
+          mockActiveEncounter,
+          false,
+        );
+
+        const enc = mockedCreateFhirEncounter.mock.calls[0][0];
+        expect(enc.status).toBe('in-progress');
+        expect(enc.class.code).toBe('AMB');
+        expect(enc.location?.[0]?.location.reference).toBe(
+          'Location/login-location-uuid',
+        );
+        expect(enc.period?.start).toBeDefined();
+        expect(enc.period?.end).toBeUndefined();
+      });
+
+      it('should set participant when practitionerUUID is provided', async () => {
+        await markConditionAsInactive(
+          mockCondition,
+          mockActiveEncounter,
+          false,
+          undefined,
+          undefined,
+          'practitioner-uuid-abc',
+        );
+
+        const enc = mockedCreateFhirEncounter.mock.calls[0][0];
+        expect(enc.participant?.[0]?.individual?.reference).toBe(
+          'Practitioner/practitioner-uuid-abc',
+        );
+      });
+
+      it('should POST an EncounterBundle (PUT encounter + PUT condition) after createFhirEncounter', async () => {
+        await markConditionAsInactive(
+          mockCondition,
+          mockActiveEncounter,
+          false,
+        );
+
+        expect(mockedPost).toHaveBeenCalledWith(
+          ENCOUNTER_BUNDLE_URL,
+          expect.objectContaining({ resourceType: 'EncounterBundle' }),
+        );
+        const bundle = mockedPost.mock.calls[0][1] as {
+          entry: Array<{
+            fullUrl: string;
+            resource: {
+              resourceType: string;
+              encounter?: { reference: string };
+            };
+            request: { method: string; url: string };
+          }>;
+        };
+        expect(bundle.entry).toHaveLength(2);
+        expect(bundle.entry[0].request.method).toBe('PUT');
+        expect(bundle.entry[0].request.url).toBe(
+          `Encounter/${mockCreatedEncounter.id}`,
+        );
+        expect(bundle.entry[1].request.method).toBe('PUT');
+        expect(bundle.entry[1].resource.encounter?.reference).toBe(
+          `Encounter/${mockCreatedEncounter.id}`,
+        );
+      });
+
+      it('should return the encounter from createFhirEncounter (has server UUID)', async () => {
+        const result = await markConditionAsInactive(
+          mockCondition,
+          mockActiveEncounter,
+          false,
+        );
+
+        expect(result.id).toBe(mockCreatedEncounter.id);
+      });
+
+      it('should throw when login location is unavailable (AC4)', async () => {
+        mockedGetUserLoginLocation.mockImplementation(() => {
+          throw new Error('Login location cookie unavailable');
+        });
+
+        await expect(
+          markConditionAsInactive(mockCondition, mockActiveEncounter, false),
+        ).rejects.toThrow(
+          'Unable to build encounter: login location unavailable',
+        );
+        expect(mockedCreateFhirEncounter).not.toHaveBeenCalled();
+      });
+
+      it('should propagate createFhirEncounter failure (AC4)', async () => {
+        mockedCreateFhirEncounter.mockRejectedValueOnce(
+          new Error('Server error'),
+        );
+
+        await expect(
+          markConditionAsInactive(mockCondition, mockActiveEncounter, false),
+        ).rejects.toThrow('Server error');
+      });
+    });
+
+    describe('NO_ACTIVE_ENCOUNTER — fresh visit resolved via encounterTypeName+patientUuid', () => {
+      const encounterTypeName = 'Consultation';
+      const patientUuid = 'patient-uuid-xyz';
+      const mockEncounterType = {
+        uuid: 'enc-type-uuid-resolved',
+        name: 'Consultation',
+      };
+      const mockActiveVisit: Encounter = {
+        resourceType: 'Encounter',
+        id: 'visit-uuid-fresh',
+        status: 'in-progress',
+        class: {
+          system: 'http://terminology.hl7.org/CodeSystem/v3-ActCode',
+          code: 'AMB',
         },
       };
-      (put as jest.Mock).mockResolvedValueOnce(updatedCondition);
 
-      const result = await markConditionAsInactive(mockCondition);
+      beforeEach(() => {
+        mockedGetEncounterTypeByName.mockResolvedValue(mockEncounterType);
+        mockedGetActiveVisit.mockResolvedValue(mockActiveVisit);
+      });
 
-      expect(put).toHaveBeenCalledWith(
-        `/openmrs/ws/fhir2/R4/Condition/${mockCondition.id}`,
-        expect.objectContaining({
-          clinicalStatus: expect.objectContaining({
-            coding: expect.arrayContaining([
-              expect.objectContaining({ code: 'inactive' }),
-            ]),
-          }),
-        }),
-      );
-      expect(result).toEqual(updatedCondition);
-    });
+      it('should call createFhirEncounter then post a bundle when encounterType and visit resolve', async () => {
+        await markConditionAsInactive(
+          mockCondition,
+          null,
+          false,
+          encounterTypeName,
+          patientUuid,
+        );
 
-    it('should preserve all other fields from the original condition', async () => {
-      (put as jest.Mock).mockImplementationOnce((_, body) =>
-        Promise.resolve(body),
-      );
+        expect(mockedGetEncounterTypeByName).toHaveBeenCalledWith(
+          encounterTypeName,
+        );
+        expect(mockedGetActiveVisit).toHaveBeenCalledWith(patientUuid);
+        expect(mockedCreateFhirEncounter).toHaveBeenCalledTimes(1);
+        expect(mockedPost).toHaveBeenCalledTimes(1);
+      });
 
-      const result = await markConditionAsInactive(mockCondition);
+      it('should build encounter using the resolved encounterType uuid and active visit as partOf', async () => {
+        await markConditionAsInactive(
+          mockCondition,
+          null,
+          false,
+          encounterTypeName,
+          patientUuid,
+        );
 
-      expect(result.resourceType).toBe(mockCondition.resourceType);
-      expect(result.id).toBe(mockCondition.id);
-      expect(result.code).toEqual(mockCondition.code);
-      expect(result.subject).toEqual(mockCondition.subject);
-      expect(result.onsetDateTime).toBe(mockCondition.onsetDateTime);
-      expect(result.recordedDate).toBe(mockCondition.recordedDate);
-      expect(result.clinicalStatus?.coding?.[0]?.code).toBe('inactive');
-    });
+        const enc = mockedCreateFhirEncounter.mock.calls[0][0];
+        expect(enc.type?.[0]?.coding?.[0]?.code).toBe(mockEncounterType.uuid);
+        expect(enc.partOf?.reference).toBe(`Encounter/${mockActiveVisit.id}`);
+      });
 
-    it('should throw error when PUT fails', async () => {
-      const error = new Error('Network error');
-      (put as jest.Mock).mockRejectedValueOnce(error);
+      it('should POST an EncounterBundle (PUT encounter + PUT condition) after createFhirEncounter', async () => {
+        await markConditionAsInactive(
+          mockCondition,
+          null,
+          false,
+          encounterTypeName,
+          patientUuid,
+        );
 
-      await expect(markConditionAsInactive(mockCondition)).rejects.toThrow(
-        'Network error',
-      );
+        expect(mockedPost).toHaveBeenCalledWith(
+          ENCOUNTER_BUNDLE_URL,
+          expect.objectContaining({ resourceType: 'EncounterBundle' }),
+        );
+        const bundle = mockedPost.mock.calls[0][1] as {
+          entry: Array<{
+            request: { method: string; url: string };
+            resource: { encounter?: { reference: string } };
+          }>;
+        };
+        expect(bundle.entry).toHaveLength(2);
+        expect(bundle.entry[0].request.method).toBe('PUT');
+        expect(bundle.entry[0].request.url).toBe(
+          `Encounter/${mockCreatedEncounter.id}`,
+        );
+        expect(bundle.entry[1].request.method).toBe('PUT');
+        expect(bundle.entry[1].resource.encounter?.reference).toBe(
+          `Encounter/${mockCreatedEncounter.id}`,
+        );
+      });
+
+      it('should return the encounter with the server UUID from createFhirEncounter', async () => {
+        const result = await markConditionAsInactive(
+          mockCondition,
+          null,
+          false,
+          encounterTypeName,
+          patientUuid,
+        );
+
+        expect(result.id).toBe(mockCreatedEncounter.id);
+      });
+
+      it('should throw when encounterType lookup returns null', async () => {
+        mockedGetEncounterTypeByName.mockResolvedValueOnce(null);
+
+        await expect(
+          markConditionAsInactive(
+            mockCondition,
+            null,
+            false,
+            encounterTypeName,
+            patientUuid,
+          ),
+        ).rejects.toThrow(
+          'Unable to mark condition as inactive: no encounter context available',
+        );
+        expect(mockedCreateFhirEncounter).not.toHaveBeenCalled();
+      });
+
+      it('should throw when active visit lookup returns null', async () => {
+        mockedGetActiveVisit.mockResolvedValueOnce(null);
+
+        await expect(
+          markConditionAsInactive(
+            mockCondition,
+            null,
+            false,
+            encounterTypeName,
+            patientUuid,
+          ),
+        ).rejects.toThrow(
+          'Unable to mark condition as inactive: no encounter context available',
+        );
+        expect(mockedCreateFhirEncounter).not.toHaveBeenCalled();
+      });
+
+      it('should propagate createFhirEncounter failure (AC4)', async () => {
+        mockedCreateFhirEncounter.mockRejectedValueOnce(
+          new Error('Server error'),
+        );
+
+        await expect(
+          markConditionAsInactive(
+            mockCondition,
+            null,
+            false,
+            encounterTypeName,
+            patientUuid,
+          ),
+        ).rejects.toThrow('Server error');
+      });
     });
   });
 });

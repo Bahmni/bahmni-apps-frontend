@@ -1,11 +1,11 @@
-import { get, del, post } from '../../api';
-import { BAHMNI_USER_COOKIE_NAME } from '../../constants/app';
-import { getCookieByName, deleteCookie } from '../../utils';
+import { get, post } from '../../api';
+import {
+  BAHMNI_USER_COOKIE_NAME,
+  BAHMNI_USER_LOCATION_COOKIE,
+} from '../../constants/app';
+import { getCookieByName } from '../../utils';
 import {
   USER_RESOURCE_URL,
-  BAHMNI_USER_LOCATION_COOKIE,
-  LOGOUT_URL,
-  LOGOUT_COOKIES,
   AVAILABLE_LOCATIONS_URL,
   APP_SETTINGS_URL,
   SAVE_USER_LOCATION_URL,
@@ -14,7 +14,6 @@ import {
 import {
   getCurrentUser,
   getUserLoginLocation,
-  logout,
   getDefaultDateFormat,
   getAvailableLocations,
   saveUserLocation,
@@ -25,7 +24,6 @@ jest.mock('../../api');
 jest.mock('../../utils', () => ({
   ...jest.requireActual('../../utils'),
   getCookieByName: jest.fn(),
-  deleteCookie: jest.fn(),
 }));
 
 jest.mock('i18next', () => ({
@@ -272,53 +270,6 @@ describe('getUserLocation', () => {
     const result = await getUserLoginLocation();
     expect(getCookieByName).toHaveBeenCalledWith(BAHMNI_USER_LOCATION_COOKIE);
     expect(result).toEqual(userLocation);
-  });
-});
-
-describe('logout', () => {
-  beforeEach(() => {
-    jest.clearAllMocks();
-    (del as jest.Mock).mockReset();
-    (deleteCookie as jest.Mock).mockReset();
-  });
-
-  it('should delete session and clear cookies on successful logout', async () => {
-    (del as jest.Mock).mockResolvedValue({});
-
-    await logout();
-
-    expect(del).toHaveBeenCalledWith(LOGOUT_URL);
-    LOGOUT_COOKIES.forEach((cookieName) => {
-      expect(deleteCookie).toHaveBeenCalledWith(cookieName);
-    });
-  });
-
-  it('should clear all required cookies', async () => {
-    (del as jest.Mock).mockResolvedValue({});
-
-    await logout();
-
-    expect(deleteCookie).toHaveBeenCalledTimes(LOGOUT_COOKIES.length);
-  });
-
-  it('should throw error when API call fails', async () => {
-    const mockError = new Error('Network error');
-    (del as jest.Mock).mockRejectedValue(mockError);
-
-    await expect(logout()).rejects.toThrow('USER_LOGOUT_FAILED');
-  });
-
-  it('should not clear cookies if API call fails', async () => {
-    const mockError = new Error('Network error');
-    (del as jest.Mock).mockRejectedValue(mockError);
-
-    try {
-      await logout();
-    } catch {
-      // Expected to throw
-    }
-
-    expect(deleteCookie).not.toHaveBeenCalled();
   });
 });
 

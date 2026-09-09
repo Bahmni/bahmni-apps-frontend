@@ -3,6 +3,40 @@
 @use "@carbon/react/scss/colors" as *;
 @use "@carbon/react/scss/theme" as *;
 
+:global([data-split-view] #main-display-area #radiology-investigations-table) {
+  div[id^="accordion-item"] {
+    overflow-x: auto;
+  }
+  div[id^="accordion-item"]:has(table td:nth-child(5)) {
+    padding-block-end: $spacing-05;
+  }
+  table:has(td:nth-child(5)) {
+    min-width: 62.5rem;
+    td, th {
+      min-width: 6.875rem;
+    }
+    td:first-child, th:first-child {
+      min-width: unset !important;
+    }
+  }
+}
+
+.inProgressStatus {
+  color: $yellow-70;
+}
+
+.completedStatus {
+  color: $green-50;
+}
+
+.revokedStatus {
+  color: $cool-gray-20;
+}
+
+.unknownStatus {
+  color: $cool-gray-20;
+}
+
 .investigationName {
   @include type-style("heading-compact-01");
   display: flex;
@@ -30,6 +64,7 @@
   background-color: $yellow-20 !important;
   color: $yellow-70 !important;
 }
+
 
 .customAccordianItem {
   background-color: $layer-01;

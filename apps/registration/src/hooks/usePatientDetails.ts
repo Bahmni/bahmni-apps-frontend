@@ -1,19 +1,17 @@
-import {
-  getPatientProfile,
-  formatDateTime,
-  useTranslation,
-} from '@bahmni/services';
+import { getPatientById, useTranslation } from '@bahmni/services';
 import { useNotification } from '@bahmni/widgets';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { useEffect, useMemo, useState } from 'react';
-import { useGenderData } from '../utils/identifierGenderUtils';
 import {
-  convertToBasicInfoData,
-  convertToPersonAttributesData,
-  convertToAddressData,
-  convertToAdditionalIdentifiersData,
-  convertToRelationshipsData,
-} from '../utils/patientDataConverter';
+  convertFhirToBasicInfo,
+  convertFhirToPersonAttributes,
+  convertFhirToAddressData,
+  convertFhirToAdditionalIdentifiers,
+  extractMetadata,
+  extractDobEstimated,
+} from '../utils/fhirPatientToFormData';
+import { useGenderData } from '../utils/identifierGenderUtils';
+import { usePersonAttributes } from './usePersonAttributes';
 
 interface UsePatientDetailsProps {
   patientUuid: string | undefined;
@@ -30,7 +28,7 @@ export const usePatientDetails = ({ patientUuid }: UsePatientDetailsProps) => {
   const { t } = useTranslation();
   const { getGenderDisplay } = useGenderData(t);
   const { addNotification } = useNotification();
-  const queryClient = useQueryClient();
+  const { personAttributes } = usePersonAttributes();
 
   const [metadata, setMetadata] = useState<PatientMetadata>({
     patientUuid: '',
@@ -45,7 +43,7 @@ export const usePatientDetails = ({ patientUuid }: UsePatientDetailsProps) => {
     error,
   } = useQuery({
     queryKey: ['formattedPatient', patientUuid],
-    queryFn: () => getPatientProfile(patientUuid!),
+    queryFn: () => getPatientById(patientUuid!),
     enabled: !!patientUuid,
   });
 
@@ -60,56 +58,45 @@ export const usePatientDetails = ({ patientUuid }: UsePatientDetailsProps) => {
   }, [error, t, addNotification]);
 
   const profileInitialData = useMemo(
-    () => convertToBasicInfoData(patientDetails, getGenderDisplay),
+    () =>
+      patientDetails
+        ? convertFhirToBasicInfo(patientDetails, getGenderDisplay)
+        : undefined,
     [patientDetails, getGenderDisplay],
   );
 
   const personAttributesInitialData = useMemo(
-    () => convertToPersonAttributesData(patientDetails),
-    [patientDetails],
+    () =>
+      patientDetails
+        ? convertFhirToPersonAttributes(patientDetails, personAttributes)
+        : undefined,
+    [patientDetails, personAttributes],
   );
 
   const addressInitialData = useMemo(
-    () => convertToAddressData(patientDetails),
+    () =>
+      patientDetails ? convertFhirToAddressData(patientDetails) : undefined,
     [patientDetails],
   );
 
   const additionalIdentifiersInitialData = useMemo(
-    () => convertToAdditionalIdentifiersData(patientDetails),
-    [patientDetails],
-  );
-
-  const relationshipsInitialData = useMemo(
-    () => convertToRelationshipsData(patientDetails),
+    () =>
+      patientDetails
+        ? convertFhirToAdditionalIdentifiers(patientDetails)
+        : undefined,
     [patientDetails],
   );
 
   const initialDobEstimated = useMemo(
-    () => patientDetails?.patient?.person?.birthdateEstimated ?? false,
+    () => (patientDetails ? extractDobEstimated(patientDetails) : false),
     [patientDetails],
   );
 
   useEffect(() => {
     if (patientDetails) {
-      const dateCreated = patientDetails.patient?.auditInfo?.dateCreated;
-      let formattedDate = '';
-
-      if (dateCreated) {
-        const result = formatDateTime(dateCreated, t);
-        if (!result.error) {
-          formattedDate = result.formattedResult;
-        }
-      }
-
-      setMetadata({
-        patientUuid: patientDetails.patient.uuid,
-        patientIdentifier:
-          patientDetails.patient.identifiers[0]?.identifier ?? '',
-        patientName: patientDetails.patient.person.display ?? '',
-        registerDate: formattedDate,
-      });
+      setMetadata(extractMetadata(patientDetails, t));
     }
-  }, [patientDetails, patientUuid, queryClient, t]);
+  }, [patientDetails, t]);
 
   return {
     patientDetails,
@@ -118,7 +105,6 @@ export const usePatientDetails = ({ patientUuid }: UsePatientDetailsProps) => {
     personAttributesInitialData,
     addressInitialData,
     additionalIdentifiersInitialData,
-    relationshipsInitialData,
     initialDobEstimated,
     metadata,
   };

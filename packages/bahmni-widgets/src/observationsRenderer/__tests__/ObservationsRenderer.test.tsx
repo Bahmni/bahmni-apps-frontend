@@ -107,6 +107,44 @@ describe('ObservationsRenderer', () => {
     });
   });
 
+  describe('Boolean Observations', () => {
+    it('should render boolean true value as true', () => {
+      const mockObservation: Observation = {
+        resourceType: 'Observation',
+        id: 'obs-bool-true',
+        status: 'final',
+        code: {
+          text: 'Is Smoker',
+        },
+        valueBoolean: true,
+      };
+
+      render(<ObservationsRenderer observations={[mockObservation]} />);
+
+      expect(
+        screen.getByTestId('observation-value-Is Smoker-0'),
+      ).toHaveTextContent('YES');
+    });
+
+    it('should render boolean false value as false', () => {
+      const mockObservation: Observation = {
+        resourceType: 'Observation',
+        id: 'obs-bool-false',
+        status: 'final',
+        code: {
+          text: 'Is Smoker',
+        },
+        valueBoolean: false,
+      };
+
+      render(<ObservationsRenderer observations={[mockObservation]} />);
+
+      expect(
+        screen.getByTestId('observation-value-Is Smoker-0'),
+      ).toHaveTextContent('NO');
+    });
+  });
+
   describe('Reference Ranges', () => {
     it('should render observation with low and high reference range', () => {
       const mockObservation: Observation = {
@@ -607,6 +645,89 @@ describe('ObservationsRenderer', () => {
       );
       expect(fileTile).toBeInTheDocument();
     });
+
+    it('should render all images when multiple images have same conceptId', () => {
+      const obs1: Observation = {
+        resourceType: 'Observation',
+        id: 'obs-img-1',
+        status: 'final',
+        code: {
+          text: 'Patient Photo',
+          coding: [{ code: 'photo-concept' }],
+        },
+        valueString: 'https://example.com/photo1.jpg',
+      };
+
+      const obs2: Observation = {
+        resourceType: 'Observation',
+        id: 'obs-img-2',
+        status: 'final',
+        code: {
+          text: 'Patient Photo',
+          coding: [{ code: 'photo-concept' }],
+        },
+        valueString: 'https://example.com/photo2.jpg',
+      };
+
+      render(<ObservationsRenderer observations={[obs1, obs2]} />);
+
+      expect(
+        screen.getByTestId('https://example.com/photo1.jpg-img-test-id'),
+      ).toBeInTheDocument();
+      expect(
+        screen.getByTestId('https://example.com/photo2.jpg-img-test-id'),
+      ).toBeInTheDocument();
+    });
+
+    it('should render all images when multiple images are members of a group', () => {
+      const groupObservation: Observation = {
+        resourceType: 'Observation',
+        id: 'group-img',
+        status: 'final',
+        code: {
+          text: 'Image Group',
+        },
+        hasMember: [
+          { reference: 'Observation/img-member-1' },
+          { reference: 'Observation/img-member-2' },
+        ],
+      };
+
+      const imgMember1: Observation = {
+        resourceType: 'Observation',
+        id: 'img-member-1',
+        status: 'final',
+        code: {
+          text: 'Scan Image',
+          coding: [{ code: 'scan-concept' }],
+        },
+        valueString: 'https://example.com/scan1.png',
+      };
+
+      const imgMember2: Observation = {
+        resourceType: 'Observation',
+        id: 'img-member-2',
+        status: 'final',
+        code: {
+          text: 'Scan Image',
+          coding: [{ code: 'scan-concept' }],
+        },
+        valueString: 'https://example.com/scan2.png',
+      };
+
+      render(
+        <ObservationsRenderer
+          observations={[groupObservation, imgMember1, imgMember2]}
+        />,
+      );
+
+      expect(
+        screen.getByTestId('https://example.com/scan1.png-img-test-id'),
+      ).toBeInTheDocument();
+      expect(
+        screen.getByTestId('https://example.com/scan2.png-img-test-id'),
+      ).toBeInTheDocument();
+    });
   });
 
   describe('Test ID Prefix', () => {
@@ -684,6 +805,188 @@ describe('ObservationsRenderer', () => {
       ).toBeInTheDocument();
       expect(
         screen.getByTestId('FormName-obs-member-value-Value-0'),
+      ).toBeInTheDocument();
+    });
+  });
+
+  describe('controlOrder prop', () => {
+    it('should render observations in controlOrder sequence rather than sortId numeric order', () => {
+      // controlOrder puts id=25 before id=18, even though 18 < 25 numerically
+      const controlOrder = ['14', '15', '16', '25', '26', '18', '19'];
+
+      const makeObs = (
+        id: string,
+        display: string,
+        controlId: string,
+      ): Observation => ({
+        resourceType: 'Observation',
+        id,
+        status: 'final',
+        code: { text: display },
+        valueString: display,
+        extension: [
+          {
+            url: 'http://fhir.bahmni.org/ext/observation/form-namespace-path',
+            valueString: `Bahmni^SecondVitals.1/${controlId}-0`,
+          },
+        ],
+      });
+
+      const pulse = makeObs('obs-pulse', 'Pulse', '14');
+      const lowBirthWeight = makeObs('obs-lbw', 'LowBirthWeight', '25');
+      const temperature = makeObs('obs-temp', 'Temperature', '18');
+
+      render(
+        <ObservationsRenderer
+          observations={[pulse, lowBirthWeight, temperature]}
+          controlOrder={controlOrder}
+        />,
+      );
+
+      const pulseItem = screen.getByTestId('observation-item-Pulse-0');
+      const lbwItem = screen.getByTestId('observation-item-LowBirthWeight-1');
+      const tempItem = screen.getByTestId('observation-item-Temperature-2');
+
+      // Confirm all three rendered with correct index positions
+      expect(pulseItem).toBeInTheDocument();
+      expect(lbwItem).toBeInTheDocument();
+      expect(tempItem).toBeInTheDocument();
+
+      // LowBirthWeight (id=25, pos=3) must appear before Temperature (id=18, pos=5)
+      expect(
+        pulseItem.compareDocumentPosition(lbwItem) &
+          Node.DOCUMENT_POSITION_FOLLOWING,
+      ).toBeTruthy();
+      expect(
+        lbwItem.compareDocumentPosition(tempItem) &
+          Node.DOCUMENT_POSITION_FOLLOWING,
+      ).toBeTruthy();
+    });
+
+    it('should fall back to sortId numeric ordering when controlOrder is not provided', () => {
+      const makeObs = (
+        id: string,
+        display: string,
+        controlId: string,
+      ): Observation => ({
+        resourceType: 'Observation',
+        id,
+        status: 'final',
+        code: { text: display },
+        valueString: display,
+        extension: [
+          {
+            url: 'http://fhir.bahmni.org/ext/observation/form-namespace-path',
+            valueString: `Bahmni^SecondVitals.1/${controlId}-0`,
+          },
+        ],
+      });
+
+      // Without controlOrder, sort is numeric: 14, 18, 25
+      const pulse = makeObs('obs-pulse', 'Pulse', '14');
+      const lowBirthWeight = makeObs('obs-lbw', 'LowBirthWeight', '25');
+      const temperature = makeObs('obs-temp', 'Temperature', '18');
+
+      render(
+        <ObservationsRenderer
+          observations={[pulse, lowBirthWeight, temperature]}
+        />,
+      );
+
+      // Numeric sort: 14-0 → 18-0 → 25-0
+      expect(
+        screen.getByTestId('observation-item-Pulse-0'),
+      ).toBeInTheDocument();
+      expect(
+        screen.getByTestId('observation-item-Temperature-1'),
+      ).toBeInTheDocument();
+      expect(
+        screen.getByTestId('observation-item-LowBirthWeight-2'),
+      ).toBeInTheDocument();
+    });
+  });
+
+  describe('section headers', () => {
+    const makeObsWithSortId = (
+      id: string,
+      display: string,
+      controlId: string,
+    ): Observation => ({
+      resourceType: 'Observation',
+      id,
+      status: 'final',
+      code: { text: display },
+      valueString: display,
+      extension: [
+        {
+          url: 'http://fhir.bahmni.org/ext/observation/form-namespace-path',
+          valueString: `Bahmni^TestForm.1/${controlId}-0`,
+        },
+      ],
+    });
+
+    it('should render section as a group with label and members when sectionMap maps control ID to a section name', () => {
+      const obs = makeObsWithSortId('obs-30', 'Sign/symptom name', '30');
+      const sectionMap = { '30': 'MySection' };
+
+      render(
+        <ObservationsRenderer observations={[obs]} sectionMap={sectionMap} />,
+      );
+
+      expect(screen.getByTestId('section-label-MySection')).toHaveTextContent(
+        'MySection',
+      );
+      // Section observations render as ObservationMember rows, not standalone items
+      expect(
+        screen.getByTestId('obs-member-row-Sign/symptom name-0'),
+      ).toBeInTheDocument();
+      // Not rendered as a standalone observation-item
+      expect(
+        screen.queryByTestId('observation-item-Sign/symptom name-0'),
+      ).not.toBeInTheDocument();
+    });
+
+    it('should not render any section labels when sectionMap is not provided', () => {
+      const obs = makeObsWithSortId('obs-30', 'Sign/symptom name', '30');
+
+      render(<ObservationsRenderer observations={[obs]} />);
+
+      expect(
+        screen.queryByTestId('section-label-MySection'),
+      ).not.toBeInTheDocument();
+      // Renders as standalone row when no sectionMap
+      expect(
+        screen.getByTestId('observation-item-Sign/symptom name-0'),
+      ).toBeInTheDocument();
+    });
+
+    it('should render section group once for multiple observations in the same section', () => {
+      const obs30 = makeObsWithSortId('obs-30', 'Sign/symptom name', '30');
+      const obs31 = makeObsWithSortId(
+        'obs-31',
+        'Patient reported cryptococcal meningitis prophylaxis',
+        '31',
+      );
+      const sectionMap = { '30': 'Section', '31': 'Section' };
+
+      render(
+        <ObservationsRenderer
+          observations={[obs30, obs31]}
+          sectionMap={sectionMap}
+        />,
+      );
+
+      // Only one section label for the group
+      expect(screen.getAllByTestId('section-label-Section')).toHaveLength(1);
+
+      // Both observations render as members inside the group
+      expect(
+        screen.getByTestId('obs-member-row-Sign/symptom name-0'),
+      ).toBeInTheDocument();
+      expect(
+        screen.getByTestId(
+          'obs-member-row-Patient reported cryptococcal meningitis prophylaxis-1',
+        ),
       ).toBeInTheDocument();
     });
   });

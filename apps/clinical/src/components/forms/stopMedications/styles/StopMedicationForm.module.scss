@@ -1,0 +1,36 @@
+@use '@carbon/react/scss/spacing' as *;
+@use '@carbon/react/scss/type' as *;
+@use '@carbon/react/scss/theme' as *;
+
+.stopMedicationFormTile {
+  margin: $spacing-03;
+  background-color: $background !important;
+}
+
+.formTitle {
+  @include type-style('heading-compact-02');
+  padding-bottom: $spacing-05;
+}
+
+.medicationName {
+  @include type-style('body-compact-01');
+  font-weight: 600;
+  padding-bottom: $spacing-05;
+}
+
+.column {
+  padding-bottom: $spacing-05;
+}
+
+.noteColumn {
+  padding-bottom: $spacing-05;
+
+  // TextAreaWClose renders its own Grid which adds padding-inline (grid margin)
+  // and margin-block-start. Reset both so the textarea aligns with other fields.
+  :global(.cds--subgrid) {
+    padding-inline-start: 0 !important;
+    margin-inline-start: 0 !important;
+    margin-block-start: 0 !important;
+  }
+}
+

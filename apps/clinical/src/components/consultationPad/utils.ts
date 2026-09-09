@@ -1,8 +1,34 @@
+import type { Encounter } from 'fhir/r4';
+import { extractId } from '../../../../../packages/bahmni-widgets/src/utils/Observations';
 import type { ConsultationPad } from '../../providers/clinicalConfig/models';
-import { useServiceRequestStore } from '../../stores';
+import { useServiceRequestStore, useObservationFormsStore } from '../../stores';
 import type { InputControl } from '../forms';
 import { getRegisteredInputControls } from '../forms/registry';
 import { ENCOUNTER_DETAILS_INPUT_CONTROL_KEY } from './constants';
+
+type QueryStatus = 'pending' | 'error' | 'success';
+
+export function getActiveEncounter(args: {
+  sourceEncounterUuid: string | undefined;
+  sourceEncounter: Encounter | null | undefined;
+  sessionEncounter: Encounter | null | undefined;
+  sessionEncounterStatus: QueryStatus;
+}): Encounter | null | undefined {
+  const {
+    sourceEncounterUuid,
+    sourceEncounter,
+    sessionEncounter,
+    sessionEncounterStatus,
+  } = args;
+
+  if (!sourceEncounterUuid) return sessionEncounter ?? null;
+  if (sessionEncounterStatus === 'pending') return undefined;
+  if (!sessionEncounter) return null;
+
+  return sessionEncounter.id === sourceEncounterUuid
+    ? sourceEncounter
+    : sessionEncounter;
+}
 
 export function loadEncounterInputControls(
   config: ConsultationPad | undefined,
@@ -47,6 +73,8 @@ export function getActiveEntries(
       !entry.encounterTypes || entry.encounterTypes.includes(encounterType);
     if (!matchesEncounterType) return false;
 
+    if (entry.onActionTriggered && entry.key !== editOnlyKey) return false;
+
     // When editOnly is set, show only the target form + encounterDetails.
     if (editOnlyKey) {
       return (
@@ -69,12 +97,27 @@ export function captureUpdatedResources(entries: InputControl[]) {
   const hasData = (key: string) =>
     entries.find((e) => e.key === key)?.hasData() ?? false;
 
+  // Check if observation forms with basedOn references were saved
+  const observationFormsData = useObservationFormsStore
+    .getState()
+    .getObservationFormsData();
+  const observationFormsBasedOn = observationFormsData.find(
+    (formData: { basedOn?: unknown }) => formData.basedOn !== undefined,
+  );
+
   return {
     conditions: hasData('conditionsAndDiagnoses'),
     allergies: hasData('allergies'),
-    medications: hasData('medication') || hasData('vaccination'),
+    medications:
+      hasData('medication') ||
+      hasData('vaccination') ||
+      hasData('cancelVaccination') ||
+      hasData('stopMedications'),
     immunizationHistory:
-      hasData('immunizationHistory') || hasData('immunizationAdministration'),
+      hasData('immunizationHistory') ||
+      hasData('immunizationAdministration') ||
+      hasData('immunizationWaiver'),
     serviceRequests,
+    observationFormsWithBasedOn: extractId(observationFormsBasedOn?.basedOn),
   };
 }

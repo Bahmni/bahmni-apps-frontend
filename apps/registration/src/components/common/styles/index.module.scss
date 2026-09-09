@@ -1,6 +1,12 @@
+@use "@carbon/react/scss/theme" as *;
 @use "@carbon/react/scss/spacing" as *;
 
 .checkboxField {
       margin-top: $spacing-03;
       margin-left: $spacing-03;
     }
+
+.requiredAsterisk {
+  color: $support-error;
+  margin-left: $spacing-01;
+}

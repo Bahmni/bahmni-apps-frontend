@@ -412,23 +412,21 @@ describe('LabInvestigation', () => {
   });
 
   const createMockDiagnosticReports = (
-    id: string = 'report-1',
-    code: string = 'Complete Blood Count',
-    basedOnId: string = 'test-1',
+    reports: Array<{ id: string; code: string; basedOnId: string }> = [
+      { id: 'report-1', code: 'Complete Blood Count', basedOnId: 'test-1' },
+    ],
   ): Bundle<DiagnosticReport> => ({
     resourceType: 'Bundle',
     type: 'searchset',
-    entry: [
-      {
-        resource: {
-          resourceType: 'DiagnosticReport',
-          id,
-          status: 'final',
-          code: { text: code },
-          basedOn: [{ reference: `ServiceRequest/${basedOnId}` }],
-        } as DiagnosticReport,
-      },
-    ],
+    entry: reports.map((report) => ({
+      resource: {
+        resourceType: 'DiagnosticReport',
+        id: report.id,
+        status: 'final',
+        code: { text: report.code },
+        basedOn: [{ reference: `ServiceRequest/${report.basedOnId}` }],
+      } as DiagnosticReport,
+    })),
   });
 
   const waitForDate = async () => {
@@ -453,13 +451,34 @@ describe('LabInvestigation', () => {
       ]);
     });
 
-    it('should pass reportId to child component for processed reports', async () => {
+    it('should pass reportIds to child component for processed reports', async () => {
       mockFormatDateTime
         .mockReturnValueOnce({ formattedResult: '05/08/2025' })
         .mockReturnValueOnce({ formattedResult: '04/09/2025' })
         .mockReturnValueOnce({ formattedResult: '04/09/2025' });
 
       mockGetDiagnosticReports.mockResolvedValue(createMockDiagnosticReports());
+      render(renderLabInvestigations());
+      await waitForDate();
+
+      expect(mockGetDiagnosticReports).toHaveBeenCalledWith('patient-123', [
+        'test-1',
+      ]);
+    });
+
+    it('should handle multiple diagnostic reports for a single service request', async () => {
+      mockFormatDateTime
+        .mockReturnValueOnce({ formattedResult: '05/08/2025' })
+        .mockReturnValueOnce({ formattedResult: '04/09/2025' })
+        .mockReturnValueOnce({ formattedResult: '04/09/2025' });
+
+      mockGetDiagnosticReports.mockResolvedValue(
+        createMockDiagnosticReports([
+          { id: 'report-1', code: 'Complete Blood Count', basedOnId: 'test-1' },
+          { id: 'report-2', code: 'Complete Blood Count', basedOnId: 'test-1' },
+        ]),
+      );
+
       render(renderLabInvestigations());
       await waitForDate();
 

@@ -3,7 +3,6 @@ import {
   applyBahmniTheme,
   BAHMNI_DEFAULT_THEME,
 } from '@bahmni/design-system';
-import { initAppI18n } from '@bahmni/services';
 import '@bahmni/widgets/styles';
 import React, { StrictMode } from 'react';
 import * as ReactDOMModule from 'react-dom';
@@ -27,23 +26,13 @@ window.React = React;
 window.ReactDOM = ReactDOMModule;
 
 applyBahmniTheme(BAHMNI_DEFAULT_THEME);
-
 initFontAwesome();
-initAppI18n('home')
-  .catch((err) => {
-    // eslint-disable-next-line no-console
-    console.error(
-      'Failed to initialize i18n, rendering with fallback strings:',
-      err,
-    );
-  })
-  .finally(() => {
-    const root = createRoot(document.getElementById('root') as HTMLElement);
-    root.render(
-      <StrictMode>
-        <BrowserRouter basename={PUBLIC_PATH ?? '/'}>
-          <App />
-        </BrowserRouter>
-      </StrictMode>,
-    );
-  });
+
+const root = createRoot(document.getElementById('root') as HTMLElement);
+root.render(
+  <StrictMode>
+    <BrowserRouter basename={PUBLIC_PATH ?? '/'}>
+      <App />
+    </BrowserRouter>
+  </StrictMode>,
+);

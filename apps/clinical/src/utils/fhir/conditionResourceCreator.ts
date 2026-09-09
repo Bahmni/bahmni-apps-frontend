@@ -15,6 +15,7 @@ export const createEncounterDiagnosisResource = (
   encounterReference: Reference,
   recorderReference: Reference,
   recordedDate: Date,
+  diagnosisConceptSystem?: string,
 ): Condition => {
   return {
     resourceType: 'Condition',
@@ -29,7 +30,11 @@ export const createEncounterDiagnosisResource = (
         ],
       },
     ],
-    code: createCodeableConcept([createCoding(diagnosisConceptUUID)]),
+    code: createCodeableConcept([
+      diagnosisConceptSystem
+        ? createCoding(diagnosisConceptUUID, diagnosisConceptSystem)
+        : createCoding(diagnosisConceptUUID),
+    ]),
     clinicalStatus: createCodeableConcept([
       createCoding('active', HL7_CONDITION_CLINICAL_STATUS_CODE_SYSTEM),
     ]),
@@ -64,6 +69,7 @@ export const createEncounterConditionResource = (
   recordedDate: Date,
   onsetDate: Date,
   clinicalStatus: 'active' | 'inactive' = 'active',
+  conditionConceptSystem?: string,
 ): Condition => {
   return {
     resourceType: 'Condition',
@@ -78,7 +84,11 @@ export const createEncounterConditionResource = (
         ],
       },
     ],
-    code: createCodeableConcept([createCoding(conditionConceptUUID)]),
+    code: createCodeableConcept([
+      conditionConceptSystem
+        ? createCoding(conditionConceptUUID, conditionConceptSystem)
+        : createCoding(conditionConceptUUID),
+    ]),
     clinicalStatus: createCodeableConcept([
       createCoding(clinicalStatus, HL7_CONDITION_CLINICAL_STATUS_CODE_SYSTEM),
     ]),

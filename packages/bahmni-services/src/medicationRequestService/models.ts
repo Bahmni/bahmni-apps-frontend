@@ -45,7 +45,10 @@ export interface MedicationRequest {
   readonly asNeeded: boolean;
   readonly isImmediate: boolean;
   readonly note?: string;
+  readonly cancellationNote?: string;
   readonly doseForm?: string;
+  readonly statusReason?: string;
+  readonly dateStopped?: string;
   readonly fhirResource: FhirMedicationRequest;
 }
 

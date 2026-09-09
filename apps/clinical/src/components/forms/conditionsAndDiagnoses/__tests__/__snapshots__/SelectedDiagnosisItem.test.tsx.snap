@@ -30,6 +30,13 @@ exports[`SelectedDiagnosisItem Snapshot Tests default rendering matches snapshot
         class="cds--dropdown__wrapper cds--list-box__wrapper"
         data-testid="diagnoses-certainty-dropdown-test-diagnosis-1"
       >
+        <label
+          class="cds--label"
+          for="downshift-_r_1i_-toggle-button"
+          id="downshift-_r_1i_-label"
+        >
+          Certainty
+        </label>
         <div
           class="cds--dropdown cds--autoalign cds--list-box"
           id="diagnoses-certainty-dropdown-test-diagnosis-1"
@@ -120,6 +127,13 @@ exports[`SelectedDiagnosisItem Snapshot Tests disabled condition link matches sn
         class="cds--dropdown__wrapper cds--list-box__wrapper"
         data-testid="diagnoses-certainty-dropdown-test-diagnosis-1"
       >
+        <label
+          class="cds--label"
+          for="downshift-_r_1o_-toggle-button"
+          id="downshift-_r_1o_-label"
+        >
+          Certainty
+        </label>
         <div
           class="cds--dropdown cds--autoalign cds--list-box"
           id="diagnoses-certainty-dropdown-test-diagnosis-1"
@@ -210,6 +224,13 @@ exports[`SelectedDiagnosisItem Snapshot Tests rendering with null selectedCertai
         class="cds--dropdown__wrapper cds--list-box__wrapper"
         data-testid="diagnoses-certainty-dropdown-test-diagnosis-1"
       >
+        <label
+          class="cds--label"
+          for="downshift-_r_1l_-toggle-button"
+          id="downshift-_r_1l_-label"
+        >
+          Certainty
+        </label>
         <div
           class="cds--dropdown cds--autoalign cds--list-box"
           id="diagnoses-certainty-dropdown-test-diagnosis-1"

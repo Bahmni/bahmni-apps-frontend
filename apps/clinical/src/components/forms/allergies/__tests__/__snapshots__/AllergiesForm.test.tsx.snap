@@ -204,11 +204,11 @@ exports[`AllergiesForm Snapshots should match snapshot with selected allergies 1
                   data-testid="allergy-severity-dropdown-test-allergy-1"
                 >
                   <label
-                    class="cds--label cds--visually-hidden"
+                    class="cds--label"
                     for="downshift-_r_68_-toggle-button"
                     id="downshift-_r_68_-label"
                   >
-                    ALLERGY_SELECT_SEVERITY
+                    ALLERGY_SEVERITY_LABEL
                   </label>
                   <div
                     class="cds--dropdown cds--autoalign cds--list-box"
@@ -273,11 +273,11 @@ exports[`AllergiesForm Snapshots should match snapshot with selected allergies 1
                   class="cds--multi-select__wrapper cds--multi-select--filterable__wrapper cds--list-box__wrapper cds--autoalign"
                 >
                   <label
-                    class="cds--label cds--visually-hidden"
+                    class="cds--label"
                     for="allergy-reactions-multiselect-test-allergy-1-input"
                     id="allergy-reactions-multiselect-test-allergy-1-label"
                   >
-                    ALLERGY_SELECT_REACTIONS
+                    ALLERGY_REACTIONS_LABEL
                     <span
                       class="cds--visually-hidden"
                     >

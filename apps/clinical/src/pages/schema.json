@@ -29,30 +29,28 @@
           "controls": {
             "type": "array",
             "description": "List of controls in the section",
-            "items":[
-              {
-                "type": "object",
-                "additionalProperties": false,
-                "required": ["type"],
-                "properties": {
-                  "type": {
-                    "type": "string",
-                    "description": "Type of the control"
-                  },
-                  "requiredPrivileges": {
-                    "type": "array",
-                    "description": "List of required privileges for the control",
-                    "items": {
-                      "type": "string"
-                    }
-                  },
-                  "config": {
-                    "type": "object",
-                    "description": "Configuration for the control"
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["type"],
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "description": "Type of the control"
+                },
+                "requiredPrivileges": {
+                  "type": "array",
+                  "description": "List of required privileges for the control",
+                  "items": {
+                    "type": "string"
                   }
+                },
+                "config": {
+                  "type": "object",
+                  "description": "Configuration for the control. For 'programs' type, see programsConfig definition."
                 }
               }
-            ]
+            }
           }
         }
       }

@@ -1,9 +1,9 @@
-import { runEventScript } from '@bahmni/form2-controls';
+import { PatientData, runEventScript } from '@bahmni/form2-controls';
 import { Form2Observation, FormMetadata } from '@bahmni/services';
 
 interface FormEventContext {
   observations: Form2Observation[];
-  patient: { uuid: string };
+  patient: PatientData;
   formName?: string;
   formUuid?: string;
   formData?: FormDataRecord;
@@ -24,7 +24,7 @@ type FormDataRecord = Record<string, unknown> & {
 export const executeOnFormSaveEvent = (
   metadata: FormMetadata,
   observations: Form2Observation[],
-  patientUuid: string,
+  patient: PatientData,
   formData?: FormDataRecord,
 ): Form2Observation[] => {
   const schema = metadata.schema as Record<string, unknown>;
@@ -45,7 +45,7 @@ export const executeOnFormSaveEvent = (
 
     const formContext: FormEventContext = {
       observations: JSON.parse(JSON.stringify(observations)),
-      patient: { uuid: patientUuid },
+      patient: { ...patient },
       formName: metadata.name,
       formUuid: metadata.uuid,
       formData: formData,
@@ -72,8 +72,6 @@ export const executeOnFormSaveEvent = (
             ? String(error.message)
             : 'Unknown error occurred';
 
-    const formattedError = `Error in onFormSave event for form "${metadata.name}": ${errorMessage}`;
-
-    throw new Error(formattedError);
+    throw new Error(errorMessage);
   }
 };

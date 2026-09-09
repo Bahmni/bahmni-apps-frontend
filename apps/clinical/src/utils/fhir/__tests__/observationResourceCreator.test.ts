@@ -1,288 +1,444 @@
 import { getFhirObservations } from '@bahmni/form2-controls';
 import { Form2Observation } from '@bahmni/services';
 import { Reference } from 'fhir/r4';
-import { createObservationResources } from '../observationResourceCreator';
+import { createObservationEntries } from '../observationResourceCreator';
 
 jest.mock('@bahmni/form2-controls', () => ({
   getFhirObservations: jest.fn(),
 }));
 
-describe('observationResourceCreator', () => {
-  const mockSubjectReference: Reference = {
-    reference: 'Patient/patient-123',
-  };
+describe('createObservationEntries', () => {
+  const subject: Reference = { reference: 'Patient/patient-1' };
+  const encounter: Reference = { reference: 'Encounter/encounter-1' };
+  const performer: Reference = { reference: 'Practitioner/practitioner-1' };
 
-  const mockEncounterReference: Reference = {
-    reference: 'Encounter/encounter-456',
-  };
-
-  const mockPerformerReference: Reference = {
-    reference: 'Practitioner/practitioner-789',
-  };
-
-  const mockObservation: Form2Observation = {
-    concept: {
-      uuid: 'concept-uuid-1',
-      datatype: 'Numeric',
-    },
-    value: 72,
-    obsDatetime: '2025-01-15T10:30:00Z',
-    formNamespace: 'Bahmni',
-    formFieldPath: 'Vitals.1/1-0',
-  };
-
-  const mockFhirObservationResult = {
+  const mockEntry = (fullUrl = 'urn:uuid:new-obs') => ({
     resource: {
       resourceType: 'Observation' as const,
-      id: 'obs-123',
       status: 'final' as const,
-      code: {
-        coding: [{ code: 'concept-uuid-1' }],
-      },
-      value: { value: 72 },
+      code: { coding: [{ code: 'concept-1' }] },
     },
-    fullUrl: 'urn:uuid:obs-123',
-  };
+    fullUrl,
+  });
 
   beforeEach(() => {
     jest.clearAllMocks();
+    (getFhirObservations as jest.Mock).mockReturnValue([mockEntry()]);
   });
 
-  describe('Happy Paths - Successful Observation Transformation', () => {
-    it('should successfully transform observations to FHIR format', () => {
-      (getFhirObservations as jest.Mock).mockReturnValue([
-        mockFhirObservationResult,
-      ]);
-
-      const result = createObservationResources(
-        [mockObservation],
-        mockSubjectReference,
-        mockEncounterReference,
-        mockPerformerReference,
+  describe('leaf observations', () => {
+    it('emits POST for a new observation (no uuid)', () => {
+      const obs: Form2Observation = {
+        concept: { uuid: 'concept-1' },
+        value: 42,
+      };
+      const entries = createObservationEntries(
+        [obs],
+        subject,
+        encounter,
+        performer,
       );
 
-      expect(result).toHaveLength(1);
-      expect(result[0].resource.resourceType).toBe('Observation');
-      expect(result[0].fullUrl).toBe('urn:uuid:obs-123');
-      expect(result[0].resource.status).toBe('final');
+      expect(entries).toHaveLength(1);
+      expect(entries[0].request?.method).toBe('POST');
+      expect(entries[0].fullUrl).toMatch(/^urn:uuid:/);
     });
 
-    it('should transform multiple observations correctly', () => {
-      const mockObs2: Form2Observation = {
-        concept: {
-          uuid: 'concept-uuid-2',
-          datatype: 'Numeric',
-        },
-        value: 98.6,
-        obsDatetime: '2025-01-15T10:30:00Z',
-        formNamespace: 'Bahmni',
-        formFieldPath: 'Vitals.1/2-0',
+    it('emits PUT for an existing observation (uuid present, not voided)', () => {
+      const obs: Form2Observation = {
+        concept: { uuid: 'concept-1' },
+        value: 42,
+        uuid: 'existing-obs-uuid',
+        status: 'final',
       };
-
-      const mockResult2 = {
-        resource: {
-          resourceType: 'Observation' as const,
-          id: 'obs-124',
-          status: 'final' as const,
-          code: {
-            coding: [{ code: 'concept-uuid-2' }],
-          },
-          value: { value: 98.6 },
-        },
-        fullUrl: 'urn:uuid:obs-124',
-      };
-
-      (getFhirObservations as jest.Mock).mockReturnValue([
-        mockFhirObservationResult,
-        mockResult2,
-      ]);
-
-      const result = createObservationResources(
-        [mockObservation, mockObs2],
-        mockSubjectReference,
-        mockEncounterReference,
-        mockPerformerReference,
+      const entries = createObservationEntries(
+        [obs],
+        subject,
+        encounter,
+        performer,
       );
 
-      expect(result).toHaveLength(2);
-      expect(result[0].resource.id).toBe('obs-123');
-      expect(result[1].resource.id).toBe('obs-124');
+      expect(entries).toHaveLength(1);
+      expect(entries[0].request?.method).toBe('PUT');
+      expect(entries[0].request?.url).toBe('Observation/existing-obs-uuid');
+      expect(entries[0].fullUrl).toBe('Observation/existing-obs-uuid');
     });
 
-    it('should handle grouped observations with hasMember references', () => {
-      const parentObservation = {
-        resource: {
-          resourceType: 'Observation' as const,
-          id: 'parent-obs',
-          status: 'final' as const,
-          code: { coding: [{ code: 'parent-uuid' }] },
-          hasMember: [
-            {
-              reference: 'urn:uuid:child-obs-1',
-              type: 'Observation',
-            },
-            {
-              reference: 'urn:uuid:child-obs-2',
-              type: 'Observation',
-            },
-          ],
-        },
-        fullUrl: 'urn:uuid:parent-obs',
-      };
-
-      const childObs1 = {
-        resource: {
-          resourceType: 'Observation' as const,
-          id: 'child-obs-1',
-          status: 'final' as const,
-          code: { coding: [{ code: 'child-uuid-1' }] },
-        },
-        fullUrl: 'urn:uuid:child-obs-1',
-      };
-
-      const childObs2 = {
-        resource: {
-          resourceType: 'Observation' as const,
-          id: 'child-obs-2',
-          status: 'final' as const,
-          code: { coding: [{ code: 'child-uuid-2' }] },
-        },
-        fullUrl: 'urn:uuid:child-obs-2',
-      };
-
-      (getFhirObservations as jest.Mock).mockReturnValue([
-        childObs1,
-        childObs2,
-        parentObservation,
-      ]);
-
-      const groupedObs: Form2Observation = {
-        concept: { uuid: 'parent-uuid' },
+    it('emits DELETE for a voided existing observation', () => {
+      const obs: Form2Observation = {
+        concept: { uuid: 'concept-1' },
         value: null,
+        uuid: 'obs-to-delete',
+        voided: true,
+      };
+      const entries = createObservationEntries(
+        [obs],
+        subject,
+        encounter,
+        performer,
+      );
+
+      expect(entries).toHaveLength(1);
+      expect(entries[0].request?.method).toBe('DELETE');
+      expect(entries[0].request?.url).toBe('Observation/obs-to-delete');
+      expect(entries[0].resource).toMatchObject({
+        resourceType: 'Observation',
+        id: 'obs-to-delete',
+      });
+    });
+
+    it('skips observations with no uuid and no value (empty addMore slots)', () => {
+      const obs: Form2Observation = {
+        concept: { uuid: 'concept-1' },
+        value: null,
+      };
+      const entries = createObservationEntries(
+        [obs],
+        subject,
+        encounter,
+        performer,
+      );
+
+      expect(entries).toHaveLength(0);
+    });
+
+    it('echoes the preserved status onto the PUT resource so OpenMRS does not reject it', () => {
+      const obs: Form2Observation = {
+        concept: { uuid: 'concept-1' },
+        value: 42,
+        uuid: 'obs-uuid',
+        status: 'amended',
+      };
+      (getFhirObservations as jest.Mock).mockReturnValue([
+        mockEntry('Observation/obs-uuid'),
+      ]);
+
+      const entries = createObservationEntries(
+        [obs],
+        subject,
+        encounter,
+        performer,
+      );
+
+      expect(entries[0].request?.method).toBe('PUT');
+      // obs.status must be echoed back so OpenMRS doesn't raise "Editing status not allowed".
+      expect((entries[0].resource as Record<string, unknown>).status).toBe(
+        'amended',
+      );
+    });
+
+    it('returns empty array for empty input', () => {
+      const entries = createObservationEntries(
+        [],
+        subject,
+        encounter,
+        performer,
+      );
+      expect(entries).toHaveLength(0);
+    });
+
+    it('skips a new observation when getFhirObservations returns no entry', () => {
+      (getFhirObservations as jest.Mock).mockReturnValue([]);
+      const obs: Form2Observation = {
+        concept: { uuid: 'concept-1' },
+        value: 42,
+      };
+      const entries = createObservationEntries(
+        [obs],
+        subject,
+        encounter,
+        performer,
+      );
+      expect(entries).toHaveLength(0);
+    });
+
+    it('skips an existing observation when getFhirObservations returns no entry', () => {
+      (getFhirObservations as jest.Mock).mockReturnValue([]);
+      const obs: Form2Observation = {
+        concept: { uuid: 'concept-1' },
+        value: 42,
+        uuid: 'existing-obs-uuid',
+      };
+      const entries = createObservationEntries(
+        [obs],
+        subject,
+        encounter,
+        performer,
+      );
+      expect(entries).toHaveLength(0);
+    });
+
+    it('skips a never-saved voided observation (no uuid + voided)', () => {
+      const obs: Form2Observation = {
+        concept: { uuid: 'concept-1' },
+        value: null,
+        voided: true,
+      };
+      const entries = createObservationEntries(
+        [obs],
+        subject,
+        encounter,
+        performer,
+      );
+      expect(entries).toHaveLength(0);
+    });
+
+    it('skips an existing observation marked unchanged (no dateChanged churn for untouched fields)', () => {
+      const obs: Form2Observation = {
+        concept: { uuid: 'concept-1' },
+        value: 42,
+        uuid: 'existing-obs-uuid',
+        unchanged: true,
+      };
+      const entries = createObservationEntries(
+        [obs],
+        subject,
+        encounter,
+        performer,
+      );
+      expect(entries).toHaveLength(0);
+    });
+  });
+
+  describe('grouped observations (obsGroup)', () => {
+    it('emits POST for a new parent obsGroup (no uuid)', () => {
+      const groupObs: Form2Observation = {
+        concept: { uuid: 'group-concept' },
+        value: null,
+        groupMembers: [{ concept: { uuid: 'child-concept' }, value: 10 }],
+      };
+      (getFhirObservations as jest.Mock).mockReturnValue([mockEntry()]);
+
+      const entries = createObservationEntries(
+        [groupObs],
+        subject,
+        encounter,
+        performer,
+      );
+
+      const parentEntry = entries.find((e) => e.request?.method === 'POST');
+      expect(parentEntry).toBeDefined();
+    });
+
+    it('emits PUT (at existing uuid) for parent obsGroup with remaining children', () => {
+      const groupObs: Form2Observation = {
+        concept: { uuid: 'group-concept' },
+        value: null,
+        uuid: 'parent-obs-uuid',
+        status: 'final',
+        groupMembers: [{ concept: { uuid: 'child-concept' }, value: 10 }],
+      };
+      (getFhirObservations as jest.Mock)
+        .mockReturnValueOnce([mockEntry('urn:uuid:child')]) // child POST
+        .mockReturnValueOnce([mockEntry('Observation/parent-obs-uuid')]); // parent PUT
+
+      const entries = createObservationEntries(
+        [groupObs],
+        subject,
+        encounter,
+        performer,
+      );
+
+      const parentEntry = entries.find(
+        (e) => e.fullUrl === 'Observation/parent-obs-uuid',
+      );
+      expect(parentEntry).toBeDefined();
+      expect(parentEntry?.request?.method).toBe('PUT');
+      expect(parentEntry?.request?.url).toBe('Observation/parent-obs-uuid');
+      expect((parentEntry?.resource as Record<string, unknown>).id).toBe(
+        'parent-obs-uuid',
+      );
+    });
+
+    it('skips new parent obsGroup when getFhirObservations returns no entry for parent', () => {
+      // Child succeeds but the subsequent parent POST call returns nothing → parent is skipped.
+      (getFhirObservations as jest.Mock)
+        .mockReturnValueOnce([mockEntry('urn:uuid:child')]) // child POST
+        .mockReturnValueOnce([]); // parent POST returns nothing
+      const groupObs: Form2Observation = {
+        concept: { uuid: 'group-concept' },
+        value: null,
+        groupMembers: [{ concept: { uuid: 'child-concept' }, value: 10 }],
+      };
+      const entries = createObservationEntries(
+        [groupObs],
+        subject,
+        encounter,
+        performer,
+      );
+      // Child entry is added but parent is skipped
+      expect(entries).toHaveLength(1);
+      expect(entries[0].fullUrl).toBe('urn:uuid:child');
+    });
+
+    it('skips existing parent obsGroup when getFhirObservations returns no entry for the parent', () => {
+      // Child succeeds but the subsequent parent PUT call returns nothing → parent is skipped.
+      (getFhirObservations as jest.Mock)
+        .mockReturnValueOnce([mockEntry('urn:uuid:child')]) // child POST
+        .mockReturnValueOnce([]); // parent PUT returns nothing
+      const groupObs: Form2Observation = {
+        concept: { uuid: 'group-concept' },
+        value: null,
+        uuid: 'parent-uuid',
+        groupMembers: [{ concept: { uuid: 'child-concept' }, value: 10 }],
+      };
+      const entries = createObservationEntries(
+        [groupObs],
+        subject,
+        encounter,
+        performer,
+      );
+      // Child entry is added but parent entry is skipped (returns null)
+      expect(entries).toHaveLength(1);
+      expect(entries[0].fullUrl).toBe('urn:uuid:child');
+    });
+
+    it('emits DELETE for parent obsGroup when all children are removed', () => {
+      const groupObs: Form2Observation = {
+        concept: { uuid: 'group-concept' },
+        value: null,
+        uuid: 'parent-obs-uuid',
         groupMembers: [
-          { concept: { uuid: 'child-uuid-1' }, value: 100 },
-          { concept: { uuid: 'child-uuid-2' }, value: 200 },
+          {
+            concept: { uuid: 'child-concept' },
+            value: null,
+            uuid: 'child-uuid',
+            voided: true,
+          },
         ],
       };
 
-      const result = createObservationResources(
-        [groupedObs],
-        mockSubjectReference,
-        mockEncounterReference,
-        mockPerformerReference,
+      const entries = createObservationEntries(
+        [groupObs],
+        subject,
+        encounter,
+        performer,
       );
 
-      expect(result).toHaveLength(3);
-      const parentResult = result.find(
-        (r) => r.fullUrl === 'urn:uuid:parent-obs',
-      )!;
-      expect(parentResult.resource.hasMember).toHaveLength(2);
-      expect((parentResult.resource.hasMember as any)[0].reference).toBe(
-        'urn:uuid:child-obs-1',
+      const deleteEntry = entries.find(
+        (e) => e.request?.url === 'Observation/parent-obs-uuid',
       );
+      expect(deleteEntry?.request?.method).toBe('DELETE');
     });
 
-    it('should return empty array when given empty observations', () => {
-      (getFhirObservations as jest.Mock).mockReturnValue([]);
+    it('does not touch the parent when one member is removed and the rest are unchanged (only the removed child gets a DELETE)', () => {
+      // Regression: OpenMRS rejects a PUT to a group parent with empty hasMember ("error.noValue").
+      const groupObs: Form2Observation = {
+        concept: { uuid: 'group-concept' },
+        value: null,
+        uuid: 'parent-obs-uuid',
+        groupMembers: [
+          {
+            concept: { uuid: 'removed-child-concept' },
+            value: null,
+            uuid: 'removed-child-uuid',
+            voided: true,
+          },
+          {
+            concept: { uuid: 'unchanged-child-concept' },
+            value: 3,
+            uuid: 'unchanged-child-uuid',
+            unchanged: true,
+          },
+        ],
+      };
 
-      const result = createObservationResources(
-        [],
-        mockSubjectReference,
-        mockEncounterReference,
-        mockPerformerReference,
+      const entries = createObservationEntries(
+        [groupObs],
+        subject,
+        encounter,
+        performer,
       );
 
-      expect(result).toEqual([]);
-    });
-  });
-
-  describe('Error Handling - Library Exceptions', () => {
-    it('should wrap and rethrow library errors with descriptive message', () => {
-      const libError = new Error('Failed to transform observation format');
-      (getFhirObservations as jest.Mock).mockImplementation(() => {
-        throw libError;
-      });
-
-      expect(() =>
-        createObservationResources(
-          [mockObservation],
-          mockSubjectReference,
-          mockEncounterReference,
-          mockPerformerReference,
-        ),
-      ).toThrow('Failed to transform observations to FHIR format');
+      // Only the removed child's DELETE — no entry at all for the parent.
+      expect(entries).toHaveLength(1);
+      expect(entries[0].fullUrl).toBe('Observation/removed-child-uuid');
+      expect(entries[0].request?.method).toBe('DELETE');
+      expect(
+        entries.some((e) => e.fullUrl === 'Observation/parent-obs-uuid'),
+      ).toBe(false);
     });
 
-    it('should include original error message in thrown error', () => {
-      const originalMessage = 'Invalid observation structure';
-      const libError = new Error(originalMessage);
-      (getFhirObservations as jest.Mock).mockImplementation(() => {
-        throw libError;
-      });
-
-      expect(() =>
-        createObservationResources(
-          [mockObservation],
-          mockSubjectReference,
-          mockEncounterReference,
-          mockPerformerReference,
-        ),
-      ).toThrow(originalMessage);
-    });
-
-    it('should handle non-Error objects thrown from library', () => {
-      (getFhirObservations as jest.Mock).mockImplementation(() => {
-        throw 'Unknown error occurred';
-      });
-
-      expect(() =>
-        createObservationResources(
-          [mockObservation],
-          mockSubjectReference,
-          mockEncounterReference,
-          mockPerformerReference,
-        ),
-      ).toThrow('Unknown transformation error');
-    });
-  });
-
-  describe('Library Contract Validation', () => {
-    it('should call getFhirObservations with correct reference parameters', () => {
+    it('omits unchanged children from hasMember and does not PUT them, but still updates the parent for the changed sibling', () => {
+      const groupObs: Form2Observation = {
+        concept: { uuid: 'group-concept' },
+        value: null,
+        uuid: 'parent-obs-uuid',
+        groupMembers: [
+          {
+            concept: { uuid: 'unchanged-child-concept' },
+            value: 2,
+            uuid: 'unchanged-child-uuid',
+            unchanged: true,
+          },
+          {
+            concept: { uuid: 'changed-child-concept' },
+            value: 6,
+            uuid: 'changed-child-uuid',
+          },
+        ],
+      };
       (getFhirObservations as jest.Mock).mockReturnValue([
-        mockFhirObservationResult,
+        mockEntry('Observation/changed-child-uuid'),
       ]);
 
-      createObservationResources(
-        [mockObservation],
-        mockSubjectReference,
-        mockEncounterReference,
-        mockPerformerReference,
+      const entries = createObservationEntries(
+        [groupObs],
+        subject,
+        encounter,
+        performer,
       );
 
-      expect(getFhirObservations).toHaveBeenCalledWith([mockObservation], {
-        patientReference: mockSubjectReference,
-        encounterReference: mockEncounterReference,
-        performerReference: mockPerformerReference,
-      });
+      // Only the changed child + the parent update — nothing for the unchanged sibling.
+      expect(entries).toHaveLength(2);
+      const childEntry = entries.find(
+        (e) => e.fullUrl === 'Observation/changed-child-uuid',
+      );
+      expect(childEntry?.request?.method).toBe('PUT');
+
+      const parentEntry = entries.find(
+        (e) => e.fullUrl === 'Observation/parent-obs-uuid',
+      );
+      expect(parentEntry?.request?.method).toBe('PUT');
+      const hasMember = (
+        parentEntry?.resource as unknown as {
+          hasMember: { reference: string }[];
+        }
+      ).hasMember;
+      expect(hasMember).toEqual([
+        { reference: 'Observation/changed-child-uuid' },
+      ]);
     });
 
-    it('should return array with resource and fullUrl properties', () => {
-      (getFhirObservations as jest.Mock).mockReturnValue([
-        mockFhirObservationResult,
-      ]);
+    it('skips the entire group (parent + all children) when every member is unchanged', () => {
+      const groupObs: Form2Observation = {
+        concept: { uuid: 'group-concept' },
+        value: null,
+        uuid: 'parent-obs-uuid',
+        groupMembers: [
+          {
+            concept: { uuid: 'child-a-concept' },
+            value: 2,
+            uuid: 'child-a-uuid',
+            unchanged: true,
+          },
+          {
+            concept: { uuid: 'child-b-concept' },
+            value: 3,
+            uuid: 'child-b-uuid',
+            unchanged: true,
+          },
+        ],
+      };
 
-      const result = createObservationResources(
-        [mockObservation],
-        mockSubjectReference,
-        mockEncounterReference,
-        mockPerformerReference,
+      const entries = createObservationEntries(
+        [groupObs],
+        subject,
+        encounter,
+        performer,
       );
 
-      expect(Array.isArray(result)).toBe(true);
-      expect(result[0]).toHaveProperty('resource');
-      expect(result[0]).toHaveProperty('fullUrl');
-      expect(result[0].resource.resourceType).toBe('Observation');
-      expect(typeof result[0].fullUrl).toBe('string');
+      expect(entries).toHaveLength(0);
     });
   });
 });

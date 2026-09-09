@@ -2,6 +2,7 @@ import {
   getProgramByUUID,
   updateProgramState,
   getCurrentUserPrivileges,
+  getEpisodeOfCare,
 } from '@bahmni/services';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, screen, waitFor } from '@testing-library/react';
@@ -16,6 +17,7 @@ jest.mock('@bahmni/services', () => ({
   ...jest.requireActual('@bahmni/services'),
   getProgramByUUID: jest.fn(),
   updateProgramState: jest.fn(),
+  getEpisodeOfCare: jest.fn(),
   getCurrentUserPrivileges: jest
     .fn()
     .mockResolvedValue([
@@ -27,6 +29,16 @@ jest.mock('@bahmni/services', () => ({
   })),
 }));
 jest.mock('../../notification');
+
+const detailFields = [
+  { name: 'programName' },
+  { name: 'Registration Number' },
+  { name: 'Treatment Category' },
+  { name: 'startDate' },
+  { name: 'state' },
+];
+
+const fieldsWithCareManager = [...detailFields, { name: 'careManager' }];
 
 describe('ProgramDetails Integration', () => {
   const queryClient: QueryClient = new QueryClient({
@@ -43,6 +55,9 @@ describe('ProgramDetails Integration', () => {
     (getCurrentUserPrivileges as jest.Mock).mockResolvedValue([
       { uuid: 'privilege-uuid-1', name: 'Edit Patient Programs' },
     ]);
+    (getEpisodeOfCare as jest.Mock).mockResolvedValue({
+      careManager: { display: 'Dr. Test' },
+    });
     (useNotification as jest.Mock).mockReturnValue({
       addNotification: jest.fn(),
     });
@@ -67,15 +82,7 @@ describe('ProgramDetails Integration', () => {
     renderWithProviders(
       <ProgramDetails
         programUUID="enrollment-uuid-2"
-        config={{
-          fields: [
-            'programName',
-            'Registration Number',
-            'Treatment Category',
-            'startDate',
-            'state',
-          ],
-        }}
+        config={{ fields: detailFields }}
       />,
     );
 
@@ -102,6 +109,52 @@ describe('ProgramDetails Integration', () => {
     expect(getProgramByUUID).toHaveBeenCalledWith('enrollment-uuid-2');
   });
 
+  it("should not fetch episode of care and show '-' for care manager when episodeUuid is absent", async () => {
+    (getProgramByUUID as jest.Mock).mockResolvedValue({
+      ...mockProgramWithAttributes,
+      episodeUuid: '',
+    });
+
+    renderWithProviders(
+      <ProgramDetails
+        programUUID="enrollment-uuid-2"
+        config={{ fields: fieldsWithCareManager }}
+      />,
+    );
+
+    await waitFor(() => {
+      expect(
+        screen.getByTestId('patient-programs-tile-test-id'),
+      ).toBeInTheDocument();
+    });
+
+    expect(getEpisodeOfCare).not.toHaveBeenCalled();
+    expect(
+      screen.getByTestId('program-details-careManager-value-test-id'),
+    ).toHaveTextContent('-');
+  });
+
+  it('should not fetch episode of care when no episode of care field is configured, even if episodeUuid is present', async () => {
+    (getProgramByUUID as jest.Mock).mockResolvedValue(
+      mockProgramWithAttributes,
+    );
+
+    renderWithProviders(
+      <ProgramDetails
+        programUUID="enrollment-uuid-2"
+        config={{ fields: detailFields }}
+      />,
+    );
+
+    await waitFor(() => {
+      expect(
+        screen.getByTestId('patient-programs-tile-test-id'),
+      ).toBeInTheDocument();
+    });
+
+    expect(getEpisodeOfCare).not.toHaveBeenCalled();
+  });
+
   it('should show error state when an error occurs', async () => {
     const errorMessage = 'Failed to fetch program details from server';
     (getProgramByUUID as jest.Mock).mockRejectedValue(new Error(errorMessage));
@@ -110,7 +163,12 @@ describe('ProgramDetails Integration', () => {
       <ProgramDetails
         programUUID="enrollment-uuid-1"
         config={{
-          fields: ['programName', 'startDate', 'endDate', 'state'],
+          fields: [
+            { name: 'programName' },
+            { name: 'startDate' },
+            { name: 'endDate' },
+            { name: 'state' },
+          ],
         }}
       />,
     );
@@ -163,15 +221,7 @@ describe('ProgramDetails Integration', () => {
     renderWithProviders(
       <ProgramDetails
         programUUID="enrollment-uuid-2"
-        config={{
-          fields: [
-            'programName',
-            'Registration Number',
-            'Treatment Category',
-            'startDate',
-            'state',
-          ],
-        }}
+        config={{ fields: detailFields }}
       />,
     );
 
@@ -220,15 +270,7 @@ describe('ProgramDetails Integration', () => {
     renderWithProviders(
       <ProgramDetails
         programUUID="enrollment-uuid-2"
-        config={{
-          fields: [
-            'programName',
-            'Registration Number',
-            'Treatment Category',
-            'startDate',
-            'state',
-          ],
-        }}
+        config={{ fields: detailFields }}
       />,
     );
 
@@ -270,15 +312,7 @@ describe('ProgramDetails Integration', () => {
     renderWithProviders(
       <ProgramDetails
         programUUID="enrollment-uuid-2"
-        config={{
-          fields: [
-            'programName',
-            'Registration Number',
-            'Treatment Category',
-            'startDate',
-            'state',
-          ],
-        }}
+        config={{ fields: detailFields }}
       />,
     );
 

@@ -262,6 +262,21 @@ describe('VitalFlowSheet Integration Tests', () => {
     ).not.toBeInTheDocument();
   });
 
+  it('should show date and time separately in column header', async () => {
+    mockGetVitalFlowSheetData.mockResolvedValue(mockVitalFlowSheetData);
+
+    renderVitalFlowSheet();
+
+    await waitFor(() => {
+      expect(screen.getByTestId('vital-flow-sheet-table')).toBeInTheDocument();
+    });
+
+    const table = screen.getByTestId('vital-flow-sheet-table');
+    const headerText = table.textContent ?? '';
+    expect(headerText).toContain('01/01/2024');
+    expect(headerText).toContain('10:00 AM');
+  });
+
   it('shows empty state when patient UUID is not provided', async () => {
     render(
       <MemoryRouter initialEntries={['/']}>

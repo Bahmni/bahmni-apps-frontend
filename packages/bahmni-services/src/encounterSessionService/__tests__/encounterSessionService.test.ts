@@ -205,5 +205,57 @@ describe('encounterSessionService', () => {
       const result = await filterByActiveVisit(encounters, mockPatientUUID);
       expect(result).toBeNull();
     });
+
+    describe('episode of care scoping', () => {
+      const visitUUID = 'visit-1';
+
+      it("should reuse an encounter whose id is in the current episode's known encounters", async () => {
+        const activeVisit = createMockVisit(visitUUID, false);
+        const encounter = createMockEncounter('encounter-1', visitUUID);
+
+        mockGetActiveVisit.mockResolvedValue(activeVisit);
+
+        const result = await filterByActiveVisit([encounter], mockPatientUUID, [
+          'encounter-1',
+        ]);
+        expect(result).toEqual(encounter);
+      });
+
+      it('should not reuse an encounter belonging to a different episode, even without episodeOfCare on the resource', async () => {
+        const activeVisit = createMockVisit(visitUUID, false);
+        const encounter = createMockEncounter('encounter-1', visitUUID);
+
+        mockGetActiveVisit.mockResolvedValue(activeVisit);
+
+        const result = await filterByActiveVisit([encounter], mockPatientUUID, [
+          'encounter-2',
+        ]);
+        expect(result).toBeNull();
+      });
+
+      it('should not reuse anything when the current episode has no known encounters yet', async () => {
+        const activeVisit = createMockVisit(visitUUID, false);
+        const encounter = createMockEncounter('encounter-1', visitUUID);
+
+        mockGetActiveVisit.mockResolvedValue(activeVisit);
+
+        const result = await filterByActiveVisit(
+          [encounter],
+          mockPatientUUID,
+          [],
+        );
+        expect(result).toBeNull();
+      });
+
+      it('should fall back to first active-visit match when no episode context is provided (backward compatible)', async () => {
+        const activeVisit = createMockVisit(visitUUID, false);
+        const encounter = createMockEncounter('encounter-1', visitUUID);
+
+        mockGetActiveVisit.mockResolvedValue(activeVisit);
+
+        const result = await filterByActiveVisit([encounter], mockPatientUUID);
+        expect(result).toEqual(encounter);
+      });
+    });
   });
 });

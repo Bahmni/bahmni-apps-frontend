@@ -2,6 +2,7 @@ import {
   notificationService,
   getFormattedError,
   getCurrentUserPrivileges,
+  LOGIN_PATH,
   type UserPrivilege,
 } from '@bahmni/services';
 import React, { ReactNode, useState, useMemo, useEffect } from 'react';
@@ -25,6 +26,10 @@ export const UserPrivilegeProvider: React.FC<UserPrivilegeProviderProps> = ({
       setIsLoading(true);
       try {
         const privileges = await getCurrentUserPrivileges();
+        if (privileges === null) {
+          globalThis.location.href = LOGIN_PATH;
+          return;
+        }
         setUserPrivileges(privileges);
       } catch (error) {
         const { title, message } = getFormattedError(error);

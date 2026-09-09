@@ -15,7 +15,7 @@ exports[`AllServicesPage Snapshot should match snapshot with services data 1`] =
     >
       <nav
         aria-label="Breadcrumb"
-        class="_breadcrumb_fbh29_74"
+        class="_breadcrumb_hjxxm_74"
         data-testid="breadcrumb"
       >
         <ol
@@ -26,7 +26,7 @@ exports[`AllServicesPage Snapshot should match snapshot with services data 1`] =
           >
             <a
               class="cds--link"
-              href="/bahmni/home/index.html"
+              href="/bahmni-v2/home"
             >
               Home
             </a>
@@ -44,6 +44,14 @@ exports[`AllServicesPage Snapshot should match snapshot with services data 1`] =
           </li>
         </ol>
       </nav>
+      <div
+        class="cds--header__global"
+        data-testid="header-global-bar"
+      >
+        <div
+          data-testid="user-global-action"
+        />
+      </div>
     </header>
     <div
       aria-label="main-display-area-aria-label"
@@ -59,7 +67,7 @@ exports[`AllServicesPage Snapshot should match snapshot with services data 1`] =
       >
         <section
           aria-label="all-services-action-data-table-aria-label"
-          class="table _actionDataTableBody_1b3ip_1 cds--data-table-container"
+          class="table _actionDataTableBody_3w0pu_1 cds--data-table-container"
           data-testid="all-services-action-data-table-test-id"
           id="all-services-action-data-table"
         >

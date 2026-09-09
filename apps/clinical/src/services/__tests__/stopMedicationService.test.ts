@@ -1,0 +1,323 @@
+import {
+  get,
+  createBundleEntry,
+  dispatchAuditEvent,
+  MedicationStatus,
+} from '@bahmni/services';
+import { Bundle, ValueSet } from 'fhir/r4';
+import { useStopMedicationStore } from '../../stores/stopMedicationsStore';
+import {
+  fetchStopReasons,
+  createStopMedicationEntry,
+} from '../stopMedicationService';
+
+jest.mock('@bahmni/services', () => ({
+  ...jest.requireActual('@bahmni/services'),
+  get: jest.fn(),
+  dispatchAuditEvent: jest.fn(),
+  createBundleEntry: jest.fn((fullUrl, resource, method) => ({
+    fullUrl,
+    resource,
+    request: { method, url: resource.resourceType },
+  })),
+}));
+
+const mockGet = get as jest.MockedFunction<typeof get>;
+const mockDispatchAuditEvent = dispatchAuditEvent as jest.MockedFunction<
+  typeof dispatchAuditEvent
+>;
+
+const baseCtx = {
+  encounterReference: 'enc-uuid-1',
+  encounterSubject: { reference: 'Patient/patient-1' },
+  practitionerUUID: 'practitioner-uuid',
+  consultationDate: new Date('2025-06-10'),
+};
+
+describe('stopMedicationService', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  describe('fetchStopReasons', () => {
+    it('should return stop reasons from ValueSet expand', async () => {
+      const searchBundle: Bundle = {
+        resourceType: 'Bundle',
+        type: 'searchset',
+        entry: [
+          {
+            resource: {
+              resourceType: 'ValueSet',
+              id: 'vs-uuid-1',
+              status: 'active',
+            } as ValueSet,
+          },
+        ],
+      };
+      const expandedValueSet: ValueSet = {
+        resourceType: 'ValueSet',
+        id: 'vs-uuid-1',
+        status: 'active',
+        expansion: {
+          timestamp: '2025-01-01',
+          contains: [
+            { code: 'reason-1', display: 'Adverse reaction' },
+            { code: 'reason-2', display: 'Patient request' },
+          ],
+        },
+      };
+      mockGet
+        .mockResolvedValueOnce(searchBundle)
+        .mockResolvedValueOnce(expandedValueSet);
+
+      const result = await fetchStopReasons('Stopped Order Reason');
+
+      expect(result).toEqual([
+        { uuid: 'reason-1', display: 'Adverse reaction' },
+        { uuid: 'reason-2', display: 'Patient request' },
+      ]);
+      expect(mockGet).toHaveBeenCalledWith(
+        '/openmrs/ws/fhir2/R4/ValueSet?title=Stopped%20Order%20Reason',
+      );
+    });
+
+    it('should use custom concept set name when provided', async () => {
+      mockGet.mockResolvedValueOnce({
+        resourceType: 'Bundle',
+        type: 'searchset',
+        entry: [],
+      });
+
+      await fetchStopReasons('Custom Stop Reasons');
+
+      expect(mockGet).toHaveBeenCalledWith(
+        expect.stringContaining(encodeURIComponent('Custom Stop Reasons')),
+      );
+    });
+
+    it('should skip title search and call expand directly when a UUID is provided', async () => {
+      const uuid = 'd7380c43-5e07-11ef-8f7c-0242ac120002';
+      const expandedValueSet: ValueSet = {
+        resourceType: 'ValueSet',
+        id: uuid,
+        status: 'active',
+        expansion: {
+          timestamp: '2025-01-01',
+          contains: [{ code: 'r1', display: 'Reason One' }],
+        },
+      };
+      mockGet.mockResolvedValueOnce(expandedValueSet);
+
+      const result = await fetchStopReasons(uuid);
+
+      expect(mockGet).toHaveBeenCalledTimes(1);
+      expect(mockGet).toHaveBeenCalledWith(
+        expect.stringContaining(`/${uuid}/$expand`),
+      );
+      expect(result).toEqual([{ uuid: 'r1', display: 'Reason One' }]);
+    });
+
+    it('should return empty array when ValueSet not found', async () => {
+      mockGet.mockResolvedValueOnce({
+        resourceType: 'Bundle',
+        type: 'searchset',
+        entry: [],
+      });
+      expect(await fetchStopReasons('Stopped Order Reason')).toEqual([]);
+    });
+
+    it('should return empty array on API error', async () => {
+      mockGet.mockRejectedValueOnce(new Error('Network error'));
+      expect(await fetchStopReasons('Stopped Order Reason')).toEqual([]);
+    });
+
+    it('should return uuid="" and display="" for entries with null code and null display', async () => {
+      const searchBundle: Bundle = {
+        resourceType: 'Bundle',
+        type: 'searchset',
+        entry: [
+          {
+            resource: {
+              resourceType: 'ValueSet',
+              id: 'vs-uuid-null',
+              status: 'active',
+            } as ValueSet,
+          },
+        ],
+      };
+      const expandedValueSet: ValueSet = {
+        resourceType: 'ValueSet',
+        id: 'vs-uuid-null',
+        status: 'active',
+        expansion: {
+          timestamp: '2025-01-01',
+          contains: [
+            { code: undefined, display: undefined },
+            { code: 'reason-3', display: 'Valid Reason' },
+          ],
+        },
+      };
+      mockGet
+        .mockResolvedValueOnce(searchBundle)
+        .mockResolvedValueOnce(expandedValueSet);
+
+      const result = await fetchStopReasons();
+
+      expect(result).toEqual([
+        { uuid: '', display: '' },
+        { uuid: 'reason-3', display: 'Valid Reason' },
+      ]);
+    });
+  });
+
+  describe('createStopMedicationEntry', () => {
+    beforeEach(() => {
+      useStopMedicationStore.getState().reset();
+    });
+
+    function setUpMedicationToStop(overrides: Record<string, unknown> = {}) {
+      const store = useStopMedicationStore.getState();
+      store.setMedicationToStop({
+        resourceType: 'MedicationRequest',
+        id: 'med-req-1',
+        status: 'active',
+        intent: 'order',
+        subject: { reference: 'Patient/patient-1' },
+        ...overrides,
+      });
+      store.setStopReason({
+        uuid: 'reason-uuid-1',
+        display: 'Refused To Take',
+      });
+      store.setStopDate(new Date(2025, 5, 10));
+    }
+
+    it('should build a stopped MedicationRequest bundle entry with encounter reference', () => {
+      setUpMedicationToStop();
+
+      const entries = createStopMedicationEntry(baseCtx);
+
+      const resource = (createBundleEntry as jest.Mock).mock.calls[0][1];
+      expect(entries).toHaveLength(1);
+      expect(resource.status).toBe(MedicationStatus.Stopped);
+      expect(resource.priorPrescription).toEqual({
+        reference: 'MedicationRequest/med-req-1',
+      });
+      expect(resource.encounter).toEqual({ reference: 'enc-uuid-1' });
+      expect(resource.statusReason).toEqual({
+        coding: [{ code: 'reason-uuid-1', display: 'Refused To Take' }],
+        text: 'Refused To Take',
+      });
+    });
+
+    it('should build a cancelled MedicationRequest bundle entry when inputControlKey is cancelVaccination', () => {
+      setUpMedicationToStop();
+      useStopMedicationStore.getState().setInputControlKey('cancelVaccination');
+
+      createStopMedicationEntry(baseCtx);
+
+      const resource = (createBundleEntry as jest.Mock).mock.calls[0][1];
+      expect(resource.status).toBe(MedicationStatus.Cancelled);
+    });
+
+    it('should include dateStopped extension with formatted date', () => {
+      setUpMedicationToStop();
+
+      createStopMedicationEntry(baseCtx);
+
+      const resource = (createBundleEntry as jest.Mock).mock.calls[0][1];
+      expect(resource.extension[0].valueDateTime).toBe('2025-06-10');
+    });
+
+    it('should include cancellation note with note-category extension when note provided', () => {
+      setUpMedicationToStop();
+      useStopMedicationStore.getState().setNote('Patient refused');
+
+      createStopMedicationEntry(baseCtx);
+
+      const resource = (createBundleEntry as jest.Mock).mock.calls[0][1];
+      expect(resource.note[0].text).toBe('Patient refused');
+      expect(resource.note[0].extension[0].valueCode).toBe('cancellation-note');
+    });
+
+    it('should omit note field when note is not provided', () => {
+      setUpMedicationToStop();
+
+      createStopMedicationEntry(baseCtx);
+
+      const resource = (createBundleEntry as jest.Mock).mock.calls[0][1];
+      expect(resource.note).toBeUndefined();
+    });
+
+    it('should call createBundleEntry with POST method', () => {
+      setUpMedicationToStop();
+
+      createStopMedicationEntry(baseCtx);
+
+      expect(createBundleEntry).toHaveBeenCalledWith(
+        'urn:uuid:stop-med-req-1',
+        expect.any(Object),
+        'POST',
+      );
+    });
+
+    it('should dispatch a STOP_MEDICATION audit event', () => {
+      setUpMedicationToStop();
+
+      createStopMedicationEntry(baseCtx);
+
+      expect(mockDispatchAuditEvent).toHaveBeenCalledWith({
+        eventType: 'STOP_MEDICATION',
+        patientUuid: 'patient-1',
+        messageParams: {},
+      });
+    });
+
+    it('should return an empty array and not dispatch an audit event when medicationToStop is null', () => {
+      const entries = createStopMedicationEntry(baseCtx);
+
+      expect(entries).toEqual([]);
+      expect(createBundleEntry).not.toHaveBeenCalled();
+      expect(mockDispatchAuditEvent).not.toHaveBeenCalled();
+    });
+
+    it('should return an empty array when medicationToStop has no id', () => {
+      const store = useStopMedicationStore.getState();
+      store.setMedicationToStop({
+        resourceType: 'MedicationRequest',
+        status: 'active',
+        intent: 'order',
+        subject: { reference: 'Patient/patient-1' },
+      });
+      store.setStopReason({ uuid: 'reason-uuid-1', display: 'reason' });
+
+      expect(createStopMedicationEntry(baseCtx)).toEqual([]);
+    });
+
+    it('should return an empty array when stopReason is null', () => {
+      useStopMedicationStore.getState().setMedicationToStop({
+        resourceType: 'MedicationRequest',
+        id: 'med-req-1',
+        status: 'active',
+        intent: 'order',
+        subject: { reference: 'Patient/patient-1' },
+      });
+
+      expect(createStopMedicationEntry(baseCtx)).toEqual([]);
+    });
+
+    it('should return an empty array when subject reference is missing', () => {
+      const store = useStopMedicationStore.getState();
+      store.setMedicationToStop({
+        resourceType: 'MedicationRequest',
+        id: 'med-req-1',
+        status: 'active',
+        intent: 'order',
+        subject: {},
+      });
+      store.setStopReason({ uuid: 'reason-uuid-1', display: 'reason' });
+
+      expect(createStopMedicationEntry(baseCtx)).toEqual([]);
+    });
+  });
+});

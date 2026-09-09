@@ -2,7 +2,7 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import dts from 'vite-plugin-dts';
-import * as path from 'path';
+import * as path from 'node:path';
 
 export default defineConfig(() => ({
   root: __dirname,
@@ -14,6 +14,11 @@ export default defineConfig(() => ({
       tsconfigPath: path.join(__dirname, 'tsconfig.lib.json'),
     }),
   ],
+  css: {
+    modules: process.env['VITEST'] ? {} : {
+      generateScopedName: '[name]_[local]__[hash:base64:5]',
+    },
+  },
   // Uncomment this if you are using workers.
   // worker: {
   //  plugins: [ nxViteTsPaths() ],
@@ -37,7 +42,6 @@ export default defineConfig(() => ({
       formats: ['es' as const],
     },
     rollupOptions: {
-      // External packages that should not be bundled into your library.
       external: [
         'react',
         'react-dom',
@@ -45,6 +49,7 @@ export default defineConfig(() => ({
         'react-router-dom',
         'react-i18next',
         '@tanstack/react-query',
+        /^@carbon\/styles/,
       ],
     },
   },

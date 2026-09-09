@@ -14,6 +14,10 @@ export const getCurrentUserPrivileges = async (): Promise<
   try {
     const session = await get<SessionResponse>(SESSION_URL);
 
+    if (!session.user) {
+      return null;
+    }
+
     return session.user.privileges;
   } catch (error) {
     const { message } = getFormattedError(error);

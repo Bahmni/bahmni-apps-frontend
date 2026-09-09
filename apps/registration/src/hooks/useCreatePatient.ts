@@ -83,7 +83,7 @@ export const useCreatePatient = () => {
       });
       return createFhirPatient<Patient>(payload);
     },
-    onSuccess: (response) => {
+    onSuccess: async (response) => {
       addNotification({
         title: t('NOTIFICATION_SUCCESS_TITLE'),
         message: t('NOTIFICATION_PATIENT_SAVED_SUCCESSFULLY'),

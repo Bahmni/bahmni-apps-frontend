@@ -26,6 +26,7 @@
 .rowContainer {
   display: flex;
   align-items: center;
+  gap: $spacing-03;
 }
 
 .groupLabel {
@@ -37,6 +38,7 @@
 .rowLabel {
   @include type-style("heading-compact-01");
   flex-basis: 30%;
+  overflow-wrap: break-word;
 }
 
 .rowValue {
@@ -53,11 +55,13 @@
 .memberRow {
   display: flex;
   padding: $spacing-03 $spacing-04;
+  gap: $spacing-03;
 }
 
 .memberLabel {
   @include type-style("body-compact-01");
   flex-basis: 30%;
+  overflow-wrap: break-word;
 }
 
 .memberValue {
@@ -98,8 +102,14 @@
 }
 
 .commentSection {
-  margin-top: -$spacing-04;
+  margin-top: $spacing-02;
   @include type-style("body-compact-01");
   color: $text-secondary;
   font-style: italic;
+}
+
+.mediaGroup {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $spacing-03;
 }

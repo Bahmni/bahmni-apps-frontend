@@ -16,9 +16,10 @@
   > div:first-of-type {
     flex: 1;
     height: stretch;
+    padding-block: 0;
     align-content: center;
     border-bottom: none;
-    padding-block: 0;
+    min-height: 3rem;
   }
 
   > section {
@@ -33,7 +34,10 @@
     }
   }
 
-  > [data-testid$="-sortable-data-table-test-id"] {
+  > [data-testid$="-sortable-data-table-test-id"],
+    [data-testid$="-sortable-data-table-test-id-skeleton"],
+    [data-testid$="-sortable-data-table-test-id-empty"],
+    [data-testid$="-sortable-data-table-test-id-error"] {
     flex: 1 0 100%;
   }
 }

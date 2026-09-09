@@ -11,26 +11,25 @@ exports[`ObservationFormsContainer Rendering and Structure should match the snap
     <div
       data-testid="action-area-title"
     >
-      <div
-        class="formTitleContainer"
-        data-testid="observation-form-title-container"
+      <span
+        data-testid="observation-form-name"
       >
-        <span
-          data-testid="observation-form-name"
-        >
-          Test Form
-        </span>
+        Test Form
+      </span>
+    </div>
+    <div
+      data-testid="action-area-header-actions"
+    >
+      <div
+        class="pinIconContainer unpinned"
+        title="translated_OBSERVATION_FORMS_PIN_TOOLTIP"
+      >
         <div
-          class="pinIconContainer unpinned"
-          title="Pin form"
+          data-icon-name="fa-thumbtack"
+          data-size="SM"
+          data-testid="icon-pin-icon"
         >
-          <div
-            data-icon-name="fa-thumbtack"
-            data-size="SM"
-            data-testid="icon-pin-icon"
-          >
-            Icon
-          </div>
+          Icon
         </div>
       </div>
     </div>

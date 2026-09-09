@@ -1,4 +1,4 @@
-import { createServiceRequestBundleEntries } from '../../../services/consultationBundleService';
+import { createServiceRequestBundleEntries } from '../../../services/encounterBundleService';
 import { useServiceRequestStore } from '../../../stores';
 import { registerInputControl } from '../registry';
 import InvestigationsForm from './InvestigationsForm';

@@ -11,6 +11,7 @@ jest.mock('../../errorHandling', () => ({
 jest.mock('../utils', () => ({
   decodeHtmlEntities: jest.fn((data) => data),
   isOpenMRSWebServiceApi: jest.fn(() => true),
+  isTemplateServiceApi: jest.fn(() => false),
   getResponseUrl: jest.fn(() => '/openmrs/ws/rest/v1/patient'),
 }));
 
@@ -37,8 +38,8 @@ describe('Axios Client', () => {
       const requestInterceptor = (client.interceptors.request as any)
         .handlers[0];
 
-      await expect(() => requestInterceptor.rejected(mockError)).rejects.toBe(
-        'Error: Test error message',
+      expect(() => requestInterceptor.rejected(mockError)).toThrow(
+        'Test error message',
       );
       expect(getFormattedError).toHaveBeenCalledWith(mockError);
     });
@@ -53,6 +54,9 @@ describe('Axios Client', () => {
     >;
     let isOpenMRSWebServiceApi: jest.MockedFunction<
       typeof import('../utils').isOpenMRSWebServiceApi
+    >;
+    let isTemplateServiceApi: jest.MockedFunction<
+      typeof import('../utils').isTemplateServiceApi
     >;
     let getResponseUrl: jest.MockedFunction<
       typeof import('../utils').getResponseUrl
@@ -72,6 +76,10 @@ describe('Axios Client', () => {
       isOpenMRSWebServiceApi =
         utilsModule.isOpenMRSWebServiceApi as jest.MockedFunction<
           typeof import('../utils').isOpenMRSWebServiceApi
+        >;
+      isTemplateServiceApi =
+        utilsModule.isTemplateServiceApi as jest.MockedFunction<
+          typeof import('../utils').isTemplateServiceApi
         >;
       getResponseUrl = utilsModule.getResponseUrl as jest.MockedFunction<
         typeof import('../utils').getResponseUrl
@@ -131,6 +139,28 @@ describe('Axios Client', () => {
         expect(result.data).toBe(mockBlob);
       });
 
+      it('should skip HTML entity decoding for template service responses even when URL is under /openmrs/ws', async () => {
+        const testData = '<html><body>&lt;Patient&gt;</body></html>';
+
+        getResponseUrl.mockReturnValue(
+          '/openmrs/ws/rest/v1/bahmnicore/template/api/render',
+        );
+        isOpenMRSWebServiceApi.mockReturnValueOnce(true);
+        isTemplateServiceApi.mockReturnValueOnce(true);
+
+        const mockResponse = {
+          data: testData,
+          config: { url: '/openmrs/ws/rest/v1/bahmnicore/template/api/render' },
+        };
+
+        const responseInterceptor = (client.interceptors.response as any)
+          .handlers[0];
+        const result = responseInterceptor.fulfilled(mockResponse);
+
+        expect(decodeHtmlEntities).not.toHaveBeenCalled();
+        expect(result.data).toBe(testData);
+      });
+
       it('should skip HTML entity decoding for non-OpenMRS API responses', async () => {
         const testData = { display: '&amp;Patient Name&lt;' };
 
@@ -174,6 +204,51 @@ describe('Axios Client', () => {
         expect(globalThis.location.href).toBe('/bahmni/home/index.html#/login');
       });
 
+      it('should parse blob error response body and pass parsed data to getFormattedError', async () => {
+        const errorBody = {
+          error: { message: "User doesn't have Get Patient Photo privilege" },
+        };
+        const mockBlob = Object.assign(new Blob(), {
+          text: jest.fn().mockResolvedValue(JSON.stringify(errorBody)),
+        });
+        const mockError: any = {
+          response: { status: 403, data: mockBlob },
+          isAxiosError: true,
+        };
+
+        (axios.isAxiosError as unknown as jest.Mock) = jest
+          .fn()
+          .mockReturnValue(true);
+
+        const responseInterceptor = (client.interceptors.response as any)
+          .handlers[0];
+
+        await responseInterceptor.rejected(mockError).catch(() => {});
+        expect(mockError.response.data).toEqual(errorBody);
+        expect(getFormattedError).toHaveBeenCalledWith(mockError);
+      });
+
+      it('should leave blob as-is when JSON parsing fails', async () => {
+        const mockBlob = Object.assign(new Blob(), {
+          text: jest.fn().mockResolvedValue('not-json'),
+        });
+        const mockError: any = {
+          response: { status: 403, data: mockBlob },
+          isAxiosError: true,
+        };
+
+        (axios.isAxiosError as unknown as jest.Mock) = jest
+          .fn()
+          .mockReturnValue(true);
+
+        const responseInterceptor = (client.interceptors.response as any)
+          .handlers[0];
+
+        await responseInterceptor.rejected(mockError).catch(() => {});
+        expect(mockError.response.data).toBe(mockBlob);
+        expect(getFormattedError).toHaveBeenCalledWith(mockError);
+      });
+
       it('should handle non-401 Axios errors', async () => {
         const mockError = {
           response: { status: 500 },
@@ -189,7 +264,7 @@ describe('Axios Client', () => {
 
         await expect(() =>
           responseInterceptor.rejected(mockError),
-        ).rejects.toBe('Error: Test error message');
+        ).rejects.toThrow('Test error message');
         expect(getFormattedError).toHaveBeenCalledWith(mockError);
       });
 
@@ -205,7 +280,7 @@ describe('Axios Client', () => {
 
         await expect(() =>
           responseInterceptor.rejected(mockError),
-        ).rejects.toBe('Error: Test error message');
+        ).rejects.toThrow('Test error message');
         expect(getFormattedError).toHaveBeenCalledWith(mockError);
       });
 
@@ -224,7 +299,7 @@ describe('Axios Client', () => {
 
         await expect(() =>
           responseInterceptor.rejected(mockError),
-        ).rejects.toBe('Error: Test error message');
+        ).rejects.toThrow('Test error message');
         expect(getFormattedError).toHaveBeenCalledWith(mockError);
       });
 
@@ -245,21 +320,21 @@ describe('Axios Client', () => {
         const responseInterceptor = (client.interceptors.response as any)
           .handlers[0];
 
-        await expect(() =>
-          responseInterceptor.fulfilled(mockResponse),
-        ).rejects.toBe('Error: Test error message');
+        expect(() => responseInterceptor.fulfilled(mockResponse)).toThrow(
+          'Test error message',
+        );
         expect(getFormattedError).toHaveBeenCalled();
       });
 
-      it('should handle unexpected errors in response interceptor', async () => {
+      it('should handle unexpected errors in response interceptor', () => {
         const mockResponse = null; // forceful unexpected shape
 
         const responseInterceptor = (client.interceptors.response as any)
           .handlers[0];
 
-        await expect(() =>
-          responseInterceptor.fulfilled(mockResponse),
-        ).rejects.toBe('Error: Test error message');
+        expect(() => responseInterceptor.fulfilled(mockResponse)).toThrow(
+          'Test error message',
+        );
         expect(getFormattedError).toHaveBeenCalled();
       });
     });

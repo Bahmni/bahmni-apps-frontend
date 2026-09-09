@@ -1,4 +1,4 @@
-import { createObservationBundleEntries } from '../../../services/consultationBundleService';
+import { createObservationBundleEntries } from '../../../services/encounterBundleService';
 import { useObservationFormsStore } from '../../../stores/observationFormsStore';
 import { registerInputControl } from '../registry';
 import ObservationFormsPanel from './ObservationFormsPanel';

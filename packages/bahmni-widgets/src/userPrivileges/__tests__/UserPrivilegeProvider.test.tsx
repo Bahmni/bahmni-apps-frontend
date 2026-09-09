@@ -14,6 +14,7 @@ import { useUserPrivilege } from '../useUserPrivilege';
 jest.mock('@bahmni/services', () => ({
   getCurrentUserPrivileges: jest.fn(),
   getFormattedError: jest.fn(),
+  LOGIN_PATH: '/bahmni/home/index.html#/login',
   notificationService: {
     showError: jest.fn(),
   },
@@ -171,6 +172,33 @@ describe('UserPrivilegeProvider', () => {
   });
 
   describe('Error Handling Tests', () => {
+    it('should redirect to login when getCurrentUserPrivileges returns null', async () => {
+      mockGetCurrentUserPrivileges.mockResolvedValueOnce(null);
+
+      const originalLocation = globalThis.location;
+      delete (globalThis as unknown as { location: unknown }).location;
+      (globalThis as unknown as { location: { href: string } }).location = {
+        href: '',
+      };
+
+      try {
+        render(
+          <UserPrivilegeProvider>
+            <TestComponent />
+          </UserPrivilegeProvider>,
+        );
+
+        await waitFor(() => {
+          expect(globalThis.location.href).toBe(
+            '/bahmni/home/index.html#/login',
+          );
+        });
+      } finally {
+        (globalThis as unknown as { location: Location }).location =
+          originalLocation;
+      }
+    });
+
     it('should handle malformed response error', async () => {
       const jsonError = new SyntaxError('Unexpected token in JSON');
       mockGetCurrentUserPrivileges.mockRejectedValueOnce(jsonError);

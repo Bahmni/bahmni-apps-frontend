@@ -9,7 +9,6 @@ import {
   createPatientReference,
 } from '../referenceCreator';
 
-// Mock the imported functions
 jest.mock('../codeableConceptCreator', () => ({
   createCodeableConcept: jest.fn(),
   createCoding: jest.fn(),
@@ -27,7 +26,6 @@ describe('encounterResourceCreator utility functions', () => {
   beforeEach(() => {
     jest.clearAllMocks();
 
-    // Setup mock return values
     (createCoding as jest.Mock).mockReturnValue({ code: 'mock-code' });
     (createCodeableConcept as jest.Mock).mockReturnValue({
       coding: [{ code: 'mock-code' }],
@@ -58,7 +56,6 @@ describe('encounterResourceCreator utility functions', () => {
       const visitUUID = 'visit-uuid';
       const episodeOfCareUUID = ['episode-uuid'];
       const encounterLocationUUID = 'location-uuid';
-      const encounterStartTimestamp = new Date('2023-01-01T12:00:00Z');
 
       const result = createEncounterResource(
         encounterTypeUUID,
@@ -68,7 +65,6 @@ describe('encounterResourceCreator utility functions', () => {
         visitUUID,
         episodeOfCareUUID,
         encounterLocationUUID,
-        encounterStartTimestamp,
       );
 
       expect(result).toEqual({
@@ -97,12 +93,11 @@ describe('encounterResourceCreator utility functions', () => {
         partOf: { reference: 'Encounter/mock-visit' },
         location: [{ location: { reference: 'Location/mock' } }],
         period: {
-          start: encounterStartTimestamp.toISOString(),
+          start: undefined,
         },
         episodeOfCare: [{ reference: 'EpisodeOfCare/mock' }],
       });
 
-      // Verify mock calls
       expect(createCoding).toHaveBeenCalledWith(
         encounterTypeUUID,
         FHIR_ENCOUNTER_TYPE_CODE_SYSTEM,
@@ -134,7 +129,6 @@ describe('encounterResourceCreator utility functions', () => {
       const visitUUID = 'visit-uuid';
       const episodeOfCareUUID = ['episode-uuid'];
       const encounterLocationUUID = 'location-uuid';
-      const encounterStartTimestamp = new Date('2023-01-01T12:00:00Z');
 
       const result = createEncounterResource(
         encounterTypeUUID,
@@ -144,11 +138,58 @@ describe('encounterResourceCreator utility functions', () => {
         visitUUID,
         episodeOfCareUUID,
         encounterLocationUUID,
-        encounterStartTimestamp,
       );
 
       expect(result.participant).toEqual([]);
       expect(createEncounterParticipantReference).not.toHaveBeenCalled();
+    });
+
+    it('should use existing period start when provided (PUT request)', () => {
+      const encounterTypeUUID = 'encounter-type-uuid';
+      const encounterTypeDisplayText = 'Consultation';
+      const patientUUID = 'patient-uuid';
+      const participantUUIDs = ['practitioner-uuid-1'];
+      const visitUUID = 'visit-uuid';
+      const episodeOfCareUUID = ['episode-uuid'];
+      const encounterLocationUUID = 'location-uuid';
+      const existingPeriodStart = '2023-01-01T10:00:00.000Z';
+
+      const result = createEncounterResource(
+        encounterTypeUUID,
+        encounterTypeDisplayText,
+        patientUUID,
+        participantUUIDs,
+        visitUUID,
+        episodeOfCareUUID,
+        encounterLocationUUID,
+        existingPeriodStart,
+      );
+
+      expect(result.period?.start).toEqual(existingPeriodStart);
+    });
+
+    it('should use undefined for period start when null is passed (POST request - backend handles)', () => {
+      const encounterTypeUUID = 'encounter-type-uuid';
+      const encounterTypeDisplayText = 'Consultation';
+      const patientUUID = 'patient-uuid';
+      const participantUUIDs = ['practitioner-uuid-1'];
+      const visitUUID = 'visit-uuid';
+      const episodeOfCareUUID = ['episode-uuid'];
+      const encounterLocationUUID = 'location-uuid';
+      const existingPeriodStart = null;
+
+      const result = createEncounterResource(
+        encounterTypeUUID,
+        encounterTypeDisplayText,
+        patientUUID,
+        participantUUIDs,
+        visitUUID,
+        episodeOfCareUUID,
+        encounterLocationUUID,
+        existingPeriodStart,
+      );
+
+      expect(result.period?.start).toBeUndefined();
     });
   });
 });

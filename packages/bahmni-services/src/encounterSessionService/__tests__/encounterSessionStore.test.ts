@@ -83,12 +83,12 @@ describe('setEncounterSessionDecision', () => {
     expect(getEncounterSessionSnapshot().canEditOrCreate).toBe(false);
   });
 
-  it('sets SESSION_EXPIRED and canEditOrCreate=true (AC 4 — expired session still shows edit button)', () => {
+  it('sets SESSION_EXPIRED and canEditOrCreate=false (expired session disables edit)', () => {
     setEncounterSessionDecision({
       reasons: ['SESSION_EXPIRED'],
       encounter: mockEncounter,
     });
-    expect(getEncounterSessionSnapshot().canEditOrCreate).toBe(true);
+    expect(getEncounterSessionSnapshot().canEditOrCreate).toBe(false);
   });
 
   it('notifies subscribers when decision is set', () => {

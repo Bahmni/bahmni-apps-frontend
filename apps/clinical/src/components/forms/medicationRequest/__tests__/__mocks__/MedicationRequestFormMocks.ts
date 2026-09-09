@@ -1,4 +1,5 @@
 import { Medication } from 'fhir/r4';
+import { createMockCDSCard } from '../../../../../__mocks__/cdssMocks';
 import { MedicationInputEntry } from '../../../../../models/medication';
 import { MedicationConfig } from '../../../../../models/medicationConfig';
 import { InputControlAttributes } from '../../../../../providers/clinicalConfig/models';
@@ -290,6 +291,8 @@ export const mockDispenseUnit = { uuid: 'mg-uuid', name: 'mg' };
 export const makeMockStore = (overrides = {}) => ({
   selectedMedicationRequests: [],
   attributes: undefined,
+  originalEditIds: [],
+  pendingFhirEdits: [],
   setAttributes: jest.fn(),
   addItem: jest.fn(),
   removeItem: jest.fn(),
@@ -306,6 +309,9 @@ export const makeMockStore = (overrides = {}) => ({
   updateDispenseQuantity: jest.fn(),
   updateDispenseUnit: jest.fn(),
   updateNote: jest.fn(),
+  setPendingFhirEdits: jest.fn(),
+  loadMedicationsForEdit: jest.fn(),
+  hasEditChanges: jest.fn().mockReturnValue(false),
   validateAll: jest.fn().mockReturnValue(true),
   reset: jest.fn(),
   getState: jest.fn(),
@@ -313,7 +319,7 @@ export const makeMockStore = (overrides = {}) => ({
 });
 
 export const mockMedicationEntry: MedicationInputEntry = {
-  id: 'med-123',
+  id: 'uuid-med-123',
   medication: {
     resourceType: 'Medication',
     id: 'med-123',
@@ -332,4 +338,31 @@ export const mockMedicationEntry: MedicationInputEntry = {
   dispenseUnit: null,
   errors: {},
   hasBeenValidated: true,
+};
+
+export const mockCDSCard = createMockCDSCard(
+  'MedicationRequest',
+  'med-123',
+  'Drug interaction warning',
+  'Consider alternative medication',
+);
+
+export const mockCriticalCDSCard = createMockCDSCard(
+  'MedicationRequest',
+  'med-123',
+  'Critical drug allergy alert',
+  'Do not prescribe',
+  'critical',
+);
+
+export const mockInputControlConfigWithCDSS = {
+  type: 'medication',
+  label: 'MEDICATION_REQUEST_FORM_TITLE',
+  cdss: [
+    {
+      server: 'test-cdss-server',
+      service: 'medication-prescribe',
+      event: 'onSelect',
+    },
+  ],
 };

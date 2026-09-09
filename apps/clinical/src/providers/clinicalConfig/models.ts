@@ -1,3 +1,6 @@
+import { type CDSSRule, Extension } from '@bahmni/services';
+import type { PrintOption } from '@bahmni/widgets';
+
 export interface AllergyConceptMap {
   medicationAllergenUuid: string;
   foodAllergenUuid: string;
@@ -21,11 +24,13 @@ export interface InputControl<
   encounterTypes: string[];
   privileges: string[];
   attributes: InputControlAttributes[];
+  cdss?: CDSSRule[];
 }
 
 export interface ConsultationPad {
   allergyConceptMap: AllergyConceptMap;
   statDurationInMilliseconds?: number;
+  allowedVisitTypes?: string[];
   inputControls: InputControl[];
 }
 
@@ -35,10 +40,16 @@ export interface Dashboard {
   requiredPrivileges: string[];
   icon?: string;
   default?: boolean;
+  printOptions?: PrintOption[];
+}
+
+export interface ProgramField {
+  name: string;
+  enableTranslation?: boolean;
 }
 
 export interface ProgramConfig {
-  fields: string[];
+  fields: ProgramField[];
 }
 
 export interface ContextInformation {
@@ -61,6 +72,7 @@ export interface ClinicalConfig {
   actions: Array<unknown>;
   dashboards: Array<Dashboard>;
   consultationPad: ConsultationPad;
+  extensions?: Extension[];
 }
 
 export interface ClinicalConfigContextType {

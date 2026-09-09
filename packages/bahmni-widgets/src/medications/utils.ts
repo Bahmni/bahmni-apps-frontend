@@ -129,7 +129,10 @@ export function formatMedicationRequest(
     priority,
     isImmediate,
     note,
+    cancellationNote,
     doseForm,
+    statusReason,
+    dateStopped,
     fhirResource,
   } = medication;
 
@@ -175,7 +178,10 @@ export function formatMedicationRequest(
     asNeeded,
     isImmediate,
     note,
+    cancellationNote,
     doseForm,
+    stopReason: statusReason,
+    dateStopped,
     fhirResource,
   };
 }

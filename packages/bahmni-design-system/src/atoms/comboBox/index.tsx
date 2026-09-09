@@ -3,6 +3,7 @@ import {
   ComboBoxProps as CarbonComboBoxProps,
 } from '@carbon/react';
 import { useEffect, useState } from 'react';
+import isEqual from 'react-fast-compare';
 
 export type ComboBoxProps<T> = CarbonComboBoxProps<T> & {
   testId?: string;
@@ -23,19 +24,23 @@ export const ComboBox = <T,>({
   );
 
   useEffect(() => {
-    setDisplayItem((externalSelectedItem as T) ?? null);
-
-    if (clearSelectedOnChange && externalSelectedItem) {
-      queueMicrotask(() => {
-        setDisplayItem(null);
-      });
-    }
-  }, [externalSelectedItem, clearSelectedOnChange]);
+    setDisplayItem((currentDisplayItem) => {
+      const next = (externalSelectedItem as T) ?? null;
+      return isEqual(currentDisplayItem, next) ? currentDisplayItem : next;
+    });
+  }, [externalSelectedItem]);
 
   const handleChange = (
     event: Parameters<NonNullable<CarbonComboBoxProps<T>['onChange']>>[0],
   ) => {
+    if (externalSelectedItem === undefined) {
+      setDisplayItem((event.selectedItem as T) ?? null);
+    }
     onChange?.(event);
+
+    if (clearSelectedOnChange && event.selectedItem != null) {
+      queueMicrotask(() => setDisplayItem(null));
+    }
   };
 
   return (

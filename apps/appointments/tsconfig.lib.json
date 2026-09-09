@@ -42,6 +42,9 @@
       "path": "../../packages/bahmni-widgets/tsconfig.lib.json"
     },
     {
+      "path": "../command-palette/tsconfig.lib.json"
+    },
+    {
       "path": "../../packages/bahmni-services/tsconfig.lib.json"
     },
     {

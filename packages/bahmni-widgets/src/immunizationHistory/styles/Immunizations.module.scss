@@ -50,6 +50,12 @@
   }
 }
 
+.notAdministeredTable {
+  table {
+    table-layout: auto;
+  }
+}
+
 .expandedRowContent {
   @include type-style("body-compact-01");
   color: $text-primary;

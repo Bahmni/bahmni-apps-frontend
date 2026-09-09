@@ -2,16 +2,18 @@ import {
   resetEncounterSession,
   setEncounterSessionDecision,
   markConditionAsInactive,
+  dispatchAuditEvent,
+  dispatchConsultationSaved,
 } from '@bahmni/services';
 import {
   QueryClient,
   QueryClientProvider,
   useQuery,
 } from '@tanstack/react-query';
-import { render, screen, act } from '@testing-library/react';
+import { render, screen, within, act } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import type { Encounter } from 'fhir/r4';
 import { axe, toHaveNoViolations } from 'jest-axe';
-import React from 'react';
 import { useNotification } from '../../notification';
 import { useHasPrivilege } from '../../userPrivileges/useHasPrivilege';
 import ConditionsTable from '../ConditionsTable';
@@ -30,10 +32,31 @@ jest.mock('@bahmni/services', () => ({
   ...jest.requireActual('@bahmni/services'),
   getConditions: jest.fn(),
   markConditionAsInactive: jest.fn(),
+  dispatchAuditEvent: jest.fn(),
+  dispatchConsultationSaved: jest.fn(),
+  setEncounterSessionDecision: jest.fn(),
 }));
 jest.mock('../../userPrivileges/useHasPrivilege');
+jest.mock('../../activePractitioner', () => ({
+  useActivePractitioner: jest.fn(() => ({
+    practitioner: { uuid: 'test-practitioner-uuid' },
+  })),
+}));
 
 const mockAddNotification = jest.fn();
+
+/**
+ * Default query result for any tab. Used by most tests.
+ * When useQuery is mocked globally it returns the same result for both
+ * Active and Inactive tab queries.
+ */
+const defaultQueryResult = {
+  data: { conditions: [], total: 0 },
+  error: null,
+  isError: false,
+  isLoading: false,
+  refetch: jest.fn().mockResolvedValue(undefined),
+};
 
 describe('ConditionsTable', () => {
   const queryClient: QueryClient = new QueryClient({
@@ -52,6 +75,8 @@ describe('ConditionsTable', () => {
     });
     // Default: no privilege
     (useHasPrivilege as jest.Mock).mockReturnValue(false);
+    // Default useQuery mock
+    (useQuery as jest.Mock).mockReturnValue(defaultQueryResult);
   });
   afterEach(() => {
     queryClient.clear();
@@ -89,7 +114,14 @@ describe('ConditionsTable', () => {
     status: 'active',
   });
 
-  it('should show loading state when data is loading', () => {
+  it('should render Active and Inactive tabs', () => {
+    renderTable();
+    // Tab labels are i18n keys (no locale loaded in unit tests)
+    expect(screen.getByText('CONDITION_LIST_ACTIVE_TAB')).toBeInTheDocument();
+    expect(screen.getByText('CONDITION_LIST_INACTIVE_TAB')).toBeInTheDocument();
+  });
+
+  it('should show loading state on active tab when data is loading', () => {
     (useQuery as jest.Mock).mockReturnValue({
       data: null,
       error: null,
@@ -97,11 +129,13 @@ describe('ConditionsTable', () => {
       isLoading: true,
     });
     renderTable();
-    expect(screen.getByTestId('condition-table')).toBeInTheDocument();
-    expect(screen.getByTestId('conditions-table-skeleton')).toBeInTheDocument();
+    expect(screen.getByTestId('condition-table-active')).toBeInTheDocument();
+    expect(
+      screen.getByTestId('conditions-table-active-skeleton'),
+    ).toBeInTheDocument();
   });
 
-  it('should show error state when an error occurs', () => {
+  it('should show error state on active tab when an error occurs', () => {
     (useQuery as jest.Mock).mockReturnValue({
       data: null,
       error: new Error('An unexpected error occured'),
@@ -109,8 +143,10 @@ describe('ConditionsTable', () => {
       isLoading: false,
     });
     renderTable();
-    expect(screen.getByTestId('condition-table')).toBeInTheDocument();
-    expect(screen.getByTestId('conditions-table-error')).toBeInTheDocument();
+    expect(screen.getByTestId('condition-table-active')).toBeInTheDocument();
+    expect(
+      screen.getByTestId('conditions-table-active-error'),
+    ).toBeInTheDocument();
     expect(mockAddNotification).toHaveBeenCalledWith({
       type: 'error',
       title: 'ERROR_DEFAULT_TITLE',
@@ -118,7 +154,7 @@ describe('ConditionsTable', () => {
     });
   });
 
-  it('should show empty state when an there is no data', () => {
+  it('should show empty state for active tab when there are no active conditions', () => {
     (useQuery as jest.Mock).mockReturnValue({
       data: { conditions: [], total: 0 },
       error: null,
@@ -126,11 +162,16 @@ describe('ConditionsTable', () => {
       isLoading: false,
     });
     renderTable();
-    expect(screen.getByTestId('condition-table')).toBeInTheDocument();
-    expect(screen.getByTestId('conditions-table-empty')).toBeInTheDocument();
+    expect(screen.getByTestId('condition-table-active')).toBeInTheDocument();
+    expect(
+      screen.getByTestId('conditions-table-active-empty'),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText('CONDITION_LIST_NO_ACTIVE_CONDITIONS'),
+    ).toBeInTheDocument();
   });
 
-  it('should show conditions table when an there patient has conditions marked', () => {
+  it('should show conditions table when patient has active conditions', () => {
     (useQuery as jest.Mock).mockReturnValue({
       data: {
         conditions: [
@@ -148,36 +189,26 @@ describe('ConditionsTable', () => {
             recorder: 'Dr. Smith',
             status: 'active',
           },
-          {
-            code: '73211008',
-            codeDisplay: 'High blood pressure',
-            display: 'High blood pressure',
-            id: 'condition-inactive-hypertension',
-            note: undefined,
-            recordedDate: '2022-06-10T08:15:00.000+00:00',
-            recorder: 'Dr. Johnson',
-            status: 'inactive',
-          },
         ],
-        total: 2,
+        total: 1,
       },
       error: null,
       isError: false,
       isLoading: false,
     });
     renderTable();
-    expect(screen.getByTestId('condition-table')).toBeInTheDocument();
-    expect(screen.getByText('Diabetes mellitus')).toBeInTheDocument();
-    const activeStatusTag = screen.getByTestId('condition-status-73211009');
+    const activePanel = screen.getByTestId('condition-table-active');
+    expect(activePanel).toBeInTheDocument();
+    // Scope queries to the active panel to avoid picking up the hidden inactive panel
+    expect(
+      within(activePanel).getByText('Diabetes mellitus'),
+    ).toBeInTheDocument();
+    const activeStatusTag = within(activePanel).getByTestId(
+      'condition-status-73211009',
+    );
     expect(activeStatusTag).toHaveTextContent('CONDITION_LIST_ACTIVE');
     expect(
-      screen.getByText('CONDITION_ONSET_SINCE_FORMAT'),
-    ).toBeInTheDocument();
-    expect(screen.getByText('High blood pressure')).toBeInTheDocument();
-    const inactiveStatusTag = screen.getByTestId('condition-status-73211008');
-    expect(inactiveStatusTag).toHaveTextContent('CONDITION_LIST_INACTIVE');
-    expect(
-      screen.getByText('CONDITION_TABLE_NOT_AVAILABLE'),
+      within(activePanel).getByText('CONDITION_ONSET_SINCE_FORMAT'),
     ).toBeInTheDocument();
   });
 
@@ -198,8 +229,9 @@ describe('ConditionsTable', () => {
           <ConditionsTable config={{ pageSize: 1 }} />
         </QueryClientProvider>,
       );
+      // Both tabs show pagination; get the first visible one
       expect(
-        screen.getByRole('button', { name: /next page/i }),
+        screen.getAllByRole('button', { name: /next page/i })[0],
       ).toBeInTheDocument();
     });
 
@@ -215,7 +247,10 @@ describe('ConditionsTable', () => {
           <ConditionsTable config={{ pageSize: 10 }} />
         </QueryClientProvider>,
       );
-      expect(screen.getByRole('button', { name: /next page/i })).toBeDisabled();
+      const nextButtons = screen.getAllByRole('button', {
+        name: /next page/i,
+      });
+      expect(nextButtons[0]).toBeDisabled();
     });
 
     it('displays the current page of conditions returned by the server', () => {
@@ -230,25 +265,18 @@ describe('ConditionsTable', () => {
           <ConditionsTable config={{ pageSize: 2 }} />
         </QueryClientProvider>,
       );
-      expect(screen.getByText('Condition 1')).toBeInTheDocument();
-      expect(screen.getByText('Condition 2')).toBeInTheDocument();
-      expect(screen.queryByText('Condition 3')).not.toBeInTheDocument();
+      // Scope to the active panel to avoid hidden inactive panel duplicates
+      const activePanel = screen.getByTestId('condition-table-active');
+      expect(within(activePanel).getByText('Condition 1')).toBeInTheDocument();
+      expect(within(activePanel).getByText('Condition 2')).toBeInTheDocument();
+      expect(
+        within(activePanel).queryByText('Condition 3'),
+      ).not.toBeInTheDocument();
     });
   });
 
-  // ── BAH-4652: Edit button moved to DashboardSection Tile header ─────────────
-  // ConditionsTable no longer renders an edit button; it lives in DashboardSection.
-
   it('does not render an edit button (button lives in DashboardSection header)', () => {
-    (useQuery as jest.Mock).mockReturnValue({
-      data: { conditions: [], total: 0 },
-      error: null,
-      isError: false,
-      isLoading: false,
-    });
-
     renderTable();
-
     expect(
       screen.queryByTestId('edit-conditions-button'),
     ).not.toBeInTheDocument();
@@ -273,18 +301,8 @@ describe('ConditionsTable', () => {
               recorder: 'Dr. Smith',
               status: 'active',
             },
-            {
-              code: '73211008',
-              codeDisplay: 'High blood pressure',
-              display: 'High blood pressure',
-              id: 'condition-inactive-hypertension',
-              note: undefined,
-              recordedDate: '2022-06-10T08:15:00.000+00:00',
-              recorder: 'Dr. Johnson',
-              status: 'inactive',
-            },
           ],
-          total: 2,
+          total: 1,
         },
         error: null,
         isError: false,
@@ -299,12 +317,7 @@ describe('ConditionsTable', () => {
 
     it('passes accessibility tests with Edit button visible', async () => {
       setupEditEnabled();
-      (useQuery as jest.Mock).mockReturnValue({
-        data: { conditions: [], total: 0 },
-        error: null,
-        isError: false,
-        isLoading: false,
-      });
+      (useQuery as jest.Mock).mockReturnValue(defaultQueryResult);
 
       const { container } = renderTable({ onEditClick: jest.fn() });
 
@@ -410,6 +423,11 @@ describe('ConditionsTable', () => {
         ...activeCondition,
         rawFhirResource,
       };
+      const activeEncounterObj = {
+        resourceType: 'Encounter' as const,
+        id: 'enc-1',
+        status: 'in-progress' as const,
+      };
       (useHasPrivilege as jest.Mock).mockReturnValue(true);
       (useQuery as jest.Mock).mockReturnValue({
         data: { conditions: [conditionWithRaw], total: 1 },
@@ -418,11 +436,20 @@ describe('ConditionsTable', () => {
         isLoading: false,
         refetch: jest.fn().mockResolvedValue(undefined),
       });
+      const mockReturnedEncounter = {
+        resourceType: 'Encounter',
+        id: 'enc-returned-id',
+        status: 'in-progress',
+      } as Encounter;
       (markConditionAsInactive as jest.Mock).mockResolvedValueOnce(
-        rawFhirResource,
+        mockReturnedEncounter,
       );
 
-      renderTable({ config: actionsConfig });
+      renderTable({
+        config: actionsConfig,
+        activeEncounter: activeEncounterObj,
+        activeEncounterMatched: true,
+      });
 
       // Open the modal
       await user.click(
@@ -433,7 +460,14 @@ describe('ConditionsTable', () => {
       const confirmButton = screen.getByRole('button', { name: /YES/i });
       await user.click(confirmButton);
 
-      expect(markConditionAsInactive).toHaveBeenCalledWith(rawFhirResource);
+      expect(markConditionAsInactive).toHaveBeenCalledWith(
+        rawFhirResource,
+        activeEncounterObj,
+        true,
+        undefined,
+        'test-patient-uuid',
+        'test-practitioner-uuid',
+      );
     });
 
     it('Modal closes after confirmation', async () => {
@@ -457,13 +491,14 @@ describe('ConditionsTable', () => {
         isLoading: false,
         refetch: jest.fn().mockResolvedValue(undefined),
       });
-      (markConditionAsInactive as jest.Mock).mockResolvedValueOnce(
-        rawFhirResource,
-      );
+      (markConditionAsInactive as jest.Mock).mockResolvedValueOnce({
+        resourceType: 'Encounter',
+        id: 'enc-modal-close',
+        status: 'in-progress',
+      });
 
       renderTable({ config: actionsConfig });
 
-      // Open modal by clicking button
       await user.click(
         screen.getByTestId(`condition-mark-inactive-${conditionWithRaw.code}`),
       );
@@ -471,16 +506,143 @@ describe('ConditionsTable', () => {
         'is-visible',
       );
 
-      // Confirm the action
       const confirmButton = screen.getByRole('button', { name: /YES/i });
       await user.click(confirmButton);
 
-      // After async operation, modal should close (lose is-visible class)
       await act(async () => {});
 
       expect(screen.getByTestId('mark-inactive-confirm-modal')).not.toHaveClass(
         'is-visible',
       );
+    });
+
+    const setupWithRawCondition = (rawId: string) => {
+      const rawFhirResource = {
+        resourceType: 'Condition' as const,
+        id: rawId,
+        clinicalStatus: { coding: [{ code: 'active' }] },
+      };
+      (useHasPrivilege as jest.Mock).mockReturnValue(true);
+      (useQuery as jest.Mock).mockReturnValue({
+        data: {
+          conditions: [{ ...activeCondition, rawFhirResource }],
+          total: 1,
+        },
+        error: null,
+        isError: false,
+        isLoading: false,
+        refetch: jest.fn().mockResolvedValue(undefined),
+      });
+    };
+
+    describe('AC4 — error handling', () => {
+      it('shows error notification when markConditionAsInactive rejects', async () => {
+        const user = userEvent.setup();
+        setupWithRawCondition('cond-err');
+        (markConditionAsInactive as jest.Mock).mockRejectedValueOnce(
+          new Error('Server error'),
+        );
+
+        renderTable({ config: actionsConfig });
+        await user.click(
+          screen.getByTestId(`condition-mark-inactive-${activeCondition.code}`),
+        );
+        await user.click(screen.getByRole('button', { name: /YES/i }));
+        await act(async () => {});
+
+        expect(mockAddNotification).toHaveBeenCalledWith(
+          expect.objectContaining({ type: 'error' }),
+        );
+        expect(dispatchAuditEvent).not.toHaveBeenCalled();
+        expect(dispatchConsultationSaved).not.toHaveBeenCalled();
+        expect(setEncounterSessionDecision).not.toHaveBeenCalled();
+      });
+    });
+
+    describe('AC5 — audit log and session update', () => {
+      it('dispatches audit event, consultationSaved, and updates session store on success', async () => {
+        const user = userEvent.setup();
+        setupWithRawCondition('cond-audit');
+        const mockReturnedEnc = {
+          resourceType: 'Encounter',
+          id: 'enc-audit-returned',
+          status: 'in-progress',
+        } as Encounter;
+        (markConditionAsInactive as jest.Mock).mockResolvedValueOnce(
+          mockReturnedEnc,
+        );
+
+        renderTable({ config: actionsConfig });
+        await user.click(
+          screen.getByTestId(`condition-mark-inactive-${activeCondition.code}`),
+        );
+        await user.click(screen.getByRole('button', { name: /YES/i }));
+        await act(async () => {});
+
+        expect(dispatchAuditEvent).toHaveBeenCalledWith(
+          expect.objectContaining({
+            eventType: 'EDIT_ENCOUNTER',
+            patientUuid: 'test-patient-uuid',
+            messageParams: expect.objectContaining({
+              encounterUuid: mockReturnedEnc.id,
+            }),
+          }),
+        );
+        expect(dispatchConsultationSaved).toHaveBeenCalledWith(
+          expect.objectContaining({
+            patientUUID: 'test-patient-uuid',
+            updatedResources: expect.objectContaining({ conditions: true }),
+          }),
+        );
+        expect(setEncounterSessionDecision).toHaveBeenCalledWith({
+          reasons: ['MATCHED'],
+          encounter: mockReturnedEnc,
+        });
+      });
+    });
+
+    describe('AC6 — cache invalidation', () => {
+      it('invalidates conditions query after confirmation', async () => {
+        const user = userEvent.setup();
+        setupWithRawCondition('cond-cache');
+        (markConditionAsInactive as jest.Mock).mockResolvedValueOnce({
+          resourceType: 'Encounter',
+          id: 'enc-cache',
+          status: 'in-progress',
+        });
+        const invalidateSpy = jest.spyOn(queryClient, 'invalidateQueries');
+
+        renderTable({ config: actionsConfig });
+        await user.click(
+          screen.getByTestId(`condition-mark-inactive-${activeCondition.code}`),
+        );
+        await user.click(screen.getByRole('button', { name: /YES/i }));
+        await act(async () => {});
+
+        expect(invalidateSpy).toHaveBeenCalledWith(
+          expect.objectContaining({ queryKey: ['conditions'] }),
+        );
+      });
+
+      it('invalidates conditions query even when markConditionAsInactive rejects', async () => {
+        const user = userEvent.setup();
+        setupWithRawCondition('cond-cache-err');
+        (markConditionAsInactive as jest.Mock).mockRejectedValueOnce(
+          new Error('fail'),
+        );
+        const invalidateSpy = jest.spyOn(queryClient, 'invalidateQueries');
+
+        renderTable({ config: actionsConfig });
+        await user.click(
+          screen.getByTestId(`condition-mark-inactive-${activeCondition.code}`),
+        );
+        await user.click(screen.getByRole('button', { name: /YES/i }));
+        await act(async () => {});
+
+        expect(invalidateSpy).toHaveBeenCalledWith(
+          expect.objectContaining({ queryKey: ['conditions'] }),
+        );
+      });
     });
   });
 });

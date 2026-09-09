@@ -31,7 +31,7 @@
   "include": ["src/**/*.js", "src/**/*.jsx", "src/**/*.ts", "src/**/*.tsx"],
   "references": [
     {
-      "path": "../packages/bahmni-services/tsconfig.lib.json"
+      "path": "../apps/patient-documents/tsconfig.lib.json"
     },
     {
       "path": "../apps/appointments/tsconfig.lib.json"
@@ -47,6 +47,9 @@
     },
     {
       "path": "../packages/bahmni-design-system/tsconfig.lib.json"
+    },
+    {
+      "path": "../apps/home/tsconfig.lib.json"
     }
   ]
 }

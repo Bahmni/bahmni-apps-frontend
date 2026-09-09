@@ -2,6 +2,8 @@ import { getImmunizationStore } from '../stores';
 import {
   mockAllRequiredAttributes,
   mockAttributesWithOptionalAdministered,
+  mockCDSCard,
+  mockCriticalCDSCard,
   mockFullAttributes,
   mockImmunizationEntryWithErrors,
   mockVaccineCode,
@@ -163,7 +165,7 @@ describe('useImmunizationHistoryStore', () => {
       );
     });
 
-    it('is a no-op when the id does not exist', () => {
+    it('leaves selectedImmunizations unchanged when the id does not exist', () => {
       store().addImmunization(mockVaccineCode);
       const before = [...store().selectedImmunizations];
 
@@ -190,7 +192,7 @@ describe('useImmunizationHistoryStore', () => {
     );
 
     it.each(FIELD_UPDATE_CASES)(
-      'is a no-op when updating %s with a non-existent id',
+      'leaves selectedImmunizations unchanged when updating %s with a non-existent id',
       (_fieldName, actionName, validValue) => {
         store().addImmunization(mockVaccineCode);
         const before = [...store().selectedImmunizations];
@@ -425,13 +427,180 @@ describe('useImmunizationHistoryStore', () => {
       expect(store().selectedImmunizations[1]).toEqual(otherEntryBefore);
     });
 
-    it('is a no-op for a non-existent id', () => {
+    it('leaves selectedImmunizations unchanged when the id does not exist', () => {
       store().addImmunization(mockVaccineCode);
       const before = [...store().selectedImmunizations];
 
       store().updateNote('non-existent-id', 'Another note');
 
       expect(store().selectedImmunizations).toEqual(before);
+    });
+  });
+
+  describe('updateStatusReason', () => {
+    it('updates statusReason on the target entry without touching other entries', () => {
+      store().addImmunization(mockVaccineCode);
+      store().addImmunization(secondVaccineCode);
+      const targetId = store().selectedImmunizations[0].id;
+      const otherEntryBefore = store().selectedImmunizations[1];
+
+      store().updateStatusReason(targetId, {
+        code: 'not-age-appropriate',
+        display: 'Not age appropriate',
+      });
+
+      expect(store().selectedImmunizations[0].statusReason).toEqual({
+        code: 'not-age-appropriate',
+        display: 'Not age appropriate',
+      });
+      expect(store().selectedImmunizations[1]).toEqual(otherEntryBefore);
+    });
+
+    it('leaves selectedImmunizations unchanged when the id does not exist', () => {
+      store().addImmunization(mockVaccineCode);
+      const before = [...store().selectedImmunizations];
+
+      store().updateStatusReason('non-existent-id', {
+        code: 'x',
+        display: 'X',
+      });
+
+      expect(store().selectedImmunizations).toEqual(before);
+    });
+
+    it('clears statusReason error when entry has been validated and a value is set', () => {
+      store().setAttributes([{ name: 'statusReason', required: true }]);
+      store().addImmunization(mockVaccineCode);
+      const id = store().selectedImmunizations[0].id;
+
+      store().validateAll();
+      expect(
+        store().selectedImmunizations[0].errors.statusReason,
+      ).toBeDefined();
+
+      store().updateStatusReason(id, { code: 'other', display: 'Other' });
+
+      expect(
+        store().selectedImmunizations[0].errors.statusReason,
+      ).toBeUndefined();
+    });
+
+    it('retains statusReason error when set to null after validation', () => {
+      store().setAttributes([{ name: 'statusReason', required: true }]);
+      store().addImmunization(mockVaccineCode);
+      const id = store().selectedImmunizations[0].id;
+
+      store().validateAll();
+      store().updateStatusReason(id, null);
+
+      expect(
+        store().selectedImmunizations[0].errors.statusReason,
+      ).toBeDefined();
+    });
+
+    it('allows clearing statusReason back to null', () => {
+      store().addImmunization(mockVaccineCode);
+      const id = store().selectedImmunizations[0].id;
+      store().updateStatusReason(id, { code: 'x', display: 'X' });
+
+      store().updateStatusReason(id, null);
+
+      expect(store().selectedImmunizations[0].statusReason).toBeNull();
+    });
+  });
+
+  describe('setWaiverReasonConfig', () => {
+    it('sets the waiverReasonConfig used for conditional validation', () => {
+      store().setWaiverReasonConfig({ otherReasonConceptUuid: 'other-uuid' });
+
+      expect(store().waiverReasonConfig).toEqual({
+        otherReasonConceptUuid: 'other-uuid',
+      });
+    });
+  });
+
+  describe('validateAll - conditional note requirement for the "Other" reason', () => {
+    const OTHER_UUID = 'other-uuid';
+
+    it('requires note when statusReason matches otherReasonConceptUuid, even if note is not marked required', () => {
+      store().setWaiverReasonConfig({ otherReasonConceptUuid: OTHER_UUID });
+      store().setAttributes([{ name: 'note', required: false }]);
+      store().addImmunization(mockVaccineCode);
+      const id = store().selectedImmunizations[0].id;
+      store().updateStatusReason(id, { code: OTHER_UUID, display: 'Other' });
+
+      const isValid = store().validateAll();
+
+      expect(isValid).toBe(false);
+      expect(store().selectedImmunizations[0].errors.note).toBe(
+        'IMMUNIZATION_INPUT_CONTROL_NOTE_REQUIRED',
+      );
+    });
+
+    it('passes validation once a note is provided for the "Other" reason', () => {
+      store().setWaiverReasonConfig({ otherReasonConceptUuid: OTHER_UUID });
+      store().setAttributes([{ name: 'note', required: false }]);
+      store().addImmunization(mockVaccineCode);
+      const id = store().selectedImmunizations[0].id;
+      store().updateStatusReason(id, { code: OTHER_UUID, display: 'Other' });
+      store().updateNote(id, 'Some explanation');
+
+      const isValid = store().validateAll();
+
+      expect(isValid).toBe(true);
+      expect(store().selectedImmunizations[0].errors.note).toBeUndefined();
+    });
+
+    it('does not require note when statusReason does not match otherReasonConceptUuid', () => {
+      store().setWaiverReasonConfig({ otherReasonConceptUuid: OTHER_UUID });
+      store().setAttributes([{ name: 'note', required: false }]);
+      store().addImmunization(mockVaccineCode);
+      const id = store().selectedImmunizations[0].id;
+      store().updateStatusReason(id, {
+        code: 'not-age-appropriate',
+        display: 'Not age appropriate',
+      });
+
+      const isValid = store().validateAll();
+
+      expect(isValid).toBe(true);
+      expect(store().selectedImmunizations[0].errors.note).toBeUndefined();
+    });
+
+    it('clears a previously-set "Other reason" note error once the reason changes away from Other', () => {
+      store().setWaiverReasonConfig({ otherReasonConceptUuid: OTHER_UUID });
+      store().setAttributes([{ name: 'note', required: false }]);
+      store().addImmunization(mockVaccineCode);
+      const id = store().selectedImmunizations[0].id;
+      store().updateStatusReason(id, { code: OTHER_UUID, display: 'Other' });
+      store().validateAll();
+      expect(store().selectedImmunizations[0].errors.note).toBeDefined();
+
+      store().updateStatusReason(id, {
+        code: 'not-age-appropriate',
+        display: 'Not age appropriate',
+      });
+      store().validateAll();
+
+      expect(store().selectedImmunizations[0].errors.note).toBeUndefined();
+    });
+
+    it('still enforces note as required via attribute config regardless of reason', () => {
+      store().setWaiverReasonConfig({ otherReasonConceptUuid: OTHER_UUID });
+      store().setAttributes([{ name: 'note', required: true }]);
+      store().addImmunization(mockVaccineCode);
+      const id = store().selectedImmunizations[0].id;
+      store().updateStatusReason(id, {
+        code: 'not-age-appropriate',
+        display: 'Not age appropriate',
+      });
+
+      const isValid = store().validateAll();
+
+      expect(isValid).toBe(false);
+      expect(store().selectedImmunizations[0].errors.note).toBe(
+        'IMMUNIZATION_INPUT_CONTROL_NOTE_REQUIRED',
+      );
     });
   });
 
@@ -460,7 +629,7 @@ describe('useImmunizationHistoryStore', () => {
       expect(store().selectedImmunizations[0].stockLocation).toBeNull();
     });
 
-    it('is a no-op for a non-existent id', () => {
+    it('leaves selectedImmunizations unchanged when the id does not exist', () => {
       store().addImmunization(mockVaccineCode);
       const before = [...store().selectedImmunizations];
 
@@ -523,6 +692,87 @@ describe('useImmunizationHistoryStore', () => {
       const state = store().getState();
       expect(state.selectedImmunizations).toHaveLength(1);
       expect(state.attributes).toEqual(mockFullAttributes);
+    });
+  });
+
+  describe('CDSS functionality', () => {
+    beforeEach(() => {
+      store().reset();
+      store().setAttributes(mockAllRequiredAttributes);
+    });
+
+    describe('updateItemCDSCards', () => {
+      it('updates CDS cards for specific item', () => {
+        const itemId = store().addImmunization(mockVaccineCode);
+        store().updateItemCDSCards(itemId, [mockCDSCard]);
+
+        const item = store().selectedImmunizations.find((i) => i.id === itemId);
+        expect(item?.cdsCards).toEqual([mockCDSCard]);
+      });
+
+      it('updates only the specified item', () => {
+        const itemId1 = store().addImmunization(mockVaccineCode);
+        const itemId2 = store().addImmunization(secondVaccineCode);
+
+        store().updateItemCDSCards(itemId1, [mockCDSCard]);
+
+        const item1 = store().selectedImmunizations.find(
+          (i) => i.id === itemId1,
+        );
+        const item2 = store().selectedImmunizations.find(
+          (i) => i.id === itemId2,
+        );
+
+        expect(item1?.cdsCards).toEqual([mockCDSCard]);
+        expect(item2?.cdsCards).toBeUndefined();
+      });
+
+      it('replaces existing CDS cards', () => {
+        const itemId = store().addImmunization(mockVaccineCode);
+        store().updateItemCDSCards(itemId, [mockCDSCard]);
+        store().updateItemCDSCards(itemId, [mockCriticalCDSCard]);
+
+        const item = store().selectedImmunizations.find((i) => i.id === itemId);
+        expect(item?.cdsCards).toEqual([mockCriticalCDSCard]);
+      });
+    });
+
+    describe('hasCriticalCDSCards', () => {
+      it('returns false when no items have cards', () => {
+        store().addImmunization(mockVaccineCode);
+        expect(store().hasCriticalCDSCards()).toBe(false);
+      });
+
+      it('returns false when items only have non-critical cards', () => {
+        const itemId = store().addImmunization(mockVaccineCode);
+        store().updateItemCDSCards(itemId, [mockCDSCard]);
+
+        expect(store().hasCriticalCDSCards()).toBe(false);
+      });
+
+      it('returns true when at least one item has a critical card', () => {
+        const itemId = store().addImmunization(mockVaccineCode);
+        store().updateItemCDSCards(itemId, [mockCriticalCDSCard]);
+
+        expect(store().hasCriticalCDSCards()).toBe(true);
+      });
+
+      it('returns true when one of multiple items has a critical card', () => {
+        const itemId1 = store().addImmunization(mockVaccineCode);
+        const itemId2 = store().addImmunization(secondVaccineCode);
+
+        store().updateItemCDSCards(itemId1, [mockCDSCard]);
+        store().updateItemCDSCards(itemId2, [mockCriticalCDSCard]);
+
+        expect(store().hasCriticalCDSCards()).toBe(true);
+      });
+
+      it('returns true when item has both critical and non-critical cards', () => {
+        const itemId = store().addImmunization(mockVaccineCode);
+        store().updateItemCDSCards(itemId, [mockCDSCard, mockCriticalCDSCard]);
+
+        expect(store().hasCriticalCDSCards()).toBe(true);
+      });
     });
   });
 });

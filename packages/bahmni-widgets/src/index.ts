@@ -6,22 +6,49 @@ export {
 } from './confirmationModal/ConfirmationModal';
 
 // Widget Components
+export { DocumentPrintButton } from './documentPrintButton';
+export type { PrintOption } from './documentPrintButton';
+export { DocumentUpload, renderDocumentTile } from './documentUpload';
+export type {
+  DocumentUploadProps,
+  DocumentSaveTarget,
+  DocumentTileData,
+} from './documentUpload';
 export { PatientDetails } from './patientDetails';
 export { AllergiesTable } from './allergies';
 export { AppointmentsTable } from './appointments';
 export { ConditionsTable } from './conditions';
 export { DiagnosesTable } from './diagnoses';
-export { MedicationsTable } from './medications';
+export {
+  MedicationsTable,
+  CANCEL_VACCINATION_INPUT_CONTROL_KEY,
+} from './medications';
 export { RadiologyInvestigationTable } from './radiologyInvestigation';
 export { RadiologyInvestigationReport } from './radiologyInvestigationReport';
 export { ObservationsRenderer } from './observationsRenderer';
 export { LabInvestigation } from './labinvestigation';
-export { SearchPatient } from './searchPatient';
+export { SearchPatient } from './search/searchPatient';
 export { VitalFlowSheet } from './vitalFlowSheet';
 export { GenericServiceRequestTable } from './genericServiceRequest';
+export { TaskList } from './tasks';
 export { PatientProgramsTable } from './patientPrograms';
 export { ImmunizationHistory } from './immunizationHistory';
 export { ProgramDetails } from './programDetails';
+export { extractFormName } from './observations';
+
+export {
+  CommandPaletteProvider,
+  useCommandPalette,
+  type CommandPaletteContextType,
+  type AnnotationSearchType,
+  type NavItem,
+  type PatientAction,
+  type PatientActionContext,
+  type PatientFieldKey,
+  type PatientFieldsConfig,
+  type SearchAnnotation,
+  type TriggerConfig,
+} from './commandPalette';
 
 // Notification System
 export {
@@ -31,7 +58,9 @@ export {
 } from './notification';
 
 // Hooks
+export { useDebounce } from './commandPalette/useDebounce';
 export { usePatientUUID } from './hooks/usePatientUUID';
+export { usePatientPhoto } from './hooks/usePatientPhoto';
 export { useUserPrivilege } from './userPrivileges/useUserPrivilege';
 export { useHasPrivilege } from './userPrivileges/useHasPrivilege';
 
@@ -53,6 +82,16 @@ export {
 // Config Provider Factories
 export { createConfigProvider, createConfigHook } from './configProvider';
 
+// Search Widgets
+export {
+  registerSearchWidget,
+  getSearchWidget,
+  clearSearchWidgetRegistry,
+  type SearchWidget,
+  type SearchWidgetProps,
+  CommonSearchWidget,
+} from './search';
+
 // Widget Registry
 export {
   registerWidget,
@@ -64,3 +103,21 @@ export {
   resetWidgetRegistry,
   type WidgetConfig,
 } from './registry';
+
+// User Global Action
+export {
+  UserGlobalAction,
+  UserActionProvider,
+  useUserActionRegistry,
+  type UserAction,
+} from './userGlobalAction';
+
+// Location
+export {
+  LocationContext,
+  useLocation,
+  LocationProvider,
+  LocationSelector,
+} from './location';
+
+export { deriveFormSchemaData } from './utils/Observations';

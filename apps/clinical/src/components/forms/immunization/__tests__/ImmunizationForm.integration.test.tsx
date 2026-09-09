@@ -4,6 +4,8 @@ import {
   getUserLoginLocation,
   getVaccinations,
   searchFHIRConcepts,
+  dispatchCDSSCheck,
+  useCDSSResultsListener,
 } from '@bahmni/services';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { act, render, screen, waitFor } from '@testing-library/react';
@@ -17,11 +19,14 @@ import { createImmunizationBundleEntries } from '../utils';
 import {
   mockAdministrationInputControlConfig,
   mockAdministrationInputControlConfigAllowed,
+  mockCDSCard,
   mockClinicalConfigContext,
   mockCovid19VaccineDrug,
+  mockCriticalCDSCard,
   mockEncounterSubject,
   mockFetchedMedication,
   mockImmunizationInputControlConfig,
+  mockInfluenzaVaccineDrug,
   mockLocations,
   mockMedicationRequest,
   mockMedicationRequestNoMedRef,
@@ -32,23 +37,31 @@ import {
 
 jest.mock('@bahmni/services', () => ({
   ...jest.requireActual('@bahmni/services'),
+  dispatchCDSSCheck: jest.fn(),
   getLocationByTag: jest.fn(),
   getMedicationByUuid: jest.fn(),
   getUserLoginLocation: jest.fn(),
   getVaccinations: jest.fn(),
   searchFHIRConcepts: jest.fn(),
+  useCDSSResultsListener: jest.fn(),
 }));
 
 jest.mock('../../../../providers/clinicalConfig', () => ({
   useClinicalConfig: jest.fn(),
 }));
 
+const mockDispatchCDSSCheck = jest.mocked(dispatchCDSSCheck);
+const mockUseCDSSResultsListener = jest.mocked(useCDSSResultsListener);
+
 Element.prototype.scrollIntoView = jest.fn();
 
 const mockVaccinationBundle = {
   resourceType: 'Bundle',
   type: 'searchset',
-  entry: [{ resource: mockCovid19VaccineDrug }],
+  entry: [
+    { resource: mockCovid19VaccineDrug },
+    { resource: mockInfluenzaVaccineDrug },
+  ],
 };
 
 const createWrapper = () => {
@@ -67,6 +80,9 @@ describe('ImmunizationForm Integration Tests', () => {
     jest.clearAllMocks();
     getImmunizationStore('immunizationHistory').getState().reset();
     getImmunizationStore('immunizationAdministration').getState().reset();
+
+    mockDispatchCDSSCheck.mockClear();
+    mockUseCDSSResultsListener.mockClear();
 
     (useClinicalConfig as jest.Mock).mockReturnValue(mockClinicalConfigContext);
     (searchFHIRConcepts as jest.Mock).mockImplementation((uuid: string) => {
@@ -329,6 +345,173 @@ describe('ImmunizationForm Integration Tests', () => {
       expect(
         screen.getByText('Error loading immunization details'),
       ).toBeInTheDocument();
+    });
+  });
+
+  describe('CDSS Integration', () => {
+    beforeEach(() => {
+      mockDispatchCDSSCheck.mockClear();
+      mockUseCDSSResultsListener.mockClear();
+      delete (globalThis as any).__cdssResultsHandler;
+      mockUseCDSSResultsListener.mockImplementation((handler) => {
+        (globalThis as any).__cdssResultsHandler = handler;
+      });
+    });
+
+    it('dispatches CDSS check event and handles results in end-to-end flow with basedOn', async () => {
+      const mockAdministrationConfigWithCDSS = {
+        ...mockAdministrationInputControlConfigAllowed,
+        cdss: [
+          {
+            server: 'test-cdss-server',
+            service: 'immunization-administration',
+            event: 'onSelect',
+          },
+        ],
+      };
+
+      render(
+        <ImmunizationForm
+          encounterSessionStartContext={{ basedOn: mockMedicationRequest }}
+          inputControlConfig={mockAdministrationConfigWithCDSS}
+        />,
+        {
+          wrapper: createWrapper(),
+        },
+      );
+
+      await waitFor(() => {
+        expect(
+          screen.queryByTestId('immunization-history-loading-test-id'),
+        ).not.toBeInTheDocument();
+      });
+
+      await waitFor(() => {
+        expect(screen.getByText('Added Immunization')).toBeInTheDocument();
+      });
+
+      await waitFor(() => {
+        expect(mockDispatchCDSSCheck).toHaveBeenCalledWith(
+          expect.objectContaining({
+            controlKey: 'immunizationAdministration',
+            rules: expect.arrayContaining([
+              expect.objectContaining({ event: 'onSelect' }),
+            ]),
+          }),
+        );
+      });
+
+      const { selectedImmunizations } = getImmunizationStore(
+        'immunizationAdministration',
+      ).getState();
+      expect(selectedImmunizations).toHaveLength(1);
+      const immunizationId = selectedImmunizations[0].id;
+
+      const handler = (globalThis as any).__cdssResultsHandler;
+      expect(handler).toBeDefined();
+
+      const cardWithCorrectId = {
+        ...mockCDSCard,
+        suggestions: [
+          {
+            ...mockCDSCard.suggestions[0],
+            actions: [
+              {
+                ...mockCDSCard.suggestions[0].actions[0],
+                resource: {
+                  ...mockCDSCard.suggestions[0].actions[0].resource,
+                  id: immunizationId,
+                },
+              },
+            ],
+          },
+        ],
+      };
+
+      const criticalCardWithCorrectId = {
+        ...mockCriticalCDSCard,
+        suggestions: [
+          {
+            ...mockCriticalCDSCard.suggestions[0],
+            actions: [
+              {
+                ...mockCriticalCDSCard.suggestions[0].actions[0],
+                resource: {
+                  ...mockCriticalCDSCard.suggestions[0].actions[0].resource,
+                  id: immunizationId,
+                },
+              },
+            ],
+          },
+        ],
+      };
+
+      await act(async () => {
+        handler({
+          cards: [cardWithCorrectId],
+          triggerItemId: immunizationId,
+          controlKey: 'immunizationAdministration',
+        });
+      });
+
+      const updatedState = getImmunizationStore(
+        'immunizationAdministration',
+      ).getState();
+      const updatedImmunization = updatedState.selectedImmunizations.find(
+        (i) => i.id === immunizationId,
+      );
+
+      expect(updatedImmunization?.cdsCards).toEqual([cardWithCorrectId]);
+
+      expect(updatedState.hasCriticalCDSCards()).toBe(false);
+
+      await act(async () => {
+        handler({
+          cards: [criticalCardWithCorrectId],
+          triggerItemId: immunizationId,
+          controlKey: 'immunizationAdministration',
+        });
+      });
+
+      const finalState = getImmunizationStore(
+        'immunizationAdministration',
+      ).getState();
+      expect(finalState.hasCriticalCDSCards()).toBe(true);
+    });
+
+    it('does not dispatch CDSS check when no CDSS rules are configured', async () => {
+      const user = userEvent.setup();
+
+      render(
+        <ImmunizationForm
+          encounterSessionStartContext={{}}
+          inputControlConfig={mockImmunizationInputControlConfig}
+        />,
+        {
+          wrapper: createWrapper(),
+        },
+      );
+
+      await waitFor(() => {
+        expect(
+          screen.queryByTestId('immunization-history-loading-test-id'),
+        ).not.toBeInTheDocument();
+      });
+
+      await user.type(
+        screen.getByRole('combobox', { name: /search to add immunization/i }),
+        'flu',
+      );
+      await waitFor(() => {
+        expect(screen.getByText('Influenza Vaccine')).toBeInTheDocument();
+      });
+      await user.click(screen.getByText('Influenza Vaccine'));
+
+      await waitFor(() => {
+        expect(screen.getByText('Added Immunization')).toBeInTheDocument();
+      });
+
+      expect(mockDispatchCDSSCheck).not.toHaveBeenCalled();
     });
   });
 });

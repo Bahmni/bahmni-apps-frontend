@@ -1,7 +1,23 @@
 import { getPriorityByOrder, filterReplacementEntries } from '@bahmni/services';
 import type { Bundle, BundleEntry, ServiceRequest } from 'fhir/r4';
 
-import { ServiceRequestViewModel } from './models';
+import { ServiceRequestStatus, ServiceRequestViewModel } from './models';
+
+export const getStatusDotClassName = (
+  status: string,
+  styles: Record<string, string>,
+): string => {
+  switch (status) {
+    case ServiceRequestStatus.Active:
+      return styles.inProgressStatus;
+    case ServiceRequestStatus.Completed:
+      return styles.completedStatus;
+    case ServiceRequestStatus.Revoked:
+      return styles.revokedStatus;
+    default:
+      return styles.unknownStatus;
+  }
+};
 
 /**
  * Priority order for service request priorities (case insensitive)

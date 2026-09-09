@@ -255,6 +255,20 @@ describe('conceptService', () => {
         `/openmrs/ws/rest/v1/concept?s=byFullySpecifiedName&name=${encodeURIComponent(conceptName)}`,
       );
     });
+
+    it('should append properly encoded custom view to URL when provided', async () => {
+      const mockResponse = { results: [mockConceptData] };
+      (api.get as jest.Mock).mockResolvedValue(mockResponse);
+
+      const conceptName = 'Patient Document';
+      const customView = 'custom:(setMembers:(uuid,display))';
+
+      await searchConceptByName(conceptName, customView);
+
+      expect(api.get).toHaveBeenCalledWith(
+        `/openmrs/ws/rest/v1/concept?s=byFullySpecifiedName&name=${encodeURIComponent(conceptName)}&v=${encodeURIComponent(customView)}`,
+      );
+    });
   });
 
   describe('getDisplayNameForConcept', () => {

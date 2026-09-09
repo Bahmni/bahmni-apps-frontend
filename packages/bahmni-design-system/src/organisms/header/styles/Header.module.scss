@@ -12,8 +12,11 @@
 }
 
 // ── Header name ("Home" link) ────────────────────────────────────────────────
-// Carbon sets text-primary on .cds--header__name regardless of background.
-:global(.cds--header__name),
+// Carbon sets text-primary on `a.cds--header__name` (specificity 0,1,1) for both
+// rest and hover. Match that specificity (`.cds--header a.cds--header__name` =
+// 0,2,1) on both states so the brand name is inverse (white) at rest AND on
+// hover — otherwise it renders dark at rest and only turns white on hover.
+:global(.cds--header a.cds--header__name),
 :global(.cds--header a.cds--header__name:hover) {
   color: $text-inverse;
 }

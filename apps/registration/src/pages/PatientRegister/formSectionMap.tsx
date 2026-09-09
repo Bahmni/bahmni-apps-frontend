@@ -54,12 +54,7 @@ export const builtInFormSections: FormSectionConfig[] = [
       ) {
         return null;
       }
-      return (
-        <PatientRelationships
-          ref={refs.relationshipsRef}
-          initialData={data.relationshipsInitialData}
-        />
-      );
+      return <PatientRelationships ref={refs.relationshipsRef} />;
     },
   },
 ];

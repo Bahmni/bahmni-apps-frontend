@@ -25,7 +25,7 @@
   border-left: 0 !important;
   border-right: 0 !important;
   border-bottom: 1px solid $border-subtle-02;
-  height: $spacing-11 !important;
+  min-height: $spacing-11 !important;
 }
 
 .selectedDiagnosisItem:last-of-type {
@@ -37,7 +37,7 @@
   border-left: 0 !important;
   border-right: 0 !important;
   border-bottom: 1px solid $border-subtle-02;
-  height: $spacing-11 !important;
+  min-height: $spacing-11 !important;
 }
 
 .selectedConditionItem:last-of-type {

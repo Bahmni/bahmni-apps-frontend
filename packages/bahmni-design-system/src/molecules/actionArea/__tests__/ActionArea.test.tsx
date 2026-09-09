@@ -1,6 +1,5 @@
 import { render, screen, fireEvent } from '@testing-library/react';
 import { axe, toHaveNoViolations } from 'jest-axe';
-import React from 'react';
 import ActionArea from '../ActionArea';
 
 expect.extend(toHaveNoViolations);
@@ -25,6 +24,43 @@ describe('ActionArea', () => {
     expect(screen.getByText('Done')).toBeInTheDocument();
     expect(screen.getByText('Cancel')).toBeInTheDocument();
     expect(screen.getByTestId('test-content')).toBeInTheDocument();
+  });
+
+  it('renders with only primary button when secondaryButtonText is not provided', () => {
+    const propsWithoutSecondary = {
+      title: 'Test Title',
+      primaryButtonText: 'Save',
+      onPrimaryButtonClick: jest.fn(),
+      content: <div data-testid="test-content">Test Content</div>,
+    };
+
+    render(<ActionArea {...propsWithoutSecondary} />);
+
+    expect(screen.getByText('Test Title')).toBeInTheDocument();
+    expect(screen.getByText('Save')).toBeInTheDocument();
+    expect(
+      screen.queryByTestId('action-area-secondary-button'),
+    ).not.toBeInTheDocument();
+    expect(screen.getByTestId('test-content')).toBeInTheDocument();
+  });
+
+  it('renders primary and tertiary buttons without secondary button', () => {
+    const propsWithoutSecondary = {
+      title: 'Test Title',
+      primaryButtonText: 'Save',
+      onPrimaryButtonClick: jest.fn(),
+      tertiaryButtonText: 'Cancel',
+      onTertiaryButtonClick: jest.fn(),
+      content: <div data-testid="test-content">Test Content</div>,
+    };
+
+    render(<ActionArea {...propsWithoutSecondary} />);
+
+    expect(screen.getByText('Save')).toBeInTheDocument();
+    expect(screen.getByText('Cancel')).toBeInTheDocument();
+    expect(
+      screen.queryByTestId('action-area-secondary-button'),
+    ).not.toBeInTheDocument();
   });
 
   it('renders with all props', () => {
@@ -258,6 +294,249 @@ describe('ActionArea', () => {
       );
       const results = await axe(container);
       expect(results).toHaveNoViolations();
+    });
+  });
+
+  describe('Expand/Collapse Toggle', () => {
+    it('does not render the toggle button when onToggleExpand is not provided', () => {
+      render(<ActionArea {...defaultProps} />);
+
+      expect(
+        screen.queryByTestId('action-area-expand-toggle'),
+      ).not.toBeInTheDocument();
+    });
+
+    it('renders the toggle button when onToggleExpand is provided', () => {
+      render(<ActionArea {...defaultProps} onToggleExpand={jest.fn()} />);
+
+      expect(
+        screen.getByTestId('action-area-expand-toggle'),
+      ).toBeInTheDocument();
+    });
+
+    it('shows the expand icon and label when isExpanded is false', () => {
+      render(
+        <ActionArea
+          {...defaultProps}
+          onToggleExpand={jest.fn()}
+          isExpanded={false}
+          expandAriaLabel="Expand consultation pad"
+          collapseAriaLabel="Collapse consultation pad"
+        />,
+      );
+
+      const toggleButton = screen.getByTestId('action-area-expand-toggle');
+      expect(toggleButton).toHaveAccessibleName('Expand consultation pad');
+    });
+
+    it('shows the collapse icon and label when isExpanded is true', () => {
+      render(
+        <ActionArea
+          {...defaultProps}
+          onToggleExpand={jest.fn()}
+          isExpanded
+          expandAriaLabel="Expand consultation pad"
+          collapseAriaLabel="Collapse consultation pad"
+        />,
+      );
+
+      const toggleButton = screen.getByTestId('action-area-expand-toggle');
+      expect(toggleButton).toHaveAccessibleName('Collapse consultation pad');
+    });
+
+    it('sets aria-expanded to false on the toggle button when isExpanded is false', () => {
+      render(
+        <ActionArea
+          {...defaultProps}
+          onToggleExpand={jest.fn()}
+          isExpanded={false}
+        />,
+      );
+
+      const toggleButton = screen.getByTestId('action-area-expand-toggle');
+      expect(toggleButton).toHaveAttribute('aria-expanded', 'false');
+    });
+
+    it('sets aria-expanded to true on the toggle button when isExpanded is true', () => {
+      render(
+        <ActionArea {...defaultProps} onToggleExpand={jest.fn()} isExpanded />,
+      );
+
+      const toggleButton = screen.getByTestId('action-area-expand-toggle');
+      expect(toggleButton).toHaveAttribute('aria-expanded', 'true');
+    });
+
+    it('calls onToggleExpand when the toggle button is clicked', () => {
+      const onToggleExpand = jest.fn();
+      render(<ActionArea {...defaultProps} onToggleExpand={onToggleExpand} />);
+
+      fireEvent.click(screen.getByTestId('action-area-expand-toggle'));
+
+      expect(onToggleExpand).toHaveBeenCalledTimes(1);
+    });
+
+    it('removes the left border when isExpanded is true', () => {
+      render(<ActionArea {...defaultProps} isExpanded />);
+
+      const actionArea = screen.getByRole('region', { name: 'Action Area' });
+      expect(actionArea).toHaveClass('noBorder');
+    });
+
+    it('keeps the left border when isExpanded is false', () => {
+      render(<ActionArea {...defaultProps} isExpanded={false} />);
+
+      const actionArea = screen.getByRole('region', { name: 'Action Area' });
+      expect(actionArea).not.toHaveClass('noBorder');
+    });
+
+    it('moves focus back to the toggle button after isExpanded changes, so it is not lost to the now-inert main display', () => {
+      const { rerender } = render(
+        <ActionArea
+          {...defaultProps}
+          onToggleExpand={jest.fn()}
+          isExpanded={false}
+        />,
+      );
+
+      const toggleButton = screen.getByTestId('action-area-expand-toggle');
+      expect(toggleButton).not.toHaveFocus();
+
+      rerender(
+        <ActionArea {...defaultProps} onToggleExpand={jest.fn()} isExpanded />,
+      );
+
+      expect(toggleButton).toHaveFocus();
+    });
+
+    it('does not steal focus on initial mount', () => {
+      render(
+        <ActionArea {...defaultProps} onToggleExpand={jest.fn()} isExpanded />,
+      );
+
+      const toggleButton = screen.getByTestId('action-area-expand-toggle');
+      expect(toggleButton).not.toHaveFocus();
+    });
+  });
+
+  describe('Title id uniqueness', () => {
+    it('gives each ActionArea instance its own title id, referenced by its own content region', () => {
+      render(
+        <>
+          <ActionArea {...defaultProps} title="First" />
+          <ActionArea {...defaultProps} title="Second" />
+        </>,
+      );
+
+      const firstTitle = screen.getByText('First');
+      const secondTitle = screen.getByText('Second');
+
+      expect(firstTitle.id).toBeTruthy();
+      expect(secondTitle.id).toBeTruthy();
+      expect(firstTitle.id).not.toBe(secondTitle.id);
+
+      const contentRegions = screen.getAllByTestId('test-content');
+      const firstContentRegion = contentRegions[0].closest('section');
+      const secondContentRegion = contentRegions[1].closest('section');
+
+      expect(firstContentRegion).toHaveAttribute(
+        'aria-labelledby',
+        firstTitle.id,
+      );
+      expect(secondContentRegion).toHaveAttribute(
+        'aria-labelledby',
+        secondTitle.id,
+      );
+    });
+  });
+
+  describe('Header Actions', () => {
+    it('does not render a header actions row when neither headerActions nor onToggleExpand is provided', () => {
+      render(<ActionArea {...defaultProps} />);
+
+      expect(screen.queryByTestId('pin-icon')).not.toBeInTheDocument();
+    });
+
+    it('renders headerActions content in the header row', () => {
+      render(
+        <ActionArea
+          {...defaultProps}
+          headerActions={<span data-testid="pin-icon">Pin</span>}
+        />,
+      );
+
+      expect(screen.getByTestId('pin-icon')).toBeInTheDocument();
+    });
+
+    it('renders headerActions as a sibling of the expand/collapse toggle, not inside the title', () => {
+      render(
+        <ActionArea
+          {...defaultProps}
+          headerActions={<span data-testid="pin-icon">Pin</span>}
+          onToggleExpand={jest.fn()}
+        />,
+      );
+
+      const title = screen.getByText('Test Title');
+      const pinIcon = screen.getByTestId('pin-icon');
+      const toggleButton = screen.getByTestId('action-area-expand-toggle');
+      const headerActionsRow = pinIcon.parentElement;
+
+      // The pin icon must not live inside the title element...
+      expect(title).not.toContainElement(pinIcon);
+      // ...and must share a common header-actions container with the toggle button instead.
+      expect(headerActionsRow).toContainElement(toggleButton);
+    });
+  });
+
+  describe('Expanded width capping', () => {
+    it('caps and centers the header row when expanded', () => {
+      render(<ActionArea {...defaultProps} isExpanded />);
+
+      const header = screen.getByText('Test Title').parentElement;
+      expect(header).toHaveClass('cappedWidth');
+    });
+
+    it('does not cap the header row when not expanded', () => {
+      render(<ActionArea {...defaultProps} isExpanded={false} />);
+
+      const header = screen.getByText('Test Title').parentElement;
+      expect(header).not.toHaveClass('cappedWidth');
+    });
+
+    it('caps and centers the rendered content, while the scrollable content region itself stays full width so its scrollbar hugs the true edge', () => {
+      render(<ActionArea {...defaultProps} isExpanded />);
+
+      const contentInner = screen.getByTestId('test-content').parentElement;
+      expect(contentInner).toHaveClass('cappedWidth');
+
+      const contentRegion = contentInner?.parentElement;
+      expect(contentRegion).toHaveClass('content');
+      expect(contentRegion).not.toHaveClass('cappedWidth');
+    });
+
+    it('does not cap the rendered content when not expanded', () => {
+      render(<ActionArea {...defaultProps} isExpanded={false} />);
+
+      const contentInner = screen.getByTestId('test-content').parentElement;
+      expect(contentInner).not.toHaveClass('cappedWidth');
+    });
+
+    it('caps and centers the button row when expanded', () => {
+      render(<ActionArea {...defaultProps} isExpanded />);
+
+      const buttonSet = screen
+        .getByTestId('action-area-primary-button')
+        .closest('.buttonSet');
+      expect(buttonSet).toHaveClass('cappedWidth');
+    });
+
+    it('does not cap the button row when not expanded', () => {
+      render(<ActionArea {...defaultProps} isExpanded={false} />);
+
+      const buttonSet = screen
+        .getByTestId('action-area-primary-button')
+        .closest('.buttonSet');
+      expect(buttonSet).not.toHaveClass('cappedWidth');
     });
   });
 

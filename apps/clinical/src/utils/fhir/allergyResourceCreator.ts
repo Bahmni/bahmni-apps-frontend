@@ -1,4 +1,4 @@
-import { AllergyIntolerance, Reference } from 'fhir/r4';
+import { AllergyIntolerance, CodeableConcept, Reference } from 'fhir/r4';
 import { createCodeableConcept, createCoding } from './codeableConceptCreator';
 
 interface AllergyReaction {
@@ -52,3 +52,41 @@ export const createEncounterAllergyResource = (
 
   return resource;
 };
+
+/**
+ * Builds a PUT AllergyIntolerance resource for updating an existing allergy.
+ * Explicitly picks only the fields needed — never spreads the raw server
+ * response so server-generated fields (text.div narrative, etc.) are excluded.
+ */
+export const createDeleteAllergyResource = (id: string): AllergyIntolerance =>
+  ({ resourceType: 'AllergyIntolerance', id }) as AllergyIntolerance;
+
+export const updateEncounterAllergyResource = (
+  existing: AllergyIntolerance,
+  manifestations: CodeableConcept[],
+  severity: 'mild' | 'moderate' | 'severe',
+  encounterReference: Reference,
+  note?: string,
+): AllergyIntolerance => ({
+  resourceType: 'AllergyIntolerance',
+  id: existing.id,
+  meta: existing.meta,
+  clinicalStatus: existing.clinicalStatus,
+  verificationStatus: existing.verificationStatus,
+  type: existing.type,
+  category: existing.category,
+  criticality: existing.criticality,
+  code: existing.code,
+  patient: existing.patient,
+  recordedDate: existing.recordedDate,
+  recorder: existing.recorder,
+  note: note?.trim() ? [{ text: note.trim() }] : undefined,
+  encounter: encounterReference,
+  reaction: [
+    {
+      substance: existing.code,
+      manifestation: manifestations,
+      severity,
+    },
+  ],
+});

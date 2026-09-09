@@ -1,0 +1,77 @@
+@use "@carbon/react/scss/spacing" as *;
+@use "@carbon/react/scss/type" as *;
+@use "@carbon/react/scss/theme" as *;
+
+.formContent {
+  display: flex;
+  flex-direction: column;
+  padding: $spacing-06;
+}
+
+.formField {
+  width: 100%;
+  padding-inline-end: $spacing-05;
+}
+
+
+.loading {
+  max-inline-size: 100% !important;
+}
+
+.error {
+  @include type-style("body-compact-02");
+  color: $text-error;
+  padding: $spacing-07;
+  justify-self: center;
+  font-style: italic;
+}
+
+.grid {
+  padding-inline: 0;
+}
+
+.column {
+  margin-top: $spacing-04;
+  margin-left: 0;
+}
+
+.dateTimeColumn {
+  display: flex;
+  gap: $spacing-02;
+}
+
+
+.datePicker > div {
+    display: block;
+    min-inline-size: -webkit-fill-available !important;
+    > div {
+      display: block;
+      > div {
+        display: block;
+      }
+      input {
+        inline-size: -webkit-fill-available !important;
+      }
+    }
+  }
+
+  .timePicker > div {
+    display: flex;
+    min-inline-size: -webkit-fill-available !important;
+    > div {
+      display: block;
+      min-inline-size: max-content;
+      > div {
+        display: block;
+        min-inline-size: max-content;
+        align-content: center;
+      }
+      input {
+        inline-size: -webkit-fill-available !important;
+      }
+      select {
+        inline-size: -webkit-fill-available !important;
+      }
+    }
+  }
+

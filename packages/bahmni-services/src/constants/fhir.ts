@@ -1,5 +1,12 @@
+export const BIRTH_TIME_EXT_URL =
+  'http://hl7.org/fhir/StructureDefinition/patient-birthTime'; // NOSONAR
+
 export const FHIR_ENCOUNTER_TYPE_CODE_SYSTEM =
   'http://fhir.openmrs.org/code-system/encounter-type';
+export const FHIR_ENCOUNTER_CLASS_CODE_SYSTEM =
+  'http://terminology.hl7.org/CodeSystem/v3-ActCode'; // NOSONAR
+export const FHIR_ENCOUNTER_TAG_SYSTEM =
+  'http://fhir.openmrs.org/ext/encounter-tag'; // NOSONAR
 export const HL7_CONDITION_CATEGORY_CONDITION_CODE = 'problem-list-item';
 export const HL7_CONDITION_VERIFICATION_STATUS_CODE_SYSTEM =
   'http://terminology.hl7.org/CodeSystem/condition-ver-status';
@@ -12,6 +19,9 @@ export const FHIR_CONCEPT_CLASS_EXTENSION_URL =
   'http://fhir.bahmni.org/ext/ValueSet/concept-class';
 export const FHIR_LAB_ORDER_CONCEPT_TYPE_EXTENSION_URL =
   'http://fhir.bahmni.org/ext/lab-order-concept-type';
+export const FHIR_EXT_MEDICATION_REQUEST_NOTE_CATEGORY =
+  'http://fhir.bahmni.org/ext/medicationRequest/note-category'; // NOSONAR
+
 export const FHIR_MEDICATION_EXTENSION_URL =
   'http://fhir.openmrs.org/ext/medicine';
 export const FHIR_MEDICATION_NAME_EXTENSION_URL =

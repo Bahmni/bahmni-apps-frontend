@@ -3,14 +3,13 @@
 @use "@carbon/react/scss/colors" as *;
 @use "@carbon/react/scss/theme" as *;
 
-.conditionsTableTitle {
-  background: $background !important;
-  min-block-size: fit-content !important;
+.conditionsTabList {
   border-top: 1px solid $border-subtle;
-  p {
-    @include type-style("heading-compact-02");
-    color: $text-primary;
-  }
+  margin-bottom: 0;
+}
+
+.conditionsTabPanel {
+  padding: 0 !important;
 }
 
 .conditionName {
@@ -18,8 +17,21 @@
 }
 
 .conditionsTableBody {
+  border-collapse: collapse;
+  width: 100%;
+  border: none;
+
+  tbody tr:last-child td {
+    border-bottom: none;
+  }
+
+  table {
+    table-layout: fixed;
+  }
+
   td {
     width: 25%;
+    overflow-wrap: anywhere;
   }
   td:nth-child(4) {
     padding-inline: 0 !important;

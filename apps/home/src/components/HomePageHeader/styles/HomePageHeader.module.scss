@@ -1,0 +1,15 @@
+@use "@carbon/react/scss/spacing" as *;
+@use "@carbon/react/scss/theme" as *;
+
+// The location selector is a light dropdown sitting on the dark brand header,
+// so restore light layer/field tokens and dark text for its own surface.
+.locationSelector {
+  --cds-layer: #{$layer-02};
+  --cds-field: #{$field-02};
+  --cds-text-primary: #{$text-primary};
+
+  display: flex;
+  align-items: center;
+  padding: 0 $spacing-03;
+  min-width: $spacing-13;
+}

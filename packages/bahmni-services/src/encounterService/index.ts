@@ -1,8 +1,16 @@
 export {
   getActiveVisit,
+  getActiveVisitAtLoginLocation,
   getPatientVisits,
   getVisits,
-  getObservationsBundleByEncounterUuid,
+  getPatientEncounters,
+  getEncounterTypeByName,
+  getEncounterByUuid,
+  createFhirEncounter,
+  updateFhirEncounter,
+  buildEncounterResource,
+  type EncounterTypeRef,
+  type BuildEncounterResourceParams,
 } from './encounterService';
 
 export { shouldEnableEncounterFilter } from './encounterFilterUtils';

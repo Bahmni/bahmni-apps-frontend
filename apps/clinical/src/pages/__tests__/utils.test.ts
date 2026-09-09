@@ -10,6 +10,7 @@ import {
   getSidebarItems,
   filterControlsByPrivileges,
   filterSectionsByPrivileges,
+  isPatientNotFoundError,
 } from '../util';
 
 jest.mock('@bahmni/widgets', () => ({
@@ -24,6 +25,34 @@ const mockTranslation = jest.fn((key: string) => key);
 describe('ConsultationPageService', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+  });
+
+  describe('isPatientNotFoundError', () => {
+    it('returns true for the ERROR_PATIENT_NOT_FOUND key as a string', () => {
+      expect(isPatientNotFoundError('ERROR_PATIENT_NOT_FOUND')).toBe(true);
+    });
+
+    it('returns true when the rejection is an Error carrying the key', () => {
+      expect(isPatientNotFoundError(new Error('ERROR_PATIENT_NOT_FOUND'))).toBe(
+        true,
+      );
+    });
+
+    it.each([
+      'Bad Request: Invalid input parameters. Please check your request and try again.',
+      'Server Error: The server encountered an error. Please try again later.',
+      'Unauthorized: You are not authorized to perform this action.',
+      'Network error',
+    ])('returns false for any other rejection "%s"', (error) => {
+      expect(isPatientNotFoundError(error)).toBe(false);
+    });
+
+    it.each([[null], [undefined], [{}], [42]])(
+      'returns false for non-string/non-Error value %s',
+      (error) => {
+        expect(isPatientNotFoundError(error)).toBe(false);
+      },
+    );
   });
 
   describe('getDefaultDashboard', () => {

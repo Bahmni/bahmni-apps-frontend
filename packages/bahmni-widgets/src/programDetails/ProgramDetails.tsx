@@ -8,6 +8,7 @@ import {
   Button,
   MenuButton,
   MenuItem,
+  Loading,
 } from '@bahmni/design-system';
 import {
   useTranslation,
@@ -16,13 +17,19 @@ import {
   formatDateTime,
   camelToScreamingSnakeCase,
   hasPrivilege,
+  getEpisodeOfCare,
 } from '@bahmni/services';
 import { useQuery } from '@tanstack/react-query';
 import React, { useMemo, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { useNotification } from '../notification';
 import { useUserPrivilege } from '../userPrivileges/useUserPrivilege';
-import { EDIT_PATIENT_PROGRAMS_PRIVILEGE, KNOWN_FIELDS } from './constants';
-import { ProgramDetailsViewModel } from './model';
+import {
+  EDIT_PATIENT_PROGRAMS_PRIVILEGE,
+  EPISODE_OF_CARE_FIELDS,
+  KNOWN_FIELDS,
+} from './constants';
+import { ProgramDetailsViewModel, ProgramField } from './model';
 import styles from './styles/ProgramDetails.module.scss';
 import {
   createProgramDetailsViewModel,
@@ -35,15 +42,24 @@ export const programsQueryKeys = (programUUID: string) =>
 const fetchProgramDetails = async (
   programUUID: string,
   programAttributes: string[],
+  hasEpisodeOfCareField: boolean,
 ): Promise<ProgramDetailsViewModel> => {
   const response = await getProgramByUUID(programUUID!);
+  if (hasEpisodeOfCareField && response.episodeUuid) {
+    const episodeOfCare = await getEpisodeOfCare(response.episodeUuid);
+    return createProgramDetailsViewModel(
+      response,
+      programAttributes,
+      episodeOfCare,
+    );
+  }
   return createProgramDetailsViewModel(response, programAttributes);
 };
 
 interface ProgramDetailsProps {
   programUUID: string;
   config: {
-    fields: string[];
+    fields: ProgramField[];
   };
 }
 
@@ -68,9 +84,22 @@ const ProgramDetails: React.FC<ProgramDetailsProps> = ({
     [config?.fields],
   );
 
+  const hasEpisodeOfCareField = useMemo(
+    () =>
+      (config?.fields ?? []).some((field) =>
+        EPISODE_OF_CARE_FIELDS.includes(field.name),
+      ),
+    [config?.fields],
+  );
+
   const { data, isLoading, isError, refetch } = useQuery({
     queryKey: programsQueryKeys(programUUID!),
-    queryFn: () => fetchProgramDetails(programUUID!, programAttributes),
+    queryFn: () =>
+      fetchProgramDetails(
+        programUUID!,
+        programAttributes,
+        hasEpisodeOfCareField,
+      ),
     enabled: !!programUUID,
   });
 
@@ -109,8 +138,8 @@ const ProgramDetails: React.FC<ProgramDetailsProps> = ({
     if (!config?.fields || config.fields.length === 0) return {};
     return config.fields.reduce(
       (acc, field) => {
-        acc[field] = t(
-          `PROGRAMS_TABLE_HEADER_${camelToScreamingSnakeCase(field)}`,
+        acc[field.name] = t(
+          `PROGRAMS_TABLE_HEADER_${camelToScreamingSnakeCase(field.name)}`,
         );
         return acc;
       },
@@ -118,7 +147,7 @@ const ProgramDetails: React.FC<ProgramDetailsProps> = ({
     );
   }, [config?.fields]);
 
-  if (isLoading || isUpdatingState) {
+  if (isLoading) {
     return (
       <div
         id="patient-programs-table-loading"
@@ -193,6 +222,24 @@ const ProgramDetails: React.FC<ProgramDetailsProps> = ({
     data.allowedStates.length > 0 &&
     hasEditPatientProgramsPrivilege;
 
+  const renderAttributeValue = (field: string) => {
+    const raw = data?.attributes?.[field];
+    if (!raw) return '-';
+
+    if (raw instanceof Date) {
+      return formatDateTime(raw, t).formattedResult;
+    }
+
+    const fieldConfig = config?.fields?.find((f) => f.name === field);
+    if (fieldConfig?.enableTranslation) {
+      return t(
+        `PROGRAM_ATTRIBUTE_VALUE_${camelToScreamingSnakeCase(field)}_${camelToScreamingSnakeCase(raw)}`,
+        raw,
+      );
+    }
+    return raw;
+  };
+
   const renderKnownField = (field: string) => {
     switch (field) {
       case 'programName':
@@ -207,6 +254,8 @@ const ProgramDetails: React.FC<ProgramDetailsProps> = ({
         return data.outcomeName ?? '-';
       case 'state':
         return data.currentStateName ?? '-';
+      case 'careManager':
+        return data?.careManagerDisplay ?? '-';
     }
   };
 
@@ -259,12 +308,23 @@ const ProgramDetails: React.FC<ProgramDetailsProps> = ({
               value={
                 KNOWN_FIELDS.includes(field)
                   ? renderKnownField(field)
-                  : (data?.attributes?.[field] ?? '-')
+                  : renderAttributeValue(field)
               }
             />
           </Column>
         ))}
       </Grid>
+      {isUpdatingState &&
+        createPortal(
+          <div
+            id="program-details-loading-overlay"
+            data-testid="program-details-loading-overlay-test-id"
+            aria-label="program-details-loading-overlay-aria-label"
+          >
+            <Loading active withOverlay />
+          </div>,
+          document.body,
+        )}
     </div>
   );
 };

@@ -102,6 +102,15 @@ describe('privilegeService', () => {
       expect(result).toBeNull();
       expect(mockedGet).toHaveBeenCalledWith('/openmrs/ws/rest/v1/session');
     });
+
+    it('should return null when session has no user', async () => {
+      mockedGet.mockResolvedValue({ user: null });
+
+      const result = await getCurrentUserPrivileges();
+
+      expect(result).toBeNull();
+      expect(mockedGet).toHaveBeenCalledWith('/openmrs/ws/rest/v1/session');
+    });
   });
 
   describe('hasPrivilege', () => {

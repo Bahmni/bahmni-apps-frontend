@@ -5,7 +5,7 @@ import {
 import { updateInvestigationsWithReportInfo } from '../Investigations';
 
 describe('updateInvestigationsWithReportInfo', () => {
-  it('should enrich tests with reportId and attachments', () => {
+  it('should enrich tests with reportIds and attachments', () => {
     const mockTests = [
       {
         id: 'test-1',
@@ -54,9 +54,9 @@ describe('updateInvestigationsWithReportInfo', () => {
     const result = updateInvestigationsWithReportInfo(mockTests, mockReports);
 
     expect(result).toHaveLength(2);
-    expect(result[0].reportId).toBe('report-1');
+    expect(result[0].reportIds).toEqual(['report-1']);
     expect(result[0].attachments).toBeUndefined();
-    expect(result[1].reportId).toBe('report-2');
+    expect(result[1].reportIds).toEqual(['report-2']);
     expect(result[1].attachments).toBeDefined();
     expect(result[1].attachments).toHaveLength(1);
     expect(result[1].attachments?.[0].url).toBe(
@@ -107,6 +107,64 @@ describe('updateInvestigationsWithReportInfo', () => {
 
     const result = updateInvestigationsWithReportInfo(mockTests, mockReports);
 
-    expect(result[0].reportId).toBeUndefined();
+    expect(result[0].reportIds).toBeUndefined();
+  });
+
+  it('should handle multiple reports for the same test', () => {
+    const mockTests = [
+      {
+        id: 'test-1',
+        testName: 'Blood Test',
+        priority: LabInvestigationPriority.routine,
+        orderedBy: 'Dr. Smith',
+        orderedDate: '2024-01-01',
+        formattedDate: 'January 1, 2024',
+        testType: 'Single Test',
+      },
+    ] as FormattedLabInvestigations[];
+
+    const mockReports = [
+      {
+        resourceType: 'DiagnosticReport' as const,
+        id: 'report-1',
+        status: 'final' as const,
+        code: { text: 'Test' },
+        basedOn: [{ reference: 'ServiceRequest/test-1' }],
+        presentedForm: [
+          {
+            id: 'attachment-1',
+            url: 'https://example.com/report1.pdf',
+            contentType: 'application/pdf',
+          },
+        ],
+      },
+      {
+        resourceType: 'DiagnosticReport' as const,
+        id: 'report-2',
+        status: 'amended' as const,
+        code: { text: 'Test' },
+        basedOn: [{ reference: 'ServiceRequest/test-1' }],
+        presentedForm: [
+          {
+            id: 'attachment-2',
+            url: 'https://example.com/report2.pdf',
+            contentType: 'application/pdf',
+          },
+        ],
+      },
+    ];
+
+    const result = updateInvestigationsWithReportInfo(mockTests, mockReports);
+
+    expect(result).toHaveLength(1);
+    expect(result[0].reportIds).toEqual(['report-1', 'report-2']);
+    expect(result[0].attachments).toBeDefined();
+    expect(result[0].attachments).toHaveLength(2);
+    expect(result[0].attachments?.[0].url).toBe(
+      'https://example.com/report1.pdf',
+    );
+    expect(result[0].attachments?.[1].url).toBe(
+      'https://example.com/report2.pdf',
+    );
   });
 });

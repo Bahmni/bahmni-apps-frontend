@@ -1,3 +1,5 @@
+import { Location } from '../locationService';
+
 /**
  * Interface representing a link to a resource
  */
@@ -23,18 +25,31 @@ export interface Person {
   uuid: string;
   display: string;
   gender: string;
-  age: number | null;
-  birthdate: string | null;
+  age?: number;
+  birthdate?: string;
   birthdateEstimated: boolean;
   dead: boolean;
-  deathDate: string | null;
-  causeOfDeath: string | null;
-  preferredName: PersonName;
+  deathDate?: string;
+  causeOfDeath?: string;
+  preferredName?: PersonName;
   voided: boolean;
-  birthtime: string | null;
+  birthtime?: string;
   deathdateEstimated: boolean;
   links: Link[];
   resourceVersion: string;
+}
+
+export interface ProviderAttributeType {
+  uuid: string;
+  display: string;
+}
+
+export interface ProviderAttribute {
+  uuid: string;
+  display: string;
+  attributeType: ProviderAttributeType;
+  value: boolean | Location;
+  voided: boolean;
 }
 
 /**
@@ -44,11 +59,13 @@ export interface Provider {
   uuid: string;
   display: string;
   person: Person;
+  attributes?: ProviderAttribute[];
 }
 
 /**
  * Interface representing Provider response from REST API
  */
 export interface ProviderResponse {
-  results: Provider[];
+  results: Provider[] | null;
+  links?: Link[];
 }

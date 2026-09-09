@@ -64,8 +64,9 @@ export async function getConceptById(uuid: string): Promise<ConceptData> {
  */
 export async function searchConceptByName(
   conceptName: string,
+  customView?: string,
 ): Promise<ConceptData | null> {
-  const url = CONCEPT_BY_FULLY_SPECIFIED_NAME_URL(conceptName);
+  const url = CONCEPT_BY_FULLY_SPECIFIED_NAME_URL(conceptName, customView);
   const response = await get<ConceptSearchByNameResponse>(url);
 
   if (!response.results || response.results.length === 0) {

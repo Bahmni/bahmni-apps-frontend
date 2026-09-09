@@ -173,7 +173,6 @@ export const PatientPhotoUpload: React.FC<PatientPhotoUploadProps> = ({
           <Button
             kind="primary"
             onClick={handleCaptureClick}
-            className={styles.button}
             data-testid="capture-photo-button"
           >
             {t('CREATE_PATIENT_CAPTURE_PHOTO')}
@@ -199,7 +198,6 @@ export const PatientPhotoUpload: React.FC<PatientPhotoUploadProps> = ({
           <Button
             kind="primary"
             onClick={handleConfirm}
-            className={styles.button}
             data-testid="capture-confirm-button"
           >
             {t('CREATE_PATIENT_UPLOAD_PHOTO_CONFIRM')}
@@ -207,7 +205,6 @@ export const PatientPhotoUpload: React.FC<PatientPhotoUploadProps> = ({
           <Button
             kind="primary"
             onClick={handlePreview}
-            className={styles.button}
             data-testid="capture-retake-button"
           >
             {t('CREATE_PATIENT_UPLOAD_PHOTO_RETAKE')}
@@ -264,7 +261,6 @@ export const PatientPhotoUpload: React.FC<PatientPhotoUploadProps> = ({
             kind="primary"
             onClick={handleConfirm}
             disabled={!previewUrl}
-            className={styles.button}
             data-testid="upload-confirm-button"
           >
             {t('CREATE_PATIENT_UPLOAD_PHOTO_CONFIRM')}

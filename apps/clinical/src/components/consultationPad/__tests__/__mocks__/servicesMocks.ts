@@ -1,5 +1,5 @@
+import type { EncounterBundle } from '@bahmni/services';
 import type { Bundle, BundleEntry, Encounter } from 'fhir/r4';
-import type { ConsultationBundle } from '../../../../models/consultationBundle';
 import type { InputControl } from '../../../forms';
 
 export const mockStoreState = {
@@ -35,8 +35,8 @@ export const mockResponseBundle: Bundle = {
   entry: [{ resource: { resourceType: 'Encounter', id: 'saved-encounter' } }],
 };
 
-export const mockBundle: ConsultationBundle = {
-  resourceType: 'ConsultationBundle',
+export const mockBundle: EncounterBundle = {
+  resourceType: 'EncounterBundle',
   type: 'transaction',
   entry: [],
 };

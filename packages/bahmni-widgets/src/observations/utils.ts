@@ -1,4 +1,7 @@
-import { formatDateTime } from '@bahmni/services';
+import {
+  formatDateTime,
+  FHIR_OBSERVATION_FORM_NAMESPACE_PATH_URL,
+} from '@bahmni/services';
 import { Observation, Bundle, Encounter } from 'fhir/r4';
 import { extractId, extractObservationValue } from '../utils/Observations';
 import {
@@ -7,6 +10,34 @@ import {
   ExtractedObservationsResult,
   ObservationsByEncounter,
 } from './models';
+
+export const extractFormFieldPath = (
+  observation: Observation | undefined,
+): string | undefined => {
+  if (!observation) return undefined;
+
+  const formPathExt = observation.extension?.find(
+    (ext) => ext.url === FHIR_OBSERVATION_FORM_NAMESPACE_PATH_URL,
+  );
+
+  return formPathExt?.valueString;
+};
+
+export const extractFormName = (
+  observation: Observation | undefined,
+): string | undefined => {
+  const valueString = extractFormFieldPath(observation);
+  if (!valueString) return undefined;
+
+  const name = valueString
+    .split('/')[0]
+    .split('^')
+    .pop()
+    ?.replace(/\.\d+$/, '');
+
+  if (!name) return undefined;
+  return name;
+};
 
 export const formatEncounterTitle = (
   encounterDetails: EncounterDetails | undefined,
@@ -22,34 +53,65 @@ export const formatEncounterTitle = (
 export const formatObservationValue = (
   observation: ExtractedObservation,
   t?: (key: string) => string,
+  conceptDatatypeMap?: Record<string, string>,
 ): string => {
-  if (!observation.observationValue?.value) {
+  if (observation.observationValue?.value == null) {
     return '';
   }
   const { value, unit, type } = observation.observationValue;
 
   if (type === 'dateTime') {
-    return formatDateTime(String(value), t).formattedResult;
+    const knownDatatype = observation.conceptId
+      ? conceptDatatypeMap?.[observation.conceptId]
+      : undefined;
+    const formatOne = (raw: string) => {
+      const hasTimeComponent =
+        knownDatatype != null
+          ? knownDatatype === 'Datetime'
+          : /T\d{2}:\d{2}:\d{2}/.test(raw) && !/T00:00:00/.test(raw);
+      return formatDateTime(raw, t, hasTimeComponent).formattedResult;
+    };
+    // After add-more/multi-select grouping, repeated dateTime obs are concatenated into a
+    // single string (e.g. "2024-01-01T.., 2024-02-01T.."). Format each date separately —
+    // passing the whole merged string to formatDateTime fails to parse and returns blank.
+    return String(value).split(', ').map(formatOne).join(', ');
+  }
+
+  if (type === 'boolean') {
+    const formatBoolToken = (token: boolean | string) => {
+      const isTrue = token === true || token === 'true';
+      return isTrue ? (t ? t('YES') : 'Yes') : t ? t('NO') : 'No';
+    };
+    // After multi-select grouping, booleans are concatenated into a string
+    // e.g. true + ', ' + false → "true, false". Handle both cases.
+    if (typeof value === 'boolean') {
+      return formatBoolToken(value);
+    }
+    return String(value).split(', ').map(formatBoolToken).join(', ');
   }
 
   const baseValue = unit ? `${value} ${unit}` : String(value);
   return baseValue;
 };
 
-const formatObservationHeader = (observation: ExtractedObservation): string => {
+export const formatObservationHeader = (
+  observation: ExtractedObservation,
+): { display: string; referenceRange?: string } => {
   const display = observation.display!;
 
   if (!observation.observationValue) {
-    return String(display);
+    return { display };
   }
 
   const { unit, referenceRange } = observation.observationValue;
 
   if (!referenceRange) {
-    return String(display);
+    return { display };
   }
 
   const { low, high } = referenceRange;
+
+  let referenceRangeText = '';
 
   if (low && high) {
     const lowStr = low.unit
@@ -62,28 +124,27 @@ const formatObservationHeader = (observation: ExtractedObservation): string => {
       : unit
         ? `${high.value} ${unit}`
         : String(high.value);
-    return `${display} (${lowStr} - ${highStr})`;
-  }
-
-  if (low) {
+    referenceRangeText = `(${lowStr} - ${highStr})`;
+  } else if (low) {
     const lowStr = low.unit
       ? `${low.value} ${low.unit}`
       : unit
         ? `${low.value} ${unit}`
         : String(low.value);
-    return `${display} (>${lowStr})`;
-  }
-
-  if (high) {
+    referenceRangeText = `(>${lowStr})`;
+  } else if (high) {
     const highStr = high.unit
       ? `${high.value} ${high.unit}`
       : unit
         ? `${high.value} ${unit}`
         : String(high.value);
-    return `${display} (<${highStr})`;
+    referenceRangeText = `(<${highStr})`;
   }
 
-  return display;
+  return {
+    display,
+    referenceRange: referenceRangeText || undefined,
+  };
 };
 
 export const transformObservationToRowCell = (
@@ -257,4 +318,35 @@ export function sortObservationsByEncounterDate(
 
     return new Date(dateB).getTime() - new Date(dateA).getTime();
   });
+}
+
+export function filterObservationsByLatestEncounter(
+  result: ExtractedObservationsResult,
+): ExtractedObservationsResult {
+  const allObs = [...result.observations, ...result.groupedObservations];
+
+  if (allObs.length === 0) return result;
+
+  const latestEncounterId = allObs.reduce(
+    (latestId, obs) => {
+      if (!latestId) return obs.encounter?.id;
+      const latestObs = allObs.find((o) => o.encounter?.id === latestId);
+      const latestTime =
+        latestObs?.effectiveDateTime ?? latestObs?.issued ?? '';
+      const currentTime = obs.effectiveDateTime ?? obs.issued ?? '';
+
+      return currentTime > latestTime ? obs.encounter?.id : latestId;
+    },
+    undefined as string | undefined,
+  );
+
+  if (!latestEncounterId) return result;
+
+  const filterByEncounter = (obs: ExtractedObservation) =>
+    obs.encounter?.id === latestEncounterId;
+
+  return {
+    observations: result.observations.filter(filterByEncounter),
+    groupedObservations: result.groupedObservations.filter(filterByEncounter),
+  };
 }

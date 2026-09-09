@@ -1,0 +1,235 @@
+@use "@carbon/react/scss/type" as *;
+@use "@carbon/react/scss/spacing" as *;
+@use "@carbon/react/scss/theme" as *;
+
+.dataTableBody {
+  padding-block-start: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+
+  h2 {
+    @include type-style("heading-compact-02");
+  }
+
+  > div:first-child {
+    flex: 1;
+    align-content: center;
+    border-bottom: none;
+    padding-block: 0;
+    min-height: 3rem;
+  }
+
+  > section {
+    flex: 0 0 auto;
+    width: auto;
+
+    > div {
+      padding: 0;
+      min-height: auto;
+      justify-content: flex-end;
+    }
+  }
+
+  > section:first-child {
+    flex: 0 0 100%;
+  }
+
+  table {
+    table-layout: fixed;
+    width: 100%;
+  }
+
+  td {
+    @include type-style("body-compact-01");
+    background-color: $background !important;
+    color: $text-primary !important;
+    height: $spacing-10;
+    align-content: start;
+    border-block-end: 0 !important;
+  }
+
+  tr > td:first-child:has(button) {
+    button {
+      align-items: flex-start !important;
+      padding: $spacing-02 $spacing-03 !important;
+    }
+  }
+
+  th,
+  th * {
+    background-color: $background !important;
+    font-weight: normal;
+    color: $text-secondary;
+  }
+  th {
+    border-block: 1px solid $border-subtle !important;
+  }
+
+  td, th {
+    width: auto;
+  }
+}
+
+.skeleton {
+  td,
+  th {
+    background-color: $background !important;
+  }
+}
+
+.statePlaceholder {
+  @include type-style("body-compact-01");
+  background-color: $background;
+  padding: $spacing-06 $spacing-05;
+  text-align: center;
+  border-top: 1px solid $border-subtle-02;
+}
+
+.emptyStateCell {
+  @include type-style("body-compact-01");
+  background-color: $background;
+  padding: $spacing-06 !important;
+  text-align: center !important;
+  color: $text-secondary;
+}
+
+.pagination {
+  background-color: $background;
+  border-top: 1px solid $border-subtle;
+}
+
+.setPagination {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: right;
+  gap: $spacing-02;
+  background-color: $layer-01;
+  border-top: 1px solid $border-subtle;
+}
+
+.setNavButton {
+  gap: $spacing-05;
+  display: flex;
+  align-items: center;
+  border: none !important;
+  outline: none !important;
+
+  &:focus,
+  &:focus-visible {
+    outline: none !important;
+    box-shadow: none !important;
+  }
+}
+
+.setPaginationPages {
+  display: flex;
+  align-items: center;
+  gap: $spacing-02;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.setPaginationPage {
+  @include type-style("body-compact-01");
+  min-width: $spacing-07;
+  padding: $spacing-02 $spacing-03;
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: $text-secondary;
+  cursor: pointer;
+
+  &:hover {
+    background-color: $layer-hover-01;
+  }
+
+  &:focus-visible {
+    outline: 2px solid $focus;
+    outline-offset: -2px;
+  }
+}
+
+.setPaginationPageActive {
+  @include type-style("heading-compact-01");
+  color: $text-primary;
+  border-bottom-color: $border-interactive;
+}
+
+.filterRow {
+  background-color: $layer-accent-01;
+}
+
+.filterCell {
+  padding: $spacing-02 $spacing-04;
+  vertical-align: middle;
+}
+
+.filterPlaceholderCell {
+  padding: $spacing-02 $spacing-04;
+  background-color: $layer-accent-01;
+}
+
+.groupRow {
+  background-color: $layer-accent-01;
+}
+
+.groupCell {
+  padding: $spacing-03 $spacing-05;
+}
+
+.groupToggle {
+  display: inline-flex;
+  align-items: center;
+  gap: $spacing-03;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: $spacing-02 0;
+  @include type-style("heading-compact-01");
+}
+
+.groupCount {
+  color: $text-secondary;
+  font-weight: 400;
+}
+
+.groupByDropdown {
+  :global(.cds--list-box__menu) {
+    right: 0;
+    left: auto;
+  }
+}
+
+.actionButtons {
+  display: flex;
+  gap: 1px;
+}
+
+.visuallyHidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+.selectFilter {
+  min-width: calc($spacing-12 + $spacing-05);
+}
+
+.dateRangeFilter{
+  div:first-child {
+    display:flex;
+    flex-direction: column !important;
+    gap: $spacing-02
+  }
+}
+

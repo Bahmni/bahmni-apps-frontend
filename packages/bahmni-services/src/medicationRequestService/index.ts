@@ -13,3 +13,5 @@ export {
   searchMedications,
   getVaccinations,
 } from './medicationRequestService';
+
+export { MEDICATIONS_INPUT_CONTROL_KEY } from './constants';

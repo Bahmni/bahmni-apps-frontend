@@ -1,6 +1,13 @@
 import { ObservationForm } from '@bahmni/services';
+import { useQuery } from '@tanstack/react-query';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { useTranslation } from 'react-i18next';
+import { useClinicalAppData } from '../../../../hooks/useClinicalAppData';
 import ObservationFormsContainer from '../ObservationFormsContainer';
+import {
+  mockMinimalPatientData,
+  mockEnrichedPatientData,
+} from './__mocks__/observationFormContainerMocks';
 
 // Mock the defaultFormNames import
 jest.mock('../ObservationForms', () => ({
@@ -10,6 +17,10 @@ jest.mock('../ObservationForms', () => ({
 // Mock the hooks used by the component
 jest.mock('../../../../hooks/useObservationFormsSearch');
 jest.mock('../../../../hooks/usePinnedObservationForms');
+jest.mock('@tanstack/react-query', () => ({
+  ...jest.requireActual('@tanstack/react-query'),
+  useQuery: jest.fn(),
+}));
 
 // Mock the extracted custom hooks
 const mockUseObservationFormData = jest.fn();
@@ -39,6 +50,9 @@ const mockGetValue = jest.fn();
 // Mock state data for form container
 const mockContainerState = { data: {} };
 
+// Captures the patient prop passed to CarbonContainer most recently
+let lastCarbonContainerPatient: unknown = undefined;
+
 jest.mock('@bahmni/form2-controls', () => {
   // eslint-disable-next-line @typescript-eslint/no-require-imports
   const mockReact = require('react');
@@ -48,6 +62,9 @@ jest.mock('@bahmni/form2-controls', () => {
         getValue: mockGetValue,
         state: mockContainerState,
       }));
+
+      // Capture patient prop for assertions
+      lastCarbonContainerPatient = props.patient;
 
       return (
         <div data-testid="form2-container">
@@ -74,6 +91,7 @@ jest.mock('@bahmni/widgets', () => ({
 jest.mock('../../../../hooks/useClinicalAppData', () => ({
   useClinicalAppData: jest.fn(() => ({
     episodeOfCare: [],
+    activeVisitId: null,
   })),
 }));
 
@@ -93,12 +111,19 @@ jest.mock('../utils/formEventExecutor', () => ({
     mockExecuteOnFormSaveEvent(...args),
 }));
 
+// Mock EncounterDetails (directMode rendering) — its own hooks/stores are out of scope here
+jest.mock('../../encounterDetails/EncounterDetails', () => ({
+  __esModule: true,
+  default: jest.fn(() => <div data-testid="mocked-encounter-details" />),
+}));
+
 // Mock ActionArea component
 jest.mock('@bahmni/design-system', () => ({
   ActionArea: jest.fn(
     ({
       className,
       title,
+      headerActions,
       primaryButtonText,
       onPrimaryButtonClick,
       isPrimaryButtonDisabled,
@@ -107,9 +132,14 @@ jest.mock('@bahmni/design-system', () => ({
       tertiaryButtonText,
       onTertiaryButtonClick,
       content,
+      isExpanded,
+      onToggleExpand,
+      expandAriaLabel,
+      collapseAriaLabel,
     }) => (
       <div data-testid="action-area" className={className}>
         <div data-testid="action-area-title">{title}</div>
+        <div data-testid="action-area-header-actions">{headerActions}</div>
         <div data-testid="action-area-content">{content}</div>
         <div data-testid="action-area-buttons">
           <button
@@ -129,6 +159,15 @@ jest.mock('@bahmni/design-system', () => ({
             {tertiaryButtonText}
           </button>
         </div>
+        {onToggleExpand && (
+          <button
+            data-testid="expand-toggle-button"
+            aria-label={isExpanded ? collapseAriaLabel : expandAriaLabel}
+            onClick={onToggleExpand}
+          >
+            {isExpanded ? 'Collapse' : 'Expand'}
+          </button>
+        )}
       </div>
     ),
   ),
@@ -137,17 +176,13 @@ jest.mock('@bahmni/design-system', () => ({
       Icon
     </div>
   )),
-  SkeletonText: jest.fn(({ width, lineCount }) => (
-    <div
-      data-testid="skeleton-text"
-      data-width={width}
-      data-line-count={lineCount}
-    />
+  Loading: jest.fn(({ description, testId }) => (
+    <div data-testid={testId} aria-label={description} />
   )),
   InlineNotification: jest.fn(
-    ({ kind, title, subtitle, onClose, hideCloseButton }) => (
+    ({ kind, title, subtitle, onClose, hideCloseButton, testId }) => (
       <div
-        data-testid="inline-notification"
+        data-testid={testId ?? 'inline-notification'}
         data-kind={kind}
         data-hide-close-button={hideCloseButton}
       >
@@ -166,6 +201,7 @@ jest.mock('@bahmni/design-system', () => ({
     MD: 'MD',
     LG: 'LG',
   },
+  MenuItemDivider: jest.fn(() => <hr data-testid="menu-item-divider" />),
 }));
 
 // Mock styles
@@ -173,11 +209,10 @@ jest.mock('../styles/ObservationFormsContainer.module.scss', () => ({
   formView: 'formView',
   formContent: 'formContent',
   formViewActionArea: 'formViewActionArea',
-  formTitleContainer: 'formTitleContainer',
   pinIconContainer: 'pinIconContainer',
   pinned: 'pinned',
   unpinned: 'unpinned',
-  errorNotificationWrapper: 'errorNotificationWrapper',
+  inlineNotificationWrapper: 'inlineNotificationWrapper',
 }));
 
 describe('ObservationFormsContainer', () => {
@@ -196,6 +231,12 @@ describe('ObservationFormsContainer', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+    lastCarbonContainerPatient = undefined;
+
+    // Default mock for useQuery — minimal patient data so form renders
+    (useQuery as jest.Mock).mockReturnValue({
+      data: mockMinimalPatientData,
+    });
 
     // Set default mock for getValue to return no errors
     mockGetValue.mockReturnValue({
@@ -266,6 +307,49 @@ describe('ObservationFormsContainer', () => {
       );
       expect(container).toMatchSnapshot();
     });
+
+    it('should not render the expand toggle when onToggleActionAreaExpand is not provided', () => {
+      render(
+        <ObservationFormsContainer {...defaultProps} viewingForm={mockForm} />,
+      );
+
+      expect(
+        screen.queryByTestId('expand-toggle-button'),
+      ).not.toBeInTheDocument();
+    });
+
+    it('should render the expand toggle and forward isActionAreaExpanded/onToggleActionAreaExpand to ActionArea', () => {
+      const mockOnToggleActionAreaExpand = jest.fn();
+      render(
+        <ObservationFormsContainer
+          {...defaultProps}
+          viewingForm={mockForm}
+          isActionAreaExpanded={false}
+          onToggleActionAreaExpand={mockOnToggleActionAreaExpand}
+        />,
+      );
+
+      const toggleButton = screen.getByTestId('expand-toggle-button');
+      expect(toggleButton).toHaveTextContent('Expand');
+
+      fireEvent.click(toggleButton);
+      expect(mockOnToggleActionAreaExpand).toHaveBeenCalledTimes(1);
+    });
+
+    it('should show the collapse label on the toggle when isActionAreaExpanded is true', () => {
+      render(
+        <ObservationFormsContainer
+          {...defaultProps}
+          viewingForm={mockForm}
+          isActionAreaExpanded
+          onToggleActionAreaExpand={jest.fn()}
+        />,
+      );
+
+      expect(screen.getByTestId('expand-toggle-button')).toHaveTextContent(
+        'Collapse',
+      );
+    });
   });
 
   describe('Button Click Handlers', () => {
@@ -305,6 +389,7 @@ describe('ObservationFormsContainer', () => {
         mockForm.uuid,
         expect.any(Array),
         null,
+        undefined,
       );
       expect(mockOnViewingFormChange).toHaveBeenCalledWith(null);
     });
@@ -379,8 +464,154 @@ describe('ObservationFormsContainer', () => {
           }),
         ]),
         null,
+        undefined,
       );
       expect(mockOnViewingFormChange).toHaveBeenCalledWith(null);
+    });
+
+    it('should PUT with interpretation omitted when interpretation is cleared on a standalone obs', () => {
+      const mockOnFormObservationsChange = jest.fn();
+      const mockOnViewingFormChange = jest.fn();
+
+      mockUseObservationFormData.mockReturnValue({
+        observations: [{ concept: { uuid: 'c1' }, value: 60 }],
+        handleFormDataChange: jest.fn(),
+        resetForm: jest.fn(),
+        formMetadata: { schema: { name: 'Vitals', controls: [] } },
+        isLoadingMetadata: false,
+        metadataError: null,
+      });
+
+      // CarbonContainer returns no interpretation (user changed to normal value)
+      mockGetValue.mockReturnValue({
+        observations: [
+          {
+            concept: { uuid: 'c1' },
+            uuid: 'obs-uuid-1',
+            value: 60,
+            // interpretation intentionally absent
+          },
+        ],
+        errors: [],
+      });
+
+      render(
+        <ObservationFormsContainer
+          {...defaultProps}
+          viewingForm={mockForm}
+          // Seed with ABNORMAL interpretation to populate statusSourceRef.
+          existingObservations={[
+            {
+              concept: { uuid: 'c1' },
+              uuid: 'obs-uuid-1',
+              value: 180,
+              interpretation: 'ABNORMAL',
+              status: 'final',
+            },
+          ]}
+          onFormObservationsChange={mockOnFormObservationsChange}
+          onViewingFormChange={mockOnViewingFormChange}
+        />,
+      );
+
+      const saveButton = screen.getByTestId('primary-button');
+      fireEvent.click(saveButton);
+
+      expect(mockOnFormObservationsChange).toHaveBeenCalledWith(
+        mockForm.uuid,
+        expect.arrayContaining([
+          // Single PUT entry — backend's unsetMissingFields clears interpretation when omitted
+          expect.objectContaining({ uuid: 'obs-uuid-1', value: 60 }),
+        ]),
+        null,
+        undefined,
+      );
+      const savedObservations = mockOnFormObservationsChange.mock.calls[0][1];
+      expect(savedObservations).toHaveLength(1);
+      expect(savedObservations[0].interpretation).toBeUndefined();
+    });
+
+    it('should PUT with interpretation omitted when interpretation is cleared on an obsGroup member', () => {
+      // Group members are processed as individual leaf Observations, so the same partial-PUT issue applies.
+      const mockOnFormObservationsChange = jest.fn();
+      const mockOnViewingFormChange = jest.fn();
+
+      mockUseObservationFormData.mockReturnValue({
+        observations: [{ concept: { uuid: 'bp-group' }, value: null }],
+        handleFormDataChange: jest.fn(),
+        resetForm: jest.fn(),
+        formMetadata: { schema: { name: 'Vitals', controls: [] } },
+        isLoadingMetadata: false,
+        metadataError: null,
+      });
+
+      // CarbonContainer returns group obs with members that have no interpretation
+      mockGetValue.mockReturnValue({
+        observations: [
+          {
+            concept: { uuid: 'bp-group' },
+            uuid: 'group-uuid',
+            value: null,
+            groupMembers: [
+              {
+                concept: { uuid: 'systolic' },
+                uuid: 'systolic-uuid',
+                value: 106,
+                // interpretation absent — user cleared it
+              },
+            ],
+          },
+        ],
+        errors: [],
+      });
+
+      render(
+        <ObservationFormsContainer
+          {...defaultProps}
+          viewingForm={mockForm}
+          existingObservations={[
+            {
+              concept: { uuid: 'bp-group' },
+              uuid: 'group-uuid',
+              value: null,
+              status: 'final',
+              groupMembers: [
+                {
+                  concept: { uuid: 'systolic' },
+                  uuid: 'systolic-uuid',
+                  value: 200,
+                  interpretation: 'ABNORMAL',
+                  status: 'final',
+                },
+              ],
+            },
+          ]}
+          onFormObservationsChange={mockOnFormObservationsChange}
+          onViewingFormChange={mockOnViewingFormChange}
+        />,
+      );
+
+      const saveButton = screen.getByTestId('primary-button');
+      fireEvent.click(saveButton);
+
+      expect(mockOnFormObservationsChange).toHaveBeenCalledWith(
+        mockForm.uuid,
+        expect.arrayContaining([
+          expect.objectContaining({
+            uuid: 'group-uuid',
+            groupMembers: expect.arrayContaining([
+              // Single PUT entry — backend's unsetMissingFields clears interpretation when omitted
+              expect.objectContaining({ uuid: 'systolic-uuid', value: 106 }),
+            ]),
+          }),
+        ]),
+        null,
+        undefined,
+      );
+      const savedGroupMembers =
+        mockOnFormObservationsChange.mock.calls[0][1][0].groupMembers;
+      expect(savedGroupMembers).toHaveLength(1);
+      expect(savedGroupMembers[0].interpretation).toBeUndefined();
     });
   });
 
@@ -447,6 +678,26 @@ describe('ObservationFormsContainer', () => {
       expect(screen.getByTestId('form2-container')).toBeInTheDocument();
     });
 
+    it('should show the loading indicator while metadata is loading, instead of the form container', () => {
+      mockUseObservationFormData.mockReturnValue({
+        observations: [],
+        handleFormDataChange: jest.fn(),
+        resetForm: jest.fn(),
+        formMetadata: undefined,
+        isLoadingMetadata: true,
+        metadataError: null,
+      });
+
+      render(
+        <ObservationFormsContainer {...defaultProps} viewingForm={mockForm} />,
+      );
+
+      expect(
+        screen.getByTestId('observation-form-loading'),
+      ).toBeInTheDocument();
+      expect(screen.queryByTestId('form2-container')).not.toBeInTheDocument();
+    });
+
     it('should display error message when metadata fetch fails', async () => {
       const mockError = new Error('Failed to fetch');
       mockGetFormattedError.mockReturnValue({
@@ -479,6 +730,192 @@ describe('ObservationFormsContainer', () => {
       // Verify useObservationFormData was called with undefined
       expect(mockUseObservationFormData).toHaveBeenCalledWith(undefined);
     });
+
+    it('should pass enriched patient context from FHIR cache to CarbonContainer', () => {
+      (useQuery as jest.Mock).mockReturnValue({
+        data: mockEnrichedPatientData,
+      });
+
+      mockUseObservationFormData.mockReturnValue({
+        observations: [],
+        handleFormDataChange: jest.fn(),
+        resetForm: jest.fn(),
+        formMetadata: { schema: { name: 'Test Form Schema', controls: [] } },
+        isLoadingMetadata: false,
+        metadataError: null,
+      });
+
+      (useClinicalAppData as jest.Mock).mockReturnValue({
+        episodeOfCare: [],
+        activeVisitId: 'visit-uuid-456',
+      });
+
+      render(
+        <ObservationFormsContainer
+          {...defaultProps}
+          viewingForm={mockForm}
+          encounterSessionStartContext={{
+            activeEncounter: { id: 'encounter-uuid-789' } as any,
+          }}
+        />,
+      );
+
+      expect(screen.getByTestId('form2-container')).toBeInTheDocument();
+      expect(lastCarbonContainerPatient).toEqual(
+        expect.objectContaining({
+          uuid: 'test-patient-uuid',
+          identifier: 'BAH-001',
+          display: 'John Doe',
+          givenName: 'John',
+          familyName: 'Doe',
+          gender: 'M',
+          activeVisitUuid: 'visit-uuid-456',
+          currentEncounterUuid: 'encounter-uuid-789',
+        }),
+      );
+    });
+
+    it('should pass enriched patient to executeOnFormSaveEvent', () => {
+      (useQuery as jest.Mock).mockReturnValue({
+        data: { ...mockEnrichedPatientData, birthDate: null },
+      });
+
+      mockUseObservationFormData.mockReturnValue({
+        observations: [{ concept: { uuid: 'test' }, value: 'test value' }],
+        handleFormDataChange: jest.fn(),
+        resetForm: jest.fn(),
+        formMetadata: { schema: { name: 'Test Form Schema', controls: [] } },
+        isLoadingMetadata: false,
+        metadataError: null,
+      });
+
+      mockGetValue.mockReturnValue({
+        errors: [],
+        observations: [{ concept: { uuid: 'test' }, value: 'test value' }],
+      });
+
+      render(
+        <ObservationFormsContainer {...defaultProps} viewingForm={mockForm} />,
+      );
+
+      fireEvent.click(screen.getByTestId('primary-button'));
+
+      expect(mockExecuteOnFormSaveEvent).toHaveBeenCalledWith(
+        expect.anything(),
+        expect.any(Array),
+        expect.objectContaining({
+          uuid: 'test-patient-uuid',
+          identifier: 'BAH-001',
+        }),
+        expect.anything(),
+      );
+    });
+
+    it('should use queryKey [patient, patientUUID] matching ConsultationPage cache', () => {
+      render(
+        <ObservationFormsContainer {...defaultProps} viewingForm={mockForm} />,
+      );
+
+      expect(useQuery as jest.Mock).toHaveBeenCalledWith(
+        expect.objectContaining({
+          queryKey: ['patient', 'test-patient-uuid'],
+        }),
+      );
+    });
+  });
+
+  describe('Copyover notice', () => {
+    const editCopyoverContext = {
+      editOnly: 'observationForms',
+      sourceEncounterUuid: 'source-encounter-uuid',
+      activeEncounter: { id: 'session-different-uuid' } as any,
+    };
+
+    it('shows the info notice right under the edit form section title when isCopyover is true and the translation is non-empty', () => {
+      render(
+        <ObservationFormsContainer
+          {...defaultProps}
+          viewingForm={mockForm}
+          directMode
+          encounterSessionStartContext={editCopyoverContext}
+        />,
+      );
+
+      expect(screen.getByTestId('edit-form-section-title')).toBeInTheDocument();
+      const notice = screen.getByTestId('observation-form-copyover-notice');
+      expect(notice).toBeInTheDocument();
+      expect(notice).toHaveAttribute('data-kind', 'info');
+    });
+
+    it('does not show the notice when isCopyover is false (session matches source)', () => {
+      render(
+        <ObservationFormsContainer
+          {...defaultProps}
+          viewingForm={mockForm}
+          directMode
+          encounterSessionStartContext={{
+            ...editCopyoverContext,
+            activeEncounter: { id: 'source-encounter-uuid' } as any,
+          }}
+        />,
+      );
+
+      expect(
+        screen.queryByTestId('observation-form-copyover-notice'),
+      ).not.toBeInTheDocument();
+    });
+
+    it('does not show the notice outside the edit form section (directMode off)', () => {
+      render(
+        <ObservationFormsContainer
+          {...defaultProps}
+          viewingForm={mockForm}
+          encounterSessionStartContext={editCopyoverContext}
+        />,
+      );
+
+      expect(
+        screen.queryByTestId('edit-form-section-title'),
+      ).not.toBeInTheDocument();
+      expect(
+        screen.queryByTestId('observation-form-copyover-notice'),
+      ).not.toBeInTheDocument();
+    });
+
+    it('does not show the notice when encounterSessionStartContext is not provided', () => {
+      render(
+        <ObservationFormsContainer
+          {...defaultProps}
+          viewingForm={mockForm}
+          directMode
+        />,
+      );
+
+      expect(
+        screen.queryByTestId('observation-form-copyover-notice'),
+      ).not.toBeInTheDocument();
+    });
+
+    it('does not show the notice when isCopyover is true but the translation resolves to an empty string', () => {
+      jest.mocked(useTranslation).mockReturnValueOnce({
+        t: jest.fn((key: string) =>
+          key === 'OBSERVATION_FORM_COPYOVER_NOTICE' ? '' : `translated_${key}`,
+        ),
+      } as unknown as ReturnType<typeof useTranslation>);
+
+      render(
+        <ObservationFormsContainer
+          {...defaultProps}
+          viewingForm={mockForm}
+          directMode
+          encounterSessionStartContext={editCopyoverContext}
+        />,
+      );
+
+      expect(
+        screen.queryByTestId('observation-form-copyover-notice'),
+      ).not.toBeInTheDocument();
+    });
   });
 
   describe('Pin Toggle Functionality', () => {
@@ -510,7 +947,30 @@ describe('ObservationFormsContainer', () => {
       const pinContainer = pinIcon.parentElement;
 
       expect(pinContainer).toHaveClass('pinned');
-      expect(pinContainer).toHaveAttribute('title', 'Unpin form');
+      expect(pinContainer).toHaveAttribute(
+        'title',
+        'translated_OBSERVATION_FORMS_UNPIN_TOOLTIP',
+      );
+    });
+
+    it('should render the pin icon alongside the maximize/minimize toggle, not inside the title', () => {
+      render(
+        <ObservationFormsContainer
+          {...defaultProps}
+          viewingForm={nonDefaultForm}
+          isActionAreaExpanded={false}
+          onToggleActionAreaExpand={jest.fn()}
+        />,
+      );
+
+      const titleContainer = screen.getByTestId('action-area-title');
+      const headerActionsContainer = screen.getByTestId(
+        'action-area-header-actions',
+      );
+      const pinIcon = screen.getByTestId('icon-pin-icon');
+
+      expect(titleContainer).not.toContainElement(pinIcon);
+      expect(headerActionsContainer).toContainElement(pinIcon);
     });
 
     it('should show unpinned state when form is not in pinnedForms array', () => {
@@ -525,7 +985,10 @@ describe('ObservationFormsContainer', () => {
       const pinContainer = pinIcon.parentElement;
 
       expect(pinContainer).toHaveClass('unpinned');
-      expect(pinContainer).toHaveAttribute('title', 'Pin form');
+      expect(pinContainer).toHaveAttribute(
+        'title',
+        'translated_OBSERVATION_FORMS_PIN_TOOLTIP',
+      );
     });
 
     it('should call updatePinnedForms when pin icon is clicked', () => {
@@ -726,6 +1189,35 @@ describe('ObservationFormsContainer', () => {
       });
     });
 
+    it('should show mandatory validation error when form is empty but has mandatory errors', async () => {
+      const mockOnFormObservationsChange = jest.fn();
+
+      mockGetValue.mockReturnValue({
+        observations: [],
+        errors: [{ message: 'mandatory' }],
+      });
+
+      render(
+        <ObservationFormsContainer
+          {...defaultProps}
+          viewingForm={mockForm}
+          onFormObservationsChange={mockOnFormObservationsChange}
+        />,
+      );
+
+      const saveButton = screen.getByTestId('primary-button');
+      fireEvent.click(saveButton);
+
+      expect(mockOnFormObservationsChange).not.toHaveBeenCalled();
+
+      await waitFor(() => {
+        expect(screen.getByTestId('inline-notification')).toBeInTheDocument();
+        expect(screen.getByTestId('notification-title')).toHaveTextContent(
+          'translated_OBSERVATION_FORM_VALIDATION_ERROR_TITLE_MANDATORY',
+        );
+      });
+    });
+
     it('should show invalid field validation error but not block submission', async () => {
       const mockOnFormObservationsChange = jest.fn();
       const mockOnViewingFormChange = jest.fn();
@@ -811,6 +1303,7 @@ describe('ObservationFormsContainer', () => {
           mockForm.uuid,
           expect.any(Array),
           'mandatory', // validationErrorType is passed with the error type
+          undefined,
         );
         expect(mockOnViewingFormChange).toHaveBeenCalledWith(null);
       });
@@ -882,6 +1375,7 @@ describe('ObservationFormsContainer', () => {
             }),
           ]),
           'invalid', // validationErrorType is passed
+          undefined,
         );
       });
     });
@@ -941,6 +1435,7 @@ describe('ObservationFormsContainer', () => {
             }),
           ]),
           'mandatory',
+          undefined,
         );
         expect(mockOnViewingFormChange).toHaveBeenCalledWith(null);
       });
@@ -1019,6 +1514,7 @@ describe('ObservationFormsContainer', () => {
             }),
           ]),
           'empty',
+          undefined,
         );
       });
     });
@@ -1102,6 +1598,7 @@ describe('ObservationFormsContainer', () => {
             }),
           ]),
           'empty',
+          undefined,
         );
       });
     });
@@ -1167,6 +1664,7 @@ describe('ObservationFormsContainer', () => {
             }),
           ]),
           'empty',
+          undefined,
         );
       });
     });
@@ -1250,6 +1748,7 @@ describe('ObservationFormsContainer', () => {
             }),
           ]),
           'empty',
+          undefined,
         );
       });
     });
@@ -1404,5 +1903,107 @@ describe('ObservationFormsContainer', () => {
         );
       });
     });
+  });
+});
+
+describe('Edit mode - hasFormChanges / change detection', () => {
+  const mockForm: ObservationForm = {
+    name: 'Edit Form',
+    uuid: 'edit-form-uuid',
+    id: 2,
+    privileges: [],
+  };
+
+  const editModeContext = {
+    editOnly: 'observationForms' as const,
+    sourceEncounterUuid: 'edit-encounter-uuid',
+  };
+
+  const defaultProps = {
+    onViewingFormChange: jest.fn(),
+    viewingForm: mockForm,
+    onRemoveForm: jest.fn(),
+  };
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+
+    (useQuery as jest.Mock).mockReturnValue({
+      data: mockMinimalPatientData,
+    });
+
+    mockGetValue.mockReturnValue({
+      observations: [],
+      errors: [],
+    });
+
+    const mockUseObservationFormsSearch = jest.requireMock(
+      '../../../../hooks/useObservationFormsSearch',
+    ).default;
+    mockUseObservationFormsSearch.mockReturnValue({
+      forms: [],
+      isLoading: false,
+      error: null,
+    });
+
+    const mockUsePinnedObservationForms = jest.requireMock(
+      '../../../../hooks/usePinnedObservationForms',
+    ).usePinnedObservationForms;
+    mockUsePinnedObservationForms.mockReturnValue({
+      pinnedForms: [],
+      updatePinnedForms: jest.fn(),
+      isLoading: false,
+      error: null,
+    });
+
+    mockUseObservationFormData.mockReturnValue({
+      observations: [],
+      handleFormDataChange: jest.fn(),
+      resetForm: jest.fn(),
+      formMetadata: undefined,
+      isLoadingMetadata: false,
+      metadataError: null,
+    });
+  });
+
+  it('should disable the primary button in edit mode when no observations exist (no changes)', () => {
+    // In edit mode with no observations, hasFormChanges returns false → button disabled
+    mockUseObservationFormData.mockReturnValue({
+      observations: [],
+      handleFormDataChange: jest.fn(),
+      resetForm: jest.fn(),
+      formMetadata: { schema: { name: 'Edit Form', controls: [] } },
+      isLoadingMetadata: false,
+      metadataError: null,
+    });
+
+    render(
+      <ObservationFormsContainer
+        {...defaultProps}
+        encounterSessionStartContext={editModeContext}
+      />,
+    );
+
+    const primaryButton = screen.getByTestId('primary-button');
+    expect(primaryButton).toBeDisabled();
+  });
+
+  it('should enable the primary button in non-edit mode regardless of observations', () => {
+    // Without encounterSessionStartContext.editOnly, isEditMode is false → hasFormChanges is true
+    mockUseObservationFormData.mockReturnValue({
+      observations: [],
+      handleFormDataChange: jest.fn(),
+      resetForm: jest.fn(),
+      formMetadata: { schema: { name: 'Normal Form', controls: [] } },
+      isLoadingMetadata: false,
+      metadataError: null,
+    });
+
+    render(
+      <ObservationFormsContainer {...defaultProps} viewingForm={mockForm} />,
+    );
+
+    const primaryButton = screen.getByTestId('primary-button');
+    expect(primaryButton).not.toBeDisabled();
   });
 });

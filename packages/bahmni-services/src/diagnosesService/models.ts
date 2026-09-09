@@ -4,6 +4,7 @@ export interface DiagnosisInputEntry {
   id: string;
   display: string;
   selectedCertainty: Coding | null;
+  conceptSystem?: string;
 
   errors: {
     certainty?: string;

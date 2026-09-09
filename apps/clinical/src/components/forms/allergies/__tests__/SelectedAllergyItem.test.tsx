@@ -113,7 +113,7 @@ describe('SelectedAllergyItem', () => {
       render(<SelectedAllergyItem {...defaultProps} />);
 
       const multiselect = screen.getByRole('combobox', {
-        name: 'Select Reactions Total items selected: 1. To clear selection, press Delete or Backspace.',
+        name: 'Reactions Total items selected: 1. To clear selection, press Delete or Backspace.',
       });
       expect(multiselect).toBeInTheDocument();
       expect(multiselect).toHaveAttribute('placeholder', 'Select Reactions');
@@ -149,7 +149,7 @@ describe('SelectedAllergyItem', () => {
       render(<SelectedAllergyItem {...defaultProps} />);
 
       const multiselect = screen.getByRole('combobox', {
-        name: 'Select Reactions Total items selected: 1. To clear selection, press Delete or Backspace.',
+        name: 'Reactions Total items selected: 1. To clear selection, press Delete or Backspace.',
       });
       await user.click(multiselect);
 
@@ -170,7 +170,7 @@ describe('SelectedAllergyItem', () => {
       render(<SelectedAllergyItem {...defaultProps} />);
 
       const multiselect = screen.getByRole('combobox', {
-        name: 'Select Reactions Total items selected: 1. To clear selection, press Delete or Backspace.',
+        name: 'Reactions Total items selected: 1. To clear selection, press Delete or Backspace.',
       });
       await user.click(multiselect);
 
@@ -446,7 +446,7 @@ describe('SelectedAllergyItem', () => {
       ).toBeInTheDocument();
 
       const multiselect = screen.getByRole('combobox', {
-        name: 'Select Reactions Total items selected: 1. To clear selection, press Delete or Backspace.',
+        name: 'Reactions Total items selected: 1. To clear selection, press Delete or Backspace.',
       });
       expect(multiselect).toBeInTheDocument();
       expect(multiselect).toHaveAttribute('placeholder', 'Select Reactions');
@@ -567,7 +567,7 @@ describe('SelectedAllergyItem', () => {
 
       // Component should render without crashing
       const multiselect = screen.getByRole('combobox', {
-        name: 'Select Reactions Total items selected: 1. To clear selection, press Delete or Backspace.',
+        name: 'Reactions Total items selected: 1. To clear selection, press Delete or Backspace.',
       });
       expect(multiselect).toBeInTheDocument();
 
@@ -584,7 +584,7 @@ describe('SelectedAllergyItem', () => {
       render(<SelectedAllergyItem {...defaultProps} />);
 
       const multiselect = screen.getByRole('combobox', {
-        name: 'Select Reactions Total items selected: 1. To clear selection, press Delete or Backspace.',
+        name: 'Reactions Total items selected: 1. To clear selection, press Delete or Backspace.',
       });
 
       // Open the dropdown
@@ -605,7 +605,6 @@ describe('SelectedAllergyItem', () => {
         );
       });
 
-      // The key prop change should trigger a remount, effectively clearing the input
       // We verify this by checking that the component still renders correctly
       expect(multiselect).toBeInTheDocument();
     });
@@ -615,7 +614,7 @@ describe('SelectedAllergyItem', () => {
       const { rerender } = render(<SelectedAllergyItem {...defaultProps} />);
 
       const multiselect = screen.getByRole('combobox', {
-        name: 'Select Reactions Total items selected: 1. To clear selection, press Delete or Backspace.',
+        name: 'Reactions Total items selected: 1. To clear selection, press Delete or Backspace.',
       });
 
       // Click to open
@@ -638,7 +637,7 @@ describe('SelectedAllergyItem', () => {
 
       // Verify component re-rendered with updated reactions
       const updatedMultiselect = screen.getByRole('combobox', {
-        name: 'Select Reactions Total items selected: 2. To clear selection, press Delete or Backspace.',
+        name: 'Reactions Total items selected: 2. To clear selection, press Delete or Backspace.',
       });
       expect(updatedMultiselect).toBeInTheDocument();
     });
@@ -651,7 +650,7 @@ describe('SelectedAllergyItem', () => {
       render(<SelectedAllergyItem {...defaultProps} />);
 
       const multiselect = screen.getByRole('combobox', {
-        name: 'Select Reactions Total items selected: 1. To clear selection, press Delete or Backspace.',
+        name: 'Reactions Total items selected: 1. To clear selection, press Delete or Backspace.',
       });
 
       // Type to open dropdown and filter options
@@ -718,7 +717,7 @@ describe('SelectedAllergyItem', () => {
       render(<SelectedAllergyItem {...defaultProps} />);
 
       const multiselect = screen.getByRole('combobox', {
-        name: 'Select Reactions Total items selected: 1. To clear selection, press Delete or Backspace.',
+        name: 'Reactions Total items selected: 1. To clear selection, press Delete or Backspace.',
       });
 
       // Open dropdown

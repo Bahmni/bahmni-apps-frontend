@@ -1,6 +1,10 @@
 import { get } from '../../api';
-import { EOC_ENCOUNTERS_URL } from '../constants';
-import { getEncountersAndVisitsForEOC } from '../episodeOfCareService';
+import { mockEOCBundle } from '../__mocks__/episodeOfCareMocks';
+import { EOC_BY_UUID_URL, EOC_ENCOUNTERS_URL } from '../constants';
+import {
+  getEncountersAndVisitsForEOC,
+  getEpisodeOfCare,
+} from '../episodeOfCareService';
 
 jest.mock('../../api');
 const mockedGet = get as jest.MockedFunction<typeof get>;
@@ -11,54 +15,6 @@ describe('episodeOfCareService', () => {
   });
 
   describe('getEncountersForEOC', () => {
-    const mockEOCBundle = {
-      resourceType: 'Bundle' as const,
-      id: 'eoc-bundle-123',
-      type: 'searchset' as const,
-      total: 2,
-      entry: [
-        {
-          fullUrl: 'http://localhost/openmrs/ws/fhir2/R4/EpisodeOfCare/eoc-123',
-          resource: {
-            resourceType: 'EpisodeOfCare' as const,
-            id: 'eoc-123',
-          },
-        },
-        {
-          fullUrl:
-            'http://localhost/openmrs/ws/fhir2/R4/Encounter/encounter-456',
-          resource: {
-            resourceType: 'Encounter' as const,
-            id: 'encounter-456',
-            partOf: {
-              reference: 'Visit/visit-789',
-            },
-            episodeOfCare: [
-              {
-                reference: 'EpisodeOfCare/eoc-123',
-              },
-            ],
-          },
-        },
-        {
-          fullUrl:
-            'http://localhost/openmrs/ws/fhir2/R4/Encounter/encounter-457',
-          resource: {
-            resourceType: 'Encounter' as const,
-            id: 'encounter-457',
-            partOf: {
-              reference: 'Visit/visit-789', // Same visit as above
-            },
-            episodeOfCare: [
-              {
-                reference: 'EpisodeOfCare/eoc-123',
-              },
-            ],
-          },
-        },
-      ],
-    };
-
     it('should fetch encounters for a single EOC ID', async () => {
       const eocId = 'eoc-123';
       mockedGet.mockResolvedValueOnce(mockEOCBundle);
@@ -217,6 +173,16 @@ describe('episodeOfCareService', () => {
       await expect(getEncountersAndVisitsForEOC(eocIds)).rejects.toThrow(
         'No episode of care found for the provided UUIDs: invalid-eoc-123',
       );
+    });
+  });
+
+  describe('getEpisodeOfCare', () => {
+    const episodeUUID = '8bb0e948-a3a1-495b-aa8d-a97e97119a59';
+
+    it('should return episodeOfCare resource', async () => {
+      mockedGet.mockResolvedValueOnce(mockEOCBundle);
+      await getEpisodeOfCare(episodeUUID);
+      expect(mockedGet).toHaveBeenCalledWith(EOC_BY_UUID_URL(episodeUUID));
     });
   });
 });

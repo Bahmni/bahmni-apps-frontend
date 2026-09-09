@@ -2,7 +2,7 @@ import { DocumentView } from '@carbon/icons-react';
 import classNames from 'classnames';
 import React, { useState } from 'react';
 import { Modal } from '../../atoms/modal';
-import { DOCUMENT_AUTH_BASE_URL } from '../shared/constants';
+import { resolveDocumentSrc } from '../shared/constants';
 import styles from './styles/FileTile.module.scss';
 
 export interface FileTileProps {
@@ -23,6 +23,7 @@ export const FileTile: React.FC<FileTileProps> = ({
   onModalClose,
 }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const finalSrc = resolveDocumentSrc(src);
 
   const handleThumbnailClick = () => {
     setIsModalOpen(true);
@@ -67,7 +68,7 @@ export const FileTile: React.FC<FileTileProps> = ({
               id={`${id}-modal-iframe`}
               data-testid={`${id}-modal-iframe-test-id`}
               aria-label={`${id}-modal-iframe-aria-label`}
-              src={DOCUMENT_AUTH_BASE_URL + src + '#toolbar=0'}
+              src={finalSrc + '#toolbar=0'}
               className={styles.modalIframe}
               title={modalTitle ?? 'Document Viewer'}
             />

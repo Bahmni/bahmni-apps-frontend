@@ -23,7 +23,7 @@ export const ExpandedContentForPrimaryOrder: React.FC<
 > = ({ investigation, headers, renderCell, showLinkedOrders, showReport }) => {
   const { t } = useTranslation();
   const isCompleted = investigation.status === 'completed';
-  const hasReport = !!investigation.reportId;
+  const hasReport = !!investigation.reportIds?.[0];
 
   if (!showLinkedOrders && !showReport) {
     return null;
@@ -72,7 +72,9 @@ export const ExpandedContentForPrimaryOrder: React.FC<
                   {reportedBy}
                 </p>
               )}
-              <RadiologyInvestigationReport reportId={investigation.reportId} />
+              <RadiologyInvestigationReport
+                reportId={investigation.reportIds?.[0]}
+              />
             </Tile>
           </td>
         </tr>

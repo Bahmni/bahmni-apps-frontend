@@ -4,33 +4,49 @@ import {
   type AuditEventType,
   dispatchAuditEvent,
   dispatchConsultationSaved,
+  dispatchCDSSResults,
+  findActiveEncounterInSession,
+  getConfig,
+  getEncounterByUuid,
+  invokeCDSSRule,
+  type CDSSCheckEventDetail,
+  type CDSSServerConfig,
+  useCDSSCheckListener,
   useTranslation,
 } from '@bahmni/services';
 import { useActivePractitioner, useNotification } from '@bahmni/widgets';
+import { useQuery } from '@tanstack/react-query';
+import type { Bundle, BundleEntry, MedicationRequest } from 'fhir/r4';
 import React, {
   useCallback,
   useEffect,
   useMemo,
+  useRef,
   useSyncExternalStore,
   useState,
 } from 'react';
+import { CDSS_SERVER_CONFIG_URL } from '../../constants/app';
 import { ERROR_TITLES } from '../../constants/errors';
+import { MEDICATIONS_INPUT_CONTROL_KEY } from '../../constants/medications';
 import type { EncounterSessionStartContext } from '../../events/startConsultation';
+import { useActionAreaExpandProps } from '../../hooks/useActionAreaExpandProps';
 import { useClinicalAppData } from '../../hooks/useClinicalAppData';
 import { useEncounterConcepts } from '../../hooks/useEncounterConcepts';
-import { useEncounterSession } from '../../hooks/useEncounterSession';
-import type { AllergyInputEntry } from '../../models/allergy';
 import { useClinicalConfig } from '../../providers/clinicalConfig';
 import { useAllergyStore } from '../../stores/allergyStore';
 import { useEncounterDetailsStore } from '../../stores/encounterDetailsStore';
 import { useObservationFormsStore } from '../../stores/observationFormsStore';
 import { InputControlRenderer } from '../forms';
+import { getMedicationRequestStore } from '../forms/medicationRequest/store';
+import type { EncounterContext } from '../forms/models';
 import ObservationFormsContainer from '../forms/observations/ObservationFormsContainer';
+import cdssConfigSchema from './cdssConfigSchema.json';
 import { ENCOUNTER_DETAILS_INPUT_CONTROL_KEY } from './constants';
 import { submitConsultation } from './services';
 import styles from './styles/index.module.scss';
 import {
   captureUpdatedResources,
+  getActiveEncounter,
   getActiveEntries,
   loadEncounterInputControls,
 } from './utils';
@@ -38,25 +54,64 @@ import {
 interface ConsultationPadProps {
   encounterSessionStartContext: EncounterSessionStartContext;
   onClose: () => void;
+  isActionAreaExpanded?: boolean;
+  onToggleActionAreaExpand?: () => void;
 }
 
 const ConsultationPad: React.FC<ConsultationPadProps> = ({
   encounterSessionStartContext,
   onClose,
+  isActionAreaExpanded,
+  onToggleActionAreaExpand,
 }) => {
-  const preloadedAllergies = encounterSessionStartContext.preloadedAllergies as
-    | AllergyInputEntry[]
-    | undefined;
+  const preloadedAllergies = encounterSessionStartContext.preloadedAllergies;
   const encounterType = encounterSessionStartContext.encounterType;
+  const editOnlyKey = encounterSessionStartContext.editOnly as
+    | string
+    | undefined;
+  const editTitle = encounterSessionStartContext.editTitle as
+    | string
+    | undefined;
+  const sourceEncounterUuid =
+    encounterSessionStartContext.sourceEncounterUuid as string | undefined;
+  const directFormMode = encounterSessionStartContext.directFormMode as
+    | boolean
+    | undefined;
   const { t } = useTranslation();
   const { addNotification } = useNotification();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [shouldLoadCDSSConfig, setShouldLoadCDSSConfig] = useState(false);
+  const pendingCDSSCheckRef = useRef<CDSSCheckEventDetail | null>(null);
 
   const { clinicalConfig } = useClinicalConfig();
   const registry = useMemo(
     () => loadEncounterInputControls(clinicalConfig?.consultationPad),
     [clinicalConfig],
   );
+
+  const {
+    data: cdssServerConfig,
+    isLoading: isCdssServerConfigLoading,
+    error: cdssServerConfigError,
+  } = useQuery({
+    queryKey: ['cdssConfig'],
+    queryFn: () =>
+      getConfig<CDSSServerConfig[]>(CDSS_SERVER_CONFIG_URL, cdssConfigSchema),
+    enabled: shouldLoadCDSSConfig,
+  });
+
+  useEffect(() => {
+    if (cdssServerConfigError) {
+      addNotification({
+        title: t('ERROR_DEFAULT_TITLE'),
+        message: t('CDSS_CONFIG_LOAD_ERROR', {
+          errorMessage: cdssServerConfigError.message,
+        }),
+        type: 'error',
+      });
+      pendingCDSSCheckRef.current = null;
+    }
+  }, [cdssServerConfigError, addNotification, t]);
 
   const {
     encounterConcepts,
@@ -80,13 +135,6 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
       null
     );
   }, [encounterType, clinicalConfig]);
-
-  const editOnlyKey = encounterSessionStartContext.editOnly as
-    | string
-    | undefined;
-  const editTitle = encounterSessionStartContext.editTitle as
-    | string
-    | undefined;
 
   const activeEntries = useMemo(
     () => getActiveEntries(registry, resolvedEncounterType!, editOnlyKey),
@@ -119,18 +167,84 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
       .setRequestedEncounterType(resolvedEncounterType);
   }, [resolvedEncounterType]);
 
+  const { patientId, activeVisitId, activeEpisodeId, episodeOfCare } =
+    useClinicalAppData();
+
+  const currentEpisodeEncounterUuids = activeEpisodeId
+    ? episodeOfCare.find((eoc) => eoc.uuid === activeEpisodeId)?.encounterUuids
+    : undefined;
+
   const { practitioner } = useActivePractitioner();
-  const { activeEncounter, matchReason } = useEncounterSession({
-    practitioner,
-    encounterTypeUUID: selectedEncounterType?.uuid,
+  const { data: sessionEncounter, status: sessionEncounterStatus } = useQuery({
+    queryKey: [
+      'activeEncounter',
+      patientId,
+      practitioner?.uuid,
+      selectedEncounterType?.uuid,
+      activeEpisodeId,
+      currentEpisodeEncounterUuids,
+    ],
+    queryFn: () =>
+      findActiveEncounterInSession(
+        patientId!,
+        practitioner?.uuid,
+        undefined,
+        selectedEncounterType?.uuid,
+        currentEpisodeEncounterUuids,
+      ),
+    staleTime: 0,
+    enabled: !!(patientId && practitioner?.uuid && selectedEncounterType?.uuid),
+  });
+  const {
+    data: sourceEncounter,
+    isLoading: sourceEncounterLoading,
+    error: sourceEncounterError,
+  } = useQuery({
+    queryKey: ['encounter', sourceEncounterUuid],
+    queryFn: ({ signal }) =>
+      getEncounterByUuid(sourceEncounterUuid!, { signal }),
+    enabled: !!sourceEncounterUuid,
   });
 
-  // Only resume the existing encounter on an exact MATCHED case.
-  // SESSION_EXPIRED, LOCATION_MISMATCH, PROVIDER_MISMATCH all silently create a new encounter.
-  const encounterForSubmission = matchReason.includes('MATCHED')
-    ? activeEncounter
-    : null;
-  const { episodeOfCare } = useClinicalAppData();
+  useEffect(() => {
+    if (sourceEncounterError) {
+      addNotification({
+        title: t('ERROR_DEFAULT_TITLE'),
+        message: t('CONSULTATION_ERROR_GENERIC'),
+        type: 'error',
+        timeout: 5000,
+      });
+    }
+  }, [sourceEncounterError, addNotification, t]);
+
+  const activeEncounter = getActiveEncounter({
+    sourceEncounterUuid,
+    sourceEncounter,
+    sessionEncounter,
+    sessionEncounterStatus,
+  });
+
+  const effectiveContext = useMemo<EncounterSessionStartContext>(
+    () => ({ ...encounterSessionStartContext, activeEncounter }),
+    [encounterSessionStartContext, activeEncounter],
+  );
+
+  useEffect(() => {
+    const periodStart = sessionEncounter?.period?.start;
+    if (periodStart) {
+      const date = new Date(periodStart);
+      useEncounterDetailsStore
+        .getState()
+        .setConsultationDate(isNaN(date.getTime()) ? new Date() : date);
+    } else if (
+      sessionEncounterStatus === 'success' ||
+      sessionEncounterStatus === 'error'
+    ) {
+      useEncounterDetailsStore.getState().setConsultationDate(new Date());
+    }
+  }, [sessionEncounter, sessionEncounterStatus]);
+
+  const encounterForSubmission = activeEncounter ?? null;
 
   const episodeOfCareUuids = episodeOfCare.map((eoc) => eoc.uuid);
   const statDurationInMilliseconds =
@@ -144,6 +258,23 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
     removeForm,
   } = useObservationFormsStore();
 
+  const actionAreaExpandProps = useActionAreaExpandProps({
+    isExpanded: isActionAreaExpanded,
+    onToggleExpand: onToggleActionAreaExpand,
+    disabled: !!viewingForm,
+  });
+
+  // Seed medication store with FHIR resources for edit mode
+  useEffect(() => {
+    const editMedications = encounterSessionStartContext.editMedications as
+      | MedicationRequest[]
+      | undefined;
+    const medStore = getMedicationRequestStore(MEDICATIONS_INPUT_CONTROL_KEY);
+    medStore
+      .getState()
+      .setPendingFhirEdits(editMedications?.length ? editMedications : []);
+  }, [encounterSessionStartContext.editMedications]);
+
   useEffect(() => {
     return () => activeEntries.forEach((entry) => entry.reset());
   }, []);
@@ -153,6 +284,134 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
       useAllergyStore.getState().preloadAllergies(preloadedAllergies);
     }
   }, [preloadedAllergies]);
+
+  const buildComprehensiveCDSSBundle = useCallback((): Bundle => {
+    const entries: BundleEntry[] = [];
+
+    activeEntries.forEach((entry) => {
+      if (entry.hasData() && entry.createBundleEntries) {
+        const ctx: EncounterContext = {
+          encounterSubject: {
+            reference: `Patient/${encounterSessionStartContext.patientUuid}`,
+          },
+          encounterReference: activeEncounter?.id ?? '',
+          practitionerUUID: practitioner?.uuid ?? '',
+          consultationDate: new Date(),
+          statDurationInMilliseconds,
+        };
+        const controlEntries = entry.createBundleEntries(ctx);
+        entries.push(...controlEntries);
+      }
+    });
+
+    return {
+      resourceType: 'Bundle',
+      type: 'collection',
+      entry: entries,
+    };
+  }, [
+    activeEntries,
+    encounterSessionStartContext,
+    activeEncounter,
+    practitioner,
+    statDurationInMilliseconds,
+  ]);
+
+  const processCDSSCheck = useCallback(
+    async (detail: CDSSCheckEventDetail) => {
+      const { controlKey, itemId, rules } = detail;
+
+      if (!cdssServerConfig) {
+        return;
+      }
+
+      const dataBundle = buildComprehensiveCDSSBundle();
+
+      const resolvedVisitId =
+        activeVisitId ?? activeEncounter?.partOf?.reference?.split('/')[1];
+
+      const context = {
+        patientId: patientId!,
+        visitId: resolvedVisitId,
+        episodeId: activeEpisodeId ?? undefined,
+      };
+
+      const cardPromises = rules.map((rule) =>
+        invokeCDSSRule(cdssServerConfig, rule, context, dataBundle).catch(
+          () => {
+            addNotification({
+              title: t('ERROR_DEFAULT_TITLE'),
+              message: t('CDSS_RULE_INVOCATION_ERROR', {
+                controlKey,
+                eventType: rule.event,
+              }),
+              type: 'error',
+            });
+            return [];
+          },
+        ),
+      );
+
+      const cardArrays = await Promise.all(cardPromises);
+      const cards = cardArrays.flat();
+
+      dispatchCDSSResults({
+        cards,
+        triggerItemId: itemId,
+        controlKey,
+      });
+
+      pendingCDSSCheckRef.current = null;
+    },
+    [
+      cdssServerConfig,
+      buildComprehensiveCDSSBundle,
+      activeEncounter,
+      patientId,
+      activeVisitId,
+      activeEpisodeId,
+      addNotification,
+      t,
+    ],
+  );
+
+  // Process pending CDSS check when config becomes available
+  useEffect(() => {
+    if (
+      cdssServerConfig &&
+      !isCdssServerConfigLoading &&
+      pendingCDSSCheckRef.current
+    ) {
+      processCDSSCheck(pendingCDSSCheckRef.current);
+    }
+  }, [cdssServerConfig, isCdssServerConfigLoading, processCDSSCheck]);
+
+  const handleCDSSCheck = useCallback(
+    async (detail: CDSSCheckEventDetail) => {
+      const { rules } = detail;
+
+      if (!rules || rules.length === 0) return;
+
+      // Store the pending check to trigger config loading
+      pendingCDSSCheckRef.current = detail;
+
+      // If config is already loaded and not loading, process immediately
+      if (cdssServerConfig && !isCdssServerConfigLoading) {
+        await processCDSSCheck(detail);
+      } else if (!shouldLoadCDSSConfig) {
+        // Trigger config loading
+        setShouldLoadCDSSConfig(true);
+      }
+    },
+    [
+      cdssServerConfig,
+      isCdssServerConfigLoading,
+      processCDSSCheck,
+      shouldLoadCDSSConfig,
+    ],
+  );
+
+  useCDSSCheckListener(handleCDSSCheck);
 
   const handleSubmit = async () => {
     const validationResults = activeEntries.map((entry) => ({
@@ -174,8 +433,57 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
 
     if (!validationResults.every((r) => r.valid)) return;
 
+    const hasCriticalCDSCards = activeEntries.some(
+      (entry) => entry.hasCriticalCDSCards?.() === true,
+    );
+
+    if (hasCriticalCDSCards) {
+      addNotification({
+        title: t('CDSS_CRITICAL_ALERT_TITLE'),
+        message: t('CDSS_CRITICAL_ALERT_MESSAGE'),
+        type: 'error',
+        timeout: 5000,
+      });
+      return;
+    }
+
     try {
       setIsSubmitting(true);
+
+      // If any active entry has a direct submit handler, call it directly
+      // and skip the consultation bundle flow.
+      const directSubmitEntries = activeEntries.filter(
+        (entry) => entry.hasData() && entry.onDirectSubmit,
+      );
+      const bundleEntries = activeEntries.filter(
+        (entry) => entry.hasData() && !entry.onDirectSubmit,
+      );
+
+      for (const entry of directSubmitEntries) {
+        await entry.onDirectSubmit!();
+      }
+
+      // Skip bundle submission if all data was handled by direct submit
+      if (directSubmitEntries.length > 0 && bundleEntries.length === 0) {
+        const updatedResources = captureUpdatedResources(activeEntries);
+        dispatchConsultationSaved({
+          patientUUID: useEncounterDetailsStore.getState().patientUUID ?? '',
+          updatedResources,
+          updatedConcepts: new Map(),
+        });
+
+        addNotification({
+          title: t('CONSULTATION_SUBMITTED_SUCCESS_TITLE'),
+          message: t('CONSULTATION_SUBMITTED_SUCCESS_MESSAGE'),
+          type: 'success',
+          timeout: 5000,
+        });
+
+        activeEntries.forEach((entry) => entry.reset());
+        onClose();
+        return;
+      }
+
       const result = await submitConsultation({
         activeEncounter: encounterForSubmission,
         episodeOfCareUuids,
@@ -243,21 +551,32 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
             key={entry.key}
             entry={entry}
             encounterType={resolvedEncounterType!}
-            encounterSessionStartContext={encounterSessionStartContext}
+            encounterSessionStartContext={effectiveContext}
           />
         ))}
       </div>
     );
   })();
 
-  const enablePrimaryButton = useMemo(
-    () =>
-      hasError ||
-      !isEncounterDetailsFormReady ||
-      isSubmitting ||
-      !hasConsultationData,
-    [hasError, isEncounterDetailsFormReady, isSubmitting, hasConsultationData],
+  const isEditMode = !!editOnlyKey;
+  const medStore = getMedicationRequestStore(MEDICATIONS_INPUT_CONTROL_KEY);
+  const editChangesExist = useSyncExternalStore(
+    (cb) => medStore.subscribe(cb),
+    () => {
+      if (!isEditMode || editOnlyKey !== MEDICATIONS_INPUT_CONTROL_KEY)
+        return true;
+      return medStore.getState().hasEditChanges();
+    },
   );
+
+  const isPrimaryButtonDisabled =
+    hasError ||
+    !isEncounterDetailsFormReady ||
+    isSubmitting ||
+    !hasConsultationData ||
+    !editChangesExist ||
+    sourceEncounterLoading ||
+    activeEncounter === undefined;
   return (
     <>
       <ActionArea
@@ -271,11 +590,12 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
         }
         primaryButtonText={t('CONSULTATION_PAD_DONE_BUTTON')}
         onPrimaryButtonClick={handleSubmit}
-        isPrimaryButtonDisabled={enablePrimaryButton}
+        isPrimaryButtonDisabled={isPrimaryButtonDisabled}
         hidden={!!viewingForm}
         secondaryButtonText={t('CONSULTATION_PAD_CANCEL_BUTTON')}
         onSecondaryButtonClick={handleCancel}
         content={renderPadContent}
+        {...actionAreaExpandProps}
       />
       {viewingForm && (
         <ObservationFormsContainer
@@ -284,6 +604,12 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
           onRemoveForm={removeForm}
           onFormObservationsChange={updateFormData}
           existingObservations={getFormData(viewingForm.uuid)?.observations}
+          directMode={directFormMode}
+          onDirectModeSubmit={directFormMode ? handleSubmit : undefined}
+          onDirectModeCancel={directFormMode ? handleCancel : undefined}
+          encounterSessionStartContext={effectiveContext}
+          isActionAreaExpanded={isActionAreaExpanded}
+          onToggleActionAreaExpand={onToggleActionAreaExpand}
         />
       )}
     </>

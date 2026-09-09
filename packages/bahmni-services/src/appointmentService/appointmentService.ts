@@ -1,5 +1,6 @@
 import type { Appointment, Bundle } from 'fhir/r4';
 import { del, get, post } from '../api';
+import { CheckInAppointmentResponse } from '../patientService/models';
 import {
   ALL_APPOINTMENT_SERVICES_URL,
   APPOINTMENT_LOCATIONS_URL,
@@ -7,6 +8,7 @@ import {
   APPOINTMENT_SPECIALITIES_URL,
   APPOINTMENTS_SEARCH_URL,
   CREATE_APPOINTMENT_SERVICE_URL,
+  APPOINTMENT_UNAVAILABILITY_URL,
   getAppointmentByIdUrl,
   getDeleteAppointmentServiceUrl,
   updateAppointmentStatusUrl,
@@ -22,6 +24,8 @@ import {
   CreateAppointmentServiceRequest,
   AppointmentPage,
   AppointmentService,
+  AppointmentUnavailability,
+  CreateUnavailabilityRequest,
 } from './models';
 
 /**
@@ -86,6 +90,11 @@ export const updateAppointmentStatus = async (
     onDate,
   });
 };
+
+export const checkInAppointment = async (
+  submitUrl: string,
+  appointmentUuid: string,
+) => post<CheckInAppointmentResponse>(submitUrl, { appointmentUuid });
 
 /**
  * Fetch a specific appointment by ID.
@@ -211,3 +220,24 @@ export async function getPastAppointmentsPage(
   );
   return { bundle, total: bundle.total ?? bundle.entry?.length ?? 0 };
 }
+
+/**
+ * Fetches all appointment unavailabilities
+ * @returns A list of Appointment Unavailabilities
+ */
+export const getAppointmentUnavailabilities = async (): Promise<
+  AppointmentUnavailability[]
+> => {
+  return await get<AppointmentUnavailability[]>(APPOINTMENT_UNAVAILABILITY_URL);
+};
+
+/**
+ * Creates a new appointment unavailability
+ * @param data - The unavailability data to create
+ * @returns Resolves when creation completes
+ */
+export const createAppointmentUnavailability = async (
+  data: CreateUnavailabilityRequest[],
+): Promise<void> => {
+  await post(APPOINTMENT_UNAVAILABILITY_URL, data);
+};

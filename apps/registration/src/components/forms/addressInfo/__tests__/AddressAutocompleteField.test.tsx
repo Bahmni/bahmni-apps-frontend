@@ -143,7 +143,11 @@ describe('AddressAutocompleteField', () => {
         />,
       );
 
-      expect(screen.getByLabelText('State *')).toBeInTheDocument();
+      const label = document.querySelector('label[for="stateProvince"]');
+      expect(label).toHaveTextContent('State*');
+
+      const asterisk = label?.querySelector('.requiredAsterisk');
+      expect(asterisk).toHaveTextContent('*');
     });
 
     it('should render without required indicator for non-required fields', () => {

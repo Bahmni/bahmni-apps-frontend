@@ -1,3 +1,4 @@
+import { dispatchCDSSCheck } from '@bahmni/services';
 import { act, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { axe, toHaveNoViolations } from 'jest-axe';
@@ -20,10 +21,19 @@ import {
   mockLocations,
   mockRoutesValueSet,
   mockSitesValueSet,
+  mockStatusReasonsValueSet,
   mockStore,
+  OTHER_REASON_CONCEPT_UUID,
 } from './__mocks__/immunizationMocks';
 
 jest.mock('../stores');
+
+jest.mock('@bahmni/services', () => ({
+  ...jest.requireActual('@bahmni/services'),
+  dispatchCDSSCheck: jest.fn(),
+}));
+
+const mockDispatchCDSSCheck = jest.mocked(dispatchCDSSCheck);
 
 expect.extend(toHaveNoViolations);
 
@@ -35,6 +45,8 @@ const defaultProps = {
   immunization: mockImmunizationEntry,
   routes: mockRoutesValueSet,
   sites: mockSitesValueSet,
+  statusReasons: mockStatusReasonsValueSet,
+  otherReasonConceptUuid: OTHER_REASON_CONCEPT_UUID,
   administeredLocationTag: mockLocations,
   attributes: mockFullAttributes,
   vaccineDrugs: mockCovid19VaccineDrugs,
@@ -42,6 +54,7 @@ const defaultProps = {
   availableStocks: mockAvailableStockResponse,
   stocksError: false,
   stockBatchesEnabled: true,
+  cdssRules: [],
 };
 
 describe('SelectedImmunizationItem', () => {
@@ -114,6 +127,11 @@ describe('SelectedImmunizationItem', () => {
         [{ name: 'note', required: true }],
         `immunization-note-${id}-test-id`,
       ],
+      [
+        'statusReason',
+        [{ name: 'statusReason', required: false }],
+        `immunization-status-reason-${id}-test-id`,
+      ],
     ])(
       'renders %s field when attributes includes it',
       (_, attributes, testId) => {
@@ -140,6 +158,7 @@ describe('SelectedImmunizationItem', () => {
         `immunization-dose-sequence-${id}`,
         `immunization-expiry-date-input-${id}`,
         `immunization-add-note-link-${id}-test-id`,
+        `immunization-status-reason-${id}-test-id`,
       ].forEach((testId) =>
         expect(screen.queryByTestId(testId)).not.toBeInTheDocument(),
       );
@@ -777,6 +796,148 @@ describe('SelectedImmunizationItem', () => {
     });
   });
 
+  describe('Status reason field', () => {
+    const statusReasonAttributes = [{ name: 'statusReason', required: false }];
+
+    it('shows all reason options by default, without requiring the user to type', async () => {
+      const user = userEvent.setup();
+      render(
+        <SelectedImmunizationItem
+          {...defaultProps}
+          attributes={statusReasonAttributes}
+        />,
+      );
+      await user.click(screen.getByPlaceholderText('Select reason'));
+      expect(screen.getByText('Not age appropriate')).toBeInTheDocument();
+      expect(screen.getByText('Other')).toBeInTheDocument();
+    });
+
+    it('calls updateStatusReason with code and display when a reason is selected', async () => {
+      const user = userEvent.setup();
+      render(
+        <SelectedImmunizationItem
+          {...defaultProps}
+          attributes={statusReasonAttributes}
+        />,
+      );
+      await user.type(
+        screen.getByPlaceholderText('Select reason'),
+        'age appropriate',
+      );
+      await user.click(screen.getByText('Not age appropriate'));
+      await waitFor(() => {
+        expect(mockStore.updateStatusReason).toHaveBeenCalledWith(id, {
+          code: 'not-age-appropriate',
+          display: 'Not age appropriate',
+        });
+      });
+    });
+
+    it('calls updateStatusReason with null when the selection is cleared', async () => {
+      const user = userEvent.setup();
+      render(
+        <SelectedImmunizationItem
+          {...defaultProps}
+          attributes={statusReasonAttributes}
+          immunization={{
+            ...mockImmunizationEntry,
+            statusReason: {
+              code: 'not-age-appropriate',
+              display: 'Not age appropriate',
+            },
+          }}
+        />,
+      );
+      mockStore.updateStatusReason.mockClear();
+      await user.click(
+        screen.getByRole('button', { name: 'Clear selected item' }),
+      );
+      await waitFor(() => {
+        expect(mockStore.updateStatusReason).toHaveBeenCalledWith(id, null);
+      });
+    });
+
+    it('shows the selected reason as the combobox value', () => {
+      render(
+        <SelectedImmunizationItem
+          {...defaultProps}
+          attributes={statusReasonAttributes}
+          immunization={{
+            ...mockImmunizationEntry,
+            statusReason: {
+              code: 'not-age-appropriate',
+              display: 'Not age appropriate',
+            },
+          }}
+        />,
+      );
+      expect(screen.getByRole('combobox')).toHaveValue('Not age appropriate');
+    });
+
+    it('shows the error message when statusReason has an error', () => {
+      render(
+        <SelectedImmunizationItem
+          {...defaultProps}
+          attributes={statusReasonAttributes}
+          immunization={{
+            ...mockImmunizationEntry,
+            errors: {
+              statusReason: 'IMMUNIZATION_INPUT_CONTROL_STATUS_REASON_REQUIRED',
+            },
+          }}
+        />,
+      );
+      expect(screen.getByText('Please select a reason')).toBeInTheDocument();
+    });
+
+    it('shows the note textarea directly (skipping the "Add Note" link) when reason is "Other", even when note is not marked required', () => {
+      render(
+        <SelectedImmunizationItem
+          {...defaultProps}
+          attributes={[
+            ...statusReasonAttributes,
+            { name: 'note', required: false },
+          ]}
+          immunization={{
+            ...mockImmunizationEntry,
+            statusReason: { code: OTHER_REASON_CONCEPT_UUID, display: 'Other' },
+          }}
+        />,
+      );
+      expect(
+        screen.queryByTestId(`immunization-add-note-link-${id}-test-id`),
+      ).not.toBeInTheDocument();
+      expect(
+        screen.getByTestId(`immunization-note-${id}-test-id`),
+      ).toBeInTheDocument();
+    });
+
+    it('shows the "Add Note" link (not the textarea) when reason is not "Other"', () => {
+      render(
+        <SelectedImmunizationItem
+          {...defaultProps}
+          attributes={[
+            ...statusReasonAttributes,
+            { name: 'note', required: false },
+          ]}
+          immunization={{
+            ...mockImmunizationEntry,
+            statusReason: {
+              code: 'not-age-appropriate',
+              display: 'Not age appropriate',
+            },
+          }}
+        />,
+      );
+      expect(
+        screen.getByTestId(`immunization-add-note-link-${id}-test-id`),
+      ).toBeInTheDocument();
+      expect(
+        screen.queryByTestId(`immunization-note-${id}-test-id`),
+      ).not.toBeInTheDocument();
+    });
+  });
+
   describe('Snapshots', () => {
     it('matches snapshot with all form fields', () => {
       const { container } = render(
@@ -798,6 +959,118 @@ describe('SelectedImmunizationItem', () => {
       const { container } = render(<SelectedImmunizationItem {...props} />);
       await act(async () => {});
       expect(await axe(container)).toHaveNoViolations();
+    });
+  });
+
+  describe('CDSS Integration', () => {
+    beforeEach(() => {
+      mockDispatchCDSSCheck.mockClear();
+    });
+
+    it('dispatches CDSS check event on mount when CDSS rules are configured for onSelect event', async () => {
+      const configWithOnSelectCDSS = {
+        type: 'immunizationHistory',
+        cdss: [
+          {
+            server: 'test-cdss-server',
+            service: 'vaccine-order-select',
+            event: 'onSelect',
+          },
+        ],
+      };
+
+      await act(async () => {
+        render(
+          <SelectedImmunizationItem
+            {...defaultProps}
+            cdssRules={configWithOnSelectCDSS.cdss}
+          />,
+        );
+      });
+
+      expect(mockDispatchCDSSCheck).toHaveBeenCalledTimes(1);
+      expect(mockDispatchCDSSCheck).toHaveBeenCalledWith({
+        controlKey: IMMUNIZATION_HISTORY_INPUT_CONTROL_KEY,
+        itemId: mockImmunizationEntry.id,
+        rules: [
+          {
+            event: 'onSelect',
+            server: 'test-cdss-server',
+            service: 'vaccine-order-select',
+          },
+        ],
+      });
+    });
+
+    it('does not dispatch CDSS check when no CDSS rules are configured', async () => {
+      await act(async () => {
+        render(<SelectedImmunizationItem {...defaultProps} cdssRules={[]} />);
+      });
+
+      expect(mockDispatchCDSSCheck).not.toHaveBeenCalled();
+    });
+
+    it('does not dispatch CDSS check when CDSS rules exist but not for onSelect event', async () => {
+      const configWithOnLoadOnly = {
+        type: 'immunizationAdministration',
+        cdss: [
+          {
+            server: 'test-cdss-server',
+            service: 'vaccine-administration-check',
+            event: 'onLoad',
+          },
+        ],
+      };
+
+      await act(async () => {
+        render(
+          <SelectedImmunizationItem
+            {...defaultProps}
+            cdssRules={configWithOnLoadOnly.cdss}
+          />,
+        );
+      });
+
+      expect(mockDispatchCDSSCheck).not.toHaveBeenCalled();
+    });
+
+    it('dispatches CDSS check only once on mount, not on re-renders', async () => {
+      const configWithOnSelectCDSS = {
+        type: 'immunizationHistory',
+        cdss: [
+          {
+            server: 'test-cdss-server',
+            service: 'vaccine-order-select',
+            event: 'onSelect',
+          },
+        ],
+      };
+
+      const { rerender } = await act(async () =>
+        render(
+          <SelectedImmunizationItem
+            {...defaultProps}
+            cdssRules={configWithOnSelectCDSS.cdss}
+          />,
+        ),
+      );
+
+      expect(mockDispatchCDSSCheck).toHaveBeenCalledTimes(1);
+
+      await act(async () => {
+        rerender(
+          <SelectedImmunizationItem
+            {...defaultProps}
+            immunization={{
+              ...mockImmunizationEntry,
+              doseSequence: 2,
+            }}
+            cdssRules={configWithOnSelectCDSS.cdss}
+          />,
+        );
+      });
+
+      expect(mockDispatchCDSSCheck).toHaveBeenCalledTimes(1);
     });
   });
 });

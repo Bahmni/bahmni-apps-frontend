@@ -27,12 +27,12 @@ exports[`PatientProgramsTable should match snapshot with program data 1`] = `
               >
                 <div
                   class="cds--table-sort__description"
-                  id="table-sort-_r_27_"
+                  id="table-sort-_r_31_"
                 >
                   Click to sort rows by PROGRAMS_TABLE_HEADER_PROGRAM_NAME header in ascending order
                 </div>
                 <button
-                  aria-describedby="table-sort-_r_27_"
+                  aria-describedby="table-sort-_r_31_"
                   class="cds--table-sort"
                   data-testid="table-header-programName"
                   type="button"
@@ -88,12 +88,12 @@ exports[`PatientProgramsTable should match snapshot with program data 1`] = `
               >
                 <div
                   class="cds--table-sort__description"
-                  id="table-sort-_r_28_"
+                  id="table-sort-_r_32_"
                 >
                   Click to sort rows by PROGRAMS_TABLE_HEADER_START_DATE header in ascending order
                 </div>
                 <button
-                  aria-describedby="table-sort-_r_28_"
+                  aria-describedby="table-sort-_r_32_"
                   class="cds--table-sort"
                   data-testid="table-header-startDate"
                   type="button"
@@ -149,12 +149,12 @@ exports[`PatientProgramsTable should match snapshot with program data 1`] = `
               >
                 <div
                   class="cds--table-sort__description"
-                  id="table-sort-_r_29_"
+                  id="table-sort-_r_33_"
                 >
                   Click to sort rows by PROGRAMS_TABLE_HEADER_END_DATE header in ascending order
                 </div>
                 <button
-                  aria-describedby="table-sort-_r_29_"
+                  aria-describedby="table-sort-_r_33_"
                   class="cds--table-sort"
                   data-testid="table-header-endDate"
                   type="button"
@@ -210,12 +210,12 @@ exports[`PatientProgramsTable should match snapshot with program data 1`] = `
               >
                 <div
                   class="cds--table-sort__description"
-                  id="table-sort-_r_2a_"
+                  id="table-sort-_r_34_"
                 >
                   Click to sort rows by PROGRAMS_TABLE_HEADER_STATE header in ascending order
                 </div>
                 <button
-                  aria-describedby="table-sort-_r_2a_"
+                  aria-describedby="table-sort-_r_34_"
                   class="cds--table-sort"
                   data-testid="table-header-state"
                   type="button"
@@ -271,12 +271,12 @@ exports[`PatientProgramsTable should match snapshot with program data 1`] = `
               >
                 <div
                   class="cds--table-sort__description"
-                  id="table-sort-_r_2b_"
+                  id="table-sort-_r_35_"
                 >
                   Click to sort rows by PROGRAMS_TABLE_HEADER_OUTCOME header in ascending order
                 </div>
                 <button
-                  aria-describedby="table-sort-_r_2b_"
+                  aria-describedby="table-sort-_r_35_"
                   class="cds--table-sort"
                   data-testid="table-header-outcome"
                   type="button"
@@ -409,7 +409,7 @@ exports[`PatientProgramsTable should match snapshot with program data 1`] = `
                   data-testid="program-uuid-2-start-date-test-id"
                   id="program-uuid-2-start-date"
                 >
-                  10/06/2022
+                  15/01/2023
                 </span>
               </td>
               <td
@@ -419,7 +419,7 @@ exports[`PatientProgramsTable should match snapshot with program data 1`] = `
                   data-testid="program-uuid-2-end-date-test-id"
                   id="program-uuid-2-end-date"
                 >
-                  10/01/2023
+                  15/01/2023
                 </span>
               </td>
               <td
@@ -474,8 +474,8 @@ exports[`PatientProgramsTable should match snapshot with program data 1`] = `
           >
             <label
               class="cds--pagination__text"
-              for="cds-pagination-select-id-_r_2c_"
-              id="cds-pagination-select-id-_r_2c_-count-label"
+              for="cds-pagination-select-id-_r_36_"
+              id="cds-pagination-select-id-_r_36_-count-label"
             >
               Items per page:
             </label>
@@ -493,7 +493,7 @@ exports[`PatientProgramsTable should match snapshot with program data 1`] = `
                   >
                     <select
                       class="cds--select-input"
-                      id="cds-pagination-select-id-_r_2c_"
+                      id="cds-pagination-select-id-_r_36_"
                       title="5"
                     >
                       <option
@@ -564,7 +564,7 @@ exports[`PatientProgramsTable should match snapshot with program data 1`] = `
                 <label
                   class="cds--label cds--visually-hidden"
                   dir="auto"
-                  for="cds-pagination-select-id-_r_2c_-right"
+                  for="cds-pagination-select-id-_r_36_-right"
                 >
                   Page of 1 pages
                 </label>
@@ -576,7 +576,7 @@ exports[`PatientProgramsTable should match snapshot with program data 1`] = `
                   >
                     <select
                       class="cds--select-input"
-                      id="cds-pagination-select-id-_r_2c_-right"
+                      id="cds-pagination-select-id-_r_36_-right"
                       title="1"
                     >
                       <option
@@ -621,7 +621,7 @@ exports[`PatientProgramsTable should match snapshot with program data 1`] = `
                 >
                   <button
                     aria-label="Previous page"
-                    aria-labelledby="tooltip-_r_2g_"
+                    aria-labelledby="tooltip-_r_3a_"
                     class="cds--pagination__button cds--pagination__button--backward cds--pagination__button--no-index cds--btn cds--btn--ghost cds--btn--disabled cds--btn--icon-only"
                     disabled=""
                     type="button"
@@ -645,7 +645,7 @@ exports[`PatientProgramsTable should match snapshot with program data 1`] = `
                 <span
                   aria-hidden="true"
                   class="cds--popover"
-                  id="tooltip-_r_2g_"
+                  id="tooltip-_r_3a_"
                   role="tooltip"
                 >
                   <span
@@ -666,7 +666,7 @@ exports[`PatientProgramsTable should match snapshot with program data 1`] = `
                 >
                   <button
                     aria-label="Next page"
-                    aria-labelledby="tooltip-_r_2k_"
+                    aria-labelledby="tooltip-_r_3e_"
                     class="cds--pagination__button cds--pagination__button--forward cds--pagination__button--no-index cds--btn cds--btn--ghost cds--btn--disabled cds--btn--icon-only"
                     disabled=""
                     type="button"
@@ -690,7 +690,7 @@ exports[`PatientProgramsTable should match snapshot with program data 1`] = `
                 <span
                   aria-hidden="true"
                   class="cds--popover"
-                  id="tooltip-_r_2k_"
+                  id="tooltip-_r_3e_"
                   role="tooltip"
                 >
                   <span

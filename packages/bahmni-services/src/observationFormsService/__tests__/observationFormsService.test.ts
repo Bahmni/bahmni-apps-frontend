@@ -3,6 +3,8 @@ import { getUserPreferredLocale } from '../../i18n/translationService';
 import { OBSERVATION_FORMS_URL, FORM_DATA_URL } from '../constants';
 import {
   fetchObservationForms,
+  fetchFormMetadata,
+  fetchFormUuidByObservationDate,
   getPatientFormData,
 } from '../observationFormsService';
 
@@ -404,6 +406,285 @@ describe('observationFormsService', () => {
       const result = await getPatientFormData(patientUuid);
 
       expect(result).toEqual([]);
+    });
+
+    it('should pass episodeUuids as a comma-separated query param', async () => {
+      const patientUuid = 'patient-uuid-123';
+      mockGet.mockResolvedValueOnce([]);
+
+      await getPatientFormData(patientUuid, ['ep-1', 'ep-2']);
+
+      expect(mockGet).toHaveBeenCalledWith(
+        FORM_DATA_URL(patientUuid, undefined, 'ep-1,ep-2'),
+      );
+    });
+  });
+
+  describe('fetchFormMetadata', () => {
+    const formUuid = 'form-uuid-123';
+
+    const makeResponse = (overrides: Record<string, unknown> = {}) => ({
+      uuid: formUuid,
+      name: 'Vitals',
+      version: '18',
+      published: true,
+      resources: [
+        {
+          value: JSON.stringify({
+            name: 'Vitals',
+            uuid: formUuid,
+            version: '1',
+            controls: [],
+          }),
+        },
+      ],
+      ...overrides,
+    });
+
+    it('uses OpenMRS record fields (uuid, name, version, published) when present', async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => makeResponse(),
+      });
+
+      const result = await fetchFormMetadata(formUuid);
+
+      expect(result.uuid).toBe(formUuid);
+      expect(result.name).toBe('Vitals');
+      expect(result.version).toBe('18');
+      expect(result.published).toBe(true);
+    });
+
+    it('falls back to schema JSON fields when OpenMRS record fields are absent', async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          resources: [
+            {
+              value: JSON.stringify({
+                name: 'Vitals',
+                uuid: 'schema-uuid',
+                version: '1',
+                controls: [],
+              }),
+            },
+          ],
+        }),
+      });
+
+      const result = await fetchFormMetadata(formUuid);
+
+      expect(result.name).toBe('Vitals');
+      expect(result.uuid).toBe('schema-uuid');
+      expect(result.version).toBe('1');
+      expect(result.published).toBe(false);
+    });
+
+    it('calls the translations endpoint when schema has translationsUrl', async () => {
+      (getUserPreferredLocale as jest.Mock).mockReturnValue('en');
+      mockFetch
+        .mockResolvedValueOnce({
+          ok: true,
+          json: async () =>
+            makeResponse({
+              resources: [
+                {
+                  value: JSON.stringify({
+                    name: 'Vitals',
+                    uuid: formUuid,
+                    version: '18',
+                    controls: [],
+                    translationsUrl:
+                      '/openmrs/ws/rest/v1/bahmniie/form/translations',
+                  }),
+                },
+              ],
+            }),
+        })
+        .mockResolvedValueOnce({ ok: false }); // translations fetch fails gracefully
+
+      const result = await fetchFormMetadata(formUuid);
+
+      // Two fetches: metadata + translations
+      expect(mockFetch).toHaveBeenCalledTimes(2);
+      // Falls back to empty translations when fetch is not ok
+      expect(result.translations).toEqual({ labels: {}, concepts: {} });
+    });
+
+    it('throws when the API returns a non-ok response', async () => {
+      mockFetch.mockResolvedValueOnce({ ok: false, status: 404 });
+
+      await expect(fetchFormMetadata(formUuid)).rejects.toThrow(
+        `Failed to fetch form metadata for ${formUuid}: 404`,
+      );
+    });
+
+    it('throws when the form has no resources', async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ resources: [] }),
+      });
+
+      await expect(fetchFormMetadata(formUuid)).rejects.toThrow(
+        `No resources found for form ${formUuid}`,
+      );
+    });
+  });
+
+  describe('fetchFormUuidByObservationDate', () => {
+    const jul10 = new Date('2026-07-10T10:00:00Z').getTime();
+    const jul1 = new Date('2026-07-01T00:00:00Z').getTime();
+
+    const makeForm = (
+      uuid: string,
+      dateCreated: string,
+      version = '1',
+      published = true,
+    ) => ({
+      uuid,
+      name: 'Vitals',
+      version,
+      published,
+      auditInfo: { dateCreated },
+    });
+
+    it('uses version-string match when formVersion > 1 (new encounters)', async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          results: [
+            makeForm('uuid-v1', '2026-07-01T00:00:00Z', '1'),
+            makeForm('uuid-v18', '2026-07-08T00:00:00Z', '18'),
+            makeForm('uuid-v19', '2026-07-15T00:00:00Z', '19'),
+          ],
+        }),
+      });
+
+      const result = await fetchFormUuidByObservationDate('Vitals', 18, jul10);
+
+      expect(result).toBe('uuid-v18');
+    });
+
+    it('falls back to date-based when formVersion is 1 (old encounters)', async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          results: [
+            makeForm('uuid-v1', '2026-07-01T00:00:00Z', '1'),
+            makeForm('uuid-v2', '2026-07-05T00:00:00Z', '2'),
+            makeForm('uuid-v3', '2026-07-15T00:00:00Z', '3'), // after encounter
+          ],
+        }),
+      });
+
+      const result = await fetchFormUuidByObservationDate('Vitals', 1, jul10);
+
+      expect(result).toBe('uuid-v2');
+    });
+
+    it('returns most recently published form before encounterDateTime', async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          results: [
+            makeForm('uuid-v1', '2026-07-01T00:00:00Z', '1'),
+            makeForm('uuid-v2', '2026-07-05T00:00:00Z', '2'),
+            makeForm('uuid-v3', '2026-07-15T00:00:00Z', '3'),
+          ],
+        }),
+      });
+
+      const result = await fetchFormUuidByObservationDate(
+        'Vitals',
+        undefined,
+        jul10,
+      );
+
+      expect(result).toBe('uuid-v2');
+    });
+
+    it('falls back to oldest form when all forms post-date the encounter', async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          results: [makeForm('uuid-v1', '2026-08-01T00:00:00Z', '1')],
+        }),
+      });
+
+      const result = await fetchFormUuidByObservationDate(
+        'Vitals',
+        undefined,
+        jul1,
+      );
+
+      expect(result).toBe('uuid-v1');
+    });
+
+    it('returns oldest form when no date is provided', async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          results: [
+            makeForm('uuid-v2', '2026-07-05T00:00:00Z', '2'),
+            makeForm('uuid-v1', '2026-07-01T00:00:00Z', '1'),
+          ],
+        }),
+      });
+
+      const result = await fetchFormUuidByObservationDate(
+        'Vitals',
+        undefined,
+        undefined,
+      );
+
+      expect(result).toBe('uuid-v1');
+    });
+
+    it('excludes unpublished forms', async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          results: [
+            makeForm('uuid-v1', '2026-07-01T00:00:00Z', '1', false),
+            makeForm('uuid-v2', '2026-07-05T00:00:00Z', '2', true),
+          ],
+        }),
+      });
+
+      const result = await fetchFormUuidByObservationDate(
+        'Vitals',
+        undefined,
+        jul10,
+      );
+
+      expect(result).toBe('uuid-v2');
+    });
+
+    it('returns null when the API call fails', async () => {
+      mockFetch.mockResolvedValueOnce({ ok: false, status: 500 });
+
+      const result = await fetchFormUuidByObservationDate(
+        'Vitals',
+        undefined,
+        jul10,
+      );
+
+      expect(result).toBeNull();
+    });
+
+    it('returns null when no published forms match the name', async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ results: [] }),
+      });
+
+      const result = await fetchFormUuidByObservationDate(
+        'Vitals',
+        undefined,
+        jul10,
+      );
+
+      expect(result).toBeNull();
     });
   });
 });

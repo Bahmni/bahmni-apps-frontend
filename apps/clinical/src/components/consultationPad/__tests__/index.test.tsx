@@ -1,14 +1,20 @@
 import {
   dispatchAuditEvent,
+  dispatchCDSSCheck,
+  dispatchCDSSResults,
   dispatchConsultationSaved,
+  findActiveEncounterInSession,
+  getConfig,
+  getEncounterByUuid,
+  invokeCDSSRule,
 } from '@bahmni/services';
 import { useActivePractitioner, useNotification } from '@bahmni/widgets';
-import { render, screen, waitFor } from '@testing-library/react';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { act, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { axe, toHaveNoViolations } from 'jest-axe';
 import { useClinicalAppData } from '../../../hooks/useClinicalAppData';
 import { useEncounterConcepts } from '../../../hooks/useEncounterConcepts';
-import { useEncounterSession } from '../../../hooks/useEncounterSession';
 import { useClinicalConfig } from '../../../providers/clinicalConfig';
 import { useAllergyStore } from '../../../stores/allergyStore';
 import { useEncounterDetailsStore } from '../../../stores/encounterDetailsStore';
@@ -21,11 +27,16 @@ import {
   getActiveEntries,
 } from '../utils';
 import {
+  makeMockEntry,
   mockEncounterConcepts,
   mockObsFormsState,
   mockRegistry,
   mockSubmitResult,
   mockUpdatedResources,
+  mockCDSSServerConfig,
+  mockCDSSCards,
+  mockEmptyCDSSConfig,
+  mockCDSSCheckEvent,
 } from './__mocks__/indexMocks';
 
 expect.extend(toHaveNoViolations);
@@ -61,6 +72,11 @@ jest.mock('@bahmni/services', () => ({
   ...jest.requireActual('@bahmni/services'),
   dispatchAuditEvent: jest.fn(),
   dispatchConsultationSaved: jest.fn(),
+  dispatchCDSSResults: jest.fn(),
+  findActiveEncounterInSession: jest.fn(),
+  invokeCDSSRule: jest.fn(),
+  getConfig: jest.fn(),
+  getEncounterByUuid: jest.fn(),
 }));
 
 jest.mock('@bahmni/widgets', () => ({
@@ -74,12 +90,12 @@ jest.mock('../../../stores/encounterDetailsStore');
 jest.mock('../../../stores/observationFormsStore');
 jest.mock('../../../hooks/useClinicalAppData');
 jest.mock('../../../hooks/useEncounterConcepts');
-jest.mock('../../../hooks/useEncounterSession');
 jest.mock('../../../providers/clinicalConfig');
 
+const mockObservationFormsContainer = jest.fn(() => null);
 jest.mock('../../forms/observations/ObservationFormsContainer', () => ({
   __esModule: true,
-  default: () => null,
+  default: (props: unknown) => mockObservationFormsContainer(props),
 }));
 
 jest.mock('../services', () => ({
@@ -87,6 +103,7 @@ jest.mock('../services', () => ({
 }));
 
 jest.mock('../utils', () => ({
+  ...jest.requireActual('../utils'),
   loadEncounterInputControls: jest.fn(),
   getActiveEntries: jest.fn(),
   captureUpdatedResources: jest.fn(),
@@ -96,22 +113,37 @@ const defaultEncounterDetailsState = {
   isEncounterDetailsFormReady: true,
   isError: false,
   setRequestedEncounterType: jest.fn(),
+  setConsultationDate: jest.fn(),
+  isConsultationDateReady: true,
+  selectedEncounterType: { uuid: 'encounter-type-uuid' } as any,
 };
 
 const mockAddNotification = jest.fn();
+
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: false,
+    },
+  },
+});
 
 const renderComponent = (
   props: Partial<React.ComponentProps<typeof ConsultationPad>> = {},
 ) =>
   render(
-    <ConsultationPad
-      encounterSessionStartContext={{ encounterType: 'Consultation' }}
-      onClose={jest.fn()}
-      {...props}
-    />,
+    <QueryClientProvider client={queryClient}>
+      <ConsultationPad
+        encounterSessionStartContext={{ encounterType: 'Consultation' }}
+        onClose={jest.fn()}
+        {...props}
+      />
+    </QueryClientProvider>,
   );
 
 beforeEach(() => {
+  queryClient.clear();
+
   mockRegistry.forEach((entry) => {
     (entry.validate as jest.Mock).mockReturnValue(true);
     (entry.hasData as jest.Mock).mockReturnValue(false);
@@ -141,16 +173,18 @@ beforeEach(() => {
   jest
     .mocked(useNotification)
     .mockReturnValue({ addNotification: mockAddNotification } as any);
-  jest.mocked(useClinicalAppData).mockReturnValue({ episodeOfCare: [] } as any);
+  jest.mocked(useClinicalAppData).mockReturnValue({
+    episodeOfCare: [],
+    patientId: 'patient-123',
+    activeVisitId: 'visit-123',
+    activeEpisodeId: null,
+  } as any);
   jest.mocked(useEncounterConcepts).mockReturnValue({
     encounterConcepts: mockEncounterConcepts,
     loading: false,
     error: null,
     refetch: jest.fn(),
   } as any);
-  jest
-    .mocked(useEncounterSession)
-    .mockReturnValue({ activeEncounter: null, matchReason: [] } as any);
   jest
     .mocked(useClinicalConfig)
     .mockReturnValue({ clinicalConfig: null } as any);
@@ -191,6 +225,26 @@ describe('ConsultationPad', () => {
       expect(screen.getByTestId('action-area')).toHaveAttribute(
         'data-hidden',
         'true',
+      );
+    });
+
+    it('forwards isActionAreaExpanded and onToggleActionAreaExpand to ObservationFormsContainer when viewing a form', () => {
+      jest.mocked(useObservationFormsStore).mockReturnValue({
+        ...mockObsFormsState,
+        viewingForm: { uuid: 'form-uuid', name: 'Vitals' } as any,
+      } as any);
+      const mockOnToggleActionAreaExpand = jest.fn();
+
+      renderComponent({
+        isActionAreaExpanded: true,
+        onToggleActionAreaExpand: mockOnToggleActionAreaExpand,
+      });
+
+      expect(mockObservationFormsContainer).toHaveBeenCalledWith(
+        expect.objectContaining({
+          isActionAreaExpanded: true,
+          onToggleActionAreaExpand: mockOnToggleActionAreaExpand,
+        }),
       );
     });
   });
@@ -249,6 +303,49 @@ describe('ConsultationPad', () => {
     });
   });
 
+  describe('activeEncounter wiring', () => {
+    const EDIT_ENCOUNTER_UUID = 'edit-enc-uuid';
+
+    const withViewingForm = () =>
+      jest.mocked(useObservationFormsStore).mockReturnValue({
+        ...mockObsFormsState,
+        viewingForm: { uuid: 'form-uuid', name: 'Vitals' } as any,
+      } as any);
+
+    it('passes the resolved activeEncounter through encounterSessionStartContext', async () => {
+      jest.mocked(useActivePractitioner).mockReturnValue({
+        practitioner: { uuid: 'prac-uuid' },
+      } as any);
+      jest
+        .mocked(findActiveEncounterInSession)
+        .mockResolvedValue({ id: EDIT_ENCOUNTER_UUID } as any);
+      jest
+        .mocked(getEncounterByUuid)
+        .mockResolvedValue({ id: EDIT_ENCOUNTER_UUID } as any);
+      withViewingForm();
+
+      renderComponent({
+        encounterSessionStartContext: {
+          encounterType: 'Consultation',
+          editOnly: 'observationForms',
+          sourceEncounterUuid: EDIT_ENCOUNTER_UUID,
+        },
+      });
+
+      await waitFor(() => {
+        expect(mockObservationFormsContainer).toHaveBeenCalledWith(
+          expect.objectContaining({
+            encounterSessionStartContext: expect.objectContaining({
+              activeEncounter: expect.objectContaining({
+                id: EDIT_ENCOUNTER_UUID,
+              }),
+            }),
+          }),
+        );
+      });
+    });
+  });
+
   describe('encounterType prop validation', () => {
     it('renders error state when specified encounterType is not defined in configuration', () => {
       renderComponent({
@@ -297,25 +394,256 @@ describe('ConsultationPad', () => {
     });
   });
 
-  describe('useEncounterSession integration', () => {
-    it('passes selectedEncounterType uuid to useEncounterSession', () => {
+  describe('encounter date seeding', () => {
+    it('calls setConsultationDate with activeEncounter period.start when available', async () => {
+      const mockSetConsultationDate = jest.fn();
+      const mockEncounterData = {
+        period: { start: '2024-03-15T10:00:00.000Z' },
+      } as any;
+      jest
+        .mocked(findActiveEncounterInSession)
+        .mockClear()
+        .mockResolvedValue(mockEncounterData);
+      jest
+        .mocked(useActivePractitioner)
+        .mockClear()
+        .mockReturnValue({
+          practitioner: { uuid: 'practitioner-uuid' },
+        } as any);
+      const stateWithMocks = {
+        ...defaultEncounterDetailsState,
+        setConsultationDate: mockSetConsultationDate,
+        selectedEncounterType: { uuid: 'encounter-type-uuid' },
+      };
       jest
         .mocked(useEncounterDetailsStore)
-        .mockImplementation((selector: any) =>
-          selector({
-            ...defaultEncounterDetailsState,
-            selectedEncounterType: {
-              uuid: 'encounter-type-uuid',
-              name: 'Consultation',
-            },
-          }),
-        );
+        .mockClear()
+        .mockImplementation((selector: any) => selector(stateWithMocks));
+      (useEncounterDetailsStore as any).getState = jest
+        .fn()
+        .mockReturnValue(stateWithMocks);
 
       renderComponent();
 
-      expect(useEncounterSession).toHaveBeenCalledWith(
-        expect.objectContaining({ encounterTypeUUID: 'encounter-type-uuid' }),
+      await waitFor(
+        () => {
+          expect(mockSetConsultationDate).toHaveBeenCalledWith(
+            new Date('2024-03-15T10:00:00.000Z'),
+          );
+        },
+        { timeout: 3000 },
       );
+    });
+
+    it('calls setConsultationDate with current date when activeEncounter has no period.start', async () => {
+      const mockSetConsultationDate = jest.fn();
+      jest
+        .mocked(findActiveEncounterInSession)
+        .mockClear()
+        .mockResolvedValue(null);
+      jest
+        .mocked(useActivePractitioner)
+        .mockClear()
+        .mockReturnValue({
+          practitioner: { uuid: 'practitioner-uuid' },
+        } as any);
+      const stateWithMocks = {
+        ...defaultEncounterDetailsState,
+        setConsultationDate: mockSetConsultationDate,
+        selectedEncounterType: { uuid: 'encounter-type-uuid' },
+      };
+      jest
+        .mocked(useEncounterDetailsStore)
+        .mockClear()
+        .mockImplementation((selector: any) => selector(stateWithMocks));
+      (useEncounterDetailsStore as any).getState = jest
+        .fn()
+        .mockReturnValue(stateWithMocks);
+
+      renderComponent();
+
+      await waitFor(
+        () => {
+          expect(mockSetConsultationDate).toHaveBeenCalledWith(
+            expect.any(Date),
+          );
+        },
+        { timeout: 3000 },
+      );
+    });
+
+    it('falls back to current date when sourceEncounter fetch fails (edit mode)', async () => {
+      const mockSetConsultationDate = jest.fn();
+      jest
+        .mocked(findActiveEncounterInSession)
+        .mockClear()
+        .mockResolvedValue(null);
+      jest
+        .mocked(useActivePractitioner)
+        .mockClear()
+        .mockReturnValue({
+          practitioner: { uuid: 'practitioner-uuid' },
+        } as any);
+      const stateWithMocks = {
+        ...defaultEncounterDetailsState,
+        setConsultationDate: mockSetConsultationDate,
+        selectedEncounterType: { uuid: 'encounter-type-uuid' },
+      };
+      jest
+        .mocked(useEncounterDetailsStore)
+        .mockClear()
+        .mockImplementation((selector: any) => selector(stateWithMocks));
+      (useEncounterDetailsStore as any).getState = jest
+        .fn()
+        .mockReturnValue(stateWithMocks);
+      jest
+        .mocked(getEncounterByUuid)
+        .mockClear()
+        .mockRejectedValue(new Error('not found'));
+
+      renderComponent({
+        encounterSessionStartContext: {
+          encounterType: 'Consultation',
+          sourceEncounterUuid: 'missing-uuid',
+        },
+      });
+
+      await waitFor(
+        () => {
+          expect(mockSetConsultationDate).toHaveBeenCalledWith(
+            expect.any(Date),
+          );
+        },
+        { timeout: 3000 },
+      );
+    });
+
+    it('seeds the fetched encounter period.start in edit mode', async () => {
+      const mockSetConsultationDate = jest.fn();
+      jest
+        .mocked(findActiveEncounterInSession)
+        .mockClear()
+        .mockResolvedValue(null);
+      jest
+        .mocked(useActivePractitioner)
+        .mockClear()
+        .mockReturnValue({
+          practitioner: { uuid: 'practitioner-uuid' },
+        } as any);
+      const stateWithMocks = {
+        ...defaultEncounterDetailsState,
+        setConsultationDate: mockSetConsultationDate,
+        selectedEncounterType: { uuid: 'encounter-type-uuid' },
+      };
+      jest
+        .mocked(useEncounterDetailsStore)
+        .mockClear()
+        .mockImplementation((selector: any) => selector(stateWithMocks));
+      (useEncounterDetailsStore as any).getState = jest
+        .fn()
+        .mockReturnValue(stateWithMocks);
+      jest
+        .mocked(getEncounterByUuid)
+        .mockClear()
+        .mockResolvedValue({
+          period: { start: '2024-03-15T10:00:00.000Z' },
+        } as any);
+
+      renderComponent({
+        encounterSessionStartContext: {
+          encounterType: 'Consultation',
+          sourceEncounterUuid: 'existing-uuid',
+        },
+      });
+
+      await waitFor(
+        () => {
+          expect(mockSetConsultationDate).toHaveBeenCalledWith(
+            expect.any(Date),
+          );
+        },
+        { timeout: 3000 },
+      );
+    });
+  });
+
+  describe('active episode encounter scoping', () => {
+    beforeEach(() => {
+      jest
+        .mocked(findActiveEncounterInSession)
+        .mockClear()
+        .mockResolvedValue(null);
+      jest
+        .mocked(useActivePractitioner)
+        .mockClear()
+        .mockReturnValue({
+          practitioner: { uuid: 'practitioner-uuid' },
+        } as any);
+    });
+
+    it("passes the active episode's own encounter uuids to findActiveEncounterInSession", async () => {
+      jest.mocked(useClinicalAppData).mockReturnValue({
+        episodeOfCare: [
+          { uuid: 'eoc-1', encounterUuids: ['encounter-1', 'encounter-2'] },
+        ],
+        patientId: 'patient-123',
+        activeVisitId: 'visit-123',
+        activeEpisodeId: 'eoc-1',
+      } as any);
+
+      renderComponent();
+
+      await waitFor(() => {
+        expect(findActiveEncounterInSession).toHaveBeenCalledWith(
+          'patient-123',
+          'practitioner-uuid',
+          undefined,
+          'encounter-type-uuid',
+          ['encounter-1', 'encounter-2'],
+        );
+      });
+    });
+
+    it('passes undefined when there is no active episode', async () => {
+      jest.mocked(useClinicalAppData).mockReturnValue({
+        episodeOfCare: [],
+        patientId: 'patient-123',
+        activeVisitId: 'visit-123',
+        activeEpisodeId: null,
+      } as any);
+
+      renderComponent();
+
+      await waitFor(() => {
+        expect(findActiveEncounterInSession).toHaveBeenCalledWith(
+          'patient-123',
+          'practitioner-uuid',
+          undefined,
+          'encounter-type-uuid',
+          undefined,
+        );
+      });
+    });
+
+    it("passes undefined when the active episode isn't in episodeOfCare", async () => {
+      jest.mocked(useClinicalAppData).mockReturnValue({
+        episodeOfCare: [],
+        patientId: 'patient-123',
+        activeVisitId: 'visit-123',
+        activeEpisodeId: 'eoc-1',
+      } as any);
+
+      renderComponent();
+
+      await waitFor(() => {
+        expect(findActiveEncounterInSession).toHaveBeenCalledWith(
+          'patient-123',
+          'practitioner-uuid',
+          undefined,
+          'encounter-type-uuid',
+          undefined,
+        );
+      });
     });
   });
 
@@ -367,6 +695,31 @@ describe('ConsultationPad', () => {
       expect(submitConsultation).not.toHaveBeenCalled();
     });
 
+    it('shows critical CDSS alert and does not submit when there are critical CDS cards', async () => {
+      const mockEntryWithCriticalCards = {
+        ...mockRegistry[0],
+        hasCriticalCDSCards: jest.fn().mockReturnValue(true),
+      };
+      (mockEntryWithCriticalCards.hasData as jest.Mock).mockReturnValue(true);
+
+      jest
+        .mocked(getActiveEntries)
+        .mockReturnValue([mockEntryWithCriticalCards] as any);
+
+      renderComponent();
+      await userEvent.click(screen.getByTestId('primary-button'));
+
+      expect(mockAddNotification).toHaveBeenCalledWith(
+        expect.objectContaining({
+          type: 'error',
+          title: expect.stringContaining('CDSS error'),
+          message: expect.stringContaining('critical alerts'),
+          timeout: 5000,
+        }),
+      );
+      expect(submitConsultation).not.toHaveBeenCalled();
+    });
+
     it.each([
       ['Error instance', new Error('Server error'), 'Server error'],
       [
@@ -400,6 +753,9 @@ describe('ConsultationPad', () => {
         () =>
           jest.mocked(useClinicalAppData).mockReturnValue({
             episodeOfCare: [{ uuid: 'eoc-1' }, { uuid: 'eoc-2' }],
+            patientId: 'patient-123',
+            activeVisitId: 'visit-123',
+            activeEpisodeId: 'eoc-1',
           } as any),
         { episodeOfCareUuids: ['eoc-1', 'eoc-2'] },
       ],
@@ -423,6 +779,129 @@ describe('ConsultationPad', () => {
       await waitFor(() => {
         expect(submitConsultation).toHaveBeenCalledWith(
           expect.objectContaining(expectedArgs),
+        );
+      });
+    });
+  });
+
+  describe('direct submit (onDirectSubmit)', () => {
+    it('calls onDirectSubmit instead of submitConsultation when entry has onDirectSubmit', async () => {
+      const onClose = jest.fn();
+      const mockDirectSubmit = jest.fn().mockResolvedValue(undefined);
+      const directEntry = {
+        ...makeMockEntry('stopMedications'),
+        hasData: jest.fn().mockReturnValue(true),
+        onDirectSubmit: mockDirectSubmit,
+      };
+
+      jest.mocked(getActiveEntries).mockReturnValue([directEntry] as any);
+
+      renderComponent({ onClose });
+      await userEvent.click(screen.getByTestId('primary-button'));
+
+      await waitFor(() => {
+        expect(mockDirectSubmit).toHaveBeenCalled();
+        expect(submitConsultation).not.toHaveBeenCalled();
+        expect(dispatchConsultationSaved).toHaveBeenCalled();
+        expect(onClose).toHaveBeenCalled();
+      });
+    });
+
+    it('shows success notification after direct submit completes', async () => {
+      const mockDirectSubmit = jest.fn().mockResolvedValue(undefined);
+      const directEntry = {
+        ...makeMockEntry('stopMedications'),
+        hasData: jest.fn().mockReturnValue(true),
+        onDirectSubmit: mockDirectSubmit,
+      };
+
+      jest.mocked(getActiveEntries).mockReturnValue([directEntry] as any);
+
+      renderComponent();
+      await userEvent.click(screen.getByTestId('primary-button'));
+
+      await waitFor(() => {
+        expect(mockAddNotification).toHaveBeenCalledWith(
+          expect.objectContaining({ type: 'success' }),
+        );
+      });
+    });
+
+    it('shows error when direct submit succeeds but bundle submission fails in mixed scenario', async () => {
+      const mockDirectSubmit = jest.fn().mockResolvedValue(undefined);
+      const directEntry = {
+        ...makeMockEntry('stopMedications'),
+        hasData: jest.fn().mockReturnValue(true),
+        onDirectSubmit: mockDirectSubmit,
+      };
+      const bundleEntry = {
+        ...makeMockEntry('medication'),
+        hasData: jest.fn().mockReturnValue(true),
+      };
+
+      jest
+        .mocked(getActiveEntries)
+        .mockReturnValue([directEntry, bundleEntry] as any);
+      jest
+        .mocked(submitConsultation)
+        .mockRejectedValue(new Error('Bundle failed'));
+
+      renderComponent();
+      await userEvent.click(screen.getByTestId('primary-button'));
+
+      await waitFor(() => {
+        expect(mockDirectSubmit).toHaveBeenCalled();
+        expect(submitConsultation).toHaveBeenCalled();
+        expect(mockAddNotification).toHaveBeenCalledWith(
+          expect.objectContaining({ type: 'error' }),
+        );
+      });
+    });
+
+    it('calls submitConsultation when mixed entries (direct + bundle)', async () => {
+      const onClose = jest.fn();
+      const mockDirectSubmit = jest.fn().mockResolvedValue(undefined);
+      const directEntry = {
+        ...makeMockEntry('stopMedications'),
+        hasData: jest.fn().mockReturnValue(true),
+        onDirectSubmit: mockDirectSubmit,
+      };
+      const bundleEntry = {
+        ...makeMockEntry('medication'),
+        hasData: jest.fn().mockReturnValue(true),
+      };
+
+      jest
+        .mocked(getActiveEntries)
+        .mockReturnValue([directEntry, bundleEntry] as any);
+
+      renderComponent({ onClose });
+      await userEvent.click(screen.getByTestId('primary-button'));
+
+      await waitFor(() => {
+        expect(mockDirectSubmit).toHaveBeenCalled();
+        expect(submitConsultation).toHaveBeenCalled();
+      });
+    });
+
+    it('shows error notification when onDirectSubmit throws', async () => {
+      const mockDirectSubmit = jest
+        .fn()
+        .mockRejectedValue(new Error('Stop failed'));
+      const directEntry = {
+        ...makeMockEntry('stopMedications'),
+        hasData: jest.fn().mockReturnValue(true),
+        onDirectSubmit: mockDirectSubmit,
+      };
+
+      jest.mocked(getActiveEntries).mockReturnValue([directEntry] as any);
+
+      renderComponent();
+      await userEvent.click(screen.getByTestId('primary-button'));
+
+      await waitFor(() => {
+        expect(mockAddNotification).toHaveBeenCalledWith(
+          expect.objectContaining({ type: 'error' }),
         );
       });
     });
@@ -498,61 +977,272 @@ describe('ConsultationPad', () => {
     });
   });
 
-  describe('encounterForSubmission — MATCHED logic (BAH-4652)', () => {
-    const mockActiveEncounter = { uuid: 'enc-uuid-matched' };
+  describe('CDSS', () => {
+    describe('configuration loading', () => {
+      it.each([
+        ['with valid config', mockCDSSServerConfig],
+        ['with empty config', mockEmptyCDSSConfig],
+        ['with error (falls back to empty)', new Error('Config error')],
+      ])('loads successfully %s', async (_, configOrError) => {
+        jest.mocked(getConfig).mockImplementation(() => {
+          if (configOrError instanceof Error) {
+            return Promise.reject(configOrError);
+          }
+          return Promise.resolve(configOrError);
+        });
 
-    const enableSubmit = () => {
-      (mockRegistry[0].hasData as jest.Mock).mockReturnValue(true);
-    };
+        renderComponent();
 
-    it('passes activeEncounter to submitConsultation when matchReason includes MATCHED', async () => {
-      jest.mocked(useEncounterSession).mockReturnValue({
-        activeEncounter: mockActiveEncounter as any,
-        matchReason: ['MATCHED'],
-      } as any);
-      enableSubmit();
+        await waitFor(() => {
+          expect(screen.getByTestId('action-area')).toBeInTheDocument();
+        });
 
-      renderComponent();
-      await userEvent.click(screen.getByTestId('primary-button'));
-
-      await waitFor(() => {
-        expect(submitConsultation).toHaveBeenCalledWith(
-          expect.objectContaining({ activeEncounter: mockActiveEncounter }),
-        );
+        expect(mockAddNotification).not.toHaveBeenCalled();
       });
     });
 
-    it('passes null to submitConsultation when matchReason is SESSION_EXPIRED', async () => {
-      jest.mocked(useEncounterSession).mockReturnValue({
-        activeEncounter: mockActiveEncounter as any,
-        matchReason: ['SESSION_EXPIRED'],
-      } as any);
-      enableSubmit();
+    describe('event handling', () => {
+      beforeEach(() => {
+        jest.mocked(getConfig).mockResolvedValue(mockCDSSServerConfig);
+        jest.mocked(invokeCDSSRule).mockResolvedValue(mockCDSSCards);
+      });
 
-      renderComponent();
-      await userEvent.click(screen.getByTestId('primary-button'));
+      it('invokes CDSS rule when config is loaded and event is dispatched from inputControl', async () => {
+        const mockEntryWithCDSS = {
+          ...mockRegistry[0],
+          key: 'medications',
+          inputControlConfig: {
+            cdss: [
+              {
+                event: 'onSelect',
+                server: 'test-cdss-server',
+                service: 'medication-prescribe',
+              },
+            ],
+          },
+        };
 
-      await waitFor(() => {
-        expect(submitConsultation).toHaveBeenCalledWith(
-          expect.objectContaining({ activeEncounter: null }),
+        jest.mocked(getActiveEntries).mockReturnValue([mockEntryWithCDSS]);
+
+        renderComponent();
+
+        await waitFor(
+          () => {
+            expect(screen.getByTestId('action-area')).toBeInTheDocument();
+          },
+          { timeout: 3000 },
+        );
+
+        act(() => {
+          dispatchCDSSCheck(mockCDSSCheckEvent);
+        });
+
+        await waitFor(
+          () => {
+            expect(getConfig).toHaveBeenCalled();
+          },
+          { timeout: 5000 },
+        );
+
+        await waitFor(
+          () => {
+            expect(invokeCDSSRule).toHaveBeenCalledWith(
+              mockCDSSServerConfig,
+              expect.objectContaining({
+                event: 'onSelect',
+                server: 'test-cdss-server',
+                service: 'medication-prescribe',
+              }),
+              expect.any(Object),
+              expect.any(Object),
+            );
+          },
+          { timeout: 5000 },
+        );
+
+        await waitFor(() => {
+          expect(dispatchCDSSResults).toHaveBeenCalledWith({
+            cards: mockCDSSCards,
+            triggerItemId: 'item-123',
+            controlKey: 'medications',
+          });
+        });
+      });
+
+      it('dispatches CDSS results event with correct data after successful rule invocation', async () => {
+        const mockEntryWithCDSS = {
+          ...mockRegistry[0],
+          key: 'medications',
+          inputControlConfig: {
+            cdss: [
+              {
+                event: 'onSelect',
+                server: 'test-cdss-server',
+                service: 'medication-prescribe',
+              },
+            ],
+          },
+        };
+
+        jest.mocked(getActiveEntries).mockReturnValue([mockEntryWithCDSS]);
+
+        renderComponent();
+
+        await waitFor(
+          () => {
+            expect(screen.getByTestId('action-area')).toBeInTheDocument();
+          },
+          { timeout: 3000 },
+        );
+
+        act(() => {
+          dispatchCDSSCheck(mockCDSSCheckEvent);
+        });
+
+        await waitFor(
+          () => {
+            expect(getConfig).toHaveBeenCalled();
+          },
+          { timeout: 5000 },
+        );
+
+        await waitFor(
+          () => {
+            expect(dispatchCDSSResults).toHaveBeenCalledWith({
+              cards: mockCDSSCards,
+              triggerItemId: 'item-123',
+              controlKey: 'medications',
+            });
+          },
+          { timeout: 5000 },
         );
       });
-    });
 
-    it('passes null to submitConsultation when matchReason is PROVIDER_MISMATCH', async () => {
-      jest.mocked(useEncounterSession).mockReturnValue({
-        activeEncounter: mockActiveEncounter as any,
-        matchReason: ['PROVIDER_MISMATCH'],
-      } as any);
-      enableSubmit();
+      it.each([
+        ['config is loading', true, mockCDSSServerConfig],
+        ['config is undefined', false, undefined],
+      ])('does not invoke CDSS rule when %s', async (_, isLoading, config) => {
+        jest
+          .mocked(getConfig)
+          .mockReturnValue(
+            isLoading ? new Promise(() => {}) : Promise.resolve(config),
+          );
 
-      renderComponent();
-      await userEvent.click(screen.getByTestId('primary-button'));
+        renderComponent();
 
-      await waitFor(() => {
-        expect(submitConsultation).toHaveBeenCalledWith(
-          expect.objectContaining({ activeEncounter: null }),
+        dispatchCDSSCheck(mockCDSSCheckEvent);
+
+        await waitFor(() => {
+          expect(invokeCDSSRule).not.toHaveBeenCalled();
+        });
+      });
+
+      it('does not invoke CDSS rule when no matching control is found', async () => {
+        jest.mocked(getActiveEntries).mockReturnValue(mockRegistry);
+
+        renderComponent();
+
+        await waitFor(() => {
+          expect(screen.getByTestId('action-area')).toBeInTheDocument();
+        });
+
+        act(() => {
+          dispatchCDSSCheck({
+            ...mockCDSSCheckEvent,
+            controlKey: 'non-existent-control',
+          });
+        });
+
+        await waitFor(
+          () => {
+            expect(getConfig).toHaveBeenCalled();
+          },
+          { timeout: 5000 },
         );
+
+        await waitFor(() => {
+          expect(invokeCDSSRule).not.toHaveBeenCalled();
+        });
+      });
+
+      it('should not load config and hence does not invoke CDSS rule when control has no CDSS rules', async () => {
+        jest.mocked(getActiveEntries).mockReturnValue(mockRegistry);
+
+        renderComponent();
+
+        await waitFor(() => {
+          expect(screen.getByTestId('action-area')).toBeInTheDocument();
+        });
+
+        act(() => {
+          dispatchCDSSCheck({
+            ...mockCDSSCheckEvent,
+            rules: [],
+          });
+        });
+
+        await new Promise((resolve) => setTimeout(resolve, 100));
+
+        expect(getConfig).not.toHaveBeenCalled();
+        expect(invokeCDSSRule).not.toHaveBeenCalled();
+      });
+
+      it('shows error notification when CDSS rule invocation fails', async () => {
+        const mockEntryWithCDSS = {
+          ...mockRegistry[0],
+          key: 'medications',
+          inputControlConfig: {
+            cdss: [
+              {
+                event: 'onSelect',
+                server: 'test-cdss-server',
+                service: 'medication-prescribe',
+              },
+            ],
+          },
+        };
+
+        jest.mocked(getActiveEntries).mockReturnValue([mockEntryWithCDSS]);
+        jest.mocked(invokeCDSSRule).mockReset();
+        jest
+          .mocked(invokeCDSSRule)
+          .mockRejectedValue(new Error('CDSS invocation failed'));
+
+        renderComponent();
+
+        await waitFor(
+          () => {
+            expect(screen.getByTestId('action-area')).toBeInTheDocument();
+          },
+          { timeout: 3000 },
+        );
+
+        act(() => {
+          dispatchCDSSCheck(mockCDSSCheckEvent);
+        });
+
+        await waitFor(
+          () => {
+            expect(getConfig).toHaveBeenCalled();
+          },
+          { timeout: 5000 },
+        );
+
+        await waitFor(
+          () => {
+            expect(invokeCDSSRule).toHaveBeenCalled();
+          },
+          { timeout: 5000 },
+        );
+
+        await waitFor(() => {
+          expect(mockAddNotification).toHaveBeenCalledWith(
+            expect.objectContaining({
+              type: 'error',
+              message: expect.stringContaining('medications'),
+            }),
+          );
+        });
       });
     });
   });

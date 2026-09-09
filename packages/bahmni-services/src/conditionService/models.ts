@@ -8,6 +8,7 @@ export interface ConditionInputEntry {
   display: string;
   durationValue: number | null;
   durationUnit: 'days' | 'months' | 'years' | null;
+  conceptSystem?: string;
   errors: ConditionErrors;
   hasBeenValidated: boolean;
 }

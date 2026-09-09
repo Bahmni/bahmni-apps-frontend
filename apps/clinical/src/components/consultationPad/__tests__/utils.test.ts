@@ -1,8 +1,13 @@
+import type { Encounter } from 'fhir/r4';
 import type { ConsultationPad } from '../../../providers/clinicalConfig/models';
-import { useServiceRequestStore } from '../../../stores';
+import {
+  useServiceRequestStore,
+  useObservationFormsStore,
+} from '../../../stores';
 import type { InputControl } from '../../forms';
 import {
   captureUpdatedResources,
+  getActiveEncounter,
   getActiveEntries,
   loadEncounterInputControls,
 } from '../utils';
@@ -54,6 +59,10 @@ beforeEach(() => {
   (useServiceRequestStore as unknown as { getState: jest.Mock }).getState = jest
     .fn()
     .mockReturnValue({ selectedServiceRequests: new Map() });
+  (useObservationFormsStore as unknown as { getState: jest.Mock }).getState =
+    jest.fn().mockReturnValue({
+      getObservationFormsData: jest.fn().mockReturnValue([]),
+    });
 });
 
 describe('loadEncounterInputControls', () => {
@@ -285,6 +294,45 @@ describe('getActiveEntries', () => {
     expect(result.find((e) => e.key === 'medication')).toBeDefined();
     expect(result).toHaveLength(2);
   });
+
+  it('excludes onActionTriggered controls from normal consultation', () => {
+    const registryWithTriggered = [
+      ...registry,
+      {
+        key: 'stopMedications',
+        onActionTriggered: true,
+        component: () => null,
+        reset: jest.fn(),
+        validate: jest.fn().mockReturnValue(true),
+        hasData: jest.fn().mockReturnValue(false),
+        subscribe: jest.fn().mockReturnValue(jest.fn()),
+      },
+    ];
+    const result = getActiveEntries(registryWithTriggered, 'Consultation');
+    expect(result.find((e) => e.key === 'stopMedications')).toBeUndefined();
+  });
+
+  it('includes onActionTriggered control when it is the editOnly target', () => {
+    const registryWithTriggered = [
+      ...registry,
+      {
+        key: 'stopMedications',
+        onActionTriggered: true,
+        component: () => null,
+        reset: jest.fn(),
+        validate: jest.fn().mockReturnValue(true),
+        hasData: jest.fn().mockReturnValue(false),
+        subscribe: jest.fn().mockReturnValue(jest.fn()),
+      },
+    ];
+    const result = getActiveEntries(
+      registryWithTriggered,
+      'Consultation',
+      'stopMedications',
+    );
+    expect(result.find((e) => e.key === 'stopMedications')).toBeDefined();
+    expect(result).toHaveLength(2); // stopMedications + encounterDetails
+  });
 });
 
 describe('captureUpdatedResources', () => {
@@ -305,6 +353,7 @@ describe('captureUpdatedResources', () => {
       'immunizationAdministration',
       'immunizationHistory',
     ],
+    ['immunizationWaiver', 'immunizationWaiver', 'immunizationHistory'],
   ])('returns true for %s when hasData is true', (_label, key, resultKey) => {
     const entries = [
       makeMockEntry(key as InputControl['key'], {
@@ -337,6 +386,43 @@ describe('captureUpdatedResources', () => {
     expect(captureUpdatedResources(entries).medications).toBe(true);
   });
 
+  it('returns true for medications when stopMedications hasData', () => {
+    const entries = [
+      makeMockEntry('stopMedications', {
+        hasData: jest.fn().mockReturnValue(true),
+      }),
+    ];
+
+    expect(captureUpdatedResources(entries).medications).toBe(true);
+  });
+
+  it('flags medications when cancelVaccination hasData', () => {
+    const entries = [
+      makeMockEntry('cancelVaccination', {
+        hasData: jest.fn().mockReturnValue(true),
+      }),
+    ];
+
+    expect(captureUpdatedResources(entries)).toEqual({
+      conditions: false,
+      allergies: false,
+      medications: true,
+      immunizationHistory: false,
+      observationFormsWithBasedOn: undefined,
+      serviceRequests: {},
+    });
+  });
+
+  it('does not flag immunizationHistory when cancelVaccination hasData is false', () => {
+    const entries = [
+      makeMockEntry('cancelVaccination', {
+        hasData: jest.fn().mockReturnValue(false),
+      }),
+    ];
+
+    expect(captureUpdatedResources(entries).immunizationHistory).toBe(false);
+  });
+
   it('maps selected service request categories to lowercase boolean flags', () => {
     (useServiceRequestStore as unknown as { getState: jest.Mock }).getState =
       jest.fn().mockReturnValue({
@@ -362,7 +448,89 @@ describe('captureUpdatedResources', () => {
       allergies: false,
       medications: false,
       immunizationHistory: false,
+      observationFormsWithBasedOn: undefined,
       serviceRequests: {},
     });
+  });
+});
+
+describe('getActiveEncounter', () => {
+  const SOURCE_UUID = 'source-encounter-uuid';
+  const OTHER_UUID = 'other-encounter-uuid';
+
+  const encounter = (id: string): Encounter =>
+    ({ resourceType: 'Encounter', id, status: 'in-progress' }) as Encounter;
+
+  it('returns the session encounter when no sourceEncounterUuid is provided (active encounter)', () => {
+    const session = encounter(OTHER_UUID);
+    const result = getActiveEncounter({
+      sourceEncounterUuid: undefined,
+      sourceEncounter: null,
+      sessionEncounter: session,
+      sessionEncounterStatus: 'success',
+    });
+    expect(result).toBe(session);
+  });
+
+  it('returns null when no sourceEncounterUuid and no session encounter (no active encounter)', () => {
+    const result = getActiveEncounter({
+      sourceEncounterUuid: undefined,
+      sourceEncounter: null,
+      sessionEncounter: null,
+      sessionEncounterStatus: 'success',
+    });
+    expect(result).toBeNull();
+  });
+
+  it('returns undefined while the session query is still pending (source uuid set)', () => {
+    const result = getActiveEncounter({
+      sourceEncounterUuid: SOURCE_UUID,
+      sourceEncounter: encounter(SOURCE_UUID),
+      sessionEncounter: undefined,
+      sessionEncounterStatus: 'pending',
+    });
+    expect(result).toBeUndefined();
+  });
+
+  it('returns the source encounter when the session encounter matches source (regular edit)', () => {
+    const source = encounter(SOURCE_UUID);
+    const result = getActiveEncounter({
+      sourceEncounterUuid: SOURCE_UUID,
+      sourceEncounter: source,
+      sessionEncounter: encounter(SOURCE_UUID),
+      sessionEncounterStatus: 'success',
+    });
+    expect(result).toBe(source);
+  });
+
+  it('returns the session encounter when it differs from source (copyover)', () => {
+    const session = encounter(OTHER_UUID);
+    const result = getActiveEncounter({
+      sourceEncounterUuid: SOURCE_UUID,
+      sourceEncounter: encounter(SOURCE_UUID),
+      sessionEncounter: session,
+      sessionEncounterStatus: 'success',
+    });
+    expect(result).toBe(session);
+  });
+
+  it('returns null when session query resolves with no active encounter (safe copyover default)', () => {
+    const result = getActiveEncounter({
+      sourceEncounterUuid: SOURCE_UUID,
+      sourceEncounter: encounter(SOURCE_UUID),
+      sessionEncounter: null,
+      sessionEncounterStatus: 'success',
+    });
+    expect(result).toBeNull();
+  });
+
+  it('returns null on session query error (safe copyover default; does not fall back to source)', () => {
+    const result = getActiveEncounter({
+      sourceEncounterUuid: SOURCE_UUID,
+      sourceEncounter: encounter(SOURCE_UUID),
+      sessionEncounter: null,
+      sessionEncounterStatus: 'error',
+    });
+    expect(result).toBeNull();
   });
 });

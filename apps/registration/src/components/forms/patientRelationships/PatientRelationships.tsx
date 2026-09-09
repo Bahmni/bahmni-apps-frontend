@@ -1,6 +1,8 @@
 import { Button, SimpleDataTable } from '@bahmni/design-system';
 import { useTranslation } from '@bahmni/services';
 import { useImperativeHandle } from 'react';
+import { useParams } from 'react-router-dom';
+import { RequiredAsterisk } from '../../common/RequiredAsterisk';
 import { RelationshipRow } from './RelationshipRow';
 import styles from './styles/index.module.scss';
 import { usePatientRelationship } from './usePatientRelationship';
@@ -42,6 +44,10 @@ export const PatientRelationships = ({
 }: PatientRelationshipsProps) => {
   const { t } = useTranslation();
 
+  const { patientUuid: currentPatientUuid } = useParams<{
+    patientUuid: string;
+  }>();
+
   const {
     relationships,
     relationshipTypes,
@@ -56,7 +62,7 @@ export const PatientRelationships = ({
     validate,
     clearData,
     removeDeletedRelationships,
-  } = usePatientRelationship({ initialData });
+  } = usePatientRelationship({ initialData, currentPatientUuid });
 
   useImperativeHandle(ref, () => ({
     getData,
@@ -71,7 +77,7 @@ export const PatientRelationships = ({
       header: (
         <span>
           {t('REGISTRATION_RELATIONSHIP_TYPE')}
-          <span className={styles.requiredAsterisk}>*</span>
+          <RequiredAsterisk className={styles.headerAsterisk} />
         </span>
       ),
     },
@@ -80,7 +86,7 @@ export const PatientRelationships = ({
       header: (
         <span>
           {t('REGISTRATION_PATIENT_NAME_OR_ID')}
-          <span className={styles.requiredAsterisk}>*</span>
+          <RequiredAsterisk className={styles.headerAsterisk} />
         </span>
       ),
     },

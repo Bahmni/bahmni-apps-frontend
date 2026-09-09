@@ -1,0 +1,19 @@
+@use "@carbon/react/scss/spacing" as *;
+
+.loadingWrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  width: 100%;
+  padding: $spacing-08;
+}
+
+.bannerWrapper {
+  padding: $spacing-04 $spacing-06;
+
+  :global(.cds--inline-notification) {
+    max-inline-size: 100%;
+  }
+}
+

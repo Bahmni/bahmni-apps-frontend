@@ -1,7 +1,8 @@
+import { MedicationFrequency as Frequency } from '@bahmni/services';
 import { Medication } from 'fhir/r4';
 import { Concept } from '../models/encounterConcepts';
 import { DurationUnitOption } from '../models/medication';
-import { DrugFormDefault, Frequency } from '../models/medicationConfig';
+import { DrugFormDefault } from '../models/medicationConfig';
 
 export const getDefaultRoute = (
   medication: Medication,

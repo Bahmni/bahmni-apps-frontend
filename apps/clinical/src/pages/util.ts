@@ -1,4 +1,5 @@
 import { HeaderSideNavItem } from '@bahmni/design-system';
+import { PATIENT_NOT_FOUND_ERROR_KEY } from '@bahmni/services';
 import { useHasPrivilege } from '@bahmni/widgets';
 import { Dashboard } from '../providers/clinicalConfig/models';
 import {
@@ -42,6 +43,19 @@ export const filterSectionsByPrivileges = (
       controls: filterControlsByPrivileges(section.controls),
     }))
     .filter((section) => section.controls.length > 0);
+};
+
+// getFormattedError (shared errorHandling) classifies a failed patient-resource
+// fetch (400/404) as PATIENT_NOT_FOUND_ERROR_KEY. We key off it to surface a
+// single "patient not found" message and hold back the patient-scoped widgets.
+export const isPatientNotFoundError = (error: unknown): boolean => {
+  const message =
+    typeof error === 'string'
+      ? error
+      : error instanceof Error
+        ? error.message
+        : '';
+  return message === PATIENT_NOT_FOUND_ERROR_KEY;
 };
 
 export const getSidebarItems = (

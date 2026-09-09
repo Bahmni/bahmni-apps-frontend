@@ -1,26 +1,32 @@
 import {
   FormattedPatientData,
   getFormattedPatientById,
-  getPatientPhotoDataUrl,
 } from '@bahmni/services';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, screen, waitFor } from '@testing-library/react';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
+import { usePatientPhoto } from '../../hooks/usePatientPhoto';
 import PatientDetails from '../PatientDetails';
 import { mockFullPatient } from './__mocks__/patientDetailsMocks';
 
 jest.mock('@bahmni/services', () => ({
   ...jest.requireActual('@bahmni/services'),
   getFormattedPatientById: jest.fn(),
-  getPatientPhotoDataUrl: jest.fn(),
+}));
+jest.mock('../../hooks/usePatientPhoto', () => ({
+  usePatientPhoto: jest.fn(),
+}));
+jest.mock('../../notification', () => ({
+  useNotification: jest.fn(() => ({ addNotification: jest.fn() })),
 }));
 
 const mockedGetFormattedPatientById =
   getFormattedPatientById as jest.MockedFunction<
     typeof getFormattedPatientById
   >;
-const mockedGetPatientPhotoDataUrl =
-  getPatientPhotoDataUrl as jest.MockedFunction<typeof getPatientPhotoDataUrl>;
+const mockedUsePatientPhoto = usePatientPhoto as jest.MockedFunction<
+  typeof usePatientPhoto
+>;
 
 const createQueryClient = () =>
   new QueryClient({ defaultOptions: { queries: { retry: false } } });
@@ -44,9 +50,11 @@ describe('PatientDetails Integration', () => {
     jest.useFakeTimers();
     jest.setSystemTime(new Date('2025-03-16'));
     queryClient = createQueryClient();
-    mockedGetPatientPhotoDataUrl.mockResolvedValue(
-      'data:image/jpeg;base64,/9j/photo==',
-    );
+    mockedUsePatientPhoto.mockReturnValue({
+      patientPhoto: 'data:image/jpeg;base64,/9j/photo==',
+      isLoading: false,
+      error: null,
+    });
   });
 
   afterEach(() => {
@@ -68,7 +76,7 @@ describe('PatientDetails Integration', () => {
     expect(screen.getByText(/35YEARS 2MONTHS 15DAYS/)).toBeInTheDocument();
   });
 
-  it('renders patient photo when query resolves', async () => {
+  it('renders patient photo when hook resolves', async () => {
     mockedGetFormattedPatientById.mockResolvedValue(mockFullPatient);
 
     renderPatientDetails(queryClient);
@@ -81,9 +89,13 @@ describe('PatientDetails Integration', () => {
     });
   });
 
-  it('does not render photo when photo query fails', async () => {
+  it('does not render photo when hook returns no data', async () => {
     mockedGetFormattedPatientById.mockResolvedValue(mockFullPatient);
-    mockedGetPatientPhotoDataUrl.mockRejectedValue(new Error('No photo'));
+    mockedUsePatientPhoto.mockReturnValue({
+      patientPhoto: undefined,
+      isLoading: false,
+      error: null,
+    });
 
     renderPatientDetails(queryClient);
 
@@ -125,6 +137,7 @@ describe('PatientDetails Integration', () => {
       formattedAddress: null,
       formattedContact: null,
       identifiers: new Map([['ID', 'ID123']]),
+      photoUrl: undefined,
     };
 
     mockedGetFormattedPatientById.mockResolvedValue(mockPatient);

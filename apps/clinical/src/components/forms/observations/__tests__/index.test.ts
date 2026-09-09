@@ -1,4 +1,4 @@
-import { createObservationBundleEntries } from '../../../../services/consultationBundleService';
+import { createObservationBundleEntries } from '../../../../services/encounterBundleService';
 import { useObservationFormsStore } from '../../../../stores/observationFormsStore';
 import { clearRegistry, getRegisteredInputControls } from '../../registry';
 import ObservationFormsPanel from '../ObservationFormsPanel';
@@ -12,7 +12,7 @@ jest.mock('../../../../stores/observationFormsStore', () => ({
   },
 }));
 
-jest.mock('../../../../services/consultationBundleService', () => ({
+jest.mock('../../../../services/encounterBundleService', () => ({
   createObservationBundleEntries: jest.fn().mockReturnValue([]),
 }));
 

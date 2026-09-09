@@ -1,0 +1,207 @@
+export type Comparator = 'eq' | 'ne' | 'gt' | 'lt' | 'ge' | 'le';
+
+export interface FieldConfig {
+  key: string;
+  keyType?: string;
+}
+
+export interface OptionItem {
+  translationKey: string;
+  value: string;
+}
+
+export interface LookupConfig {
+  source: string;
+  prefetch?: boolean;
+  valueSet?: string;
+}
+
+export interface BoundValue {
+  value: string | null;
+  comparator: Comparator | null;
+}
+
+export interface ScalarValue {
+  value: string;
+  label?: string;
+}
+
+export interface RangeValue {
+  from: BoundValue;
+  to?: BoundValue;
+}
+
+export type CriterionValue = ScalarValue | RangeValue;
+
+export interface TextInput {
+  kind: 'text';
+  placeholderTranslationKey: string;
+  regex?: string;
+}
+
+export interface NumericInput {
+  kind: 'numeric';
+  placeholderTranslationKey: string;
+  rangeAllowed?: boolean;
+}
+
+export interface DateInput {
+  kind: 'date';
+  placeholderTranslationKey: string;
+  rangeAllowed?: boolean;
+}
+
+export interface OptionsInput {
+  kind: 'options';
+  placeholderTranslationKey: string;
+  options: OptionItem[];
+}
+
+export interface LookupInput {
+  kind: 'lookup';
+  placeholderTranslationKey: string;
+  lookup: LookupConfig;
+}
+
+export interface LookupOption {
+  uuid: string;
+  label: string;
+}
+
+export type LookupLoader = () => Promise<LookupOption[]>;
+
+export type InputConfig =
+  | TextInput
+  | NumericInput
+  | DateInput
+  | OptionsInput
+  | LookupInput;
+
+export interface CriterionConfig {
+  id?: string;
+  field: FieldConfig;
+  translationKey: string;
+  default?: boolean;
+  input: InputConfig;
+  additionalCriteria?: string[];
+}
+
+export type ResultFieldFilterType = 'text' | 'select' | 'dateRange' | 'numeric';
+
+export enum SortOrder {
+  Ascending = 'asc',
+  Descending = 'desc',
+}
+
+export interface NavigateAction {
+  key: string;
+  type: 'navigate';
+  requiredPrivileges?: string[];
+  navigationURL: string;
+}
+
+export type ActionConfig = NavigateAction;
+
+export interface ResultFieldConfig {
+  translationKey: string;
+  expression: string;
+  enableSort?: boolean;
+  sortOrder?: SortOrder;
+  filterType?: ResultFieldFilterType;
+  action?: string;
+  transform?: string;
+}
+
+export interface SearchContextConfig {
+  context: 'patient' | 'appointment' | 'patientProgram';
+  translationKey: string;
+  requiredPrivileges: string[];
+  locationAware?: 'loggedInLocation' | 'allowedLocation';
+  url: string;
+  pageSize: number;
+  batchSize: number;
+  criteria: CriterionConfig[];
+  resultFields: ResultFieldConfig[];
+  actions?: ActionConfig[];
+}
+
+export type CommonSearchWidgetConfig = [
+  SearchContextConfig,
+  ...SearchContextConfig[],
+];
+
+export interface CriterionRow {
+  rowId: string;
+  criterionKey: string | null;
+  value: CriterionValue | null;
+  validationError: string | null;
+  rangeOrderError: string | null;
+}
+
+export interface CurrentSearchState {
+  context: SearchContextConfig;
+  rows: CriterionRow[];
+  results: unknown[];
+  currentSet: number;
+  searchId: string;
+  totalCount: number;
+  nextCursor: string | null;
+  prevCursor: string | null;
+}
+
+export interface ResolvedRow {
+  field: FieldConfig;
+  value: CriterionValue;
+}
+
+export interface SearchConditionLeaf {
+  field: string;
+  comparator: Comparator;
+  value: string;
+}
+
+export interface SearchConditionGroup {
+  operator: 'AND' | 'OR';
+  conditions: SearchCondition[];
+}
+
+export type SearchCondition = SearchConditionLeaf | SearchConditionGroup;
+
+export type CursorDirection = 'next' | 'prev';
+
+export interface SearchPaginationMeta {
+  includeTotalCount: boolean;
+  pagination: {
+    limit: number;
+    sortOrder: 'asc' | 'desc';
+    cursor: string | null;
+    direction?: CursorDirection;
+  };
+}
+
+export interface SearchPayload {
+  entity: string;
+  criteria: SearchConditionGroup;
+  meta?: SearchPaginationMeta;
+}
+
+export interface SearchResponse {
+  context: string;
+  meta?: {
+    timestamp?: number;
+    totalCount?: number;
+    pagination?: {
+      nextCursor: string | null;
+      prevCursor: string | null;
+    };
+  };
+  results?: unknown[];
+  error?: unknown;
+}
+
+export interface SearchPage {
+  results: unknown[];
+  totalCount: number | null;
+  nextCursor: string | null;
+  prevCursor: string | null;
+}

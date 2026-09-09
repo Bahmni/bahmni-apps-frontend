@@ -9,7 +9,12 @@ describe('CollapsibleRowGroup Component', () => {
   const mockRows = [
     { index: 0, header: 'Name', value: 'John Doe' },
     { index: 1, header: 'Age', value: '30' },
-    { index: 2, header: 'Status', value: 'Active', info: 'Last updated today' },
+    {
+      index: 2,
+      header: 'Status',
+      value: 'Active',
+      info: 'Last updated today',
+    },
   ];
 
   it('renders with title and rows', () => {

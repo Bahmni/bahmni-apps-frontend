@@ -3,11 +3,23 @@
 @use "@carbon/react/scss/colors" as *;
 @use "@carbon/react/scss/theme" as *;
 
+:global([data-split-view] #main-display-area #forms-table) {
+  div[id^="accordion-item"] {
+    overflow-x: auto;
+  }
+}
+
 .formsTableBody {
   td {
     width: 50%;
     border-block-end: 0 !important;
   }
+}
+
+.modalHeading {
+  display: flex;
+  align-items: center;
+  gap: $spacing-03;
 }
 
 .customAccordianItem {

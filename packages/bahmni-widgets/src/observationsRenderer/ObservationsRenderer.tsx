@@ -13,6 +13,7 @@ import { formatObservationValue } from '../observations/utils';
 import {
   getObservationDisplayInfo,
   sortObservationsBySortId,
+  sortObservationsByControlOrder,
   groupMultiSelectObservations,
   transformObservations,
 } from '../utils/Observations';
@@ -27,6 +28,9 @@ export interface ObservationsRendererProps {
   className?: string;
   testIdPrefix?: string;
   hideThumbnail?: boolean;
+  controlOrder?: string[];
+  sectionMap?: Record<string, string>;
+  conceptDatatypeMap?: Record<string, string>;
 }
 
 interface ObservationMemberProps {
@@ -35,12 +39,33 @@ interface ObservationMemberProps {
   memberIndex?: number;
   testIdPrefix?: string;
   hideThumbnail?: boolean;
+  conceptDatatypeMap?: Record<string, string>;
 }
 
 const renderValueWithMedia = (
   valueAsString: string,
   hideThumbnail = false,
 ): React.ReactNode => {
+  if (valueAsString.includes(', ')) {
+    const parts = valueAsString.split(', ');
+    const hasMediaPart = parts.some((part) => {
+      const type = getValueType(part);
+      return type === 'Image' || type === 'Video' || type === 'PDF';
+    });
+
+    if (hasMediaPart) {
+      return (
+        <div className={styles.mediaGroup}>
+          {parts.map((part) => (
+            <React.Fragment key={part}>
+              {renderValueWithMedia(part, hideThumbnail)}
+            </React.Fragment>
+          ))}
+        </div>
+      );
+    }
+  }
+
   const valueType = getValueType(valueAsString);
 
   if (valueType === 'Image') {
@@ -77,6 +102,7 @@ const ObservationMember: React.FC<ObservationMemberProps> = ({
   memberIndex = 0,
   testIdPrefix = '',
   hideThumbnail = false,
+  conceptDatatypeMap,
 }) => {
   const { t } = useTranslation();
   const hasMembers = member.members && member.members.length > 0;
@@ -109,6 +135,7 @@ const ObservationMember: React.FC<ObservationMemberProps> = ({
               memberIndex={nestedIndex}
               testIdPrefix={testIdPrefix}
               hideThumbnail={hideThumbnail}
+              conceptDatatypeMap={conceptDatatypeMap}
             />
           ))}
         </div>
@@ -117,7 +144,7 @@ const ObservationMember: React.FC<ObservationMemberProps> = ({
   }
 
   const { rangeString, isAbnormal } = getObservationDisplayInfo(member);
-  const formattedValue = formatObservationValue(member, t);
+  const formattedValue = formatObservationValue(member, t, conceptDatatypeMap);
   const valueToDisplay = formattedValue
     ? renderValueWithMedia(formattedValue, hideThumbnail)
     : null;
@@ -171,10 +198,15 @@ const renderObservation = (
   t: (key: string) => string,
   testIdPrefix = '',
   hideThumbnail = false,
+  conceptDatatypeMap?: Record<string, string>,
 ) => {
   const hasMembers = observation.members && observation.members.length > 0;
   const { rangeString, isAbnormal } = getObservationDisplayInfo(observation);
-  const formattedValue = formatObservationValue(observation, t);
+  const formattedValue = formatObservationValue(
+    observation,
+    t,
+    conceptDatatypeMap,
+  );
   const valueToDisplay = formattedValue
     ? renderValueWithMedia(formattedValue, hideThumbnail)
     : null;
@@ -215,6 +247,7 @@ const renderObservation = (
                 memberIndex={memberIndex}
                 testIdPrefix={testIdPrefix}
                 hideThumbnail={hideThumbnail}
+                conceptDatatypeMap={conceptDatatypeMap}
               />
             ))}
           </div>
@@ -231,16 +264,14 @@ const renderObservation = (
         )}
       </div>
       {observation.comment && (
-        <div
+        <p
           className={styles.commentSection}
           data-testid={`${prefix}observation-comment-${observation.display}-${index}`}
         >
-          <span className={styles.commentText}>
-            {observation.comment}
-            {observation.encounter?.provider &&
-              ` - by ${observation.encounter.provider}`}
-          </span>
-        </div>
+          {observation.comment}
+          {observation.encounter?.provider &&
+            ` - by ${observation.encounter.provider}`}
+        </p>
       )}
     </div>
   );
@@ -255,6 +286,9 @@ export const ObservationsRenderer: React.FC<ObservationsRendererProps> = ({
   className,
   testIdPrefix = '',
   hideThumbnail = false,
+  controlOrder,
+  sectionMap,
+  conceptDatatypeMap,
 }) => {
   const { t } = useTranslation();
 
@@ -262,9 +296,12 @@ export const ObservationsRenderer: React.FC<ObservationsRendererProps> = ({
     if (observations.length === 0) return [];
 
     const transformed = transformObservations(observations);
-    const sorted = sortObservationsBySortId(transformed);
+    const sorted =
+      controlOrder && controlOrder.length > 0
+        ? sortObservationsByControlOrder(transformed, controlOrder)
+        : sortObservationsBySortId(transformed);
     return groupMultiSelectObservations(sorted);
-  }, [observations]);
+  }, [observations, controlOrder]);
 
   const headers = [
     { key: 'label', header: 'label' },
@@ -308,6 +345,85 @@ export const ObservationsRenderer: React.FC<ObservationsRendererProps> = ({
     );
   }
 
+  // Group observations: standalone obs render as rows; observations belonging
+  // to a form section are collected into a group rendered like an obsGroupControl.
+  type RenderGroup =
+    | { kind: 'obs'; obs: ExtractedObservation; index: number }
+    | {
+        kind: 'section';
+        name: string;
+        members: { obs: ExtractedObservation; index: number }[];
+      };
+
+  const renderGroups: RenderGroup[] = [];
+  let currentSectionGroup: Extract<RenderGroup, { kind: 'section' }> | null =
+    null;
+
+  processedObservations.forEach((obs, index) => {
+    const controlId = obs.sortId?.split('-')[0] ?? '';
+    const sectionName = sectionMap?.[controlId] ?? null;
+
+    if (sectionName) {
+      if (currentSectionGroup?.name !== sectionName) {
+        currentSectionGroup = {
+          kind: 'section',
+          name: sectionName,
+          members: [],
+        };
+        renderGroups.push(currentSectionGroup);
+      }
+      currentSectionGroup.members.push({ obs, index });
+    } else {
+      currentSectionGroup = null;
+      renderGroups.push({ kind: 'obs', obs, index });
+    }
+  });
+
+  const prefix = testIdPrefix ? `${testIdPrefix}-` : '';
+
+  const elements: React.ReactNode[] = renderGroups.map((group) => {
+    if (group.kind === 'obs') {
+      return renderObservation(
+        group.obs,
+        group.index,
+        t,
+        testIdPrefix,
+        hideThumbnail,
+        conceptDatatypeMap,
+      );
+    }
+    // Render form section exactly like an obsGroupControl
+    return (
+      <div
+        key={`section-${group.name}`}
+        className={styles.observation}
+        data-testid={`${prefix}section-${group.name}`}
+      >
+        <div className={styles.groupContainer}>
+          <div
+            className={styles.groupLabel}
+            data-testid={`${prefix}section-label-${group.name}`}
+          >
+            {group.name}
+          </div>
+          <div className={styles.groupMembers}>
+            {group.members.map(({ obs, index: memberIndex }) => (
+              <ObservationMember
+                key={obs.id}
+                member={obs}
+                depth={0}
+                memberIndex={memberIndex}
+                testIdPrefix={testIdPrefix}
+                hideThumbnail={hideThumbnail}
+                conceptDatatypeMap={conceptDatatypeMap}
+              />
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  });
+
   return (
     <div
       id="observations-renderer"
@@ -315,9 +431,7 @@ export const ObservationsRenderer: React.FC<ObservationsRendererProps> = ({
       aria-label="observations-renderer-aria-label"
       className={classNames(styles.resultsContainer, className)}
     >
-      {processedObservations.map((obs, index) =>
-        renderObservation(obs, index, t, testIdPrefix, hideThumbnail),
-      )}
+      {elements}
     </div>
   );
 };

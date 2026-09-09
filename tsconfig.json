@@ -7,6 +7,9 @@
       "path": "./apps/clinical"
     },
     {
+      "path": "./apps/home"
+    },
+    {
       "path": "./packages/bahmni-services"
     },
     {
@@ -26,6 +29,12 @@
     },
     {
       "path": "./apps/appointments"
+    },
+    {
+      "path": "./apps/command-palette"
+    },
+    {
+      "path": "./apps/patient-documents"
     }
   ]
 }

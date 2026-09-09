@@ -4,69 +4,78 @@ import {
   getEncountersAndVisitsForEOC,
   useSubscribeConsultationSaved,
 } from '@bahmni/services';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQueries, useQueryClient } from '@tanstack/react-query';
 import React, { ReactNode, useMemo } from 'react';
 import {
   ClinicalAppContext,
   EpisodeOfCare,
 } from '../contexts/ClinicalAppContext';
+import { usePatientVisit } from '../hooks/usePatientVisit';
 
 interface ClinicalAppDataProviderProps {
   children: ReactNode;
   episodeUuids: string[];
+  patientId: string | null;
 }
 
 export const ClinicalAppProvider: React.FC<ClinicalAppDataProviderProps> = ({
   children,
   episodeUuids,
+  patientId,
 }) => {
   const { t } = useTranslation();
   const queryClient = useQueryClient();
-  const {
-    data: episodeOfCareData,
-    isLoading: isLoadingEncounters,
-    error,
-  } = useQuery({
-    queryKey: ['encounters-for-eoc', episodeUuids],
-    queryFn: () => getEncountersAndVisitsForEOC(episodeUuids),
-    enabled: episodeUuids.length > 0,
+  const episodeOfCareQueries = useQueries({
+    queries: episodeUuids.map((episodeUuid) => ({
+      queryKey: ['encounters-for-eoc', episodeUuid],
+      queryFn: () => getEncountersAndVisitsForEOC([episodeUuid]),
+      enabled: !!episodeUuid,
+    })),
+    combine: (results) => ({
+      data: results.map((result, index) => ({
+        uuid: episodeUuids[index],
+        encounterUuids: result.data?.encounterUuids ?? [],
+        visitUuids: result.data?.visitUuids ?? [],
+      })),
+      isLoading: results.some((result) => result.isLoading),
+      error: results.find((result) => result.error)?.error ?? null,
+    }),
   });
 
+  const { activeVisit } = usePatientVisit(patientId);
+
   useSubscribeConsultationSaved(() => {
-    if (episodeUuids.length > 0) {
+    episodeUuids.forEach((episodeUuid) => {
       queryClient.invalidateQueries({
-        queryKey: ['encounters-for-eoc', episodeUuids],
+        queryKey: ['encounters-for-eoc', episodeUuid],
       });
-    }
+    });
   }, [episodeUuids, queryClient]);
 
-  const value = useMemo(() => {
-    const episodeOfCare: EpisodeOfCare[] = [];
+  const clinicalContext = useMemo(() => {
+    const episodeOfCare: EpisodeOfCare[] =
+      episodeUuids.length > 0 ? episodeOfCareQueries.data : [];
 
-    if (episodeOfCareData && episodeUuids.length > 0) {
-      episodeUuids.forEach((episodeUuid) => {
-        episodeOfCare.push({
-          uuid: episodeUuid,
-          encounterUuids: episodeOfCareData.encounterUuids ?? [],
-          visitUuids: episodeOfCareData.visitUuids ?? [],
-        });
-      });
-    }
+    const activeEpisodeId = episodeUuids.length > 0 ? episodeUuids[0] : null;
+    const activeVisitId = activeVisit?.id ?? null;
 
     return {
       episodeOfCare,
       visit: [],
       encounter: [],
-      isLoading: isLoadingEncounters,
-      error: error as Error | null,
+      isLoading: episodeOfCareQueries.isLoading,
+      error: episodeOfCareQueries.error,
+      patientId,
+      activeVisitId,
+      activeEpisodeId,
     };
-  }, [episodeOfCareData, episodeUuids, isLoadingEncounters, error]);
+  }, [episodeOfCareQueries, episodeUuids, patientId, activeVisit?.id]);
 
-  if (isLoadingEncounters && episodeUuids.length > 0) {
+  if (clinicalContext.isLoading && episodeUuids.length > 0) {
     return <Loading description={t('LOADING_CLINICAL_DATA')} role="status" />;
   }
 
-  if (error)
+  if (clinicalContext.error)
     return (
       <div className="alert alert-danger">
         {t('ERROR_FETCHING_CLINICAL_DATA')}
@@ -74,7 +83,7 @@ export const ClinicalAppProvider: React.FC<ClinicalAppDataProviderProps> = ({
     );
 
   return (
-    <ClinicalAppContext.Provider value={value}>
+    <ClinicalAppContext.Provider value={clinicalContext}>
       {children}
     </ClinicalAppContext.Provider>
   );

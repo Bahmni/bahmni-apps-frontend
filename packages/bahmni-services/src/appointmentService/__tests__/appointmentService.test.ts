@@ -1,8 +1,15 @@
 import { del, get, post } from '../../api';
 import {
-  createMockAppointment,
   createEmptyBundle,
   createBundleWithAppointments,
+  FIXED_NOW,
+  patientUUID,
+  upcomingAppointment,
+  pastAppointment,
+  mockUnavailabilities,
+  mockCreateRequest,
+  mockCreateRequestWithoutOptionalFields,
+  multipleRequests,
 } from '../__mocks__/mocks';
 import {
   getUpcomingAppointments,
@@ -11,6 +18,7 @@ import {
   getPastAppointmentsPage,
   searchAppointmentsByAttribute,
   updateAppointmentStatus,
+  checkInAppointment,
   getAppointmentById,
   getAllAppointmentServices,
   deleteAppointmentService,
@@ -18,6 +26,8 @@ import {
   getServiceAttributeTypes,
   getAppointmentLocations,
   getAppointmentSpecialities,
+  getAppointmentUnavailabilities,
+  createAppointmentUnavailability,
 } from '../appointmentService';
 import {
   UPCOMING_APPOINTMENTS_URL,
@@ -33,6 +43,7 @@ import {
   APPOINTMENT_SPECIALITIES_URL,
   getUpcomingAppointmentsPageUrl,
   getPastAppointmentsPageUrl,
+  APPOINTMENT_UNAVAILABILITY_URL,
 } from '../constants';
 
 jest.mock('../../api');
@@ -40,11 +51,7 @@ const mockedGet = get as jest.MockedFunction<typeof get>;
 const mockedPost = post as jest.MockedFunction<typeof post>;
 const mockedDel = del as jest.MockedFunction<typeof del>;
 
-const FIXED_NOW = new Date('2026-02-18T06:02:28.000Z');
-
 jest.useFakeTimers().setSystemTime(FIXED_NOW);
-
-const patientUUID = 'patient-uuid-123';
 
 const setupMockBundle = (appointments: any[]) => {
   const mockBundle = createBundleWithAppointments(appointments);
@@ -57,22 +64,6 @@ const setupEmptyBundle = () => {
   mockedGet.mockResolvedValue(mockBundle);
   return mockBundle;
 };
-
-const upcomingAppointment = createMockAppointment(
-  'appt-uuid-1',
-  'APT-001',
-  '2025-02-15T10:30:00Z',
-  'Dr. Smith',
-  'booked',
-);
-
-const pastAppointment = createMockAppointment(
-  'appt-uuid-past-1',
-  'APT-OLD-001',
-  '2025-01-10T10:30:00Z',
-  'Dr. Johnson',
-  'fulfilled',
-);
 
 describe('Appointment Service', () => {
   afterAll(() => {
@@ -200,6 +191,19 @@ describe('Appointment Service', () => {
         onDate,
       },
     );
+  });
+
+  it('checkInAppointment should call POST with the submit URL and appointmentUuid body', async () => {
+    const submitUrl =
+      '/openmrs/ws/rest/v1/iom/appointment/checkin?visitType=Follow+Up';
+    const appointmentUuid = 'appt-uuid-1';
+    const mockResponse = { uuid: appointmentUuid, status: 'Arrived' };
+    mockedPost.mockResolvedValue(mockResponse);
+
+    const result = await checkInAppointment(submitUrl, appointmentUuid);
+
+    expect(mockedPost).toHaveBeenCalledWith(submitUrl, { appointmentUuid });
+    expect(result).toEqual(mockResponse);
   });
 
   it.each([
@@ -378,6 +382,82 @@ describe('Appointment Service', () => {
       await expect(getPastAppointmentsPage(patientUUID)).rejects.toThrow(
         'API Error',
       );
+    });
+  });
+
+  describe('getAppointmentUnavailabilities', () => {
+    it('should fetch all appointment unavailabilities', async () => {
+      mockedGet.mockResolvedValue(mockUnavailabilities);
+
+      const result = await getAppointmentUnavailabilities();
+
+      expect(mockedGet).toHaveBeenCalledWith(APPOINTMENT_UNAVAILABILITY_URL);
+      expect(result).toEqual(mockUnavailabilities);
+      expect(result).toHaveLength(2);
+    });
+
+    it('should return empty array when no unavailabilities exist', async () => {
+      mockedGet.mockResolvedValue([]);
+
+      const result = await getAppointmentUnavailabilities();
+
+      expect(mockedGet).toHaveBeenCalledWith(APPOINTMENT_UNAVAILABILITY_URL);
+      expect(result).toEqual([]);
+    });
+
+    it('should propagate API errors', async () => {
+      mockedGet.mockRejectedValue(new Error('Unavailabilities API Error'));
+
+      await expect(getAppointmentUnavailabilities()).rejects.toThrow(
+        'Unavailabilities API Error',
+      );
+    });
+  });
+
+  describe('createAppointmentUnavailability', () => {
+    it('should create appointment unavailability with all fields', async () => {
+      mockedPost.mockResolvedValue(undefined);
+
+      await createAppointmentUnavailability(mockCreateRequest);
+
+      expect(mockedPost).toHaveBeenCalledWith(
+        APPOINTMENT_UNAVAILABILITY_URL,
+        mockCreateRequest,
+      );
+    });
+
+    it('should create appointment unavailability without optional fields', async () => {
+      mockedPost.mockResolvedValue(undefined);
+
+      await createAppointmentUnavailability(
+        mockCreateRequestWithoutOptionalFields,
+      );
+
+      expect(mockedPost).toHaveBeenCalledWith(
+        APPOINTMENT_UNAVAILABILITY_URL,
+        mockCreateRequestWithoutOptionalFields,
+      );
+    });
+
+    it('should create multiple unavailabilities in a single request', async () => {
+      mockedPost.mockResolvedValue(undefined);
+
+      await createAppointmentUnavailability(multipleRequests);
+
+      expect(mockedPost).toHaveBeenCalledWith(
+        APPOINTMENT_UNAVAILABILITY_URL,
+        multipleRequests,
+      );
+    });
+
+    it('should propagate API errors', async () => {
+      mockedPost.mockRejectedValue(
+        new Error('Create Unavailability API Error'),
+      );
+
+      await expect(
+        createAppointmentUnavailability(mockCreateRequest),
+      ).rejects.toThrow('Create Unavailability API Error');
     });
   });
 });

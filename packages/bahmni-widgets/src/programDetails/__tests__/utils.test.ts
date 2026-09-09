@@ -1,4 +1,6 @@
 import { ProgramEnrollment } from '@bahmni/services';
+import { EpisodeOfCare } from 'fhir/r4';
+import { ProgramField } from '../model';
 import {
   extractProgramAttributeNames,
   createProgramDetailsViewModel,
@@ -14,30 +16,34 @@ describe('Utils', () => {
     });
 
     it('should filter out known fields', () => {
-      const fields = [
-        'programName',
-        'customAttribute1',
-        'startDate',
-        'customAttribute2',
-        'outcome',
+      const fields: ProgramField[] = [
+        { name: 'programName' },
+        { name: 'customAttribute1' },
+        { name: 'startDate' },
+        { name: 'customAttribute2' },
+        { name: 'outcome' },
       ];
       const result = extractProgramAttributeNames(fields);
       expect(result).toEqual(['customAttribute1', 'customAttribute2']);
     });
 
     it('should return all fields when none are known fields', () => {
-      const fields = ['customAttr1', 'customAttr2', 'customAttr3'];
+      const fields: ProgramField[] = [
+        { name: 'customAttr1' },
+        { name: 'customAttr2' },
+        { name: 'customAttr3' },
+      ];
       const result = extractProgramAttributeNames(fields);
       expect(result).toEqual(['customAttr1', 'customAttr2', 'customAttr3']);
     });
 
     it('should return empty array when all fields are known fields', () => {
-      const fields = [
-        'programName',
-        'startDate',
-        'endDate',
-        'outcome',
-        'state',
+      const fields: ProgramField[] = [
+        { name: 'programName' },
+        { name: 'startDate' },
+        { name: 'endDate' },
+        { name: 'outcome' },
+        { name: 'state' },
       ];
       const result = extractProgramAttributeNames(fields);
       expect(result).toEqual([]);
@@ -71,6 +77,7 @@ describe('Utils', () => {
         outcomeName: null,
         outcomeDetails: null,
         currentStateName: null,
+        careManagerDisplay: null,
         attributes: {},
         allowedStates: [],
       });
@@ -158,6 +165,34 @@ describe('Utils', () => {
       const result = createProgramDetailsViewModel(enrollment, []);
 
       expect(result.allowedStates).toEqual([]);
+    });
+
+    it('should extract careManagerDisplay from episodeOfCare when it has a careManager', () => {
+      const enrollment = mockEnrollment();
+      const episodeOfCare = {
+        careManager: { display: 'Dr. Test' },
+      } as EpisodeOfCare;
+
+      const result = createProgramDetailsViewModel(
+        enrollment,
+        [],
+        episodeOfCare,
+      );
+
+      expect(result.careManagerDisplay).toBe('Dr. Test');
+    });
+
+    it('should return null careManagerDisplay when episodeOfCare has no careManager', () => {
+      const enrollment = mockEnrollment();
+      const episodeOfCare = {} as EpisodeOfCare;
+
+      const result = createProgramDetailsViewModel(
+        enrollment,
+        [],
+        episodeOfCare,
+      );
+
+      expect(result.careManagerDisplay).toBeNull();
     });
   });
 });

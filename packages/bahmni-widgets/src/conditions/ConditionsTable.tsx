@@ -1,13 +1,17 @@
 import {
   Button,
-  SortableDataTable,
   StatusTag,
-  Tile,
+  Tab,
+  TabList,
+  TabPanel,
+  TabPanels,
+  Tabs,
 } from '@bahmni/design-system';
 import {
-  getConditionPage,
   markConditionAsInactive,
   dispatchAuditEvent,
+  dispatchConsultationSaved,
+  setEncounterSessionDecision,
   AUDIT_LOG_EVENT_DETAILS,
   type AuditEventType,
   useTranslation,
@@ -15,30 +19,38 @@ import {
   formatDateDistance,
   useSubscribeConsultationSaved,
 } from '@bahmni/services';
-import { useQuery } from '@tanstack/react-query';
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
+import React, { useCallback, useMemo, useState } from 'react';
+import { useActivePractitioner } from '../activePractitioner';
 import ConfirmationModal from '../confirmationModal/ConfirmationModal';
 import { usePatientUUID } from '../hooks/usePatientUUID';
 import { useNotification } from '../notification';
 import { WidgetActionConfig, WidgetProps } from '../registry/model';
 import { useHasPrivilege } from '../userPrivileges/useHasPrivilege';
+import ConditionsTabContent from './ConditionsTabContent';
 import { ConditionViewModel, ConditionStatus } from './models';
 import styles from './styles/ConditionsTable.module.scss';
-import { createConditionViewModels } from './utils';
 
 // TODO: Take UUID As A Prop
 const ConditionsTable: React.FC<WidgetProps> = ({
   config,
   disableActions = false,
+  activeEncounter,
+  activeEncounterMatched,
 }) => {
-  // Number() safely handles non-numeric config values (NaN → falsy → fallback 10)
+  // Number() safely handles non-numeric config values (NaN → falsy → fallback 5)
   const configPageSize = Number(config?.pageSize) || 5;
+  const encounterTypeName = config?.encounterType as string | undefined;
   const patientUUID = usePatientUUID();
+  const { practitioner } = useActivePractitioner();
   const { t } = useTranslation();
   const { addNotification } = useNotification();
+  const queryClient = useQueryClient();
 
-  const [currentPage, setCurrentPage] = useState(1);
-  const [selectedPageSize, setSelectedPageSize] = useState(configPageSize);
+  const [selectedIndex, setSelectedIndex] = useState(0);
+  // Lazy-load: only enable inactive query once user has visited the inactive tab
+  const [inactiveTabEverOpened, setInactiveTabEverOpened] = useState(false);
+
   const [conditionToMarkInactive, setConditionToMarkInactive] =
     useState<ConditionViewModel | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -58,22 +70,15 @@ const ConditionsTable: React.FC<WidgetProps> = ({
     configActions.length > 0 &&
     (actionPrivileges.length === 0 || hasActionPrivilege);
 
-  const { data, isLoading, isError, error, refetch } = useQuery({
-    queryKey: ['conditions', patientUUID!, currentPage, selectedPageSize],
-    enabled: !!patientUUID,
-    placeholderData: (prev) => prev,
-    queryFn: async () => {
-      const page = await getConditionPage(
-        patientUUID!,
-        selectedPageSize,
-        currentPage,
-      );
-      return {
-        conditions: createConditionViewModels(page.conditions),
-        total: page.total,
-      };
+  const handleTabChange = useCallback(
+    ({ selectedIndex: idx }: { selectedIndex: number }) => {
+      setSelectedIndex(idx);
+      if (idx === 1) {
+        setInactiveTabEverOpened(true);
+      }
     },
-  });
+    [],
+  );
 
   useSubscribeConsultationSaved(
     (payload) => {
@@ -81,48 +86,49 @@ const ConditionsTable: React.FC<WidgetProps> = ({
         payload.patientUUID === patientUUID &&
         payload.updatedResources.conditions
       ) {
-        refetch();
+        // Invalidate both tabs' queries (they share the 'conditions' prefix)
+        queryClient.invalidateQueries({ queryKey: ['conditions'] });
       }
     },
-    [patientUUID, refetch],
-  );
-
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [patientUUID]);
-
-  useEffect(() => {
-    if (isError)
-      addNotification({
-        title: t('ERROR_DEFAULT_TITLE'),
-        message: error.message,
-        type: 'error',
-      });
-  }, [isError, error, addNotification, t]);
-
-  const handlePageChange = useCallback(
-    (newPage: number, newPageSize: number) => {
-      if (newPageSize !== selectedPageSize) {
-        setSelectedPageSize(newPageSize);
-        setCurrentPage(1);
-      } else {
-        setCurrentPage(newPage);
-      }
-    },
-    [selectedPageSize],
+    [patientUUID, queryClient],
   );
 
   const handleConfirmMarkInactive = async () => {
     if (!conditionToMarkInactive?.rawFhirResource) return;
     setIsSubmitting(true);
     try {
-      await markConditionAsInactive(conditionToMarkInactive.rawFhirResource);
-      dispatchAuditEvent({
-        eventType: AUDIT_LOG_EVENT_DETAILS.EDIT_ENCOUNTER
-          .eventType as AuditEventType,
-        patientUuid: patientUUID!,
-        messageParams: { conditionDisplay: conditionToMarkInactive.display },
-      });
+      const encounter = await markConditionAsInactive(
+        conditionToMarkInactive.rawFhirResource,
+        activeEncounter ?? undefined,
+        activeEncounterMatched ?? false,
+        encounterTypeName,
+        patientUUID ?? undefined,
+        practitioner?.uuid,
+      );
+      if (encounter.id) {
+        setEncounterSessionDecision({ reasons: ['MATCHED'], encounter });
+      }
+      if (patientUUID) {
+        dispatchAuditEvent({
+          eventType: AUDIT_LOG_EVENT_DETAILS.EDIT_ENCOUNTER
+            .eventType as AuditEventType,
+          patientUuid: patientUUID,
+          messageParams: {
+            conditionDisplay: conditionToMarkInactive.display,
+            encounterUuid: encounter.id,
+          },
+        });
+        dispatchConsultationSaved({
+          patientUUID,
+          updatedResources: {
+            conditions: true,
+            allergies: false,
+            medications: false,
+            serviceRequests: {},
+          },
+          updatedConcepts: new Map(),
+        });
+      }
     } catch {
       addNotification({
         title: t('ERROR_DEFAULT_TITLE'),
@@ -133,106 +139,134 @@ const ConditionsTable: React.FC<WidgetProps> = ({
     } finally {
       setIsSubmitting(false);
       setConditionToMarkInactive(null);
-      await refetch();
+      queryClient.invalidateQueries({ queryKey: ['conditions'] });
     }
   };
 
-  const headers = useMemo(() => {
-    const base = [
+  const baseHeaders = useMemo(
+    () => [
       { key: 'display', header: t('CONDITION_LIST_CONDITION') },
       { key: 'onsetDate', header: t('CONDITION_TABLE_DURATION') },
       { key: 'recorder', header: t('CONDITION_TABLE_RECORDED_BY') },
       { key: 'status', header: t('CONDITION_LIST_STATUS') },
-    ];
-    if (showActions) {
-      base.push({ key: 'actions', header: t('ACTIONS') });
-    }
-    return base;
-  }, [t, showActions]);
+    ],
+    [t],
+  );
 
-  const renderCell = (condition: ConditionViewModel, cellId: string) => {
-    switch (cellId) {
-      case 'display':
-        return (
-          <span className={styles.conditionName}>{condition.display}</span>
-        );
-      case 'status':
-        return (
-          <StatusTag
-            label={
-              condition.status === ConditionStatus.Active
-                ? t('CONDITION_LIST_ACTIVE')
-                : t('CONDITION_LIST_INACTIVE')
-            }
-            dotClassName={
-              condition.status === ConditionStatus.Active
-                ? styles.activeStatus
-                : styles.inactiveStatus
-            }
-            testId={`condition-status-${condition.code}`}
-          />
-        );
-      case 'onsetDate': {
-        const onsetDate: FormatDateResult = formatDateDistance(
-          condition.onsetDate ?? '',
-          t,
-        );
-        if (onsetDate.error) {
-          return t('CONDITION_TABLE_NOT_AVAILABLE');
+  const activeHeaders = useMemo(
+    () =>
+      showActions
+        ? [...baseHeaders, { key: 'actions', header: t('ACTIONS') }]
+        : baseHeaders,
+    [baseHeaders, showActions, t],
+  );
+
+  const inactiveHeaders = baseHeaders;
+
+  const renderCell = useCallback(
+    (condition: ConditionViewModel, cellId: string) => {
+      switch (cellId) {
+        case 'display':
+          return (
+            <span className={styles.conditionName}>{condition.display}</span>
+          );
+        case 'status':
+          return (
+            <StatusTag
+              label={
+                condition.status === ConditionStatus.Active
+                  ? t('CONDITION_LIST_ACTIVE')
+                  : t('CONDITION_LIST_INACTIVE')
+              }
+              dotClassName={
+                condition.status === ConditionStatus.Active
+                  ? styles.activeStatus
+                  : styles.inactiveStatus
+              }
+              testId={`condition-status-${condition.code}`}
+            />
+          );
+        case 'onsetDate': {
+          const onsetDate: FormatDateResult = formatDateDistance(
+            condition.onsetDate ?? '',
+            t,
+          );
+          if (onsetDate.error) {
+            return t('CONDITION_TABLE_NOT_AVAILABLE');
+          }
+          return t('CONDITION_ONSET_SINCE_FORMAT', {
+            timeAgo: onsetDate.formattedResult,
+          });
         }
-        return t('CONDITION_ONSET_SINCE_FORMAT', {
-          timeAgo: onsetDate.formattedResult,
-        });
+        case 'recorder':
+          return condition.recorder;
+        case 'actions': {
+          const isActive = condition.status === ConditionStatus.Active;
+          const isDisabled = !isActive || disableActions;
+          return (
+            <Button
+              kind="ghost"
+              size="sm"
+              disabled={isDisabled}
+              data-testid={`condition-mark-inactive-${condition.code}`}
+              onClick={() =>
+                !isDisabled && setConditionToMarkInactive(condition)
+              }
+            >
+              {t('CONDITION_MARK_AS_INACTIVE')}
+            </Button>
+          );
+        }
+        default:
+          return undefined;
       }
-      case 'recorder':
-        return condition.recorder;
-      case 'actions': {
-        const isActive = condition.status === ConditionStatus.Active;
-        const isDisabled = !isActive || disableActions;
-        return (
-          <Button
-            kind="ghost"
-            size="sm"
-            disabled={isDisabled}
-            data-testid={`condition-mark-inactive-${condition.code}`}
-            onClick={() => !isDisabled && setConditionToMarkInactive(condition)}
-          >
-            {t('CONDITION_MARK_AS_INACTIVE')}
-          </Button>
-        );
-      }
-      default:
-        return undefined;
-    }
-  };
+    },
+    [t, disableActions, setConditionToMarkInactive],
+  );
 
   return (
     <>
-      {/* Recent and all Tabs will come inplace of Tile */}
-      <Tile
-        title={t('CONDITION_LIST_DISPLAY_CONTROL_TITLE')}
-        data-testid="conditions-title"
-        className={styles.conditionsTableTitle}
+      <Tabs
+        selectedIndex={selectedIndex}
+        onChange={handleTabChange}
+        testId="conditions-tabs"
       >
-        <p>{t('CONDITION_LIST_DISPLAY_CONTROL_TITLE')}</p>
-      </Tile>
-      <div data-testid="condition-table">
-        <SortableDataTable
-          headers={headers}
-          ariaLabel={t('CONDITION_LIST_DISPLAY_CONTROL_TITLE')}
-          rows={data?.conditions ?? []}
-          loading={isLoading}
-          errorStateMessage={isError ? error.message : null}
-          emptyStateMessage={t('CONDITION_LIST_NO_CONDITIONS')}
-          renderCell={renderCell}
-          className={styles.conditionsTableBody}
-          dataTestId="conditions-table"
-          pageSize={selectedPageSize}
-          totalItems={data?.total}
-          page={currentPage}
-          onPageChange={handlePageChange}
-        />
-      </div>
+        <TabList
+          aria-label={t('CONDITION_LIST_DISPLAY_CONTROL_TITLE')}
+          className={styles.conditionsTabList}
+        >
+          <Tab>{t('CONDITION_LIST_ACTIVE_TAB')}</Tab>
+          <Tab>{t('CONDITION_LIST_INACTIVE_TAB')}</Tab>
+        </TabList>
+        <TabPanels>
+          <TabPanel className={styles.conditionsTabPanel}>
+            {patientUUID && (
+              <ConditionsTabContent
+                patientUUID={patientUUID}
+                configPageSize={configPageSize}
+                clinicalStatus="active"
+                emptyStateMessageKey="CONDITION_LIST_NO_ACTIVE_CONDITIONS"
+                headers={activeHeaders}
+                renderCell={renderCell}
+                enabled
+              />
+            )}
+          </TabPanel>
+          <TabPanel className={styles.conditionsTabPanel}>
+            {patientUUID && (
+              <ConditionsTabContent
+                patientUUID={patientUUID}
+                configPageSize={configPageSize}
+                clinicalStatus="inactive"
+                emptyStateMessageKey="CONDITION_LIST_NO_INACTIVE_CONDITIONS"
+                headers={inactiveHeaders}
+                renderCell={renderCell}
+                enabled={inactiveTabEverOpened}
+              />
+            )}
+          </TabPanel>
+        </TabPanels>
+      </Tabs>
 
       <ConfirmationModal
         open={!!conditionToMarkInactive}

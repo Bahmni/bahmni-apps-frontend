@@ -174,116 +174,118 @@ exports[`MedicationRequestForm Snapshots matches snapshot for medications form w
       <div
         class="cds--sm:col-span-4 cds--md:col-span-8 cds--lg:col-span-16 cds--xlg:col-span-16 cds--css-grid-column"
       >
-        <div
-          class="_grid_i0b21_1 selectedItem cds--subgrid cds--subgrid--narrow"
-          data-testid="selected-item"
-        >
+        <div>
           <div
-            class="_children_i0b21_9 cds--sm:col-span-3 cds--md:col-span-7 cds--lg:col-span-15 cds--xlg:col-span-15 cds--css-grid-column"
+            class="_grid_i0b21_1 selectedItem cds--subgrid cds--subgrid--narrow"
+            data-testid="selected-item"
           >
             <div
-              aria-label="medication-selected-item-test-medication-1-aria-label"
-              class="cds--subgrid cds--subgrid--wide"
-              data-testid="medication-selected-item-test-medication-1-test-id"
-              id="medication-selected-item-test-medication-1"
+              class="_children_i0b21_9 cds--sm:col-span-3 cds--md:col-span-7 cds--lg:col-span-15 cds--xlg:col-span-15 cds--css-grid-column"
             >
               <div
-                class="itemTitle cds--sm:col-span-2 cds--md:col-span-4 cds--lg:col-span-8 cds--css-grid-column"
+                aria-label="medication-selected-item-test-medication-1-aria-label"
+                class="cds--subgrid cds--subgrid--wide"
+                data-testid="medication-selected-item-test-medication-1-test-id"
+                id="medication-selected-item-test-medication-1"
               >
-                <span
-                  aria-label="medication-name-test-medication-1-aria-label"
-                  data-testid="medication-name-test-medication-1-test-id"
-                  id="medication-name-test-medication-1"
+                <div
+                  class="itemTitle cds--sm:col-span-2 cds--md:col-span-4 cds--lg:col-span-8 cds--css-grid-column"
                 >
-                  Magnesium sulfate 500 mg/ml 
-                </span>
-                <span
-                  aria-label="medication-details-test-medication-1-aria-label"
-                  class="itemDetails"
-                  data-testid="medication-details-test-medication-1-test-id"
-                  id="medication-details-test-medication-1"
+                  <span
+                    aria-label="medication-name-test-medication-1-aria-label"
+                    data-testid="medication-name-test-medication-1-test-id"
+                    id="medication-name-test-medication-1"
+                  >
+                    Magnesium sulfate 500 mg/ml 
+                  </span>
+                  <span
+                    aria-label="medication-details-test-medication-1-aria-label"
+                    class="itemDetails"
+                    data-testid="medication-details-test-medication-1-test-id"
+                    id="medication-details-test-medication-1"
+                  >
+                    (Injection)
+                  </span>
+                  <span
+                    aria-label="medication-dose-form-test-medication-1-aria-label"
+                    class="doseForm"
+                    data-testid="medication-dose-form-test-medication-1-test-id"
+                    id="medication-dose-form-test-medication-1"
+                  >
+                    Injection
+                  </span>
+                </div>
+                <div
+                  class="itemActions cds--sm:col-span-2 cds--md:col-span-4 cds--lg:col-span-8 cds--css-grid-column"
+                />
+                <div
+                  class="footerRow cds--sm:col-span-4 cds--md:col-span-8 cds--lg:col-span-16 cds--css-grid-column"
                 >
-                  (Injection)
-                </span>
-                <span
-                  aria-label="medication-dose-form-test-medication-1-aria-label"
-                  class="doseForm"
-                  data-testid="medication-dose-form-test-medication-1-test-id"
-                  id="medication-dose-form-test-medication-1"
-                >
-                  Injection
-                </span>
-              </div>
-              <div
-                class="itemActions cds--sm:col-span-2 cds--md:col-span-4 cds--lg:col-span-8 cds--css-grid-column"
-              />
-              <div
-                class="footerRow cds--sm:col-span-4 cds--md:col-span-8 cds--lg:col-span-16 cds--css-grid-column"
-              >
-                <span
-                  aria-label="medication-total-quantity-test-medication-1-aria-label"
-                  data-testid="medication-total-quantity-test-medication-1-test-id"
-                  id="medication-total-quantity-test-medication-1"
-                >
-                  Total quantity
-                   :
-                   
-                  10
-                   
-                  mg
-                </span>
+                  <span
+                    aria-label="medication-total-quantity-test-medication-1-aria-label"
+                    data-testid="medication-total-quantity-test-medication-1-test-id"
+                    id="medication-total-quantity-test-medication-1"
+                  >
+                    Total quantity
+                     :
+                     
+                    10
+                     
+                    mg
+                  </span>
+                </div>
               </div>
             </div>
-          </div>
-          <div
-            class="_close_i0b21_16 cds--sm:col-span-1 cds--md:col-span-1 cds--lg:col-span-1 cds--xlg:col-span-1 cds--css-grid-column"
-          >
-            <span
-              class="cds--popover-container cds--popover--caret cds--popover--high-contrast cds--popover--top cds--tooltip cds--icon-tooltip"
+            <div
+              class="_close_i0b21_16 cds--sm:col-span-1 cds--md:col-span-1 cds--lg:col-span-1 cds--xlg:col-span-1 cds--css-grid-column"
             >
-              <div
-                class="cds--tooltip-trigger__wrapper"
-              >
-                <button
-                  aria-label="Close Selected Item"
-                  aria-labelledby="tooltip-_r_2a_"
-                  class="cds--btn cds--btn--lg cds--layout--size-lg cds--btn--primary cds--btn--icon-only"
-                  data-testid="selected-item-close-button"
-                  id="close-selected-item"
-                  type="button"
-                >
-                  <svg
-                    aria-hidden="true"
-                    fill="currentColor"
-                    focusable="false"
-                    height="16"
-                    preserveAspectRatio="xMidYMid meet"
-                    viewBox="0 0 32 32"
-                    width="16"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path
-                      d="M17.4141 16L24 9.4141 22.5859 8 16 14.5859 9.4143 8 8 9.4141 14.5859 16 8 22.5859 9.4143 24 16 17.4141 22.5859 24 24 22.5859 17.4141 16z"
-                    />
-                  </svg>
-                </button>
-              </div>
               <span
-                aria-hidden="true"
-                class="cds--popover"
-                id="tooltip-_r_2a_"
-                role="tooltip"
+                class="cds--popover-container cds--popover--caret cds--popover--high-contrast cds--popover--top cds--tooltip cds--icon-tooltip"
               >
-                <span
-                  class="cds--popover-content cds--tooltip-content"
+                <div
+                  class="cds--tooltip-trigger__wrapper"
                 >
-                  Close
-                </span>
+                  <button
+                    aria-label="Close Selected Item"
+                    aria-labelledby="tooltip-_r_2a_"
+                    class="cds--btn cds--btn--lg cds--layout--size-lg cds--btn--primary cds--btn--icon-only"
+                    data-testid="selected-item-close-button"
+                    id="close-selected-item"
+                    type="button"
+                  >
+                    <svg
+                      aria-hidden="true"
+                      fill="currentColor"
+                      focusable="false"
+                      height="16"
+                      preserveAspectRatio="xMidYMid meet"
+                      viewBox="0 0 32 32"
+                      width="16"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        d="M17.4141 16L24 9.4141 22.5859 8 16 14.5859 9.4143 8 8 9.4141 14.5859 16 8 22.5859 9.4143 24 16 17.4141 22.5859 24 24 22.5859 17.4141 16z"
+                      />
+                    </svg>
+                  </button>
+                </div>
                 <span
-                  class="cds--popover-caret"
-                />
+                  aria-hidden="true"
+                  class="cds--popover"
+                  id="tooltip-_r_2a_"
+                  role="tooltip"
+                >
+                  <span
+                    class="cds--popover-content cds--tooltip-content"
+                  >
+                    Close
+                  </span>
+                  <span
+                    class="cds--popover-caret"
+                  />
+                </span>
               </span>
-            </span>
+            </div>
           </div>
         </div>
       </div>
@@ -466,100 +468,102 @@ exports[`MedicationRequestForm Snapshots matches snapshot for vaccinations form 
       <div
         class="cds--sm:col-span-4 cds--md:col-span-8 cds--lg:col-span-16 cds--xlg:col-span-16 cds--css-grid-column"
       >
-        <div
-          class="_grid_i0b21_1 selectedItem cds--subgrid cds--subgrid--narrow"
-          data-testid="selected-item"
-        >
+        <div>
           <div
-            class="_children_i0b21_9 cds--sm:col-span-3 cds--md:col-span-7 cds--lg:col-span-15 cds--xlg:col-span-15 cds--css-grid-column"
+            class="_grid_i0b21_1 selectedItem cds--subgrid cds--subgrid--narrow"
+            data-testid="selected-item"
           >
             <div
-              aria-label="vaccination-selected-item-test-vaccination-1-aria-label"
-              class="cds--subgrid cds--subgrid--wide"
-              data-testid="vaccination-selected-item-test-vaccination-1-test-id"
-              id="vaccination-selected-item-test-vaccination-1"
+              class="_children_i0b21_9 cds--sm:col-span-3 cds--md:col-span-7 cds--lg:col-span-15 cds--xlg:col-span-15 cds--css-grid-column"
             >
               <div
-                class="itemTitle cds--sm:col-span-2 cds--md:col-span-4 cds--lg:col-span-8 cds--css-grid-column"
+                aria-label="vaccination-selected-item-test-vaccination-1-aria-label"
+                class="cds--subgrid cds--subgrid--wide"
+                data-testid="vaccination-selected-item-test-vaccination-1-test-id"
+                id="vaccination-selected-item-test-vaccination-1"
               >
-                <span
-                  aria-label="vaccination-name-test-vaccination-1-aria-label"
-                  data-testid="vaccination-name-test-vaccination-1-test-id"
-                  id="vaccination-name-test-vaccination-1"
+                <div
+                  class="itemTitle cds--sm:col-span-2 cds--md:col-span-4 cds--lg:col-span-8 cds--css-grid-column"
                 >
-                  COVID-19 Vaccine
-                </span>
-              </div>
-              <div
-                class="itemActions cds--sm:col-span-2 cds--md:col-span-4 cds--lg:col-span-8 cds--css-grid-column"
-              />
-              <div
-                class="footerRow cds--sm:col-span-4 cds--md:col-span-8 cds--lg:col-span-16 cds--css-grid-column"
-              >
-                <span
-                  aria-label="vaccination-total-quantity-test-vaccination-1-aria-label"
-                  data-testid="vaccination-total-quantity-test-vaccination-1-test-id"
-                  id="vaccination-total-quantity-test-vaccination-1"
+                  <span
+                    aria-label="vaccination-name-test-vaccination-1-aria-label"
+                    data-testid="vaccination-name-test-vaccination-1-test-id"
+                    id="vaccination-name-test-vaccination-1"
+                  >
+                    COVID-19 Vaccine
+                  </span>
+                </div>
+                <div
+                  class="itemActions cds--sm:col-span-2 cds--md:col-span-4 cds--lg:col-span-8 cds--css-grid-column"
+                />
+                <div
+                  class="footerRow cds--sm:col-span-4 cds--md:col-span-8 cds--lg:col-span-16 cds--css-grid-column"
                 >
-                  Total Quantity
-                   :
-                   
-                  1
-                   
-                  ml
-                </span>
+                  <span
+                    aria-label="vaccination-total-quantity-test-vaccination-1-aria-label"
+                    data-testid="vaccination-total-quantity-test-vaccination-1-test-id"
+                    id="vaccination-total-quantity-test-vaccination-1"
+                  >
+                    Total Quantity
+                     :
+                     
+                    1
+                     
+                    ml
+                  </span>
+                </div>
               </div>
             </div>
-          </div>
-          <div
-            class="_close_i0b21_16 cds--sm:col-span-1 cds--md:col-span-1 cds--lg:col-span-1 cds--xlg:col-span-1 cds--css-grid-column"
-          >
-            <span
-              class="cds--popover-container cds--popover--caret cds--popover--high-contrast cds--popover--top cds--tooltip cds--icon-tooltip"
+            <div
+              class="_close_i0b21_16 cds--sm:col-span-1 cds--md:col-span-1 cds--lg:col-span-1 cds--xlg:col-span-1 cds--css-grid-column"
             >
-              <div
-                class="cds--tooltip-trigger__wrapper"
-              >
-                <button
-                  aria-label="Close Selected Item"
-                  aria-labelledby="tooltip-_r_2k_"
-                  class="cds--btn cds--btn--lg cds--layout--size-lg cds--btn--primary cds--btn--icon-only"
-                  data-testid="selected-item-close-button"
-                  id="close-selected-item"
-                  type="button"
-                >
-                  <svg
-                    aria-hidden="true"
-                    fill="currentColor"
-                    focusable="false"
-                    height="16"
-                    preserveAspectRatio="xMidYMid meet"
-                    viewBox="0 0 32 32"
-                    width="16"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path
-                      d="M17.4141 16L24 9.4141 22.5859 8 16 14.5859 9.4143 8 8 9.4141 14.5859 16 8 22.5859 9.4143 24 16 17.4141 22.5859 24 24 22.5859 17.4141 16z"
-                    />
-                  </svg>
-                </button>
-              </div>
               <span
-                aria-hidden="true"
-                class="cds--popover"
-                id="tooltip-_r_2k_"
-                role="tooltip"
+                class="cds--popover-container cds--popover--caret cds--popover--high-contrast cds--popover--top cds--tooltip cds--icon-tooltip"
               >
-                <span
-                  class="cds--popover-content cds--tooltip-content"
+                <div
+                  class="cds--tooltip-trigger__wrapper"
                 >
-                  Close
-                </span>
+                  <button
+                    aria-label="Close Selected Item"
+                    aria-labelledby="tooltip-_r_2k_"
+                    class="cds--btn cds--btn--lg cds--layout--size-lg cds--btn--primary cds--btn--icon-only"
+                    data-testid="selected-item-close-button"
+                    id="close-selected-item"
+                    type="button"
+                  >
+                    <svg
+                      aria-hidden="true"
+                      fill="currentColor"
+                      focusable="false"
+                      height="16"
+                      preserveAspectRatio="xMidYMid meet"
+                      viewBox="0 0 32 32"
+                      width="16"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        d="M17.4141 16L24 9.4141 22.5859 8 16 14.5859 9.4143 8 8 9.4141 14.5859 16 8 22.5859 9.4143 24 16 17.4141 22.5859 24 24 22.5859 17.4141 16z"
+                      />
+                    </svg>
+                  </button>
+                </div>
                 <span
-                  class="cds--popover-caret"
-                />
+                  aria-hidden="true"
+                  class="cds--popover"
+                  id="tooltip-_r_2k_"
+                  role="tooltip"
+                >
+                  <span
+                    class="cds--popover-content cds--tooltip-content"
+                  >
+                    Close
+                  </span>
+                  <span
+                    class="cds--popover-caret"
+                  />
+                </span>
               </span>
-            </span>
+            </div>
           </div>
         </div>
       </div>

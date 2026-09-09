@@ -7,6 +7,7 @@ jest.mock('@bahmni/widgets', () => ({
   ...jest.requireActual('@bahmni/widgets'),
   useNotification: jest.fn(() => ({ addNotification: jest.fn() })),
   useUserPrivilege: jest.fn(() => ({ userPrivileges: [] })),
+  UserGlobalAction: () => null,
 }));
 
 jest.mock('@tanstack/react-query', () => ({

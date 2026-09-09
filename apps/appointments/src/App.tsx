@@ -1,9 +1,12 @@
+import { CommandPaletteProvider } from '@bahmni/command-palette-app';
 import { Content, Loading, initFontAwesome } from '@bahmni/design-system';
 import { initAppI18n } from '@bahmni/services';
 import {
   NotificationProvider,
   NotificationServiceComponent,
   UserPrivilegeProvider,
+  ActivePractitionerProvider,
+  UserActionProvider,
 } from '@bahmni/widgets';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
@@ -43,13 +46,19 @@ export function App() {
       <QueryClientProvider client={queryClient}>
         <NotificationProvider>
           <UserPrivilegeProvider>
-            <NotificationServiceComponent />
-            <AppointmentsConfigProvider>
-              <Suspense fallback={<Loading />}>
-                <Routes>{renderRoutes(routes)}</Routes>
-              </Suspense>
-              <ReactQueryDevtools initialIsOpen={false} />
-            </AppointmentsConfigProvider>
+            <ActivePractitionerProvider>
+              <UserActionProvider>
+                <NotificationServiceComponent />
+                <AppointmentsConfigProvider>
+                  <CommandPaletteProvider>
+                    <Suspense fallback={<Loading />}>
+                      <Routes>{renderRoutes(routes)}</Routes>
+                    </Suspense>
+                    <ReactQueryDevtools initialIsOpen={false} />
+                  </CommandPaletteProvider>
+                </AppointmentsConfigProvider>
+              </UserActionProvider>
+            </ActivePractitionerProvider>
           </UserPrivilegeProvider>
         </NotificationProvider>
       </QueryClientProvider>

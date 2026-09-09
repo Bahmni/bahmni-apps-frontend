@@ -155,7 +155,7 @@ interface Workflow extends BaseResource {
   resourceVersion: string;
 }
 
-interface Program extends BaseResource {
+export interface Program extends BaseResource {
   name: string;
   description?: string;
   retired: boolean;
@@ -190,4 +190,8 @@ export interface ProgramEnrollment extends BaseResource {
 export interface PatientProgramsResponse {
   results: ProgramEnrollment[];
   totalCount?: number;
+}
+
+export interface ProgramsResponse {
+  results: Program[];
 }

@@ -37,7 +37,6 @@ const INITIAL_STATE: EncounterSessionState = {
 
 const EDIT_ELIGIBLE_REASONS: MatchReasonCode[] = [
   'MATCHED',
-  'SESSION_EXPIRED',
   'LOCATION_MISMATCH',
   'PROVIDER_MISMATCH',
 ];

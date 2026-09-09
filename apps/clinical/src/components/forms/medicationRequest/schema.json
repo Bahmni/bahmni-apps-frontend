@@ -23,6 +23,44 @@
           }
         }
       }
+    },
+    "stopReasons": {
+      "type": "array",
+      "description": "Reasons for stopping a medication",
+      "items": {
+        "type": "string"
+      }
+    },
+    "stopMedicationFields": {
+      "type": "object",
+      "description": "Visibility and mandatory configuration for stop medication form fields",
+      "additionalProperties": false,
+      "properties": {
+        "stopDate": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "isVisible": { "type": "boolean" },
+            "isMandatory": { "type": "boolean" }
+          }
+        },
+        "stopReason": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "isVisible": { "type": "boolean" },
+            "isMandatory": { "type": "boolean" }
+          }
+        },
+        "note": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "isVisible": { "type": "boolean" },
+            "isMandatory": { "type": "boolean" }
+          }
+        }
+      }
     }
   }
 }

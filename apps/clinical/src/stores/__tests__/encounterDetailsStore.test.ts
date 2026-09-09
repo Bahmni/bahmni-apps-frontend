@@ -402,6 +402,18 @@ describe('encounterDetailsStore', () => {
 
       expect(result.current.consultationDate).toEqual(newDate);
     });
+
+    it('should mark isConsultationDateReady true once a date is set', () => {
+      const { result } = renderHook(() => useEncounterDetailsStore());
+
+      expect(result.current.isConsultationDateReady).toBe(false);
+
+      act(() => {
+        result.current.setConsultationDate(new Date('2024-01-15'));
+      });
+
+      expect(result.current.isConsultationDateReady).toBe(true);
+    });
   });
 
   describe('setEncounterDetailsFormReady', () => {
@@ -492,6 +504,7 @@ describe('encounterDetailsStore', () => {
       expect(result.current.selectedEncounterType).not.toBeNull();
       expect(result.current.selectedVisitType).not.toBeNull();
       expect(result.current.encounterParticipants).toHaveLength(1);
+      expect(result.current.isConsultationDateReady).toBe(true);
       expect(result.current.isEncounterDetailsFormReady).toBe(true);
       expect(result.current.activeVisit).not.toBeNull();
       expect(result.current.activeVisitError).not.toBeNull();
@@ -508,6 +521,7 @@ describe('encounterDetailsStore', () => {
       expect(result.current.selectedVisitType).toBeNull();
       expect(result.current.encounterParticipants).toEqual([]);
       expect(result.current.consultationDate).toBeInstanceOf(Date);
+      expect(result.current.isConsultationDateReady).toBe(false);
       expect(result.current.isEncounterDetailsFormReady).toBe(false);
       expect(result.current.activeVisit).toBeNull();
       expect(result.current.activeVisitError).toBeNull();

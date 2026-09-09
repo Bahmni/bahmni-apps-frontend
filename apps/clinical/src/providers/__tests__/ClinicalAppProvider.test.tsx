@@ -1,6 +1,9 @@
 import * as services from '@bahmni/services';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, screen, waitFor } from '@testing-library/react';
+import React, { useContext } from 'react';
+import { ClinicalAppContext } from '../../contexts/ClinicalAppContext';
+import { usePatientVisit } from '../../hooks/usePatientVisit';
 import { ClinicalAppProvider } from '../ClinicalAppProvider';
 
 // Mock the services
@@ -19,6 +22,8 @@ jest.mock('@bahmni/services', () => ({
   }),
 }));
 
+jest.mock('../../hooks/usePatientVisit');
+
 const mockGetEncountersAndVisitsForEOC =
   services.getEncountersAndVisitsForEOC as jest.MockedFunction<
     typeof services.getEncountersAndVisitsForEOC
@@ -28,6 +33,19 @@ const mockUseSubscribeConsultationSaved =
   services.useSubscribeConsultationSaved as jest.MockedFunction<
     typeof services.useSubscribeConsultationSaved
   >;
+
+const mockUsePatientVisit = usePatientVisit as jest.MockedFunction<
+  typeof usePatientVisit
+>;
+
+const ContextDump: React.FC = () => {
+  const context = useContext(ClinicalAppContext);
+  return (
+    <div data-testid="context-dump">
+      {JSON.stringify(context?.episodeOfCare ?? [])}
+    </div>
+  );
+};
 
 describe('ClinicalAppProvider', () => {
   let queryClient: QueryClient;
@@ -40,6 +58,13 @@ describe('ClinicalAppProvider', () => {
       },
     });
     mockUseSubscribeConsultationSaved.mockImplementation(() => {});
+    mockUsePatientVisit.mockReturnValue({
+      activeVisit: { id: 'active-visit-1' } as any,
+      lastVisit: null,
+      loading: false,
+      error: null,
+      refetch: jest.fn(),
+    });
   });
 
   afterEach(() => {
@@ -55,7 +80,10 @@ describe('ClinicalAppProvider', () => {
 
       render(
         <QueryClientProvider client={queryClient}>
-          <ClinicalAppProvider episodeUuids={['episode-1']}>
+          <ClinicalAppProvider
+            episodeUuids={['episode-1']}
+            patientId="patient-1"
+          >
             <div data-testid="test-child">Test Child</div>
           </ClinicalAppProvider>
         </QueryClientProvider>,
@@ -76,7 +104,10 @@ describe('ClinicalAppProvider', () => {
 
       render(
         <QueryClientProvider client={queryClient}>
-          <ClinicalAppProvider episodeUuids={['episode-1']}>
+          <ClinicalAppProvider
+            episodeUuids={['episode-1']}
+            patientId="patient-1"
+          >
             <div data-testid="test-child">Test Child</div>
           </ClinicalAppProvider>
         </QueryClientProvider>,
@@ -92,7 +123,10 @@ describe('ClinicalAppProvider', () => {
 
       render(
         <QueryClientProvider client={queryClient}>
-          <ClinicalAppProvider episodeUuids={['episode-1']}>
+          <ClinicalAppProvider
+            episodeUuids={['episode-1']}
+            patientId="patient-1"
+          >
             <div data-testid="test-child">Test Child</div>
           </ClinicalAppProvider>
         </QueryClientProvider>,
@@ -108,7 +142,7 @@ describe('ClinicalAppProvider', () => {
     it('should render children without loading when episodeUuids is empty', () => {
       render(
         <QueryClientProvider client={queryClient}>
-          <ClinicalAppProvider episodeUuids={[]}>
+          <ClinicalAppProvider episodeUuids={[]} patientId="patient-1">
             <div data-testid="test-child">Test Child</div>
           </ClinicalAppProvider>
         </QueryClientProvider>,
@@ -130,7 +164,10 @@ describe('ClinicalAppProvider', () => {
 
       render(
         <QueryClientProvider client={queryClient}>
-          <ClinicalAppProvider episodeUuids={['episode-1']}>
+          <ClinicalAppProvider
+            episodeUuids={['episode-1']}
+            patientId="patient-1"
+          >
             <div data-testid="test-child">Test Child</div>
           </ClinicalAppProvider>
         </QueryClientProvider>,
@@ -162,7 +199,10 @@ describe('ClinicalAppProvider', () => {
 
       render(
         <QueryClientProvider client={queryClient}>
-          <ClinicalAppProvider episodeUuids={['episode-1']}>
+          <ClinicalAppProvider
+            episodeUuids={['episode-1']}
+            patientId="patient-1"
+          >
             <div data-testid="test-child">Test Child</div>
           </ClinicalAppProvider>
         </QueryClientProvider>,
@@ -170,6 +210,98 @@ describe('ClinicalAppProvider', () => {
 
       await waitFor(() => {
         expect(deps.length).toBeGreaterThan(0);
+      });
+    });
+  });
+
+  describe('Multiple active episodes', () => {
+    it('keeps each episode of care scoped to its own encounters/visits, never merged', async () => {
+      mockGetEncountersAndVisitsForEOC.mockImplementation((eocUuids) =>
+        Promise.resolve(
+          eocUuids[0] === 'episode-1'
+            ? { encounterUuids: ['encounter-1'], visitUuids: ['visit-1'] }
+            : { encounterUuids: ['encounter-2'], visitUuids: ['visit-2'] },
+        ),
+      );
+
+      render(
+        <QueryClientProvider client={queryClient}>
+          <ClinicalAppProvider
+            episodeUuids={['episode-1', 'episode-2']}
+            patientId="patient-1"
+          >
+            <ContextDump />
+          </ClinicalAppProvider>
+        </QueryClientProvider>,
+      );
+
+      const contextDump = await screen.findByTestId('context-dump');
+
+      await waitFor(() => {
+        expect(mockGetEncountersAndVisitsForEOC).toHaveBeenCalledTimes(2);
+      });
+
+      expect(mockGetEncountersAndVisitsForEOC).toHaveBeenCalledWith([
+        'episode-1',
+      ]);
+      expect(mockGetEncountersAndVisitsForEOC).toHaveBeenCalledWith([
+        'episode-2',
+      ]);
+
+      await waitFor(() => {
+        expect(contextDump.textContent).not.toBe('[]');
+      });
+
+      const dump = JSON.parse(contextDump.textContent ?? '[]');
+      expect(dump).toEqual([
+        {
+          uuid: 'episode-1',
+          encounterUuids: ['encounter-1'],
+          visitUuids: ['visit-1'],
+        },
+        {
+          uuid: 'episode-2',
+          encounterUuids: ['encounter-2'],
+          visitUuids: ['visit-2'],
+        },
+      ]);
+    });
+
+    it('invalidates each episode uuid query key independently on consultation save', async () => {
+      mockGetEncountersAndVisitsForEOC.mockResolvedValue({
+        encounterUuids: ['encounter-1'],
+        visitUuids: ['visit-1'],
+      });
+
+      let savedCallback: (() => void) | undefined;
+      mockUseSubscribeConsultationSaved.mockImplementation((callback) => {
+        savedCallback = callback;
+      });
+
+      const invalidateSpy = jest.spyOn(queryClient, 'invalidateQueries');
+
+      render(
+        <QueryClientProvider client={queryClient}>
+          <ClinicalAppProvider
+            episodeUuids={['episode-1', 'episode-2']}
+            patientId="patient-1"
+          >
+            <div data-testid="test-child">Test Child</div>
+          </ClinicalAppProvider>
+        </QueryClientProvider>,
+      );
+
+      await waitFor(() => {
+        expect(screen.getByTestId('test-child')).toBeInTheDocument();
+      });
+
+      savedCallback?.();
+
+      expect(invalidateSpy).toHaveBeenCalledWith({
+        queryKey: ['encounters-for-eoc', 'episode-1'],
+      });
+      expect(invalidateSpy).toHaveBeenCalledWith({
+        queryKey: ['encounters-for-eoc', 'episode-2'],
       });
     });
   });

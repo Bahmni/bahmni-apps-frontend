@@ -1,4 +1,5 @@
 import * as services from '@bahmni/services';
+import { FHIR_OBSERVATION_FORM_NAMESPACE_PATH_URL } from '@bahmni/services';
 import { Bundle, Observation } from 'fhir/r4';
 import {
   mockBundleWithCorrectValues,
@@ -29,7 +30,11 @@ import {
   mockObservationWithNoUnits,
   mockObservationWithoutObservationValue,
 } from '../__mocks__/observationTestData';
-import { ExtractedObservation, EncounterDetails } from '../models';
+import {
+  ExtractedObservation,
+  EncounterDetails,
+  ExtractedObservationsResult,
+} from '../models';
 import {
   extractObservationsFromBundle,
   groupObservationsByEncounter,
@@ -37,6 +42,9 @@ import {
   formatEncounterTitle,
   formatObservationValue,
   transformObservationToRowCell,
+  extractFormFieldPath,
+  extractFormName,
+  filterObservationsByLatestEncounter,
 } from '../utils';
 
 jest.mock('@bahmni/services', () => ({
@@ -563,6 +571,87 @@ describe('observationUtils', () => {
       expect(formatObservationValue(observation)).toBe('');
     });
 
+    it('should format boolean true value as Yes', () => {
+      const observation: ExtractedObservation = {
+        id: 'obs-bool-true',
+        display: 'Is Smoker',
+        observationValue: {
+          value: true,
+          type: 'boolean',
+        },
+      };
+
+      expect(formatObservationValue(observation)).toBe('Yes');
+    });
+
+    it('should format boolean false value as No', () => {
+      const observation: ExtractedObservation = {
+        id: 'obs-bool-false',
+        display: 'Is Smoker',
+        observationValue: {
+          value: false,
+          type: 'boolean',
+        },
+      };
+
+      expect(formatObservationValue(observation)).toBe('No');
+    });
+
+    it('should format boolean true value using t function', () => {
+      const mockT = (key: string) => key;
+      const observation: ExtractedObservation = {
+        id: 'obs-bool-true-t',
+        display: 'Is Smoker',
+        observationValue: {
+          value: true,
+          type: 'boolean',
+        },
+      };
+
+      expect(formatObservationValue(observation, mockT)).toBe('YES');
+    });
+
+    it('should format boolean false value using t function', () => {
+      const mockT = (key: string) => key;
+      const observation: ExtractedObservation = {
+        id: 'obs-bool-false-t',
+        display: 'Is Smoker',
+        observationValue: {
+          value: false,
+          type: 'boolean',
+        },
+      };
+
+      expect(formatObservationValue(observation, mockT)).toBe('NO');
+    });
+
+    it('should format concatenated boolean string from multi-select grouping', () => {
+      // After groupMultiSelectObservations, true + ', ' + false becomes "true, false"
+      const observation: ExtractedObservation = {
+        id: 'obs-bool-multi',
+        display: 'Low birth-weight baby',
+        observationValue: {
+          value: 'true, false' as unknown as boolean,
+          type: 'boolean',
+        },
+      };
+
+      expect(formatObservationValue(observation)).toBe('Yes, No');
+    });
+
+    it('should format concatenated false-only boolean string from multi-select grouping', () => {
+      const observation: ExtractedObservation = {
+        id: 'obs-bool-multi-false',
+        display: 'Low birth-weight baby',
+        observationValue: {
+          value: 'false, false' as unknown as boolean,
+          type: 'boolean',
+        },
+      };
+
+      expect(formatObservationValue(observation)).toBe('No, No');
+    });
+
     it('should format dateTime value using formatDateTime', () => {
       const mockFormatDateTime = services.formatDateTime as jest.MockedFunction<
         typeof services.formatDateTime
@@ -585,7 +674,63 @@ describe('observationUtils', () => {
       expect(mockFormatDateTime).toHaveBeenCalledWith(
         '2024-06-15T10:30:00+00:00',
         mockT,
+        true,
       );
+
+      mockFormatDateTime.mockClear();
+    });
+
+    it('should not include time for a date-only value defaulted to midnight', () => {
+      const mockFormatDateTime = services.formatDateTime as jest.MockedFunction<
+        typeof services.formatDateTime
+      >;
+      mockFormatDateTime.mockReturnValue({
+        formattedResult: '15/06/2024',
+      });
+
+      const mockT = (key: string) => key;
+      const observation: ExtractedObservation = {
+        id: 'obs-5',
+        display: 'Date of Onset',
+        observationValue: {
+          value: '2024-06-15T00:00:00+00:00',
+          type: 'dateTime',
+        },
+      };
+
+      expect(formatObservationValue(observation, mockT)).toBe('15/06/2024');
+      expect(mockFormatDateTime).toHaveBeenCalledWith(
+        '2024-06-15T00:00:00+00:00',
+        mockT,
+        false,
+      );
+
+      mockFormatDateTime.mockClear();
+    });
+
+    it('formats each date separately when add-more grouping has merged multiple dateTime values', () => {
+      const mockFormatDateTime = services.formatDateTime as jest.MockedFunction<
+        typeof services.formatDateTime
+      >;
+      mockFormatDateTime.mockImplementation((value) => ({
+        formattedResult:
+          value === '2024-05-14T00:00:00+00:00' ? '14/05/2024' : '12/05/2024',
+      }));
+
+      const mockT = (key: string) => key;
+      const observation: ExtractedObservation = {
+        id: 'obs-6',
+        display: 'Last HbA1c Date',
+        observationValue: {
+          value: '2024-05-14T00:00:00+00:00, 2024-05-12T00:00:00+00:00',
+          type: 'dateTime',
+        },
+      };
+
+      expect(formatObservationValue(observation, mockT)).toBe(
+        '14/05/2024, 12/05/2024',
+      );
+      expect(mockFormatDateTime).toHaveBeenCalledTimes(2);
 
       mockFormatDateTime.mockClear();
     });
@@ -610,12 +755,10 @@ describe('observationUtils', () => {
       };
 
       const result = transformObservationToRowCell(observation, 0);
-      expect(result).toEqual({
-        index: 0,
-        header: 'Temperature',
-        value: '98.6 °F',
-        provider: 'Dr. Smith',
-      });
+      expect(result.index).toBe(0);
+      expect(result.value).toBe('98.6 °F');
+      expect(result.provider).toBe('Dr. Smith');
+      expect(result.header).toEqual({ display: 'Temperature' });
     });
 
     it('should transform observation without provider', () => {
@@ -629,12 +772,10 @@ describe('observationUtils', () => {
       };
 
       const result = transformObservationToRowCell(observation, 1);
-      expect(result).toEqual({
-        index: 1,
-        header: 'Fever',
-        value: 'High',
-        provider: undefined,
-      });
+      expect(result.index).toBe(1);
+      expect(result.value).toBe('High');
+      expect(result.provider).toBeUndefined();
+      expect(result.header).toEqual({ display: 'Fever' });
     });
 
     it('should format header with both ranges having units', () => {
@@ -642,7 +783,10 @@ describe('observationUtils', () => {
         mockObservationWithBothRangesHavingUnits,
         0,
       );
-      expect(result.header).toBe('Blood Glucose (70 mg/dL - 100 mg/dL)');
+      expect(result.header).toEqual({
+        display: 'Blood Glucose',
+        referenceRange: '(70 mg/dL - 100 mg/dL)',
+      });
     });
 
     it('should format header with both ranges using obs unit', () => {
@@ -650,7 +794,10 @@ describe('observationUtils', () => {
         mockObservationWithBothRangesUsingObsUnit,
         0,
       );
-      expect(result.header).toBe('Hemoglobin (12 g/dL - 16 g/dL)');
+      expect(result.header).toEqual({
+        display: 'Hemoglobin',
+        referenceRange: '(12 g/dL - 16 g/dL)',
+      });
     });
 
     it('should format header with mixed units', () => {
@@ -658,7 +805,10 @@ describe('observationUtils', () => {
         mockObservationWithMixedUnits,
         0,
       );
-      expect(result.header).toBe('Temperature (97 °F - 99 °F)');
+      expect(result.header).toEqual({
+        display: 'Temperature',
+        referenceRange: '(97 °F - 99 °F)',
+      });
     });
 
     it('should format header with only low range having unit', () => {
@@ -666,7 +816,10 @@ describe('observationUtils', () => {
         mockObservationWithOnlyLowWithUnit,
         0,
       );
-      expect(result.header).toBe('Systolic BP (>90 mmHg)');
+      expect(result.header).toEqual({
+        display: 'Systolic BP',
+        referenceRange: '(>90 mmHg)',
+      });
     });
 
     it('should format header with only low range using obs unit', () => {
@@ -674,7 +827,10 @@ describe('observationUtils', () => {
         mockObservationWithOnlyLowUsingObsUnit,
         0,
       );
-      expect(result.header).toBe('Heart Rate (>60 bpm)');
+      expect(result.header).toEqual({
+        display: 'Heart Rate',
+        referenceRange: '(>60 bpm)',
+      });
     });
 
     it('should format header with only high range having unit', () => {
@@ -682,7 +838,10 @@ describe('observationUtils', () => {
         mockObservationWithOnlyHighWithUnit,
         0,
       );
-      expect(result.header).toBe('Cholesterol (<200 mg/dL)');
+      expect(result.header).toEqual({
+        display: 'Cholesterol',
+        referenceRange: '(<200 mg/dL)',
+      });
     });
 
     it('should format header with only high range using obs unit', () => {
@@ -690,7 +849,10 @@ describe('observationUtils', () => {
         mockObservationWithOnlyHighUsingObsUnit,
         0,
       );
-      expect(result.header).toBe('Blood Sugar (<140 mg/dL)');
+      expect(result.header).toEqual({
+        display: 'Blood Sugar',
+        referenceRange: '(<140 mg/dL)',
+      });
     });
 
     it('should format header with no reference range', () => {
@@ -698,7 +860,7 @@ describe('observationUtils', () => {
         mockObservationWithNoReferenceRange,
         0,
       );
-      expect(result.header).toBe('Notes');
+      expect(result.header).toEqual({ display: 'Notes' });
     });
 
     it('should format header with empty reference range', () => {
@@ -706,7 +868,7 @@ describe('observationUtils', () => {
         mockObservationWithEmptyReferenceRange,
         0,
       );
-      expect(result.header).toBe('Comments');
+      expect(result.header).toEqual({ display: 'Comments' });
     });
 
     it('should format header with no units', () => {
@@ -714,7 +876,10 @@ describe('observationUtils', () => {
         mockObservationWithNoUnits,
         0,
       );
-      expect(result.header).toBe('Count (2 - 10)');
+      expect(result.header).toEqual({
+        display: 'Count',
+        referenceRange: '(2 - 10)',
+      });
     });
 
     it('should format header when observationValue is undefined', () => {
@@ -722,8 +887,225 @@ describe('observationUtils', () => {
         mockObservationWithoutObservationValue,
         0,
       );
-      expect(result.header).toBe('Notes Only');
+      expect(result.header).toEqual({ display: 'Notes Only' });
       expect(result.value).toBe('');
+    });
+  });
+
+  describe('extractFormFieldPath', () => {
+    const makeObservation = (
+      id: string,
+      display: string,
+      overrides: Partial<Observation> = {},
+    ): Observation => ({
+      resourceType: 'Observation',
+      id,
+      status: 'final',
+      code: { text: display },
+      ...overrides,
+    });
+
+    it('should extract formFieldPath from observation extension', () => {
+      const obs = makeObservation('obs-1', 'Temperature', {
+        extension: [
+          {
+            url: FHIR_OBSERVATION_FORM_NAMESPACE_PATH_URL,
+            valueString: 'Vitals.1/1-0',
+          },
+        ],
+      });
+
+      expect(extractFormFieldPath(obs)).toBe('Vitals.1/1-0');
+    });
+
+    it('should return undefined when extension is not present', () => {
+      const obs = makeObservation('obs-1', 'Temperature');
+      expect(extractFormFieldPath(obs)).toBeUndefined();
+    });
+
+    it('should return undefined when extension array is empty', () => {
+      const obs = makeObservation('obs-1', 'Temperature', {
+        extension: [],
+      });
+      expect(extractFormFieldPath(obs)).toBeUndefined();
+    });
+
+    it('should return undefined when extension has different URL', () => {
+      const obs = makeObservation('obs-1', 'Temperature', {
+        extension: [
+          {
+            url: 'http://some.other/extension',
+            valueString: 'some-value',
+          },
+        ],
+      });
+      expect(extractFormFieldPath(obs)).toBeUndefined();
+    });
+
+    it('should return undefined for undefined observation', () => {
+      expect(extractFormFieldPath(undefined)).toBeUndefined();
+    });
+  });
+
+  describe('extractFormName', () => {
+    const makeObservation = (
+      id: string,
+      display: string,
+      overrides: Partial<Observation> = {},
+    ): Observation => ({
+      resourceType: 'Observation',
+      id,
+      status: 'final',
+      code: { text: display },
+      ...overrides,
+    });
+
+    const withPath = (valueString: string): Observation =>
+      makeObservation('obs-1', 'x', {
+        extension: [
+          { url: FHIR_OBSERVATION_FORM_NAMESPACE_PATH_URL, valueString },
+        ],
+      });
+
+    it.each([
+      ['Vitals.1/1-0', 'Vitals'],
+      ['Bahmni^Vitals.1/10-0', 'Vitals'],
+      ['COVID.19.1/1-0', 'COVID.19'],
+      ['Bahmni^COVID.19.2/1-0', 'COVID.19'],
+    ])('parses "%s" to form name "%s"', (valueString, expected) => {
+      expect(extractFormName(withPath(valueString))).toBe(expected);
+    });
+
+    it('returns undefined for undefined observation', () => {
+      expect(extractFormName(undefined)).toBeUndefined();
+    });
+
+    it('returns undefined when the form-namespace-path extension is absent', () => {
+      expect(extractFormName(makeObservation('obs-1', 'x'))).toBeUndefined();
+    });
+  });
+
+  describe('filterObservationsByLatestEncounter', () => {
+    const createObservation = (
+      id: string,
+      encounterId: string,
+      effectiveDateTime: string,
+    ): ExtractedObservation => ({
+      id,
+      display: 'Test Observation',
+      observationValue: { value: '120', type: 'Quantity' },
+      effectiveDateTime,
+      encounter: {
+        id: encounterId,
+        type: 'Consultation',
+        date: effectiveDateTime,
+        provider: 'Dr. Test',
+      },
+      conceptId: 'concept-123',
+    });
+
+    it('should filter observations to latest encounter based on effectiveDateTime', () => {
+      const result: ExtractedObservationsResult = {
+        observations: [
+          createObservation('obs-1', 'enc-1', '2026-08-20T10:00:00Z'),
+          createObservation('obs-2', 'enc-2', '2026-08-25T10:00:00Z'),
+          createObservation('obs-3', 'enc-1', '2026-08-20T11:00:00Z'),
+        ],
+        groupedObservations: [],
+      };
+
+      const filtered = filterObservationsByLatestEncounter(result);
+
+      expect(filtered.observations).toHaveLength(1);
+      expect(filtered.observations[0].id).toBe('obs-2');
+      expect(filtered.observations[0].encounter?.id).toBe('enc-2');
+    });
+
+    it('should handle grouped observations', () => {
+      const result: ExtractedObservationsResult = {
+        observations: [
+          createObservation('obs-1', 'enc-1', '2026-08-20T10:00:00Z'),
+        ],
+        groupedObservations: [
+          createObservation('obs-2', 'enc-2', '2026-08-25T10:00:00Z'),
+          createObservation('obs-3', 'enc-1', '2026-08-20T11:00:00Z'),
+        ],
+      };
+
+      const filtered = filterObservationsByLatestEncounter(result);
+
+      expect(filtered.observations).toHaveLength(0);
+      expect(filtered.groupedObservations).toHaveLength(1);
+      expect(filtered.groupedObservations[0].id).toBe('obs-2');
+    });
+
+    it('should return empty result for empty input', () => {
+      const result: ExtractedObservationsResult = {
+        observations: [],
+        groupedObservations: [],
+      };
+
+      const filtered = filterObservationsByLatestEncounter(result);
+
+      expect(filtered.observations).toHaveLength(0);
+      expect(filtered.groupedObservations).toHaveLength(0);
+    });
+
+    it('should use issued date when effectiveDateTime is not present', () => {
+      const obs1: ExtractedObservation = {
+        id: 'obs-1',
+        display: 'Test',
+        observationValue: { value: '120', type: 'Quantity' },
+        issued: '2026-08-20T10:00:00Z',
+        encounter: {
+          id: 'enc-1',
+          type: 'Consultation',
+          date: '2026-08-20T10:00:00Z',
+        },
+        conceptId: 'concept-123',
+      };
+
+      const obs2: ExtractedObservation = {
+        id: 'obs-2',
+        display: 'Test',
+        observationValue: { value: '130', type: 'Quantity' },
+        issued: '2026-08-25T10:00:00Z',
+        encounter: {
+          id: 'enc-2',
+          type: 'Consultation',
+          date: '2026-08-25T10:00:00Z',
+        },
+        conceptId: 'concept-123',
+      };
+
+      const result: ExtractedObservationsResult = {
+        observations: [obs1, obs2],
+        groupedObservations: [],
+      };
+
+      const filtered = filterObservationsByLatestEncounter(result);
+
+      expect(filtered.observations).toHaveLength(1);
+      expect(filtered.observations[0].id).toBe('obs-2');
+    });
+
+    it('should keep all observations from the same latest encounter', () => {
+      const result: ExtractedObservationsResult = {
+        observations: [
+          createObservation('obs-1', 'enc-1', '2026-08-20T10:00:00Z'),
+          createObservation('obs-2', 'enc-2', '2026-08-25T10:00:00Z'),
+          createObservation('obs-3', 'enc-2', '2026-08-25T11:00:00Z'),
+        ],
+        groupedObservations: [],
+      };
+
+      const filtered = filterObservationsByLatestEncounter(result);
+
+      expect(filtered.observations).toHaveLength(2);
+      expect(filtered.observations[0].id).toBe('obs-2');
+      expect(filtered.observations[1].id).toBe('obs-3');
+      expect(filtered.observations[0].encounter?.id).toBe('enc-2');
+      expect(filtered.observations[1].encounter?.id).toBe('enc-2');
     });
   });
 });

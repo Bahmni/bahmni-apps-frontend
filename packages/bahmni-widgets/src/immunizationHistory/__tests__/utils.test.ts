@@ -228,17 +228,21 @@ describe('createNotAdministeredImmunizationViewModel', () => {
       code: 'Hepatitis B',
       reason: 'Patient refused',
       date: '2026-03-19',
+      recordedOn: '2026-03-19T10:30:00.000Z',
       recordedBy: 'John Davis',
+      notes: 'Discussed alternative options with patient.',
     });
   });
 
-  it('returns null for missing reason and recordedBy', () => {
+  it('returns null for missing reason, recordedOn, recordedBy and notes', () => {
     const result = createNotAdministeredImmunizationViewModel(
       mockMinimalNotAdministeredImmunization,
     );
 
     expect(result.reason).toBeNull();
+    expect(result.recordedOn).toBeNull();
     expect(result.recordedBy).toBeNull();
+    expect(result.notes).toBeNull();
   });
 
   it.each([
@@ -253,6 +257,18 @@ describe('createNotAdministeredImmunizationViewModel', () => {
       field: 'date',
       override: { occurrenceDateTime: undefined },
       key: 'date',
+      expected: null,
+    },
+    {
+      field: 'recordedOn',
+      override: { recorded: undefined },
+      key: 'recordedOn',
+      expected: null,
+    },
+    {
+      field: 'notes',
+      override: { note: undefined },
+      key: 'notes',
       expected: null,
     },
   ])(

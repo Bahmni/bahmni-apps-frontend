@@ -3,6 +3,7 @@ import {
   useTranslation,
   VitalFlowSheetConceptDetail,
   formatDateTime,
+  DEFAULT_TIME_FORMAT,
   useSubscribeConsultationSaved,
   ConsultationSavedEventPayload,
 } from '@bahmni/services';
@@ -136,7 +137,12 @@ const VitalFlowSheet: React.FC<VitalFlowSheetProps> = ({
       },
       ...obsTimeKeys.map((obsTime, index) => {
         const dateResult = formatDateTime(obsTime, t);
-        const timeResult = formatDateTime(obsTime, t, true);
+        const timeResult = formatDateTime(
+          obsTime,
+          t,
+          false,
+          DEFAULT_TIME_FORMAT,
+        );
         return {
           key: `obs_${index}`,
           header: `${dateResult.formattedResult}\n${timeResult.formattedResult}`,

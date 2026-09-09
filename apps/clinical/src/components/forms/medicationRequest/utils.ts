@@ -1,4 +1,5 @@
 import {
+  createBundleEntry,
   resolveComboBoxItems,
   MedicationFrequency as Frequency,
 } from '@bahmni/services';
@@ -15,7 +16,6 @@ import {
 } from '../../../models/medicationConfig';
 import { InputControlAttributes } from '../../../providers/clinicalConfig/models';
 import { getMedicationDisplay } from '../../../services/medicationService';
-import { createBundleEntry } from '../../../utils/fhir/consultationBundleCreator';
 import { createMedicationRequestResource } from '../../../utils/fhir/medicationRequestResourceCreator';
 import {
   createEncounterReferenceFromString,
@@ -342,7 +342,7 @@ export function createMedicationRequestEntries({
 }: CreateMedicationRequestBundleEntriesParams): BundleEntry[] {
   const medicationRequestEntries: BundleEntry[] = [];
   for (const medication of selectedMedicationRequests) {
-    const medicationResourceURL = `urn:uuid:${crypto.randomUUID()}`;
+    const medicationResourceURL = `urn:uuid:${medication.id}`;
     const medicationResource = createMedicationRequestResource(
       medication,
       encounterSubject,
@@ -350,6 +350,13 @@ export function createMedicationRequestEntries({
       createPractitionerReference(practitionerUUID),
       statDurationInMilliseconds,
     );
+
+    if (medication.fhirResourceId) {
+      medicationResource.priorPrescription = {
+        reference: `MedicationRequest/${medication.fhirResourceId}`,
+      };
+      delete medicationResource.id;
+    }
 
     const medicationRequestEntry = createBundleEntry(
       medicationResourceURL,

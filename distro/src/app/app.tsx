@@ -1,10 +1,10 @@
 import { Loading } from '@bahmni/design-system';
 import { AppContextProvider } from '@bahmni/widgets';
 import { lazy, Suspense } from 'react';
-import { Route, Routes } from 'react-router-dom';
+import { Navigate, Route, Routes } from 'react-router-dom';
 
-const IndexPage = lazy(() =>
-  import('./IndexPage').then((module) => ({ default: module.IndexPage })),
+const HomeApp = lazy(() =>
+  import('@bahmni/home-app').then((module) => ({ default: module.HomeApp })),
 );
 const NotFoundPage = lazy(() =>
   import('./NotFoundPage').then((module) => ({ default: module.NotFoundPage })),
@@ -24,16 +24,26 @@ const AppointmentsApp = lazy(() =>
     default: module.AppointmentsApp,
   })),
 );
+const PatientDocumentsApp = lazy(() =>
+  import('@bahmni/patient-documents-app').then((module) => ({
+    default: module.PatientDocumentsApp,
+  })),
+);
 
 export function App() {
   return (
     <AppContextProvider>
       <Suspense fallback={<Loading />}>
         <Routes>
-          <Route index element={<IndexPage />} />
+          <Route index element={<Navigate to="/home/" replace />} />
+          <Route path="/home/*" element={<HomeApp />} />
           <Route path="/clinical/*" element={<ClinicalApp />} />
           <Route path="/registration/*" element={<RegistrationApp />} />
           <Route path="/appointments/*" element={<AppointmentsApp />} />
+          <Route
+            path="/patient-documents/*"
+            element={<PatientDocumentsApp />}
+          />
           <Route path="*" element={<NotFoundPage />} />
         </Routes>
       </Suspense>

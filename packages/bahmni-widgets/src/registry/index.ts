@@ -98,3 +98,5 @@ export const getAllWidgetConfigs = (): WidgetConfig[] => {
 export const resetWidgetRegistry = (): void => {
   WidgetRegistryManager.getInstance().reset();
 };
+
+export type { WidgetConfig, WidgetProps } from './model';

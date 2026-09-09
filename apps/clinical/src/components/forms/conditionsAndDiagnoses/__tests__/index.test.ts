@@ -1,7 +1,7 @@
 import {
   createConditionsBundleEntries,
   createDiagnosisBundleEntries,
-} from '../../../../services/consultationBundleService';
+} from '../../../../services/encounterBundleService';
 import { useConditionsAndDiagnosesStore } from '../../../../stores';
 import { clearRegistry, getRegisteredInputControls } from '../../registry';
 import ConditionsAndDiagnoses from '../ConditionsAndDiagnoses';
@@ -15,7 +15,7 @@ jest.mock('../../../../stores', () => ({
   },
 }));
 
-jest.mock('../../../../services/consultationBundleService', () => ({
+jest.mock('../../../../services/encounterBundleService', () => ({
   createDiagnosisBundleEntries: jest.fn().mockReturnValue([{ id: 'diag' }]),
   createConditionsBundleEntries: jest.fn().mockReturnValue([{ id: 'cond' }]),
 }));

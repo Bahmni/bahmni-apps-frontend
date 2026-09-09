@@ -1,3 +1,4 @@
+import { CommandPaletteProvider } from '@bahmni/command-palette-app';
 import { Content, initFontAwesome, Loading } from '@bahmni/design-system';
 import { initAppI18n, initializeAuditListener } from '@bahmni/services';
 import {
@@ -5,15 +6,16 @@ import {
   NotificationServiceComponent,
   UserPrivilegeProvider,
   ActivePractitionerProvider,
+  UserActionProvider,
 } from '@bahmni/widgets';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
-import React, { useEffect, useState } from 'react';
-import { Route, Routes } from 'react-router-dom';
+import React, { Suspense, useEffect, useState } from 'react';
+import { Routes } from 'react-router-dom';
 import { queryClientConfig } from './config/tanstackQuery';
 import { CLINICAL_NAMESPACE } from './constants/app';
-import ConsultationPage from './pages/ConsultationPage';
 import { ClinicalConfigProvider } from './providers/clinicalConfig';
+import { routes, renderRoutes } from './routes';
 
 const queryClient = new QueryClient(queryClientConfig);
 
@@ -49,10 +51,14 @@ const ClinicalApp: React.FC = () => {
           <ClinicalConfigProvider>
             <UserPrivilegeProvider>
               <ActivePractitionerProvider>
-                <Routes>
-                  <Route path=":patientUuid" element={<ConsultationPage />} />
-                </Routes>
-                <ReactQueryDevtools initialIsOpen={false} />
+                <UserActionProvider>
+                  <CommandPaletteProvider>
+                    <Suspense fallback={<Loading />}>
+                      <Routes>{renderRoutes(routes)}</Routes>
+                    </Suspense>
+                    <ReactQueryDevtools initialIsOpen={false} />
+                  </CommandPaletteProvider>
+                </UserActionProvider>
               </ActivePractitionerProvider>
             </UserPrivilegeProvider>
           </ClinicalConfigProvider>

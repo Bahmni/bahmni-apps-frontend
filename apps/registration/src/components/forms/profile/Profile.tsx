@@ -27,6 +27,7 @@ import {
   useGenderData,
   useIdentifierData,
 } from '../../../utils/identifierGenderUtils';
+import { RequiredAsterisk } from '../../common/RequiredAsterisk';
 import { PatientPhotoUpload } from '../../patientPhotoUpload/PatientPhotoUpload';
 import { createDateAgeHandlers } from './dateAgeUtils';
 
@@ -84,7 +85,7 @@ export const Profile = ({
     return (
       <>
         {t(labelKey)}
-        {isRequired && <span className={styles.requiredAsterisk}>*</span>}
+        {isRequired && <RequiredAsterisk />}
       </>
     );
   };
@@ -106,6 +107,15 @@ export const Profile = ({
   });
   const [dobEstimated, setDobEstimated] = useState(false);
   const [patientImage, setPatientImage] = useState<string>('');
+
+  useEffect(() => {
+    if (initialPhoto && !patientImage) {
+      const base64 = initialPhoto.includes(',')
+        ? initialPhoto.split(',')[1]
+        : initialPhoto;
+      setPatientImage(base64);
+    }
+  }, [initialPhoto]);
 
   useEffect(() => {
     if (initialData) {

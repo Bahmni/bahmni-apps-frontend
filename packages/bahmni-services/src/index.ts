@@ -1,4 +1,5 @@
 export { get, post, put, patch, del } from './api';
+export { LOGIN_PATH } from './api/constants';
 export {
   initAppI18n,
   useTranslation,
@@ -9,6 +10,7 @@ export { useCamera } from './cameraService';
 export {
   getPatientById,
   getFormattedPatientById,
+  mapGenderFromFhir,
   searchPatientByNameOrId,
   searchPatientByCustomAttribute,
   getIdentifierTypes,
@@ -22,7 +24,7 @@ export {
   getGenders,
   getAddressHierarchyEntries,
   getOrderedAddressHierarchyLevels,
-  getPatientPhotoDataUrl,
+  fetchPatientPhotoFromUrl,
   getPatientProfile,
   getPersonAttributeTypes,
   getRelationshipTypes,
@@ -48,6 +50,7 @@ export {
   type PersonAttributeConcept,
   type PatientSearchField,
   type AppointmentSearchField,
+  type AppointmentSearchResult,
   type ExpectedFieldConfig,
   type SearchActionConfig,
   AttributeFormat,
@@ -67,6 +70,8 @@ export {
   checkIfActiveVisitExists,
   createVisitForPatient,
   getActiveVisitByPatient,
+  getVisitLocationUUID,
+  createVisitWithFhirR4,
   type VisitType,
   type VisitTypes,
   type VisitData,
@@ -75,6 +80,7 @@ export {
 export {
   searchAppointmentsByAttribute,
   updateAppointmentStatus,
+  checkInAppointment,
   getAppointmentById,
   getUpcomingAppointments,
   getPastAppointments,
@@ -89,14 +95,23 @@ export {
   getAppointmentSpecialities,
   APPOINTMENT_STATUSES,
   APPOINTMENT_IDENTIFIER_SYSTEM,
+  getAppointmentUnavailabilities,
+  createAppointmentUnavailability,
   type AppointmentService,
   type AppointmentServiceAttributeType,
   type AppointmentLocation,
   type AppointmentSpeciality,
   type CreateAppointmentServiceRequest,
   type CreateServiceWeeklyAvailability,
+  type AppointmentUnavailability,
+  type CreateUnavailabilityRequest,
 } from './appointmentService';
-export { getFormattedError } from './errorHandling';
+export {
+  getFormattedError,
+  getErrorKind,
+  PATIENT_NOT_FOUND_ERROR_KEY,
+} from './errorHandling';
+export type { ErrorKind } from './errorHandling';
 export {
   capitalize,
   generateId,
@@ -115,10 +130,14 @@ export {
   camelToScreamingSnakeCase,
   convertToSentenceCase,
   resolveComboBoxItems,
+  formatGender,
+  formatCountry,
 } from './utils';
 export {
   type FormatDateResult,
+  type AgeDetails,
   calculateAge,
+  computeAgeDetails,
   formatDateTime,
   formatDateDistance,
   calculateOnsetDate,
@@ -126,6 +145,7 @@ export {
   DEFAULT_DATE_FORMAT,
   DEFAULT_DATE_FORMAT_STORAGE_KEY,
   DEFAULT_TIME_FORMAT,
+  ISO_DATE_FORMAT,
   getTodayDate,
   getFormattedAge,
   DURATION_UNIT_TO_DAYS,
@@ -133,6 +153,8 @@ export {
   doDateRangesOverlap,
   timeToMinutes,
   addMinutesToTime,
+  convertTo24HourFormat,
+  getTimeInMinutes,
 } from './date';
 export { type Notification, notificationService } from './notification';
 export {
@@ -140,6 +162,9 @@ export {
   AllergyStatus,
   AllergySeverity,
   type AllergenType,
+  type AllergyInputEntry,
+  type AllergenConcept,
+  mapAllergyToInputEntry,
   getAllergies,
   getFormattedAllergies,
   fetchAndFormatAllergenConcepts,
@@ -181,6 +206,7 @@ export {
   type MedicationOrdersMetadataResponse,
   type Frequency as MedicationFrequency,
   type OrderAttribute,
+  MEDICATIONS_INPUT_CONTROL_KEY,
 } from './medicationRequestService';
 export { getMedicationByUuid } from './medicationService';
 export {
@@ -217,32 +243,39 @@ export {
   getUserLoginLocation,
   getAvailableLocations,
   getDefaultDateFormat,
-  logout,
   saveUserLocation,
   updateSessionLocation,
   type User,
   type UserLocation,
   BAHMNI_USER_LOCATION_COOKIE,
 } from './userService';
+export { logout } from './authService';
 export { USER_PINNED_PREFERENCE_URL } from './observationFormsService/constants';
 export {
   getPatientObservationsBundle,
   getPatientObservationsWithEncounterBundle,
+  getPatientLatestObservations,
   getPatientObservations,
+  getObservationsBundleByEncounterUuid,
+  groupObservationsByEncounter,
+  type EncounterGroup,
 } from './observationService';
 export {
   getCurrentProvider,
+  fetchAllProviders,
+  getProviderLoginLocations,
   type Provider,
   type Person,
 } from './providerService';
 export {
   findActiveEncounterInSession,
+  searchEncounters,
+  getEncounterSessionDuration,
   resolveEncounterMatchDecision,
   canResumeOwnInSessionEncounter,
   type EncounterMatchDecision,
   type MatchReasonCode,
   MATCH_REASON_MESSAGES,
-  CONSULTATION_ENCOUNTER_TYPE_UUID,
   useEncounterSessionStore,
   setEncounterSessionDecision,
   setEncounterSessionLoading,
@@ -254,31 +287,52 @@ export {
 
 export {
   getActiveVisit,
+  getActiveVisitAtLoginLocation,
+  getEncounterByUuid,
+  getVisits,
+  getPatientEncounters,
+  getEncounterTypeByName,
+  type EncounterTypeRef,
   shouldEnableEncounterFilter,
-  getObservationsBundleByEncounterUuid,
+  createFhirEncounter,
+  updateFhirEncounter,
+  buildEncounterResource,
+  type BuildEncounterResourceParams,
   type FormsEncounter,
 } from './encounterService';
 
 export {
   getEncountersAndVisitsForEOC,
   type EpisodeOfCareDataType,
+  getEpisodeOfCare,
 } from './episodeOfCareService';
+
+export {
+  createEncounterBundle,
+  createBundleEntry,
+  ENCOUNTER_BUNDLE_URL,
+  type EncounterBundle,
+} from './encounterBundle';
 
 export {
   dispatchAuditEvent,
   AUDIT_LOG_EVENT_DETAILS,
+  MODULE_LABELS,
   initializeAuditListener,
   type AuditEventType,
   logAuditEvent,
 } from './auditLogService';
 
 export {
+  BIRTH_TIME_EXT_URL,
   HL7_CONDITION_CLINICAL_STATUS_CODE_SYSTEM,
   HL7_CONDITION_VERIFICATION_STATUS_CODE_SYSTEM,
   HL7_CONDITION_CATEGORY_CODE_SYSTEM,
   HL7_CONDITION_CATEGORY_CONDITION_CODE,
   HL7_CONDITION_CATEGORY_DIAGNOSIS_CODE,
   FHIR_ENCOUNTER_TYPE_CODE_SYSTEM,
+  FHIR_ENCOUNTER_CLASS_CODE_SYSTEM,
+  FHIR_ENCOUNTER_TAG_SYSTEM,
   FHIR_OBSERVATION_INTERPRETATION_SYSTEM,
   FHIR_OBSERVATION_FORM_NAMESPACE_PATH_URL,
   FHIR_OBSERVATION_VALUE_ATTACHMENT_URL,
@@ -290,12 +344,14 @@ export {
   DATETIME_REGEX_PATTERN,
   INTERPRETATION_TO_CODE,
   FHIR_LAB_ORDER_CONCEPT_TYPE_EXTENSION_URL,
+  FHIR_EXT_MEDICATION_REQUEST_NOTE_CATEGORY,
 } from './constants/fhir';
 
 export {
   OPENMRS_REST_V1,
   OPENMRS_FHIR_R4,
   BAHMNI_HOME_PATH,
+  BAHMNI_APP_BASE_PATH,
 } from './constants/app';
 export {
   getCurrentUserPrivileges,
@@ -306,17 +362,18 @@ export {
 export {
   fetchObservationForms,
   fetchFormMetadata,
+  fetchFormUuidByObservationDate,
   transformFormDataToObservations,
   transformObservationsToFormData,
   transformContainerObservationsToForm2Observations,
   convertImmutableToPlainObject,
   extractNotesFromFormData,
+  formatDateForControl,
   getPatientFormData,
   type ObservationForm,
   type FormApiResponse,
   type ApiNameTranslation,
   type FormPrivilege,
-  type ApiFormPrivilege,
   type FormMetadata,
   type FormData,
   type FormControlData,
@@ -336,10 +393,12 @@ export { getServiceRequests } from './orderRequestService';
 export {
   getPatientPrograms,
   getPatientProgramsPage,
+  getAllPrograms,
   getProgramByUUID,
   getCurrentStateName,
   extractAttributes,
   updateProgramState,
+  type Program,
   type ProgramPage,
   type ProgramEnrollment,
   type PatientProgramsResponse,
@@ -350,19 +409,37 @@ export {
   useSubscribeConsultationSaved,
   CONSULTATION_SAVED_EVENT,
   type ConsultationSavedEventPayload,
-} from './events/consultationEvents';
+  dispatchCDSSCheck,
+  dispatchCDSSResults,
+  useCDSSCheckListener,
+  useCDSSResultsListener,
+  CDSS_CHECK_EVENT,
+  CDSS_RESULTS_EVENT,
+  type CDSSCheckEventDetail,
+  type CDSSResultsEventDetail,
+} from './events';
 
 export {
   getDocumentReferences,
   getFormattedDocumentReferences,
   getDocumentReferencePage,
+  getDocumentTypes,
+  getDocumentUploadMaxSizeMb,
+  createDocumentReference,
+  saveDocument,
   type DocumentReferencePage,
   type DocumentViewModel,
+  type DocumentType,
+  type DocumentSaveTarget,
+  type CreateEncounterInVisit,
+  type CreateDocumentReferenceInput,
+  type SaveDocumentInput,
   type DocumentReference,
 } from './documentReferenceService';
 
 export {
   getLocationByTag,
+  getFHIRLocationsByTag,
   type Location,
   type ChildLocation,
 } from './locationService';
@@ -388,3 +465,30 @@ export {
   getAvailableStocks,
   type AvailableStockResponse,
 } from './inventoryService';
+
+export {
+  invokeCDSSRule,
+  filterCdsCardsForItems,
+  type CDSSRule,
+  type CDSCard,
+  type CDSSEventDetail,
+  type CDSSServerConfig,
+} from './cdssService';
+export { getTemplates, renderAsHtml } from './templateService';
+export type {
+  TemplateInfo,
+  TemplateTrigger,
+  RenderRequest,
+  TemplateListResponse,
+} from './templateService';
+export { getTasks } from './taskService';
+export {
+  groupExtensionsByPoint,
+  filterExtensionsByPrivileges,
+  type Extension,
+  type SearchExtensionParam,
+  type SearchExtension,
+  type ActionExtensionParam,
+  type ActionExtension,
+  type ExtensionButtonKind,
+} from './extensions';

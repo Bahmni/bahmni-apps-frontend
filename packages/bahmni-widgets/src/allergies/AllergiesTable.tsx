@@ -10,12 +10,14 @@ import {
   AllergySeverity,
   AllergyStatus,
   FormattedAllergy,
+  getAllergies,
   getFormattedAllergies,
+  mapAllergyToInputEntry,
   useTranslation,
   useSubscribeConsultationSaved,
 } from '@bahmni/services';
 import { useQuery } from '@tanstack/react-query';
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { usePatientUUID } from '../hooks/usePatientUUID';
 import { useNotification } from '../notification';
 import { WidgetActionConfig, WidgetProps } from '../registry/model';
@@ -27,9 +29,10 @@ import {
   sortAllergiesBySeverity,
 } from './utils';
 
+const CONSULTATION_START_EVENT = 'startConsultation';
+
 const EDIT_ALLERGY_LABEL = 'EDIT_ALLERGY';
 
-// Helper function to get severity CSS class
 const getSeverityClassName = (severity: string): string | undefined => {
   switch (severity?.toLowerCase()) {
     case AllergySeverity.mild:
@@ -47,14 +50,12 @@ const getSeverityClassName = (severity: string): string | undefined => {
 const AllergiesTable: React.FC<WidgetProps> = ({
   config,
   disableActions = false,
-  onRowEditClick,
 }) => {
   const [allergies, setAllergies] = useState<FormattedAllergy[]>([]);
   const patientUUID = usePatientUUID();
   const { t } = useTranslation();
   const { addNotification } = useNotification();
 
-  // Actions column: config-driven, same pattern as ConditionsTable
   const configActions = useMemo(
     () => (config?.actions as WidgetActionConfig[] | undefined) ?? [],
     [config?.actions],
@@ -69,18 +70,42 @@ const AllergiesTable: React.FC<WidgetProps> = ({
   const showActions =
     configActions.length > 0 &&
     (actionPrivileges.length === 0 || hasActionPrivilege);
+
+  const handleRowEdit = useCallback(
+    async (resourceId: string) => {
+      try {
+        if (!patientUUID) return;
+        const rawAllergies = await getAllergies(patientUUID);
+        const target = rawAllergies.find((fhir) => fhir.id === resourceId);
+        if (!target) return;
+        globalThis.dispatchEvent(
+          new CustomEvent(CONSULTATION_START_EVENT, {
+            detail: {
+              editOnly: 'allergies',
+              editTitle: 'EDIT_ALLERGIES_TITLE',
+              preloadedAllergies: [mapAllergyToInputEntry(target)],
+            },
+          }),
+        );
+      } catch {
+        addNotification({
+          title: t('ERROR_DEFAULT_TITLE'),
+          message: t('ERROR_LOADING_ALLERGIES'),
+          type: 'error',
+        });
+      }
+    },
+    [patientUUID, addNotification, t],
+  );
+
   const { data, isLoading, isError, error, refetch } = useQuery({
     queryKey: ['allergies', patientUUID!],
     enabled: !!patientUUID,
     queryFn: () => getFormattedAllergies(patientUUID!),
   });
 
-  // Listen to consultation saved events and refetch if allergies were updated
   useSubscribeConsultationSaved(
     (payload) => {
-      // Only refetch if:
-      // 1. Event is for the same patient
-      // 2. Allergies were modified during consultation
       if (
         payload.patientUUID === patientUUID &&
         payload.updatedResources.allergies
@@ -101,7 +126,6 @@ const AllergiesTable: React.FC<WidgetProps> = ({
     if (data) setAllergies(data);
   }, [data, isLoading, isError, error, addNotification, t]);
 
-  // Define table headers
   const headers = useMemo(() => {
     const base = [
       { key: 'display', header: t('ALLERGEN') },
@@ -123,12 +147,11 @@ const AllergiesTable: React.FC<WidgetProps> = ({
     [],
   );
 
-  // Format and sort allergies for display
-  const displayAllergies = useMemo(() => {
-    return sortAllergiesBySeverity(allergies);
-  }, [allergies]);
+  const displayAllergies = useMemo(
+    () => sortAllergiesBySeverity(allergies),
+    [allergies],
+  );
 
-  // Function to render cell content based on the cell ID
   const renderCell = (allergy: FormattedAllergy, cellId: string) => {
     switch (cellId) {
       case 'display':
@@ -185,8 +208,7 @@ const AllergiesTable: React.FC<WidgetProps> = ({
             disabled={disableActions}
             testId={`edit-allergy-${allergy.id}`}
             onClick={() =>
-              !disableActions &&
-              onRowEditClick?.(allergy.resourceId ?? allergy.id)
+              !disableActions && handleRowEdit(allergy.resourceId ?? allergy.id)
             }
           >
             <Edit />
@@ -198,7 +220,7 @@ const AllergiesTable: React.FC<WidgetProps> = ({
   };
 
   return (
-    <div data-testid="allergy-table">
+    <div data-testid="allergy-table" className={styles.allergiesTableWrapper}>
       <SortableDataTable
         headers={headers}
         ariaLabel={t('ALLERGIES_DISPLAY_CONTROL_HEADING')}

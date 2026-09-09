@@ -1,4 +1,4 @@
-import { ProgramEnrollment } from '..';
+import { Program, ProgramEnrollment } from '..';
 
 export const patientUUID = '02f47490-d657-48ee-98e7-4c9133ea168b';
 export const mockEnrollments: ProgramEnrollment[] = [
@@ -730,6 +730,39 @@ export const mockEnrollments: ProgramEnrollment[] = [
       changedBy: null,
       dateChanged: null,
     },
+    links: [],
+    resourceVersion: '1.0',
+  },
+];
+
+export const mockPrograms: Program[] = [
+  {
+    uuid: 'program-1',
+    name: 'HIV Program',
+    display: 'HIV Program',
+    retired: false,
+    concept: {
+      uuid: 'concept-1',
+      display: 'HIV Program Concept',
+      links: [],
+      resourceVersion: '1.0',
+    },
+    allWorkflows: [],
+    links: [],
+    resourceVersion: '1.0',
+  },
+  {
+    uuid: 'program-2',
+    name: 'TB Program',
+    display: 'TB Program',
+    retired: true,
+    concept: {
+      uuid: 'concept-2',
+      display: 'TB Program Concept',
+      links: [],
+      resourceVersion: '1.0',
+    },
+    allWorkflows: [],
     links: [],
     resourceVersion: '1.0',
   },

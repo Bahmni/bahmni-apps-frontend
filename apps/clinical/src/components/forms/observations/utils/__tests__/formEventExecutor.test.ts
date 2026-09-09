@@ -1,5 +1,6 @@
 // Import the mocked module to access the mock function
 import { runEventScript } from '@bahmni/form2-controls';
+import type { PatientData } from '@bahmni/form2-controls';
 import { Form2Observation, FormMetadata } from '@bahmni/services';
 import { executeOnFormSaveEvent } from '../formEventExecutor';
 
@@ -12,7 +13,29 @@ const mockRunEventScript = runEventScript as jest.MockedFunction<
 >;
 
 describe('formEventExecutor', () => {
-  const mockPatientUuid = 'patient-uuid-123';
+  const mockPatient: PatientData = {
+    uuid: 'patient-uuid-123',
+    identifier: 'BAH-001',
+    name: 'John Doe',
+    display: 'John Doe',
+    displayName: 'John Doe',
+    givenName: 'John',
+    familyName: 'Doe',
+    age: 30,
+    ageInDays: 10950,
+    birthdate: '1996-01-01',
+    birthtime: '08:00:00',
+    gender: 'M',
+    activeVisitUuid: 'visit-uuid-456',
+    currentEncounterUuid: 'encounter-uuid-789',
+    getAgeDetails: () => ({
+      year: 30,
+      month: 0,
+      day: 0,
+      ageInDays: 10950,
+      ageText: '30y 0m 0d',
+    }),
+  };
   const mockObservations: Form2Observation[] = [
     {
       concept: { uuid: 'concept-uuid-1', name: 'Weight' },
@@ -71,7 +94,7 @@ describe('formEventExecutor', () => {
       const result = executeOnFormSaveEvent(
         metadata,
         mockObservations,
-        mockPatientUuid,
+        mockPatient,
       );
 
       expect(result).toEqual(mockObservations);
@@ -91,13 +114,13 @@ describe('formEventExecutor', () => {
       const result = executeOnFormSaveEvent(
         metadata,
         mockObservations,
-        mockPatientUuid,
+        mockPatient,
       );
 
       expect(mockRunEventScript).toHaveBeenCalledWith(
         undefined,
         encodedScript,
-        { uuid: mockPatientUuid },
+        mockPatient,
       );
       expect(result).toEqual(modifiedObs);
     });
@@ -113,14 +136,14 @@ describe('formEventExecutor', () => {
       const result = executeOnFormSaveEvent(
         metadata,
         mockObservations,
-        mockPatientUuid,
+        mockPatient,
         mockFormData,
       );
 
       expect(mockRunEventScript).toHaveBeenCalledWith(
         mockFormData,
         encodedScript,
-        { uuid: mockPatientUuid },
+        mockPatient,
       );
       expect(result).toEqual(filteredObs);
     });
@@ -136,14 +159,14 @@ describe('formEventExecutor', () => {
       const result = executeOnFormSaveEvent(
         metadata,
         mockObservations,
-        mockPatientUuid,
+        mockPatient,
       );
 
       // When runEventScript returns undefined, we return formContext.observations
       expect(result).toEqual(mockObservations);
     });
 
-    it('should throw error with form name context when script execution fails', () => {
+    it('should throw the underlying validation message when script execution fails', () => {
       mockRunEventScript.mockImplementation(() => {
         throw new Error('Validation failed');
       });
@@ -153,10 +176,8 @@ describe('formEventExecutor', () => {
       const metadata = createMockMetadata(encodedScript);
 
       expect(() =>
-        executeOnFormSaveEvent(metadata, mockObservations, mockPatientUuid),
-      ).toThrow(
-        'Error in onFormSave event for form "Test Form": Validation failed',
-      );
+        executeOnFormSaveEvent(metadata, mockObservations, mockPatient),
+      ).toThrow('Validation failed');
     });
 
     it('should handle script that throws plain object error', () => {
@@ -169,10 +190,8 @@ describe('formEventExecutor', () => {
       const metadata = createMockMetadata(encodedScript);
 
       expect(() =>
-        executeOnFormSaveEvent(metadata, mockObservations, mockPatientUuid),
-      ).toThrow(
-        'Error in onFormSave event for form "Test Form": Custom validation error',
-      );
+        executeOnFormSaveEvent(metadata, mockObservations, mockPatient),
+      ).toThrow('Custom validation error');
     });
 
     it('should propagate errors from runEventScript', () => {
@@ -185,10 +204,8 @@ describe('formEventExecutor', () => {
       const metadata = createMockMetadata(encodedScript);
 
       expect(() =>
-        executeOnFormSaveEvent(metadata, mockObservations, mockPatientUuid),
-      ).toThrow(
-        'Error in onFormSave event for form "Test Form": Helper failed',
-      );
+        executeOnFormSaveEvent(metadata, mockObservations, mockPatient),
+      ).toThrow('Helper failed');
     });
 
     it('should throw error when script is not a string', () => {
@@ -202,20 +219,16 @@ describe('formEventExecutor', () => {
       } as FormMetadata;
 
       expect(() =>
-        executeOnFormSaveEvent(metadata, mockObservations, mockPatientUuid),
-      ).toThrow(
-        'Error in onFormSave event for form "Test Form": Invalid onFormSave script: not a string or empty',
-      );
+        executeOnFormSaveEvent(metadata, mockObservations, mockPatient),
+      ).toThrow('Invalid onFormSave script: not a string or empty');
     });
 
     it('should throw error when script is empty string', () => {
       const metadata = createMockMetadata('   ');
 
       expect(() =>
-        executeOnFormSaveEvent(metadata, mockObservations, mockPatientUuid),
-      ).toThrow(
-        'Error in onFormSave event for form "Test Form": Invalid onFormSave script: not a string or empty',
-      );
+        executeOnFormSaveEvent(metadata, mockObservations, mockPatient),
+      ).toThrow('Invalid onFormSave script: not a string or empty');
     });
 
     it('should call runEventScript with the provided script', () => {
@@ -227,12 +240,14 @@ describe('formEventExecutor', () => {
       const result = executeOnFormSaveEvent(
         metadata,
         mockObservations,
-        mockPatientUuid,
+        mockPatient,
       );
 
-      expect(mockRunEventScript).toHaveBeenCalledWith(undefined, script, {
-        uuid: mockPatientUuid,
-      });
+      expect(mockRunEventScript).toHaveBeenCalledWith(
+        undefined,
+        script,
+        mockPatient,
+      );
       expect(result).toEqual([]);
     });
 
@@ -246,10 +261,8 @@ describe('formEventExecutor', () => {
       const metadata = createMockMetadata(encodedScript);
 
       expect(() =>
-        executeOnFormSaveEvent(metadata, mockObservations, mockPatientUuid),
-      ).toThrow(
-        'Error in onFormSave event for form "Test Form": Unknown error occurred',
-      );
+        executeOnFormSaveEvent(metadata, mockObservations, mockPatient),
+      ).toThrow('Unknown error occurred');
     });
   });
 });

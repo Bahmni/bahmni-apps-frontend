@@ -64,8 +64,6 @@
   }
 }
 
-.requiredAsterisk {
-  color: #da1e28;
-  margin-left: $spacing-01;
+.compactAsterisk {
   @include type-style("body-compact-01");
 }

@@ -1,10 +1,10 @@
+import { MedicationFrequency as Frequency } from '@bahmni/services';
 import { MedicationRequest, Reference, Dosage, Timing } from 'fhir/r4';
 import { STAT_ORDER_VALIDITY_MS } from '../../constants/medications';
 import {
   DurationUnitOption,
   MedicationInputEntry,
 } from '../../models/medication';
-import { Frequency } from '../../models/medicationConfig';
 import { createCodeableConcept, createCoding } from './codeableConceptCreator';
 import { createMedicationReference } from './referenceCreator';
 
@@ -18,6 +18,7 @@ interface OpenMRSDosingInstruction {
  * @param subjectReference - Reference to the patient
  * @param encounterReference - Reference to the encounter
  * @param requesterReference - Reference to the practitioner requesting the medication
+ * @param statDurationInMilliseconds - Duration in milliseconds for STAT orders
  * @returns FHIR MedicationRequest resource
  */
 export const createMedicationRequestResource = (
@@ -29,6 +30,7 @@ export const createMedicationRequestResource = (
 ): MedicationRequest => {
   const medicationRequest: MedicationRequest = {
     resourceType: 'MedicationRequest',
+    id: medicationEntry.id,
     status: 'active',
     intent: 'order',
     medicationReference: createMedicationReference(

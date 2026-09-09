@@ -2,12 +2,24 @@ import { FormattedPatientData, formatDateTime } from '@bahmni/services';
 import { UseQueryResult, useQuery } from '@tanstack/react-query';
 import { render, screen } from '@testing-library/react';
 import { axe, toHaveNoViolations } from 'jest-axe';
+import { usePatientPhoto } from '../../hooks/usePatientPhoto';
 import PatientDetails from '../PatientDetails';
 
 expect.extend(toHaveNoViolations);
 
 jest.mock('../../hooks/usePatientUUID', () => ({
   usePatientUUID: jest.fn(() => 'test-uuid'),
+}));
+jest.mock('../../hooks/usePatientPhoto', () => ({
+  usePatientPhoto: jest.fn(() => ({
+    patientPhoto: undefined,
+    isLoading: false,
+    error: null,
+  })),
+}));
+const mockAddNotification = jest.fn();
+jest.mock('../../notification', () => ({
+  useNotification: jest.fn(() => ({ addNotification: mockAddNotification })),
 }));
 jest.mock('@tanstack/react-query', () => ({
   ...jest.requireActual('@tanstack/react-query'),
@@ -16,22 +28,18 @@ jest.mock('@tanstack/react-query', () => ({
 jest.mock('@bahmni/services', () => ({
   ...jest.requireActual('@bahmni/services'),
   formatDateTime: jest.fn(),
-  getPatientPhotoDataUrl: jest.fn(),
 }));
 
 const mockedUseQuery = useQuery as jest.MockedFunction<typeof useQuery>;
 const mockedFormatDateTime = formatDateTime as jest.MockedFunction<
   typeof formatDateTime
 >;
+const mockedUsePatientPhoto = usePatientPhoto as jest.MockedFunction<
+  typeof usePatientPhoto
+>;
 
-const mockPatientQuery = (
-  patientResult: Partial<UseQueryResult>,
-  photoData?: string,
-) => {
-  mockedUseQuery.mockImplementation(({ queryKey }: any) => {
-    if (queryKey[0] === 'patient') return patientResult as UseQueryResult;
-    return { data: photoData } as UseQueryResult;
-  });
+const mockPatientQuery = (patientResult: Partial<UseQueryResult>) => {
+  mockedUseQuery.mockImplementation(() => patientResult as UseQueryResult);
 };
 
 const createMockPatient = (
@@ -57,6 +65,11 @@ describe('PatientDetails Component', () => {
       error: undefined,
     }));
     mockPatientQuery({ data: undefined, isLoading: false, error: null });
+    mockedUsePatientPhoto.mockReturnValue({
+      patientPhoto: undefined,
+      isLoading: false,
+      error: null,
+    });
   });
 
   afterEach(() => {
@@ -93,12 +106,18 @@ describe('PatientDetails Component', () => {
       ).not.toBeInTheDocument();
     });
 
-    it('renders photo data url when query resolves', () => {
+    it('renders photo data url when hook resolves', () => {
       const photoDataUrl = 'data:image/jpeg;base64,/9j/photo==';
-      mockPatientQuery(
-        { data: createMockPatient(), isLoading: false, error: null },
-        photoDataUrl,
-      );
+      mockedUsePatientPhoto.mockReturnValue({
+        patientPhoto: photoDataUrl,
+        isLoading: false,
+        error: null,
+      });
+      mockPatientQuery({
+        data: createMockPatient(),
+        isLoading: false,
+        error: null,
+      });
 
       render(<PatientDetails />);
 
@@ -106,6 +125,44 @@ describe('PatientDetails Component', () => {
         'src',
         photoDataUrl,
       );
+    });
+
+    it('shows warning notification when photo fetch fails', () => {
+      mockedUsePatientPhoto.mockReturnValue({
+        patientPhoto: undefined,
+        isLoading: false,
+        error: new Error("User doesn't have Get Patient Photo privilege"),
+      });
+      mockPatientQuery({
+        data: createMockPatient(),
+        isLoading: false,
+        error: null,
+      });
+
+      render(<PatientDetails />);
+
+      expect(mockAddNotification).toHaveBeenCalledWith(
+        expect.objectContaining({
+          type: 'warning',
+          message: "User doesn't have Get Patient Photo privilege",
+        }),
+      );
+    });
+
+    it('does not render photo when hook returns no data', () => {
+      mockPatientQuery({
+        data: createMockPatient({
+          photoUrl: '/openmrs/ws/rest/v2/patientImage?patientUuid=test-uuid',
+        }),
+        isLoading: false,
+        error: null,
+      });
+
+      render(<PatientDetails />);
+
+      expect(
+        screen.queryByTestId('patient-photo-test-id'),
+      ).not.toBeInTheDocument();
     });
   });
 

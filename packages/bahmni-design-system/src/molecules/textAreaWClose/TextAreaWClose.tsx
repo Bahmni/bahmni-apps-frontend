@@ -86,7 +86,6 @@ export const TextAreaWClose: React.FC<TextAreaWCloseProps> = ({
           type="default"
           labelText={labelText}
           placeholder={placeholder ?? labelText}
-          hideLabel
           value={value}
           onChange={onChange}
           disabled={disabled}

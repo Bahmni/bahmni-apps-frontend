@@ -1,0 +1,19 @@
+@use "@carbon/react/scss/type" as *;
+@use "@carbon/react/scss/spacing" as *;
+@use "@carbon/react/scss/theme" as *;
+
+.loading {
+  max-inline-size: 100% !important;
+}
+
+.message {
+  @include type-style('body-compact-01');
+  color: $support-error;
+  font-style: italic;
+  text-align: center;
+  padding: $spacing-10;
+}
+
+.panel {
+  padding: 0;
+}
