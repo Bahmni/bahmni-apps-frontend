@@ -40,7 +40,7 @@ const AvailabilitySection: React.FC = () => {
         header: '',
       },
     ],
-    [],
+    [t],
   );
 
   const renderAvailabilityCell = useCallback(
@@ -161,7 +161,7 @@ const AvailabilitySection: React.FC = () => {
         </IconButton>
       );
     },
-    [],
+    [t, updateAvailabilityRow, toggleDayOfWeek, removeAvailabilityRow],
   );
 
   return (
@@ -183,10 +183,7 @@ const AvailabilitySection: React.FC = () => {
           headers={availabilityHeaders}
           rows={availabilityRows}
           ariaLabel="service-availability-table"
-          sortable={availabilityHeaders.map((h) => ({
-            key: h.key,
-            sortable: false,
-          }))}
+          sortable={[]}
           renderCell={renderAvailabilityCell}
           dataTestId="service-availability-table-test-id"
         />

@@ -4,7 +4,7 @@ exports[`AllServicesPage Snapshot should match snapshot with services data 1`] =
 <div>
   <div
     aria-label="base-layout-aria-label"
-    class="_layout_268i6_85"
+    class="_layout_1avlc_85"
     data-testid="base-layout-test-id"
     id="base-layout"
   >
@@ -55,7 +55,7 @@ exports[`AllServicesPage Snapshot should match snapshot with services data 1`] =
     </header>
     <div
       aria-label="main-display-area-aria-label"
-      class="_main_268i6_103"
+      class="_main_1avlc_103"
       data-testid="main-display-area-test-id"
       id="main-display-area"
     >
@@ -76,7 +76,7 @@ exports[`AllServicesPage Snapshot should match snapshot with services data 1`] =
           >
             <h2
               class="cds--data-table-header__title"
-              id="tc-_r_4o_-title"
+              id="tc-_r_6s_-title"
             >
               Services
             </h2>
@@ -109,7 +109,7 @@ exports[`AllServicesPage Snapshot should match snapshot with services data 1`] =
             >
               <table
                 aria-label="all-services-table"
-                aria-labelledby="tc-_r_4o_-title"
+                aria-labelledby="tc-_r_6s_-title"
                 class="cds--data-table cds--data-table--md cds--data-table--sort cds--data-table--visible-overflow-menu"
               >
                 <thead>
@@ -121,12 +121,12 @@ exports[`AllServicesPage Snapshot should match snapshot with services data 1`] =
                     >
                       <div
                         class="cds--table-sort__description"
-                        id="table-sort-_r_4q_"
+                        id="table-sort-_r_6u_"
                       >
                         Click to sort rows by Service Name header in ascending order
                       </div>
                       <button
-                        aria-describedby="table-sort-_r_4q_"
+                        aria-describedby="table-sort-_r_6u_"
                         class="cds--table-sort"
                         data-testid="table-header-name"
                         type="button"
@@ -182,12 +182,12 @@ exports[`AllServicesPage Snapshot should match snapshot with services data 1`] =
                     >
                       <div
                         class="cds--table-sort__description"
-                        id="table-sort-_r_4r_"
+                        id="table-sort-_r_6v_"
                       >
                         Click to sort rows by ADMIN_ALL_SERVICES_COLUMN_SERVICE_TYPE header in ascending order
                       </div>
                       <button
-                        aria-describedby="table-sort-_r_4r_"
+                        aria-describedby="table-sort-_r_6v_"
                         class="cds--table-sort"
                         data-testid="table-header-serviceType"
                         type="button"
@@ -243,12 +243,12 @@ exports[`AllServicesPage Snapshot should match snapshot with services data 1`] =
                     >
                       <div
                         class="cds--table-sort__description"
-                        id="table-sort-_r_4s_"
+                        id="table-sort-_r_70_"
                       >
                         Click to sort rows by Actions header in ascending order
                       </div>
                       <button
-                        aria-describedby="table-sort-_r_4s_"
+                        aria-describedby="table-sort-_r_70_"
                         class="cds--table-sort"
                         data-testid="table-header-actions"
                         type="button"
@@ -326,7 +326,7 @@ exports[`AllServicesPage Snapshot should match snapshot with services data 1`] =
                         >
                           <button
                             aria-label="delete-service-service-uuid-1-btn-aria-label"
-                            aria-labelledby="tooltip-_r_4u_"
+                            aria-labelledby="tooltip-_r_72_"
                             class="cds--btn cds--btn--ghost cds--btn--disabled cds--btn--icon-only"
                             data-testid="delete-service-service-uuid-1-btn-test-id"
                             disabled=""
@@ -355,7 +355,7 @@ exports[`AllServicesPage Snapshot should match snapshot with services data 1`] =
                         <span
                           aria-hidden="true"
                           class="cds--popover"
-                          id="tooltip-_r_4u_"
+                          id="tooltip-_r_72_"
                           role="tooltip"
                         >
                           <span
@@ -394,7 +394,7 @@ exports[`AllServicesPage Snapshot should match snapshot with services data 1`] =
                         >
                           <button
                             aria-label="delete-service-service-uuid-2-btn-aria-label"
-                            aria-labelledby="tooltip-_r_52_"
+                            aria-labelledby="tooltip-_r_76_"
                             class="cds--btn cds--btn--ghost cds--btn--disabled cds--btn--icon-only"
                             data-testid="delete-service-service-uuid-2-btn-test-id"
                             disabled=""
@@ -423,7 +423,7 @@ exports[`AllServicesPage Snapshot should match snapshot with services data 1`] =
                         <span
                           aria-hidden="true"
                           class="cds--popover"
-                          id="tooltip-_r_52_"
+                          id="tooltip-_r_76_"
                           role="tooltip"
                         >
                           <span
@@ -462,7 +462,7 @@ exports[`AllServicesPage Snapshot should match snapshot with services data 1`] =
                         >
                           <button
                             aria-label="delete-service-service-uuid-3-btn-aria-label"
-                            aria-labelledby="tooltip-_r_56_"
+                            aria-labelledby="tooltip-_r_7a_"
                             class="cds--btn cds--btn--ghost cds--btn--disabled cds--btn--icon-only"
                             data-testid="delete-service-service-uuid-3-btn-test-id"
                             disabled=""
@@ -491,7 +491,7 @@ exports[`AllServicesPage Snapshot should match snapshot with services data 1`] =
                         <span
                           aria-hidden="true"
                           class="cds--popover"
-                          id="tooltip-_r_56_"
+                          id="tooltip-_r_7a_"
                           role="tooltip"
                         >
                           <span

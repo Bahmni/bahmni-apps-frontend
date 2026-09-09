@@ -409,7 +409,11 @@ export const addMinutesToTime = (
   meridiem: 'AM' | 'PM',
   mins: number,
 ): { time: string; meridiem: 'AM' | 'PM' } => {
-  const totalMinutes = (timeToMinutes(time, meridiem) + mins) % (24 * 60);
+  const MINUTES_PER_DAY = 24 * 60;
+  const rawTotal = timeToMinutes(time, meridiem) + mins;
+  // normalise so negative offsets wrap backwards instead of yielding a negative time
+  const totalMinutes =
+    ((rawTotal % MINUTES_PER_DAY) + MINUTES_PER_DAY) % MINUTES_PER_DAY;
   const hours24 = Math.floor(totalMinutes / 60);
   const minutes = totalMinutes % 60;
   const hours12 = hours24 % 12 || 12;

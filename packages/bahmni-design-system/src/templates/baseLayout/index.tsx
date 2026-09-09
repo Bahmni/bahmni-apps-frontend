@@ -35,7 +35,7 @@ const BaseLayout: React.FC<BaseLayoutProps> = ({ header, main, footer }) => {
       >
         {main}
       </div>
-      {footer && (
+      {footer != null && (
         <div
           id="footer-display-area"
           data-testid="footer-display-area-test-id"

@@ -18,7 +18,8 @@ export interface TimePickerInputProps {
 const formatTimeInput = (input: string): string => {
   const digits = input.replaceAll(/\D/g, '').slice(0, 4);
   if (digits.length <= 2) return digits;
-  const hours = Number(digits.slice(0, 2)) > 12 ? '12' : digits.slice(0, 2);
+  const rawHours = Number(digits.slice(0, 2));
+  const hours = rawHours < 1 ? '01' : rawHours > 12 ? '12' : digits.slice(0, 2);
   const minutes = Number(digits.slice(2)) > 59 ? '59' : digits.slice(2);
   return `${hours}:${minutes}`;
 };

@@ -16,7 +16,7 @@
   position: fixed;
   bottom: 0;
   left: 0;
-  width: 100vw;
+  width: 100%;
   padding-top: $spacing-01;
   box-shadow: inset 0px 1px 0px 0px $border-subtle-01;
 }
@@ -27,4 +27,6 @@
   width: 100%;
   height: 100%;
   align-self: center;
+  // reserve room for the fixed footer so it cannot cover the last rows
+  padding-bottom: $spacing-10;
 }

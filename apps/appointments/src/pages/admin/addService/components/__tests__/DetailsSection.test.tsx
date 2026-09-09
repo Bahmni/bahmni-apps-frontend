@@ -173,7 +173,7 @@ describe('DetailsSection', () => {
       setter: () => mockSetLocationUuid,
     },
   ])(
-    'should not call setter when $scenario selection is cleared',
+    'should clear the stored uuid when $scenario selection is cleared',
     async ({ storeOverride, setter }) => {
       jest.mocked(useAddServiceStore).mockReturnValue({
         ...defaultStoreState,
@@ -185,7 +185,7 @@ describe('DetailsSection', () => {
         screen.getByRole('button', { name: 'Clear selected item' }),
       );
 
-      expect(setter()).not.toHaveBeenCalled();
+      expect(setter()).toHaveBeenCalledWith(null);
     },
   );
 
@@ -285,13 +285,13 @@ describe('DetailsSection', () => {
     },
   );
 
-  it('should not call setNameError when name is not a duplicate', () => {
+  it('should clear the name error when name is not a duplicate', () => {
     render(wrapper);
     fireEvent.change(
       screen.getByTestId('add-appointment-details-service-name-test-id'),
       { target: { value: 'Neurology' } },
     );
 
-    expect(mockSetNameError).not.toHaveBeenCalled();
+    expect(mockSetNameError).toHaveBeenCalledWith(null);
   });
 });

@@ -70,7 +70,7 @@ export interface CreateAppointmentServiceRequest {
   description?: string;
   specialityUuid?: string;
   locationUuid?: string;
-  duration?: string;
+  durationMins?: number;
   attributes?: { attributeTypeUuid: string; value: string }[];
   weeklyAvailability?: CreateServiceWeeklyAvailability[];
 }

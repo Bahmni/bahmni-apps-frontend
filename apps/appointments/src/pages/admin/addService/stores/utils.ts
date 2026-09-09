@@ -24,6 +24,29 @@ export const createRow = (allDaysSelected = false): AvailabilityRow => ({
   errors: {},
 });
 
+/**
+ * Recomputes the derived end time from the row's start time, start meridiem and the
+ * service duration. A no-op once the user has typed their own end time.
+ */
+export const applyDerivedEndTime = (
+  row: AvailabilityRow,
+  durationMins: number | null,
+): AvailabilityRow => {
+  if (
+    row.isEndTimeUserSet ||
+    durationMins === null ||
+    !isValidTime(row.startTime)
+  ) {
+    return row;
+  }
+  const { time: endTime, meridiem: endMeridiem } = addMinutesToTime(
+    row.startTime,
+    row.startMeridiem,
+    durationMins,
+  );
+  return { ...row, endTime, endMeridiem };
+};
+
 export const updateRowField = (
   row: AvailabilityRow,
   id: string,
@@ -37,20 +60,10 @@ export const updateRowField = (
   if (field === 'startTime') {
     delete errors.startTime;
     delete errors.overlap;
-    const newStartTime = value as string;
-    if (
-      !row.isEndTimeUserSet &&
-      durationMins !== null &&
-      isValidTime(newStartTime)
-    ) {
-      const { time: endTime, meridiem: endMeridiem } = addMinutesToTime(
-        newStartTime,
-        row.startMeridiem,
-        durationMins,
-      );
-      return { ...row, startTime: newStartTime, endTime, endMeridiem, errors };
-    }
-    return { ...row, startTime: newStartTime, errors };
+    return applyDerivedEndTime(
+      { ...row, startTime: value as string, errors },
+      durationMins,
+    );
   }
 
   if (field === 'endTime') {
@@ -61,10 +74,19 @@ export const updateRowField = (
     return { ...row, endTime: value as string, isEndTimeUserSet, errors };
   }
 
-  if (field === 'startMeridiem' || field === 'endMeridiem') {
+  if (field === 'startMeridiem') {
     delete errors.endTime;
     delete errors.overlap;
-    return { ...row, [field]: value, errors };
+    return applyDerivedEndTime(
+      { ...row, startMeridiem: value as 'AM' | 'PM', errors },
+      durationMins,
+    );
+  }
+
+  if (field === 'endMeridiem') {
+    delete errors.endTime;
+    delete errors.overlap;
+    return { ...row, endMeridiem: value as 'AM' | 'PM', errors };
   }
 
   return { ...row, maxLoad: value as number | null, errors };

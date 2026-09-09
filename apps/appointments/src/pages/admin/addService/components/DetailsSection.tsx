@@ -123,10 +123,11 @@ const DetailsSection: React.FC = () => {
             const isDuplicate = existingServices.some(
               (s) => s.name.toLowerCase() === value.trim().toLowerCase(),
             );
-            if (isDuplicate)
-              setNameError(
-                'ADMIN_ADD_SERVICE_VALIDATION_SERVICE_NAME_DUPLICATE',
-              );
+            setNameError(
+              isDuplicate
+                ? 'ADMIN_ADD_SERVICE_VALIDATION_SERVICE_NAME_DUPLICATE'
+                : null,
+            );
           }}
         />
         <TextInput
@@ -156,7 +157,7 @@ const DetailsSection: React.FC = () => {
                 specialities.find((s) => s.uuid === specialityUuid) ?? null
               }
               onChange={({ selectedItem }) => {
-                if (selectedItem?.uuid) setSpecialityUuid(selectedItem.uuid);
+                setSpecialityUuid(selectedItem?.uuid ?? null);
               }}
             />
           </Column>
@@ -175,7 +176,7 @@ const DetailsSection: React.FC = () => {
                 locations.find((l) => l.uuid === locationUuid) ?? null
               }
               onChange={({ selectedItem }) => {
-                if (selectedItem?.uuid) setLocationUuid(selectedItem.uuid);
+                setLocationUuid(selectedItem?.uuid ?? null);
               }}
             />
           </Column>

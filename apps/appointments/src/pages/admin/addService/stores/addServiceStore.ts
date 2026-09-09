@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { AvailabilityRow, DayOfWeek, UpdateField } from './models';
 import {
+  applyDerivedEndTime,
   createRow,
   findOverlappingRowIds,
   toggleRowDay,
@@ -47,7 +48,13 @@ export const useAddServiceStore = create<AddServiceState>((set, get) => ({
   setName: (name) => set({ name, nameError: null }),
   setNameError: (error) => set({ nameError: error }),
   setDescription: (description) => set({ description }),
-  setDurationMins: (durationMins) => set({ durationMins }),
+  setDurationMins: (durationMins) =>
+    set((state) => ({
+      durationMins,
+      availabilityRows: state.availabilityRows.map((row) =>
+        applyDerivedEndTime(row, durationMins),
+      ),
+    })),
   setSpecialityUuid: (specialityUuid) => set({ specialityUuid }),
   setLocationUuid: (locationUuid) => set({ locationUuid }),
   addAvailabilityRow: () =>
