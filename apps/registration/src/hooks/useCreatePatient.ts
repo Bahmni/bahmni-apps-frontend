@@ -1,5 +1,6 @@
 import {
   createFhirPatient,
+  createRelatedPerson,
   generateIdentifier,
   PatientIdentifier,
   PatientAddress,
@@ -14,6 +15,10 @@ import { useMutation } from '@tanstack/react-query';
 import type { Patient } from 'fhir/r4';
 import { useNavigate } from 'react-router-dom';
 import type { RelationshipData } from '../components/forms/patientRelationships/PatientRelationships';
+import {
+  RELATIONSHIP_TYPE_SYSTEM,
+  RELATED_PATIENT_EXT_URL,
+} from '../constants/relatedPerson';
 import {
   BasicInfoData,
   PersonAttributesData,
@@ -81,7 +86,44 @@ export const useCreatePatient = () => {
         loginLocationUuid: getUserLoginLocation()?.uuid,
         personAttributes,
       });
-      return createFhirPatient<Patient>(payload);
+      const patient = await createFhirPatient<Patient>(payload);
+
+      const patientUuid = patient?.id;
+      if (patientUuid && formData.relationships?.length) {
+        const newRelationships = formData.relationships.filter(
+          (rel) => rel.patientUuid && rel.relationshipType,
+        );
+        const results = await Promise.allSettled(
+          newRelationships.map((rel) =>
+            createRelatedPerson({
+              resourceType: 'RelatedPerson',
+              patient: { reference: `Patient/${patientUuid}` },
+              relationship: [
+                {
+                  coding: [
+                    {
+                      system: RELATIONSHIP_TYPE_SYSTEM,
+                      code: rel.relationshipType,
+                    },
+                  ],
+                },
+              ],
+              extension: [
+                {
+                  url: RELATED_PATIENT_EXT_URL,
+                  valueReference: { reference: `Patient/${rel.patientUuid}` },
+                },
+              ],
+              ...(rel.tillDate && { period: { end: rel.tillDate } }),
+            }),
+          ),
+        );
+        if (results.some((r) => r.status === 'rejected')) {
+          throw new Error(t('ERROR_SAVING_RELATIONSHIPS'));
+        }
+      }
+
+      return patient;
     },
     onSuccess: async (response) => {
       addNotification({

@@ -418,6 +418,47 @@ export interface Relationship {
   resourceVersion?: string;
 }
 
+export interface FhirRelatedPersonCoding {
+  system?: string;
+  code?: string;
+  display?: string;
+}
+
+export interface FhirRelatedPersonRelationship {
+  coding?: FhirRelatedPersonCoding[];
+  text?: string;
+}
+
+export interface FhirRelatedPersonExtension {
+  url: string;
+  valueReference?: { reference: string };
+}
+
+export interface FhirRelatedPersonName {
+  given?: string[];
+  family?: string;
+}
+
+export interface FhirRelatedPersonPeriod {
+  start?: string;
+  end?: string;
+}
+
+export interface FhirRelatedPerson {
+  resourceType: 'RelatedPerson';
+  id?: string;
+  patient: { reference: string };
+  relationship?: FhirRelatedPersonRelationship[];
+  extension?: FhirRelatedPersonExtension[];
+  name?: FhirRelatedPersonName[];
+  period?: FhirRelatedPersonPeriod;
+}
+
+export interface FhirRelatedPersonBundle {
+  resourceType: 'Bundle';
+  entry?: { resource?: FhirRelatedPerson }[];
+}
+
 export interface ExpectedFieldConfig {
   field: string;
   type?: 'string' | 'date' | 'numeric';

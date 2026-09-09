@@ -1,7 +1,13 @@
-import { getPatientById, useTranslation } from '@bahmni/services';
+import {
+  getPatientById,
+  getRelatedPersonsByPatient,
+  useTranslation,
+  type FhirRelatedPerson,
+} from '@bahmni/services';
 import { useNotification } from '@bahmni/widgets';
 import { useQuery } from '@tanstack/react-query';
 import { useEffect, useMemo, useState } from 'react';
+import type { RelationshipData } from '../components/forms/patientRelationships/PatientRelationships';
 import {
   convertFhirToBasicInfo,
   convertFhirToPersonAttributes,
@@ -11,6 +17,7 @@ import {
   extractDobEstimated,
 } from '../utils/fhirPatientToFormData';
 import { useGenderData } from '../utils/identifierGenderUtils';
+import { convertFhirRelatedPersonsToRelationshipData } from '../utils/patientDataConverter';
 import { usePersonAttributes } from './usePersonAttributes';
 
 interface UsePatientDetailsProps {
@@ -44,6 +51,12 @@ export const usePatientDetails = ({ patientUuid }: UsePatientDetailsProps) => {
   } = useQuery({
     queryKey: ['formattedPatient', patientUuid],
     queryFn: () => getPatientById(patientUuid!),
+    enabled: !!patientUuid,
+  });
+
+  const { data: relatedPersonsBundle } = useQuery({
+    queryKey: ['relatedPersons', patientUuid],
+    queryFn: () => getRelatedPersonsByPatient(patientUuid!),
     enabled: !!patientUuid,
   });
 
@@ -92,6 +105,18 @@ export const usePatientDetails = ({ patientUuid }: UsePatientDetailsProps) => {
     [patientDetails],
   );
 
+  const relationshipsInitialData = useMemo<RelationshipData[] | undefined>(
+    () =>
+      relatedPersonsBundle
+        ? convertFhirRelatedPersonsToRelationshipData(
+            (relatedPersonsBundle.entry ?? [])
+              .filter((e): e is { resource: FhirRelatedPerson } => !!e.resource)
+              .map((e) => e.resource),
+          )
+        : undefined,
+    [relatedPersonsBundle],
+  );
+
   useEffect(() => {
     if (patientDetails) {
       setMetadata(extractMetadata(patientDetails, t));
@@ -106,6 +131,7 @@ export const usePatientDetails = ({ patientUuid }: UsePatientDetailsProps) => {
     addressInitialData,
     additionalIdentifiersInitialData,
     initialDobEstimated,
+    relationshipsInitialData,
     metadata,
   };
 };

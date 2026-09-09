@@ -161,3 +161,11 @@ export const UUID_PATTERN = /^[a-f0-9-]{36}$/i;
 export const PERSON_ATTRIBUTE_TYPES_URL =
   OPENMRS_REST_V1 +
   '/personattributetype?v=custom:(uuid,name,sortWeight,description,format,concept:(uuid,display,answers:(uuid,name)))';
+
+export const RELATED_PERSON_URL = OPENMRS_FHIR_R4 + '/RelatedPerson';
+
+export const RELATED_PERSONS_BY_PATIENT_URL = (patientUuid: string) =>
+  `${RELATED_PERSON_URL}?patient=Patient/${patientUuid}`;
+
+export const RELATED_PERSON_BY_ID_URL = (uuid: string) =>
+  `${RELATED_PERSON_URL}/${uuid}`;

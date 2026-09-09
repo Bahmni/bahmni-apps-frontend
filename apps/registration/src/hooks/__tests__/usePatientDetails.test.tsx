@@ -1,4 +1,4 @@
-import { getPatientById } from '@bahmni/services';
+import { getPatientById, getRelatedPersonsByPatient } from '@bahmni/services';
 import { useNotification } from '@bahmni/widgets';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { renderHook, waitFor } from '@testing-library/react';
@@ -7,6 +7,7 @@ import { usePatientDetails } from '../usePatientDetails';
 jest.mock('@bahmni/services', () => ({
   ...jest.requireActual('@bahmni/services'),
   getPatientById: jest.fn(),
+  getRelatedPersonsByPatient: jest.fn(),
   formatDateTime: jest.fn(() => ({
     formattedResult: '04 May 2026 11:53 AM',
     error: false,
@@ -38,6 +39,7 @@ jest.mock('../usePersonAttributes', () => ({
 }));
 
 const mockGetPatientById = getPatientById as jest.Mock;
+const mockGetRelatedPersonsByPatient = getRelatedPersonsByPatient as jest.Mock;
 const mockUseNotification = useNotification as jest.MockedFunction<
   typeof useNotification
 >;
@@ -117,6 +119,7 @@ describe('usePatientDetails', () => {
       clearAllNotifications: jest.fn(),
       notifications: [],
     });
+    mockGetRelatedPersonsByPatient.mockResolvedValue({ entry: [] });
   });
 
   it('should fetch patient via FHIR and populate metadata', async () => {
@@ -250,5 +253,91 @@ describe('usePatientDetails', () => {
         message: 'Failed to fetch',
       });
     });
+  });
+
+  it('should return relationshipsInitialData from FHIR related persons bundle', async () => {
+    mockGetPatientById.mockResolvedValue(mockFhirPatient);
+    mockGetRelatedPersonsByPatient.mockResolvedValue({
+      entry: [
+        {
+          resource: {
+            id: 'related-person-uuid-1',
+            resourceType: 'RelatedPerson',
+            patient: { reference: 'Patient/patient-123' },
+            name: [{ given: ['Jane'], family: 'Smith' }],
+            relationship: [
+              {
+                coding: [
+                  {
+                    system: 'http://fhir.bahmni.org/RelationshipType',
+                    code: 'rel-type-uuid-1',
+                    display: 'Parent',
+                  },
+                ],
+              },
+            ],
+            extension: [
+              {
+                url: 'http://fhir.bahmni.org/ext/relatedPatient',
+                valueReference: { reference: 'Patient/related-patient-uuid-1' },
+              },
+            ],
+          },
+        },
+      ],
+    });
+
+    const { result } = renderHook(
+      () => usePatientDetails({ patientUuid: 'patient-123' }),
+      { wrapper: createWrapper() },
+    );
+
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+
+    await waitFor(() => {
+      expect(result.current.relationshipsInitialData).toHaveLength(1);
+    });
+
+    expect(result.current.relationshipsInitialData![0].id).toBe(
+      'related-person-uuid-1',
+    );
+    expect(result.current.relationshipsInitialData![0].relationshipType).toBe(
+      'rel-type-uuid-1',
+    );
+    expect(result.current.relationshipsInitialData![0].patientUuid).toBe(
+      'related-patient-uuid-1',
+    );
+    expect(result.current.relationshipsInitialData![0].patientName).toBe(
+      'Jane Smith',
+    );
+    expect(result.current.relationshipsInitialData![0].isExisting).toBe(true);
+  });
+
+  it('should return empty array when bundle has no entries', async () => {
+    mockGetPatientById.mockResolvedValue(mockFhirPatient);
+    mockGetRelatedPersonsByPatient.mockResolvedValue({ entry: [] });
+
+    const { result } = renderHook(
+      () => usePatientDetails({ patientUuid: 'patient-123' }),
+      { wrapper: createWrapper() },
+    );
+
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+
+    await waitFor(() => {
+      expect(result.current.relationshipsInitialData).toBeDefined();
+    });
+
+    expect(result.current.relationshipsInitialData).toEqual([]);
+  });
+
+  it('should not call getRelatedPersonsByPatient when patientUuid is undefined', () => {
+    const { result } = renderHook(
+      () => usePatientDetails({ patientUuid: undefined }),
+      { wrapper: createWrapper() },
+    );
+
+    expect(mockGetRelatedPersonsByPatient).not.toHaveBeenCalled();
+    expect(result.current.relationshipsInitialData).toBeUndefined();
   });
 });
