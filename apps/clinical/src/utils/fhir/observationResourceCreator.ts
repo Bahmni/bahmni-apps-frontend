@@ -113,6 +113,9 @@ function processExistingGroup(
     if (obs.status) {
       parentEntry.resource.status = obs.status as Observation['status'];
     }
+    if (obs.basedOn) {
+      parentEntry.resource.basedOn = [obs.basedOn];
+    }
     parentEntry.resource.hasMember = hasMemberRefs.map((ref) => ({
       reference: ref,
     }));
@@ -187,7 +190,7 @@ function processLeafObservation(
   return NONE;
 }
 
-/** PUTs an existing leaf observation, echoing back its current FHIR status as OpenMRS requires. */
+/** PUTs an existing leaf observation, echoing back its current FHIR status + basedOn as OpenMRS requires. */
 function putExistingLeaf(
   obs: Form2Observation,
   entries: BundleEntry[],
@@ -198,6 +201,9 @@ function putExistingLeaf(
     entry.resource.id = obs.uuid!;
     if (obs.status) {
       entry.resource.status = obs.status as Observation['status'];
+    }
+    if (obs.basedOn) {
+      entry.resource.basedOn = [obs.basedOn];
     }
     const url = `Observation/${obs.uuid}`;
     entries.push(createBundleEntry(url, entry.resource, 'PUT', url));
