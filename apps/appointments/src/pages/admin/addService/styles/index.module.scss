@@ -1,0 +1,117 @@
+@use "@carbon/react/scss/spacing" as *;
+@use "@carbon/react/scss/type" as *;
+@use "@carbon/react/scss/theme" as *;
+
+.noPrivilegeContainer {
+  margin-block: $spacing-10;
+  margin-inline: calc($spacing-12 + $spacing-05);
+  box-shadow: 0px 2px 6px 0px $shadow;
+  padding: $spacing-10;
+  @include type-style("body-compact-01");
+  color: $support-error;
+  font-style: italic;
+  text-align: center;
+}
+
+.page {
+  margin-top: $spacing-10;
+  margin-bottom: calc($spacing-12 + $spacing-05);
+  margin-inline: calc($spacing-12 + $spacing-05);
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0px 4px 4px 0px $shadow;
+  h2 {
+    @include type-style("heading-compact-02");
+    padding: $spacing-05;
+    padding-inline: $spacing-06;
+    background: $layer-01;
+  }
+
+  >div[id$="add-appointment-details-section"] {
+    padding-top: $spacing-06 !important;
+  }
+}
+
+.section {
+  padding-top: $spacing-08;
+  h3 {
+    @include type-style("body-compact-02");
+    padding-bottom: $spacing-05;
+    padding-inline: $spacing-06;
+  }
+}
+
+.sectionContent {
+  background: $layer-02;
+  padding-inline: $spacing-06;
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-05;
+  > div:last-of-type {
+    gap: $spacing-05;
+    padding-inline: 0;
+    > div {
+      margin-inline: 0;
+    }
+  }
+}
+
+.addRowBtn {
+  margin: $spacing-05;
+  margin-left: $spacing-06;
+}
+
+.footer {
+  background: $layer-02;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-block: $spacing-06;
+  padding-inline: calc($spacing-13 - $spacing-05);
+}
+
+.daysOfWeekCell {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-02;
+
+  button {
+    margin-right: $spacing-02;
+  }
+  > div[id$="-error"] {
+    @include type-style("label-01");
+    color: $support-error;
+  }
+}
+
+.errorText {
+  @include type-style("label-01");
+  color: $support-error;
+}
+
+.serviceAvailabilityTable {
+  p[data-testid$="service-availability-table-test-id-empty"] {
+    display: none;
+  }
+  :is(td, th):is(
+    [data-testid$="-startTime"],
+    [data-testid$="-endTime"]
+  ) {
+    inline-size: $spacing-13;
+    padding-inline-end: 0;
+  }
+  th[data-testid$="-startTime"]{
+    padding-inline-start: $spacing-03;
+  }
+  td[data-testid$="-startTime"]{
+    padding-inline-start: $spacing-06;
+  }
+
+  td[data-testid$="-endTime"]{
+    padding-inline-start: $spacing-05;
+  }
+  :is(td, th):is([data-testid$="-maxLoad"]) {
+    inline-size: 11.315rem;
+    padding-inline-end: 0;
+  }
+}

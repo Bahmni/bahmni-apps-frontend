@@ -65,8 +65,18 @@ export const updateAppointmentStatusUrl = (appointmentUuid: string): string =>
 export const ALL_APPOINTMENT_SERVICES_URL =
   OPENMRS_REST_V1 + '/appointmentService/all/full';
 
+export const CREATE_APPOINTMENT_SERVICE_URL =
+  OPENMRS_REST_V1 + '/appointmentService';
+
 export const getDeleteAppointmentServiceUrl = (uuid: string): string =>
   `${OPENMRS_REST_V1}/appointmentService?uuid=${uuid}`;
+
+export const APPOINTMENT_SERVICE_ATTRIBUTE_TYPES_URL =
+  OPENMRS_REST_V1 + '/appointment-service-attribute-types';
+
+export const APPOINTMENT_LOCATIONS_URL = `${OPENMRS_REST_V1}/location?operator=ALL&s=byTags&tags=Appointment+Location&v=default`;
+
+export const APPOINTMENT_SPECIALITIES_URL = OPENMRS_REST_V1 + '/speciality/all';
 
 export const getUpcomingAppointmentsPageUrl = (
   patientUUID: string,

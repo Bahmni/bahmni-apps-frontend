@@ -15,9 +15,10 @@
 
   > div:first-of-type {
     flex: 1;
+    height: stretch;
+    padding-block: 0;
     align-content: center;
     border-bottom: none;
-    padding-block: 0;
     min-height: 3rem;
   }
 

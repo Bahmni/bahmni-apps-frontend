@@ -9,14 +9,22 @@ export {
   getPastAppointmentsPage,
   getAllAppointmentServices,
   deleteAppointmentService,
+  createAppointmentService,
+  getServiceAttributeTypes,
+  getAppointmentLocations,
+  getAppointmentSpecialities,
   getAppointmentUnavailabilities,
   createAppointmentUnavailability,
 } from './appointmentService';
 export {
-  type AppointmentPage,
   type AppointmentService,
+  type AppointmentServiceAttributeType,
+  type AppointmentLocation,
+  type AppointmentSpeciality,
+  type CreateAppointmentServiceRequest,
+  type CreateServiceWeeklyAvailability,
+  type AppointmentPage,
   type AppointmentUnavailability,
-  type CheckInAppointmentResponse,
   type CreateUnavailabilityRequest,
 } from './models';
 export {
