@@ -12,9 +12,9 @@ import {
   MANAGE_APPOINTMENT_SERVICES_PRIVILEGE_ALIASES,
   PATHS,
 } from '../../../constants/app';
+import { useServiceStore } from '../stores';
 import AvailabilitySection from './components/AvailabilitySection';
 import ServiceDetailsSection from './components/DetailsSection';
-import { useServiceStore } from './stores';
 import styles from './styles/index.module.scss';
 
 const toSqlTime = (time: string) => `${time}:00`;

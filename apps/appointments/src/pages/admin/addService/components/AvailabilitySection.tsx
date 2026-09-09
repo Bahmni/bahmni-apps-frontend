@@ -8,8 +8,8 @@ import {
 } from '@bahmni/design-system';
 import { useTranslation } from '@bahmni/services';
 import React, { useCallback, useMemo } from 'react';
-import { DAYS_OF_WEEK } from '../constants';
-import { AvailabilityRow, useServiceStore } from '../stores';
+import { DAYS_OF_WEEK } from '../../constants';
+import { AvailabilityRow, useServiceStore } from '../../stores';
 import styles from '../styles/index.module.scss';
 
 const AvailabilitySection: React.FC = () => {

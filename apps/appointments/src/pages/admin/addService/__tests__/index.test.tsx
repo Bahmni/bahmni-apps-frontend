@@ -10,8 +10,8 @@ import {
   MANAGE_APPOINTMENT_SERVICES_PRIVILEGE,
   MANAGE_APPOINTMENT_SERVICES_PRIVILEGE_LEGACY,
 } from '../../../../constants/app';
+import { useServiceStore } from '../../stores';
 import AddServicePage from '../index';
-import { useServiceStore } from '../stores';
 import { defaultRow } from './__mocks__/AddServicePageMocks';
 
 jest.mock('react-router-dom', () => ({
@@ -38,7 +38,7 @@ jest.mock('@tanstack/react-query', () => ({
   useQuery: jest.fn(),
 }));
 
-jest.mock('../stores', () => ({
+jest.mock('../../stores', () => ({
   useServiceStore: Object.assign(jest.fn(), { getState: jest.fn() }),
 }));
 

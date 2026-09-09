@@ -14,7 +14,7 @@ import {
 } from '@bahmni/services';
 import { useQuery } from '@tanstack/react-query';
 import React, { useMemo } from 'react';
-import { useServiceStore } from '../stores';
+import { useServiceStore } from '../../stores';
 import styles from '../styles/index.module.scss';
 
 const DetailsSection: React.FC = () => {

@@ -5,7 +5,7 @@ import {
 } from '@tanstack/react-query';
 import { fireEvent, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { useServiceStore } from '../../stores';
+import { useServiceStore } from '../../../stores';
 import DetailsSection from '../DetailsSection';
 import {
   mockExistingServices,
@@ -18,7 +18,7 @@ jest.mock('@tanstack/react-query', () => ({
   useQuery: jest.fn(),
 }));
 
-jest.mock('../../stores', () => ({
+jest.mock('../../../stores', () => ({
   useServiceStore: jest.fn(),
 }));
 

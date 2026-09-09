@@ -1,5 +1,5 @@
-import { DAYS_OF_WEEK } from '../../../constants';
-import { AvailabilityRow } from '../../../stores';
+import { DAYS_OF_WEEK } from '../../../../constants';
+import { AvailabilityRow } from '../../../../stores';
 
 export const defaultRow: AvailabilityRow = {
   id: 'row-1',

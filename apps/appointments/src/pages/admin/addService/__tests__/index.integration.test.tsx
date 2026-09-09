@@ -15,8 +15,8 @@ import {
 } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MANAGE_APPOINTMENT_SERVICES_PRIVILEGE } from '../../../../constants/app';
+import { useServiceStore } from '../../stores';
 import AddServicePage from '../index';
-import { useServiceStore } from '../stores';
 
 jest.mock('react-router-dom', () => ({
   ...jest.requireActual('react-router-dom'),

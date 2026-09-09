@@ -1,11 +1,11 @@
 import { fireEvent, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { DAYS_OF_WEEK } from '../../constants';
-import { useServiceStore } from '../../stores';
+import { DAYS_OF_WEEK } from '../../../constants';
+import { useServiceStore } from '../../../stores';
 import AvailabilitySection from '../AvailabilitySection';
 import { defaultRow } from './__mocks__/AvailabilitySectionMocks';
 
-jest.mock('../../stores', () => ({
+jest.mock('../../../stores', () => ({
   useServiceStore: jest.fn(),
 }));
 
