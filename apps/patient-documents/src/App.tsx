@@ -1,5 +1,5 @@
 import { Content, Loading, initFontAwesome } from '@bahmni/design-system';
-import { initAppI18n, initializeAuditListener } from '@bahmni/services';
+import { initAppI18n, useAuditListenerInitialization } from '@bahmni/services';
 import {
   ActivePractitionerProvider,
   NotificationProvider,
@@ -20,20 +20,13 @@ const queryClient = new QueryClient(queryClientConfig);
 export function App() {
   const [isInitialized, setIsInitialized] = useState(false);
 
-  useEffect(() => {
-    let hasEffectUnmounted = false;
-    let removeAuditListener: (() => void) | undefined;
+  useAuditListenerInitialization();
 
+  useEffect(() => {
     const initializeApp = async () => {
       try {
         await initAppI18n(BAHMNI_PATIENT_DOCUMENTS_NAMESPACE);
         initFontAwesome();
-        const cleanup = initializeAuditListener();
-        if (hasEffectUnmounted) {
-          cleanup?.();
-        } else {
-          removeAuditListener = cleanup;
-        }
         setIsInitialized(true);
       } catch (error) {
         // eslint-disable-next-line no-console
@@ -43,11 +36,6 @@ export function App() {
     };
 
     initializeApp();
-
-    return () => {
-      hasEffectUnmounted = true;
-      removeAuditListener?.();
-    };
   }, []);
 
   if (!isInitialized) {

@@ -3,13 +3,12 @@ import {
   screen,
   waitForElementToBeRemoved,
 } from '@testing-library/react';
-import { StrictMode } from 'react';
 import { MemoryRouter } from 'react-router-dom';
 import App from '../App';
 
 jest.mock('@bahmni/services', () => ({
   initAppI18n: jest.fn().mockResolvedValue(undefined),
-  initializeAuditListener: jest.fn(),
+  useAuditListenerInitialization: jest.fn(),
 }));
 
 jest.mock('@bahmni/design-system', () => ({
@@ -75,28 +74,16 @@ describe('App', () => {
     expect(screen.queryByTestId('loading')).not.toBeInTheDocument();
   });
 
-  it('does not leak an audit-log listener when StrictMode double-invokes the mount effect', async () => {
-    const { initializeAuditListener } = jest.requireMock('@bahmni/services');
-    const cleanups: jest.Mock[] = [];
-    initializeAuditListener.mockImplementation(() => {
-      const cleanup = jest.fn();
-      cleanups.push(cleanup);
-      return cleanup;
-    });
+  it('registers the audit listener', () => {
+    const { useAuditListenerInitialization } =
+      jest.requireMock('@bahmni/services');
 
     render(
-      <StrictMode>
-        <MemoryRouter initialEntries={['/']}>
-          <App />
-        </MemoryRouter>
-      </StrictMode>,
+      <MemoryRouter initialEntries={['/']}>
+        <App />
+      </MemoryRouter>,
     );
-    await waitForElementToBeRemoved(() => screen.queryByTestId('loading'));
 
-    expect(cleanups.length).toBeGreaterThan(1);
-    const cleanedUpCount = cleanups.filter(
-      (cleanup) => cleanup.mock.calls.length > 0,
-    ).length;
-    expect(cleanedUpCount).toBe(cleanups.length - 1);
+    expect(useAuditListenerInitialization).toHaveBeenCalled();
   });
 });
