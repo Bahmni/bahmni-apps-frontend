@@ -8,7 +8,7 @@ type EnsureEncounterParams = Omit<OrderFulfillmentEncounterParams, 'visitUuid'>;
 
 /**
  * Checks if the patient has an active visit and, if so, creates an encounter
- * under that visit via ConsultationBundle.
+ * under that visit via EncounterBundle.
  *
  * Returns the encounter UUID if one was created, or null if the patient has
  * no active visit (in which case the caller should proceed without an encounter).
