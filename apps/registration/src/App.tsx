@@ -24,11 +24,19 @@ const RegistrationApp: React.FC = () => {
   const [isInitialized, setIsInitialized] = useState(false);
 
   useEffect(() => {
+    let hasEffectUnmounted = false;
+    let removeAuditListener: (() => void) | undefined;
+
     const initializeApp = async () => {
       try {
         await initAppI18n(REGISTRATION_NAMESPACE);
         initFontAwesome();
-        initializeAuditListener();
+        const cleanup = initializeAuditListener();
+        if (hasEffectUnmounted) {
+          cleanup?.();
+        } else {
+          removeAuditListener = cleanup;
+        }
         setIsInitialized(true);
       } catch (error) {
         // eslint-disable-next-line no-console
@@ -38,6 +46,11 @@ const RegistrationApp: React.FC = () => {
     };
 
     initializeApp();
+
+    return () => {
+      hasEffectUnmounted = true;
+      removeAuditListener?.();
+    };
   }, []);
 
   if (!isInitialized) {

@@ -3,6 +3,7 @@ import {
   screen,
   waitForElementToBeRemoved,
 } from '@testing-library/react';
+import { StrictMode } from 'react';
 import { MemoryRouter } from 'react-router-dom';
 import App from '../App';
 
@@ -72,5 +73,30 @@ describe('App', () => {
     );
     await waitForElementToBeRemoved(() => screen.queryByTestId('loading'));
     expect(screen.queryByTestId('loading')).not.toBeInTheDocument();
+  });
+
+  it('does not leak an audit-log listener when StrictMode double-invokes the mount effect', async () => {
+    const { initializeAuditListener } = jest.requireMock('@bahmni/services');
+    const cleanups: jest.Mock[] = [];
+    initializeAuditListener.mockImplementation(() => {
+      const cleanup = jest.fn();
+      cleanups.push(cleanup);
+      return cleanup;
+    });
+
+    render(
+      <StrictMode>
+        <MemoryRouter initialEntries={['/']}>
+          <App />
+        </MemoryRouter>
+      </StrictMode>,
+    );
+    await waitForElementToBeRemoved(() => screen.queryByTestId('loading'));
+
+    expect(cleanups.length).toBeGreaterThan(1);
+    const cleanedUpCount = cleanups.filter(
+      (cleanup) => cleanup.mock.calls.length > 0,
+    ).length;
+    expect(cleanedUpCount).toBe(cleanups.length - 1);
   });
 });
