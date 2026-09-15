@@ -23,11 +23,13 @@ const ClinicalApp: React.FC = () => {
   const [isInitialized, setIsInitialized] = useState(false);
 
   useEffect(() => {
+    let removeAuditListener: (() => void) | undefined;
+
     const initializeApp = async () => {
       try {
         await initAppI18n(CLINICAL_NAMESPACE);
         initFontAwesome();
-        initializeAuditListener();
+        removeAuditListener = initializeAuditListener();
         setIsInitialized(true);
       } catch (error) {
         // eslint-disable-next-line no-console
@@ -37,6 +39,10 @@ const ClinicalApp: React.FC = () => {
     };
 
     initializeApp();
+
+    return () => {
+      removeAuditListener?.();
+    };
   }, []);
 
   if (!isInitialized) {
