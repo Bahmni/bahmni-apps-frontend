@@ -13,7 +13,7 @@ import {
   ENCOUNTER_TYPE_BY_NAME_URL,
   FHIR_ENCOUNTER_URL,
   BAHMNI_ENCOUNTER_URL,
-  CONSULTATION_BUNDLE_URL,
+  ENCOUNTER_BUNDLE_URL,
 } from './constants';
 import { FormsEncounter, OrderFulfillmentEncounterParams } from './models';
 
@@ -255,7 +255,7 @@ export async function getFormsDataByEncounterUuid(
 }
 
 /**
- * Creates a FHIR Encounter linked to an existing visit via ConsultationBundle.
+ * Creates a FHIR Encounter linked to an existing visit via EncounterBundle.
  * Used to associate an order fulfillment action with a clinical session.
  *
  * @param params - Patient, visit, practitioner, location, and encounter type details
@@ -320,23 +320,20 @@ export async function createOrderFulfillmentEncounter(
     request: { method: 'POST', url: 'Encounter' },
   };
 
-  const consultationBundle = {
-    resourceType: 'ConsultationBundle' as const,
+  const encounterBundle = {
+    resourceType: 'EncounterBundle' as const,
     type: 'transaction' as const,
     id: crypto.randomUUID(),
     timestamp: new Date().toISOString(),
     entry: [bundleEntry],
   };
 
-  const response = await post<Bundle>(
-    CONSULTATION_BUNDLE_URL,
-    consultationBundle,
-  );
+  const response = await post<Bundle>(ENCOUNTER_BUNDLE_URL, encounterBundle);
 
   const encounterUuid = (response?.entry?.[0]?.resource as Encounter)?.id;
   if (!encounterUuid) {
     throw new Error(
-      'Failed to extract encounter UUID from ConsultationBundle response',
+      'Failed to extract encounter UUID from EncounterBundle response',
     );
   }
   return encounterUuid;

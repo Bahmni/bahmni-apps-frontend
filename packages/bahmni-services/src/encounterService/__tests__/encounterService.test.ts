@@ -23,7 +23,7 @@ import {
   ENCOUNTER_TYPE_BY_NAME_URL,
   FHIR_ENCOUNTER_URL,
   BAHMNI_ENCOUNTER_URL,
-  CONSULTATION_BUNDLE_URL,
+  ENCOUNTER_BUNDLE_URL,
 } from '../constants';
 
 jest.mock('../../api');
@@ -503,14 +503,14 @@ describe('encounterService', () => {
       ],
     };
 
-    it('posts to the ConsultationBundle URL', async () => {
+    it('posts to the EncounterBundle URL', async () => {
       mockedPost.mockResolvedValueOnce(mockBundleResponse);
 
       await createOrderFulfillmentEncounter(baseEncounterParams);
 
       expect(mockedPost).toHaveBeenCalledWith(
-        CONSULTATION_BUNDLE_URL,
-        expect.objectContaining({ resourceType: 'ConsultationBundle' }),
+        ENCOUNTER_BUNDLE_URL,
+        expect.objectContaining({ resourceType: 'EncounterBundle' }),
       );
     });
 
@@ -560,7 +560,7 @@ describe('encounterService', () => {
       await expect(
         createOrderFulfillmentEncounter(baseEncounterParams),
       ).rejects.toThrow(
-        'Failed to extract encounter UUID from ConsultationBundle response',
+        'Failed to extract encounter UUID from EncounterBundle response',
       );
     });
 
@@ -570,7 +570,7 @@ describe('encounterService', () => {
       await expect(
         createOrderFulfillmentEncounter(baseEncounterParams),
       ).rejects.toThrow(
-        'Failed to extract encounter UUID from ConsultationBundle response',
+        'Failed to extract encounter UUID from EncounterBundle response',
       );
     });
 

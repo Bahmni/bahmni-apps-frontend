@@ -27,4 +27,4 @@ export const BAHMNI_ENCOUNTER_URL = (
 ) =>
   `${OPENMRS_REST_V1}/bahmnicore/bahmniencounter/${encounterUUID}?includeAll=${includeAll}`;
 
-export const CONSULTATION_BUNDLE_URL = OPENMRS_FHIR_R4 + '/ConsultationBundle';
+export const ENCOUNTER_BUNDLE_URL = OPENMRS_FHIR_R4 + '/EncounterBundle';

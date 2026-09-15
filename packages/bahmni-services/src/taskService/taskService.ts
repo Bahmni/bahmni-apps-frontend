@@ -1,6 +1,6 @@
 import type { Bundle, Resource, Task } from 'fhir/r4';
 import { get, post, put } from '../api';
-import { FHIR_TASK_URL, TASKS_URL, TASKS_BY_BASED_ON_URL } from './constants';
+import { FHIR_TASK_URL, TASKS_URL, TASK_SEARCH_URL } from './constants';
 import { CreateTaskOptions, CreateTaskPayload } from './models';
 
 /**
@@ -155,5 +155,8 @@ export async function getTasksByBasedOn(
   if (basedOnRefs.length === 0) {
     return { resourceType: 'Bundle', type: 'searchset', entry: [] };
   }
-  return await get<Bundle<Resource>>(TASKS_BY_BASED_ON_URL(basedOnRefs));
+  const body = `based-on=${basedOnRefs.join(',')}&_include=Task:owner&_count=${basedOnRefs.length}`;
+  return await post<Bundle<Resource>, string>(TASK_SEARCH_URL, body, {
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+  });
 }
