@@ -6,11 +6,8 @@ import {
   SESSION_URL,
 } from '../constants/app';
 import { getErrorKind } from '../errorHandling';
-import { deleteCookie, getCookieByName } from '../utils';
-
-interface SessionUserResponse {
-  user?: { username?: string } | null;
-}
+import { SessionResponse } from '../privilegeService/models';
+import { deleteCookie, getCookieByName, decodeCookieValue } from '../utils';
 
 // The client has no global request timeout, so without one here a stalled
 // logout call would hang indefinitely instead of surfacing a timeout error.
@@ -48,32 +45,20 @@ export const logout = async (): Promise<void> => {
 // already running is reused instead of issuing a second /session request.
 let inFlightCheck: Promise<void> | null = null;
 
-/**
- * Reads the username Bahmni recorded at login. Mirrors the decoding in
- * userService.getCurrentUser — the cookie value is URL encoded and quote
- * wrapped.
- * @returns The username, or null when there is no bahmni.user cookie
- */
-const getCookieUsername = (): string | null => {
-  const encodedUsername = getCookieByName(BAHMNI_USER_COOKIE_NAME);
-  if (!encodedUsername) {
-    return null;
-  }
-  return decodeURIComponent(encodedUsername).replace(/^"(.*)"$/, '$1');
-};
-
 const runSessionUserCheck = async (): Promise<void> => {
-  const cookieUsername = getCookieUsername();
-  // No cookie means nobody logged in through Bahmni, so there is no recorded
-  // identity to contradict. Any subsequent call returns a 401, which the api
-  // client interceptor already redirects to login on.
-  if (!cookieUsername) {
+  // The username Bahmni recorded at login. No cookie means nobody logged in
+  // through Bahmni, so there is no recorded identity to contradict. Any
+  // subsequent call returns a 401, which the api client interceptor already
+  // redirects to login on.
+  const encodedCookieUsername = getCookieByName(BAHMNI_USER_COOKIE_NAME);
+  if (!encodedCookieUsername) {
     return;
   }
+  const cookieUsername = decodeCookieValue(encodedCookieUsername);
 
-  let session: SessionUserResponse;
+  let session: SessionResponse;
   try {
-    session = await get<SessionUserResponse>(SESSION_URL);
+    session = await get<SessionResponse>(SESSION_URL);
   } catch {
     // A failed lookup is not evidence that the user changed — a network blip
     // looks identical — so the session is left alone rather than logging
@@ -81,11 +66,28 @@ const runSessionUserCheck = async (): Promise<void> => {
     return;
   }
 
+  // Only a username we can actually read, and which actually differs, is
+  // treated as the user having changed. A session reporting no identifiable
+  // user is deliberately left alone: it means nobody is authenticated rather
+  // than somebody else being authenticated, and the api client already
+  // redirects to login on the 401 that the next real request returns. Logging
+  // out here instead would fire during the gaps where the session legitimately
+  // reads as unauthenticated - notably while an app is still starting up - and
+  // eject a user who was doing nothing wrong.
   const sessionUsername = session.user?.username;
-  if (
-    sessionUsername &&
-    sessionUsername.toLowerCase() === cookieUsername.toLowerCase()
-  ) {
+  if (!sessionUsername) {
+    return;
+  }
+  // Compared case-insensitively because the two sides hold the same name in
+  // different forms: the cookie keeps whatever was typed at login, while the
+  // session reports the stored form. That is safe here because OpenMRS
+  // resolves username case-variants to one account - superman, SUPERMAN and
+  // SuPerMan all authenticate and come back as username "superman" on user
+  // uuid d7a669e7-5e07-11ef-8f7c-0242ac120002 - so Admin and admin cannot be
+  // two distinct users that a case-sensitive check would need to tell apart.
+  // Comparing an unambiguous identifier instead is not open to us: the cookie
+  // only ever carries a username, never a uuid.
+  if (sessionUsername.toLowerCase() === cookieUsername.toLowerCase()) {
     return;
   }
 

@@ -170,14 +170,37 @@ describe('authService', () => {
       });
     });
 
-    it('should log out when the session carries no user at all', async () => {
+    // An unreadable session user means nobody is authenticated, not that
+    // somebody else is. Logging out on it ejected users mid-startup, when the
+    // session legitimately reads as unauthenticated.
+    it('should not log out when the session carries no user at all', async () => {
       (getCookieByName as jest.Mock).mockReturnValue('superman');
       (get as jest.Mock).mockResolvedValue(sessionOf(undefined));
 
       await validateSessionUser();
 
-      expect(del).toHaveBeenCalled();
-      expect(globalThis.location.href).toBe(LOGIN_PATH);
+      expect(del).not.toHaveBeenCalled();
+      expect(globalThis.location.href).toBe('');
+    });
+
+    it('should not log out when the session user has an empty username', async () => {
+      (getCookieByName as jest.Mock).mockReturnValue('superman');
+      (get as jest.Mock).mockResolvedValue({ user: { username: '' } });
+
+      await validateSessionUser();
+
+      expect(del).not.toHaveBeenCalled();
+      expect(globalThis.location.href).toBe('');
+    });
+
+    it('should not log out when the session user has no username key', async () => {
+      (getCookieByName as jest.Mock).mockReturnValue('superman');
+      (get as jest.Mock).mockResolvedValue({ user: {} });
+
+      await validateSessionUser();
+
+      expect(del).not.toHaveBeenCalled();
+      expect(globalThis.location.href).toBe('');
     });
 
     it('should do nothing when no user is logged in through Bahmni', async () => {

@@ -111,13 +111,15 @@ describe('AppContextProvider', () => {
         </AppContextProvider>,
       );
 
+    // An app still starting up is when the session is least reliable to read,
+    // and validating there logged out users who had done nothing wrong.
     it('does not validate on mount alone', () => {
       renderProvider();
 
       expect(mockValidateSessionUser).not.toHaveBeenCalled();
     });
 
-    it('validates when the tab becomes visible again', () => {
+    it('validates when the tab becomes visible', () => {
       renderProvider();
 
       document.dispatchEvent(new Event('visibilitychange'));
@@ -127,6 +129,7 @@ describe('AppContextProvider', () => {
 
     it('does not validate when the tab is being hidden', () => {
       renderProvider();
+      mockValidateSessionUser.mockClear();
       setVisibility('hidden');
 
       document.dispatchEvent(new Event('visibilitychange'));
@@ -137,6 +140,7 @@ describe('AppContextProvider', () => {
     it('stops validating once unmounted', () => {
       const { unmount } = renderProvider();
       unmount();
+      mockValidateSessionUser.mockClear();
 
       document.dispatchEvent(new Event('visibilitychange'));
 
