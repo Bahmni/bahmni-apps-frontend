@@ -60,6 +60,19 @@ describe('encounterService', () => {
 
       expect(result).toEqual(mockVisitBundle);
     });
+
+    it('should forward count as a _count param', async () => {
+      mockedGet.mockResolvedValueOnce(mockVisitBundle);
+
+      await getPatientVisits(patientUUID, undefined, 5);
+
+      expect(mockedGet).toHaveBeenCalledWith(
+        PATIENT_VISITS_URL(patientUUID, undefined, 5),
+      );
+      expect(mockedGet).toHaveBeenCalledWith(
+        expect.stringContaining('&_count=5'),
+      );
+    });
   });
 
   describe('getEncounters', () => {
@@ -79,6 +92,16 @@ describe('encounterService', () => {
       const encounters = await getVisits(patientUUID);
 
       expect(encounters).toEqual([]);
+    });
+
+    it('should forward count through to the visits URL', async () => {
+      mockedGet.mockResolvedValueOnce(mockVisitBundle);
+
+      await getVisits(patientUUID, undefined, 5);
+
+      expect(mockedGet).toHaveBeenCalledWith(
+        PATIENT_VISITS_URL(patientUUID, undefined, 5),
+      );
     });
   });
 
@@ -319,6 +342,19 @@ describe('encounterService', () => {
         PATIENT_ENCOUNTERS_URL(patientUUID, 100, 100),
       );
       expect(result).toHaveLength(101);
+    });
+
+    it('should forward sinceDate as a FHIR date=ge filter', async () => {
+      mockedGet.mockResolvedValueOnce(mockVisitBundle);
+      const sinceDate = '2026-09-01T00:00:00.000Z';
+
+      await getPatientEncounters(patientUUID, sinceDate);
+
+      const calledUrl = mockedGet.mock.calls[0][0] as string;
+      expect(calledUrl).toEqual(
+        PATIENT_ENCOUNTERS_URL(patientUUID, 100, 0, sinceDate),
+      );
+      expect(calledUrl).toContain(`&date=ge${encodeURIComponent(sinceDate)}`);
     });
   });
 
