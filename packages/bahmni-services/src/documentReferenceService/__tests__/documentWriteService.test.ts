@@ -1,4 +1,4 @@
-import { DocumentReference } from 'fhir/r4';
+import { DocumentReference, Encounter } from 'fhir/r4';
 import { post } from '../../api';
 import { ENCOUNTER_BUNDLE_URL } from '../../encounterBundle';
 import { getUserLoginLocation } from '../../userService';
@@ -25,7 +25,37 @@ const baseInput: SaveDocumentInput = {
   typeDisplay: 'Prescription',
 };
 
+// Fixed so the assertions can tell the visit's own date apart from "now".
+const NOW = '2026-07-01T10:15:00.000Z';
+const VISIT_START = '2026-06-29T09:00:00.000Z';
+
+const encounterPeriodStart = () => {
+  const bundle = mockedPost.mock.calls[0][1] as {
+    entry: Array<{ resource: Encounter }>;
+  };
+  return bundle.entry[0].resource.period?.start;
+};
+
+const saveIntoVisit = (visitPeriod?: { start?: string; end?: string }) =>
+  saveDocument({
+    ...baseInput,
+    createEncounterInVisit: {
+      visitUuid: 'visit-uuid',
+      encounterTypeUuid: 'enc-type-uuid',
+      encounterTypeDisplay: 'Patient Document',
+      visitPeriod,
+    },
+  });
+
 describe('documentWriteService', () => {
+  beforeAll(() => {
+    jest.useFakeTimers().setSystemTime(new Date(NOW));
+  });
+
+  afterAll(() => {
+    jest.useRealTimers();
+  });
+
   beforeEach(() => {
     jest.clearAllMocks();
     mockedPost.mockResolvedValue({});
@@ -151,6 +181,62 @@ describe('documentWriteService', () => {
         entry: Array<{ resource: { participant?: unknown } }>;
       };
       expect(bundle.entry[0].resource.participant).toBeUndefined();
+    });
+
+    describe('dating the document encounter against the visit period', () => {
+      it('uses the visit start when the visit has already closed', async () => {
+        await saveIntoVisit({
+          start: VISIT_START,
+          end: '2026-06-29T17:30:00.000Z',
+        });
+
+        expect(encounterPeriodStart()).toBe(VISIT_START);
+      });
+
+      it('uses the visit start when the current time precedes the visit', async () => {
+        await saveIntoVisit({ start: '2026-07-05T09:00:00.000Z' });
+
+        expect(encounterPeriodStart()).toBe('2026-07-05T09:00:00.000Z');
+      });
+
+      it('keeps the current time for a visit still in progress', async () => {
+        await saveIntoVisit({
+          start: VISIT_START,
+          end: '2026-07-02T09:00:00.000Z',
+        });
+
+        expect(encounterPeriodStart()).toBe(NOW);
+      });
+
+      it('keeps the current time for an open visit with no end', async () => {
+        await saveIntoVisit({ start: VISIT_START });
+
+        expect(encounterPeriodStart()).toBe(NOW);
+      });
+
+      it('treats both visit boundaries as inclusive', async () => {
+        await saveIntoVisit({ start: NOW, end: NOW });
+
+        expect(encounterPeriodStart()).toBe(NOW);
+      });
+
+      it('falls back to the current time when the visit period is absent', async () => {
+        await saveIntoVisit(undefined);
+
+        expect(encounterPeriodStart()).toBe(NOW);
+      });
+
+      it('falls back to the current time when the visit start is unparseable', async () => {
+        await saveIntoVisit({ start: 'not-a-date' });
+
+        expect(encounterPeriodStart()).toBe(NOW);
+      });
+
+      it('ignores an unparseable visit end and keeps the current time', async () => {
+        await saveIntoVisit({ start: VISIT_START, end: 'not-a-date' });
+
+        expect(encounterPeriodStart()).toBe(NOW);
+      });
     });
 
     it('throws when neither encounterUuid nor createEncounterInVisit is provided', async () => {

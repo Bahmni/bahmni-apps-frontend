@@ -18,7 +18,28 @@ describe('RowCell Component', () => {
       <RowCell
         header="Status"
         value="Active"
-        info="Last updated"
+        info={
+          <div>
+            <span>Last updated</span>
+            <span>2 days ago</span>
+          </div>
+        }
+        testId="test-row"
+      />,
+    );
+
+    expect(screen.getByTestId('test-row-info')).toHaveTextContent(
+      'Last updated',
+    );
+    expect(screen.getByTestId('test-row-info')).toHaveTextContent('2 days ago');
+  });
+
+  it('renders info with single value', () => {
+    render(
+      <RowCell
+        header="Status"
+        value="Active"
+        info={<div>Last updated</div>}
         testId="test-row"
       />,
     );
@@ -84,7 +105,12 @@ describe('RowCell Component', () => {
       <RowCell
         header="Name"
         value="John Doe"
-        info="Additional info"
+        info={
+          <div>
+            <span>Additional info</span>
+            <span>More details</span>
+          </div>
+        }
         testId="test-row"
       />,
     );

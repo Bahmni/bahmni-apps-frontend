@@ -108,6 +108,20 @@ export function getCookieByName(name: string): string {
 }
 
 /**
+ * Url decodes a raw cookie value and strips the surrounding quotes. Cookies
+ * written by the login flow are stored both url encoded and quote wrapped -
+ * bahmni.user reads as %22superman%22 - so the raw value from getCookieByName
+ * is rarely the one callers want. Takes the value rather than the cookie name
+ * so callers keep getCookieByName as their seam for reading the cookie.
+ * @param value The raw cookie value, as returned by getCookieByName
+ * @returns The decoded value
+ * @throws URIError when the value is not valid percent-encoding
+ */
+export function decodeCookieValue(value: string): string {
+  return decodeURIComponent(value).replace(/^"(.*)"$/, '$1');
+}
+
+/**
  * Deletes a cookie by name
  * @param name The name of the cookie to delete
  * @param path The path of the cookie to delete (defaults to '/')

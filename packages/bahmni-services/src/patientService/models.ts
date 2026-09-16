@@ -85,6 +85,7 @@ export interface PatientAddress {
   countyDistrict?: string;
   stateProvince?: string;
   postalCode?: string;
+  country?: string;
 }
 
 export interface PatientIdentifier {

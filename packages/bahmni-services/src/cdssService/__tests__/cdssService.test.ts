@@ -1,4 +1,4 @@
-import { get, post } from '../../api';
+import { post } from '../../api';
 import {
   findCdsServiceConfig,
   buildContextFromResourceMap,
@@ -14,7 +14,6 @@ import {
 } from './mocks';
 
 jest.mock('../../api');
-const mockedGet = get as jest.MockedFunction<typeof get>;
 const mockedPost = post as jest.MockedFunction<typeof post>;
 
 describe('cdssService', () => {

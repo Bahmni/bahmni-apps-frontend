@@ -15,11 +15,13 @@ import {
 import {
   FHIR_OBSERVATION_URL,
   FHIR_OBSERVATIONS_BY_ENCOUNTER_URL,
+  FHIR_OBSERVATION_LASTN_URL,
 } from '../constants';
 import {
   getPatientObservationsBundle,
   getPatientObservations,
   getPatientObservationsWithEncounterBundle,
+  getPatientLatestObservations,
   getObservationsBundleByEncounterUuid,
   groupObservationsByEncounter,
 } from '../observationService';
@@ -428,6 +430,117 @@ describe('observationService', () => {
       expect(result).toHaveLength(1);
       expect(result[0].observations).toHaveLength(1);
       expect(result[0].observations[0].id).toBe('obs-1');
+    });
+  });
+
+  describe('getPatientLatestObservations', () => {
+    it('should call API with correct patient and concept UUIDs', async () => {
+      const patientUuid = 'patient-uuid-123';
+      const conceptCodes = ['concept-1', 'concept-2'];
+      const mockBundle = { resourceType: 'Bundle', entry: [] };
+      (api.get as jest.Mock).mockResolvedValue(mockBundle);
+
+      await getPatientLatestObservations(patientUuid, conceptCodes);
+
+      expect(api.get).toHaveBeenCalledWith(
+        FHIR_OBSERVATION_LASTN_URL(patientUuid, conceptCodes),
+      );
+    });
+
+    it('should include _include=Observation:encounter when includeEncounter is true', async () => {
+      const patientUuid = 'patient-uuid-123';
+      const conceptCodes = ['concept-1'];
+      const mockBundle = { resourceType: 'Bundle', entry: [] };
+      (api.get as jest.Mock).mockResolvedValue(mockBundle);
+
+      await getPatientLatestObservations(
+        patientUuid,
+        conceptCodes,
+        undefined,
+        true,
+      );
+
+      const calledUrl = (api.get as jest.Mock).mock.calls[0][0];
+      expect(calledUrl).toContain('_include=Observation:has-member');
+      expect(calledUrl).toContain('_include=Observation:encounter');
+    });
+
+    it('should not include _include=Observation:encounter when includeEncounter is false', async () => {
+      const patientUuid = 'patient-uuid-123';
+      const conceptCodes = ['concept-1'];
+      const mockBundle = { resourceType: 'Bundle', entry: [] };
+      (api.get as jest.Mock).mockResolvedValue(mockBundle);
+
+      await getPatientLatestObservations(
+        patientUuid,
+        conceptCodes,
+        undefined,
+        false,
+      );
+
+      const calledUrl = (api.get as jest.Mock).mock.calls[0][0];
+      expect(calledUrl).toContain('_include=Observation:has-member');
+      expect(calledUrl).not.toContain('_include=Observation:encounter');
+    });
+
+    it('should call API with encounter UUIDs when provided', async () => {
+      const patientUuid = 'patient-uuid-123';
+      const conceptCodes = ['concept-1', 'concept-2'];
+      const encounterUuids = ['encounter-1', 'encounter-2'];
+      const mockBundle = { resourceType: 'Bundle', entry: [] };
+      (api.get as jest.Mock).mockResolvedValue(mockBundle);
+
+      await getPatientLatestObservations(
+        patientUuid,
+        conceptCodes,
+        encounterUuids,
+        true,
+      );
+
+      expect(api.get).toHaveBeenCalledWith(
+        FHIR_OBSERVATION_LASTN_URL(
+          patientUuid,
+          conceptCodes,
+          encounterUuids,
+          true,
+        ),
+      );
+    });
+
+    it('should handle API errors', async () => {
+      const mockError = new Error('API error');
+      (api.get as jest.Mock).mockRejectedValue(mockError);
+
+      await expect(
+        getPatientLatestObservations('patient-123', ['concept-1']),
+      ).rejects.toThrow(mockError);
+    });
+  });
+
+  describe('getPatientObservationsWithEncounterBundle with encounterUuids', () => {
+    it('should call API with encounter UUIDs when provided', async () => {
+      const patientUuid = 'patient-uuid-123';
+      const conceptCodes = ['concept-1', 'concept-2'];
+      const encounterUuids = ['encounter-1', 'encounter-2'];
+      (api.get as jest.Mock).mockResolvedValue(
+        mockObservationWithEncounterBundle,
+      );
+
+      await getPatientObservationsWithEncounterBundle(
+        patientUuid,
+        conceptCodes,
+        encounterUuids,
+      );
+
+      expect(api.get).toHaveBeenCalledWith(
+        FHIR_OBSERVATION_URL(
+          patientUuid,
+          conceptCodes,
+          undefined,
+          true,
+          encounterUuids,
+        ),
+      );
     });
   });
 });

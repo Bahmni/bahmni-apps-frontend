@@ -1,1 +1,1 @@
-export { logout } from './authService';
+export { logout, validateSessionUser } from './authService';

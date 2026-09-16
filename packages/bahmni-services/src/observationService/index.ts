@@ -1,6 +1,7 @@
 export {
   getPatientObservationsBundle,
   getPatientObservationsWithEncounterBundle,
+  getPatientLatestObservations,
   getPatientObservations,
   getObservationsBundleByEncounterUuid,
   groupObservationsByEncounter,
