@@ -1,4 +1,6 @@
 {
+  "HOME_ACCESS_DENIED_MESSAGE": "You do not have permission to access {{app}}.",
+  "HOME_ACCESS_DENIED_TITLE": "Access Denied",
   "HOME_ERROR_FETCH_CONFIG": "Error al cargar la configuración de la página de inicio",
   "HOME_ERROR_LOCATION_SYNC_FAILED": "El cambio de ubicación se guardó localmente pero no se pudo sincronizar con el servidor.",
   "HOME_ERROR_LOCATION_SYNC_FAILED_TITLE": "Advertencia de sincronización de ubicación",
