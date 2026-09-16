@@ -2,9 +2,10 @@ import {
   calculateAge,
   formatDateTime,
   type PersonAttributeType,
+  type TelecomAttributeTypeMapping,
 } from '@bahmni/services';
 import { format, isValid, parseISO } from 'date-fns';
-import type { Patient } from 'fhir/r4';
+import type { ContactPoint, Patient } from 'fhir/r4';
 import type { AddressData } from '../hooks/useAddressFields';
 import type { BasicInfoData, PersonAttributesData } from '../models/patient';
 import {
@@ -63,48 +64,60 @@ export function convertFhirToBasicInfo(
   };
 }
 
-// Contact attribute types are matched by these conventional slugs (derived from their
-// configured PersonAttributeType name, e.g. "phoneNumber" -> "phonenumber") since a FHIR
-// ContactPoint carries only system/use/rank, not the originating attribute type's name.
-const PHONE_ATTRIBUTE_SLUG = 'phonenumber';
-const ALTERNATE_PHONE_ATTRIBUTE_SLUG = 'alternatephonenumber';
-const EMAIL_ATTRIBUTE_SLUG = 'email';
+const byRank = (a: { rank?: number }, b: { rank?: number }) =>
+  (a.rank ?? Number.MAX_SAFE_INTEGER) - (b.rank ?? Number.MAX_SAFE_INTEGER);
 
+/**
+ * Resolves Patient.telecom ContactPoints to person attribute names using the admin-configured
+ * fhir2Extension.telecomAttributeTypeMap (same mapping the backend uses to build telecom from
+ * attributes), instead of assuming fixed attribute names. A ContactPoint carries only
+ * system/use/rank, so within each system, telecom entries and mapping entries are both sorted by
+ * rank and paired positionally (e.g. rank-1 "phone" telecom value <-> rank-1 "phone" mapping entry).
+ */
 function populateContactAttributesFromTelecom(
   patient: Patient,
-  slugToName: Record<string, string>,
+  attrNameByUuid: Map<string, string>,
+  telecomAttributeTypeMap: TelecomAttributeTypeMapping[],
   data: PersonAttributesData,
 ): Set<string> {
   const populated = new Set<string>();
   const telecom = patient.telecom ?? [];
-
-  const phoneContactPoints = telecom
-    .filter((cp) => cp.system === 'phone' && cp.value)
-    .sort(
-      (a, b) =>
-        (a.rank ?? Number.MAX_SAFE_INTEGER) -
-        (b.rank ?? Number.MAX_SAFE_INTEGER),
-    );
-  const emailContactPoint = telecom.find(
-    (cp) => cp.system === 'email' && cp.value,
-  );
-
-  const phoneAttrName = slugToName[PHONE_ATTRIBUTE_SLUG];
-  const alternatePhoneAttrName = slugToName[ALTERNATE_PHONE_ATTRIBUTE_SLUG];
-  const emailAttrName = slugToName[EMAIL_ATTRIBUTE_SLUG];
-
-  if (phoneAttrName && phoneContactPoints[0]) {
-    data[phoneAttrName] = phoneContactPoints[0].value as string;
-    populated.add(phoneAttrName);
+  if (telecom.length === 0 || telecomAttributeTypeMap.length === 0) {
+    return populated;
   }
-  if (alternatePhoneAttrName && phoneContactPoints[1]) {
-    data[alternatePhoneAttrName] = phoneContactPoints[1].value as string;
-    populated.add(alternatePhoneAttrName);
-  }
-  if (emailAttrName && emailContactPoint) {
-    data[emailAttrName] = emailContactPoint.value as string;
-    populated.add(emailAttrName);
-  }
+
+  const contactPointsBySystem = new Map<string, ContactPoint[]>();
+  telecom.forEach((cp) => {
+    if (!cp.system || !cp.value) return;
+    const entries = contactPointsBySystem.get(cp.system) ?? [];
+    entries.push(cp);
+    contactPointsBySystem.set(cp.system, entries);
+  });
+
+  const mappingsBySystem = new Map<string, TelecomAttributeTypeMapping[]>();
+  telecomAttributeTypeMap.forEach((mapping) => {
+    const entries = mappingsBySystem.get(mapping.system) ?? [];
+    entries.push(mapping);
+    mappingsBySystem.set(mapping.system, entries);
+  });
+
+  contactPointsBySystem.forEach((contactPoints, system) => {
+    const mappings = mappingsBySystem.get(system);
+    if (!mappings) return;
+
+    contactPoints.sort(byRank);
+    mappings.sort(byRank);
+
+    contactPoints.forEach((cp, index) => {
+      const attrName = attrNameByUuid.get(
+        mappings[index]?.attributeTypeUuid ?? '',
+      );
+      if (attrName) {
+        data[attrName] = cp.value as string;
+        populated.add(attrName);
+      }
+    });
+  });
 
   return populated;
 }
@@ -112,10 +125,13 @@ function populateContactAttributesFromTelecom(
 export function convertFhirToPersonAttributes(
   patient: Patient,
   personAttributes: PersonAttributeType[],
+  telecomAttributeTypeMap: TelecomAttributeTypeMapping[] = [],
 ): PersonAttributesData | undefined {
   const slugToName: Record<string, string> = {};
+  const attrNameByUuid = new Map<string, string>();
   personAttributes.forEach((attr) => {
     slugToName[toSlugCase(attr.name)] = attr.name;
+    attrNameByUuid.set(attr.uuid, attr.name);
   });
 
   const data: PersonAttributesData = {};
@@ -125,7 +141,8 @@ export function convertFhirToPersonAttributes(
   // so both old (extension-only) and new (telecom) patient records render correctly.
   const populatedFromTelecom = populateContactAttributesFromTelecom(
     patient,
-    slugToName,
+    attrNameByUuid,
+    telecomAttributeTypeMap,
     data,
   );
   let found = populatedFromTelecom.size > 0;

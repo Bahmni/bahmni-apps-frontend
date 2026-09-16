@@ -36,6 +36,14 @@ jest.mock('../usePersonAttributes', () => ({
     ],
   }),
 }));
+jest.mock('../useTelecomAttributeTypeMap', () => ({
+  useTelecomAttributeTypeMap: () => ({
+    telecomAttributeTypeMap: [
+      { attributeTypeUuid: 'phone-uuid', system: 'phone', rank: 1 },
+      { attributeTypeUuid: 'email-uuid', system: 'email' },
+    ],
+  }),
+}));
 
 const mockGetPatientById = getPatientById as jest.Mock;
 const mockUseNotification = useNotification as jest.MockedFunction<
@@ -172,6 +180,28 @@ describe('usePatientDetails', () => {
     expect(result.current.personAttributesInitialData).toEqual({
       phoneNumber: '+91123',
       email: 'john@test.com',
+    });
+  });
+
+  it('should resolve person attributes from telecom using the configured attribute type map', async () => {
+    mockGetPatientById.mockResolvedValue({
+      ...mockFhirPatient,
+      telecom: [
+        { system: 'phone', value: '+91999', rank: 1 },
+        { system: 'email', value: 'from-telecom@test.com' },
+      ],
+    });
+
+    const { result } = renderHook(
+      () => usePatientDetails({ patientUuid: 'patient-123' }),
+      { wrapper: createWrapper() },
+    );
+
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+
+    expect(result.current.personAttributesInitialData).toEqual({
+      phoneNumber: '+91999',
+      email: 'from-telecom@test.com',
     });
   });
 

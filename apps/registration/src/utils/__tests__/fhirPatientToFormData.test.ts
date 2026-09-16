@@ -1,4 +1,7 @@
-import type { PersonAttributeType } from '@bahmni/services';
+import type {
+  PersonAttributeType,
+  TelecomAttributeTypeMapping,
+} from '@bahmni/services';
 import { format, parseISO } from 'date-fns';
 import type { Patient } from 'fhir/r4';
 import {
@@ -35,6 +38,11 @@ const personAttributes: PersonAttributeType[] = [
     description: null,
     concept: null,
   },
+];
+
+const telecomAttributeTypeMap: TelecomAttributeTypeMapping[] = [
+  { attributeTypeUuid: 'p1', system: 'phone', rank: 1 },
+  { attributeTypeUuid: 'p2', system: 'email' },
 ];
 
 const baseFhirPatient: Patient = {
@@ -190,7 +198,11 @@ describe('convertFhirToPersonAttributes', () => {
         { system: 'email', value: 'from-telecom@t.com' },
       ],
     };
-    const result = convertFhirToPersonAttributes(patient, personAttributes);
+    const result = convertFhirToPersonAttributes(
+      patient,
+      personAttributes,
+      telecomAttributeTypeMap,
+    );
     expect(result).toEqual({
       phoneNumber: '+91999',
       email: 'from-telecom@t.com',
@@ -202,21 +214,29 @@ describe('convertFhirToPersonAttributes', () => {
       ...baseFhirPatient,
       telecom: [{ system: 'phone', value: '+91999', rank: 1 }],
     };
-    const result = convertFhirToPersonAttributes(patient, personAttributes);
+    const result = convertFhirToPersonAttributes(
+      patient,
+      personAttributes,
+      telecomAttributeTypeMap,
+    );
     expect(result).toEqual({ phoneNumber: '+91999', email: 'j@t.com' });
   });
 
-  it('should map a second phone telecom entry to alternatePhoneNumber when configured', () => {
+  it('should map a second phone telecom entry to whichever attribute type is configured at rank 2, regardless of its name', () => {
     const attributesWithAlternate: PersonAttributeType[] = [
       ...personAttributes,
       {
         uuid: 'p3',
-        name: 'alternatePhoneNumber',
+        name: 'mobileNumber',
         format: 'java.lang.String',
         sortWeight: 3,
         description: null,
         concept: null,
       },
+    ];
+    const mappingWithAlternate: TelecomAttributeTypeMapping[] = [
+      ...telecomAttributeTypeMap,
+      { attributeTypeUuid: 'p3', system: 'phone', rank: 2 },
     ];
     const patient: Patient = {
       ...baseFhirPatient,
@@ -230,18 +250,30 @@ describe('convertFhirToPersonAttributes', () => {
     const result = convertFhirToPersonAttributes(
       patient,
       attributesWithAlternate,
+      mappingWithAlternate,
     );
     expect(result).toEqual({
       phoneNumber: '+91111',
-      alternatePhoneNumber: '+91222',
+      mobileNumber: '+91222',
       email: 'from-telecom@t.com',
     });
+  });
+
+  it('should not resolve telecom values when no attribute type map is configured', () => {
+    const patient: Patient = {
+      ...baseFhirPatient,
+      extension: [],
+      telecom: [{ system: 'phone', value: '+91999', rank: 1 }],
+    };
+    const result = convertFhirToPersonAttributes(patient, personAttributes);
+    expect(result).toBeUndefined();
   });
 
   it('should return undefined when neither telecom nor extensions have data', () => {
     const result = convertFhirToPersonAttributes(
       { ...baseFhirPatient, extension: [], telecom: [] },
       personAttributes,
+      telecomAttributeTypeMap,
     );
     expect(result).toBeUndefined();
   });
