@@ -1,4 +1,8 @@
-import { formatDateTime, getPatientEncounters } from '@bahmni/services';
+import {
+  formatDateTime,
+  getPatientEncounters,
+  getVisits,
+} from '@bahmni/services';
 import type { Encounter } from 'fhir/r4';
 import { prescriptionEncounterPicker } from '../prescriptionEncounterPicker';
 
@@ -6,11 +10,13 @@ const DEFAULT_TIME_FORMAT = 'h:mm a';
 
 jest.mock('@bahmni/services', () => ({
   getPatientEncounters: jest.fn(),
+  getVisits: jest.fn(),
   formatDateTime: jest.fn(),
   DEFAULT_TIME_FORMAT: 'h:mm a',
 }));
 
 const mockGetPatientEncounters = getPatientEncounters as jest.Mock;
+const mockGetVisits = getVisits as jest.Mock;
 const mockFormatDateTime = formatDateTime as jest.Mock;
 
 const buildEncounter = (
@@ -32,6 +38,7 @@ const buildEncounter = (
 beforeEach(() => {
   jest.clearAllMocks();
   mockFormatDateTime.mockReturnValue({ formattedResult: '01-Jan-2024' });
+  mockGetVisits.mockResolvedValue([]);
 });
 
 describe('prescriptionEncounterPicker', () => {
@@ -45,13 +52,13 @@ describe('prescriptionEncounterPicker', () => {
     it('resolves the patient UUID from the patientUUID key', async () => {
       mockGetPatientEncounters.mockResolvedValue([]);
       await prescriptionEncounterPicker.fetchItems({ patientUUID: 'p-1' });
-      expect(mockGetPatientEncounters).toHaveBeenCalledWith('p-1');
+      expect(mockGetPatientEncounters).toHaveBeenCalledWith('p-1', undefined);
     });
 
     it('falls back to the patientUuid key when patientUUID is absent', async () => {
       mockGetPatientEncounters.mockResolvedValue([]);
       await prescriptionEncounterPicker.fetchItems({ patientUuid: 'p-2' });
-      expect(mockGetPatientEncounters).toHaveBeenCalledWith('p-2');
+      expect(mockGetPatientEncounters).toHaveBeenCalledWith('p-2', undefined);
     });
 
     it('sorts encounters by period.start descending (most recent first)', async () => {
@@ -66,6 +73,42 @@ describe('prescriptionEncounterPicker', () => {
       });
 
       expect(result.map((e) => e.id)).toEqual(['newer', 'older', 'no-date']);
+    });
+
+    it('bounds the visits lookup to the 2 most recent visits', async () => {
+      mockGetVisits.mockResolvedValue([]);
+      mockGetPatientEncounters.mockResolvedValue([]);
+
+      await prescriptionEncounterPicker.fetchItems({ patientUUID: 'p-1' });
+
+      expect(mockGetVisits).toHaveBeenCalledWith('p-1', undefined, 2);
+    });
+
+    it('fetches without a date filter when the patient has fewer than 2 visits', async () => {
+      mockGetVisits.mockResolvedValue([
+        buildEncounter('visit-1', '2024-06-01T00:00:00Z'),
+      ]);
+      mockGetPatientEncounters.mockResolvedValue([]);
+
+      await prescriptionEncounterPicker.fetchItems({ patientUUID: 'p-1' });
+
+      expect(mockGetPatientEncounters).toHaveBeenCalledWith('p-1', undefined);
+    });
+
+    it('scopes the fetch to the second-most-recent visit start when 2+ visits exist', async () => {
+      mockGetVisits.mockResolvedValue([
+        buildEncounter('visit-older', '2024-01-01T00:00:00Z'),
+        buildEncounter('visit-newest', '2024-06-01T00:00:00Z'),
+        buildEncounter('visit-oldest', '2023-01-01T00:00:00Z'),
+      ]);
+      mockGetPatientEncounters.mockResolvedValue([]);
+
+      await prescriptionEncounterPicker.fetchItems({ patientUUID: 'p-1' });
+
+      expect(mockGetPatientEncounters).toHaveBeenCalledWith(
+        'p-1',
+        new Date('2024-01-01T00:00:00Z').toISOString(),
+      );
     });
   });
 

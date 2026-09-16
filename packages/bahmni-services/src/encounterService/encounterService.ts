@@ -86,14 +86,16 @@ export interface EncounterTypeRef {
  * Fetches visits for a given patient UUID from the FHIR R4 endpoint
  * @param patientUUID - The UUID of the patient
  * @param locationUuid - Optional location UUID to filter visits server-side
+ * @param count - Optional server-side page size, to bound the fetch to the most recent N visits
  * @returns Promise resolving to a FhirEncounterBundle
  */
 export async function getPatientVisits(
   patientUUID: string,
   locationUuid?: string,
+  count?: number,
 ): Promise<Bundle<Encounter>> {
   return await get<Bundle<Encounter>>(
-    PATIENT_VISITS_URL(patientUUID, locationUuid),
+    PATIENT_VISITS_URL(patientUUID, locationUuid, count),
   );
 }
 
@@ -101,13 +103,19 @@ export async function getPatientVisits(
  * Fetches and transforms visits for a given patient UUID
  * @param patientUUID - The UUID of the patient
  * @param locationUuid - Optional location UUID to filter visits server-side
+ * @param count - Optional server-side page size, to bound the fetch to the most recent N visits
  * @returns Promise resolving to an array of FhirEncounter
  */
 export async function getVisits(
   patientUUID: string,
   locationUuid?: string,
+  count?: number,
 ): Promise<Encounter[]> {
-  const fhirEncounterBundle = await getPatientVisits(patientUUID, locationUuid);
+  const fhirEncounterBundle = await getPatientVisits(
+    patientUUID,
+    locationUuid,
+    count,
+  );
   return (
     fhirEncounterBundle.entry
       ?.map((entry) => entry.resource)
@@ -121,10 +129,13 @@ export async function getVisits(
  * Walks every page (offset-based) so patients with many encounters are not truncated to the
  * server's default page size.
  * @param patientUUID - The UUID of the patient
+ * @param sinceDate - Optional ISO instant; when set, only encounters on/after this date are fetched
+ *   (FHIR `date=ge` filters on `Encounter.period`, not last-modified time)
  * @returns Promise resolving to an array of FHIR Encounters
  */
 export async function getPatientEncounters(
   patientUUID: string,
+  sinceDate?: string,
 ): Promise<Encounter[]> {
   const pageSize = 100;
   const encounters: Encounter[] = [];
@@ -132,7 +143,7 @@ export async function getPatientEncounters(
 
   for (;;) {
     const bundle = await get<Bundle<Encounter>>(
-      PATIENT_ENCOUNTERS_URL(patientUUID, pageSize, offset),
+      PATIENT_ENCOUNTERS_URL(patientUUID, pageSize, offset, sinceDate),
     );
     const page = (bundle.entry ?? [])
       .map((entry) => entry.resource)
