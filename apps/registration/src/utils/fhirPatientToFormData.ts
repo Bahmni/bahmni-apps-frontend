@@ -2,9 +2,10 @@ import {
   calculateAge,
   formatDateTime,
   type PersonAttributeType,
+  type TelecomAttributeTypeMapping,
 } from '@bahmni/services';
 import { format, isValid, parseISO } from 'date-fns';
-import type { Patient } from 'fhir/r4';
+import type { ContactPoint, Patient } from 'fhir/r4';
 import type { AddressData } from '../hooks/useAddressFields';
 import type { BasicInfoData, PersonAttributesData } from '../models/patient';
 import {
@@ -63,23 +64,94 @@ export function convertFhirToBasicInfo(
   };
 }
 
+const byRank = (a: { rank?: number }, b: { rank?: number }) =>
+  (a.rank ?? Number.MAX_SAFE_INTEGER) - (b.rank ?? Number.MAX_SAFE_INTEGER);
+
+/**
+ * Resolves Patient.telecom ContactPoints to person attribute names using the admin-configured
+ * fhir2Extension.telecomAttributeTypeMap (same mapping the backend uses to build telecom from
+ * attributes), instead of assuming fixed attribute names. A ContactPoint carries only
+ * system/use/rank, so within each system, telecom entries and mapping entries are both sorted by
+ * rank and paired positionally (e.g. rank-1 "phone" telecom value <-> rank-1 "phone" mapping entry).
+ */
+function populateContactAttributesFromTelecom(
+  patient: Patient,
+  attrNameByUuid: Map<string, string>,
+  telecomAttributeTypeMap: TelecomAttributeTypeMapping[],
+  data: PersonAttributesData,
+): Set<string> {
+  const populated = new Set<string>();
+  const telecom = patient.telecom ?? [];
+  if (telecom.length === 0 || telecomAttributeTypeMap.length === 0) {
+    return populated;
+  }
+
+  const contactPointsBySystem = new Map<string, ContactPoint[]>();
+  telecom.forEach((cp) => {
+    if (!cp.system || !cp.value) return;
+    const entries = contactPointsBySystem.get(cp.system) ?? [];
+    entries.push(cp);
+    contactPointsBySystem.set(cp.system, entries);
+  });
+
+  const mappingsBySystem = new Map<string, TelecomAttributeTypeMapping[]>();
+  telecomAttributeTypeMap.forEach((mapping) => {
+    const entries = mappingsBySystem.get(mapping.system) ?? [];
+    entries.push(mapping);
+    mappingsBySystem.set(mapping.system, entries);
+  });
+
+  contactPointsBySystem.forEach((contactPoints, system) => {
+    const mappings = mappingsBySystem.get(system);
+    if (!mappings) return;
+
+    contactPoints.sort(byRank);
+    mappings.sort(byRank);
+
+    contactPoints.forEach((cp, index) => {
+      const attrName = attrNameByUuid.get(
+        mappings[index]?.attributeTypeUuid ?? '',
+      );
+      if (attrName) {
+        data[attrName] = cp.value as string;
+        populated.add(attrName);
+      }
+    });
+  });
+
+  return populated;
+}
+
 export function convertFhirToPersonAttributes(
   patient: Patient,
   personAttributes: PersonAttributeType[],
+  telecomAttributeTypeMap: TelecomAttributeTypeMapping[] = [],
 ): PersonAttributesData | undefined {
   const slugToName: Record<string, string> = {};
+  const attrNameByUuid = new Map<string, string>();
   personAttributes.forEach((attr) => {
     slugToName[toSlugCase(attr.name)] = attr.name;
+    attrNameByUuid.set(attr.uuid, attr.name);
   });
 
   const data: PersonAttributesData = {};
-  let found = false;
+
+  // Prefer Patient.telecom for contact attributes (phone/email); only fall back to the
+  // legacy generic-attribute extensions for whichever of those isn't present in telecom,
+  // so both old (extension-only) and new (telecom) patient records render correctly.
+  const populatedFromTelecom = populateContactAttributesFromTelecom(
+    patient,
+    attrNameByUuid,
+    telecomAttributeTypeMap,
+    data,
+  );
+  let found = populatedFromTelecom.size > 0;
 
   for (const ext of patient.extension ?? []) {
     if (!ext.url?.startsWith(PATIENT_ATTRIBUTE_PREFIX)) continue;
     const slug = ext.url.substring(PATIENT_ATTRIBUTE_PREFIX.length);
     const attrName = slugToName[slug];
-    if (!attrName) continue;
+    if (!attrName || populatedFromTelecom.has(attrName)) continue;
 
     const value = ext.valueString ?? ext.valueBoolean;
     if (value !== undefined) {
@@ -102,6 +174,7 @@ export function convertFhirToAddressData(
   if (addr.district) data.countyDistrict = addr.district;
   if (addr.state) data.stateProvince = addr.state;
   if (addr.postalCode) data.postalCode = addr.postalCode;
+  if (addr.country) data.country = addr.country;
 
   const addrExt = addr.extension?.find((e) => e.url === ADDRESS_EXT_URL);
   if (addrExt?.extension) {

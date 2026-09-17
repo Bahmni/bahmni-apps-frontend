@@ -27,6 +27,7 @@ export {
   fetchPatientPhotoFromUrl,
   getPatientProfile,
   getPersonAttributeTypes,
+  getTelecomAttributeTypeMap,
   getRelationshipTypes,
   getObservationByConceptName,
   calculateDaysSince,
@@ -48,6 +49,7 @@ export {
   type PatientProfileResponse,
   type PersonAttributeType,
   type PersonAttributeTypesResponse,
+  type TelecomAttributeTypeMapping,
   type ConceptAnswer,
   type PersonAttributeConcept,
   type PatientSearchField,
@@ -100,7 +102,12 @@ export {
   type AppointmentUnavailability,
   type CreateUnavailabilityRequest,
 } from './appointmentService';
-export { getFormattedError } from './errorHandling';
+export {
+  getFormattedError,
+  getErrorKind,
+  PATIENT_NOT_FOUND_ERROR_KEY,
+} from './errorHandling';
+export type { ErrorKind } from './errorHandling';
 export {
   capitalize,
   generateId,
@@ -248,11 +255,12 @@ export {
   type UserLocation,
   BAHMNI_USER_LOCATION_COOKIE,
 } from './userService';
-export { logout } from './authService';
+export { logout, validateSessionUser } from './authService';
 export { USER_PINNED_PREFERENCE_URL } from './observationFormsService/constants';
 export {
   getPatientObservationsBundle,
   getPatientObservationsWithEncounterBundle,
+  getPatientLatestObservations,
   getPatientObservations,
   getObservationsBundleByEncounterUuid,
   groupObservationsByEncounter,
@@ -305,6 +313,7 @@ export {
 export {
   getEncountersAndVisitsForEOC,
   type EpisodeOfCareDataType,
+  getEpisodeOfCare,
 } from './episodeOfCareService';
 
 export {
@@ -344,6 +353,7 @@ export {
   DATETIME_REGEX_PATTERN,
   INTERPRETATION_TO_CODE,
   FHIR_LAB_ORDER_CONCEPT_TYPE_EXTENSION_URL,
+  FHIR_EXT_MEDICATION_REQUEST_NOTE_CATEGORY,
 } from './constants/fhir';
 
 export {
@@ -395,10 +405,12 @@ export {
 export {
   getPatientPrograms,
   getPatientProgramsPage,
+  getAllPrograms,
   getProgramByUUID,
   getCurrentStateName,
   extractAttributes,
   updateProgramState,
+  type Program,
   type ProgramPage,
   type ProgramEnrollment,
   type PatientProgramsResponse,
@@ -486,8 +498,11 @@ export {
   groupExtensionsByPoint,
   filterExtensionsByPrivileges,
   type Extension,
-  type ExtensionHandlerProps,
   type SearchExtensionParam,
+  type SearchExtension,
+  type ActionExtensionParam,
+  type ActionExtension,
+  type ExtensionButtonKind,
 } from './extensions';
 
 export * from './orders';

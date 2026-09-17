@@ -1526,6 +1526,220 @@ describe('medicationRequestService', () => {
     });
   });
 
+  describe('getNote — non-order-note category filtering', () => {
+    it('should exclude notes tagged with a non-order-note category', async () => {
+      const mockMedication = createMockMedicationRequest({
+        id: 'note-filter-test',
+        note: [
+          {
+            text: 'This is a cancellation note',
+            extension: [
+              {
+                url: 'http://fhir.bahmni.org/ext/medicationRequest/note-category',
+                valueCode: 'cancellation-note',
+              },
+            ],
+          },
+          {
+            text: 'This is an order note',
+            extension: [
+              {
+                url: 'http://fhir.bahmni.org/ext/medicationRequest/note-category',
+                valueCode: 'order-note',
+              },
+            ],
+          },
+          {
+            text: 'This is an untagged note',
+          },
+        ],
+      });
+
+      const mockBundle = createMockBundle([mockMedication]);
+      (get as jest.Mock).mockResolvedValueOnce(mockBundle);
+
+      const result = await getPatientMedications(patientUUID);
+
+      // Only order-note and untagged notes should appear in note
+      expect(result[0].note).toContain('This is an order note');
+      expect(result[0].note).toContain('This is an untagged note');
+      expect(result[0].note).not.toContain('This is a cancellation note');
+    });
+
+    it('should return empty string when all notes are tagged with non-order-note category', async () => {
+      const mockMedication = createMockMedicationRequest({
+        id: 'note-filter-all-cancellation',
+        note: [
+          {
+            text: 'Cancellation note 1',
+            extension: [
+              {
+                url: 'http://fhir.bahmni.org/ext/medicationRequest/note-category',
+                valueCode: 'cancellation-note',
+              },
+            ],
+          },
+        ],
+      });
+
+      const mockBundle = createMockBundle([mockMedication]);
+      (get as jest.Mock).mockResolvedValueOnce(mockBundle);
+
+      const result = await getPatientMedications(patientUUID);
+
+      expect(result[0].note).toBe('');
+    });
+  });
+
+  describe('getCancellationNote', () => {
+    it('should return cancellation note text when note is tagged with cancellation-note category', async () => {
+      const mockMedication = createMockMedicationRequest({
+        id: 'cancellation-note-test',
+        note: [
+          {
+            text: 'Patient refused medication',
+            extension: [
+              {
+                url: 'http://fhir.bahmni.org/ext/medicationRequest/note-category',
+                valueCode: 'cancellation-note',
+              },
+            ],
+          },
+        ],
+      });
+
+      const mockBundle = createMockBundle([mockMedication]);
+      (get as jest.Mock).mockResolvedValueOnce(mockBundle);
+
+      const result = await getPatientMedications(patientUUID);
+
+      expect(result[0].cancellationNote).toBe('Patient refused medication');
+    });
+
+    it('should return undefined when no cancellation-note tagged note exists', async () => {
+      const mockMedication = createMockMedicationRequest({
+        id: 'no-cancellation-note-test',
+        note: [
+          {
+            text: 'Regular order note',
+            extension: [
+              {
+                url: 'http://fhir.bahmni.org/ext/medicationRequest/note-category',
+                valueCode: 'order-note',
+              },
+            ],
+          },
+        ],
+      });
+
+      const mockBundle = createMockBundle([mockMedication]);
+      (get as jest.Mock).mockResolvedValueOnce(mockBundle);
+
+      const result = await getPatientMedications(patientUUID);
+
+      expect(result[0].cancellationNote).toBeUndefined();
+    });
+
+    it('should return undefined when notes array is empty', async () => {
+      const mockMedication = createMockMedicationRequest({
+        id: 'empty-note-test',
+        note: [],
+      });
+
+      const mockBundle = createMockBundle([mockMedication]);
+      (get as jest.Mock).mockResolvedValueOnce(mockBundle);
+
+      const result = await getPatientMedications(patientUUID);
+
+      expect(result[0].cancellationNote).toBeUndefined();
+    });
+
+    it('should join multiple cancellation notes with a space', async () => {
+      const mockMedication = createMockMedicationRequest({
+        id: 'multi-cancellation-note-test',
+        note: [
+          {
+            text: 'Patient refused.',
+            extension: [
+              {
+                url: 'http://fhir.bahmni.org/ext/medicationRequest/note-category',
+                valueCode: 'cancellation-note',
+              },
+            ],
+          },
+          {
+            text: 'Advised alternative.',
+            extension: [
+              {
+                url: 'http://fhir.bahmni.org/ext/medicationRequest/note-category',
+                valueCode: 'cancellation-note',
+              },
+            ],
+          },
+        ],
+      });
+
+      const mockBundle = createMockBundle([mockMedication]);
+      (get as jest.Mock).mockResolvedValueOnce(mockBundle);
+
+      const result = await getPatientMedications(patientUUID);
+
+      expect(result[0].cancellationNote).toBe(
+        'Patient refused. Advised alternative.',
+      );
+    });
+  });
+
+  describe('fhirResource field on formatted medication', () => {
+    it('should include the raw FHIR MedicationRequest as fhirResource', async () => {
+      const mockMedication = createMockMedicationRequest({
+        id: 'fhir-resource-test',
+        medicationReference: { display: 'Aspirin 100mg' },
+      });
+
+      const mockBundle = createMockBundle([mockMedication]);
+      (get as jest.Mock).mockResolvedValueOnce(mockBundle);
+
+      const result = await getPatientMedications(patientUUID);
+
+      expect(result[0].fhirResource).toBeDefined();
+      expect(result[0].fhirResource?.resourceType).toBe('MedicationRequest');
+      expect(result[0].fhirResource?.id).toBe('fhir-resource-test');
+    });
+  });
+
+  describe('encounterUuids and code parameters', () => {
+    it('should pass encounterUuids as comma-separated string in URL when provided', async () => {
+      const emptyBundle = createMockBundle([]);
+      (get as jest.Mock).mockResolvedValueOnce(emptyBundle);
+
+      await getPatientMedications(
+        patientUUID,
+        undefined,
+        ['enc-1', 'enc-2'],
+        false,
+      );
+
+      const callUrl = (get as jest.Mock).mock.calls[0][0];
+      expect(callUrl).toContain('enc-1,enc-2');
+    });
+
+    it('should pass code as comma-separated string in URL when provided', async () => {
+      const emptyBundle = createMockBundle([]);
+      (get as jest.Mock).mockResolvedValueOnce(emptyBundle);
+
+      await getPatientMedications(
+        patientUUID,
+        ['code-a', 'code-b'],
+        undefined,
+        false,
+      );
+
+      const callUrl = (get as jest.Mock).mock.calls[0][0];
+      expect(callUrl).toContain('code-a,code-b');
+    });
+  });
+
   describe('getDoseFormFromReference extraction', () => {
     it('should extract doseForm from Bundle medication entries', async () => {
       const mockMedication = createMockMedicationRequest({

@@ -1,4 +1,5 @@
 import { ProgramEnrollment } from '@bahmni/services';
+import { EpisodeOfCare } from 'fhir/r4';
 import { ProgramField } from '../model';
 import {
   extractProgramAttributeNames,
@@ -76,6 +77,7 @@ describe('Utils', () => {
         outcomeName: null,
         outcomeDetails: null,
         currentStateName: null,
+        careManagerDisplay: null,
         attributes: {},
         allowedStates: [],
       });
@@ -163,6 +165,34 @@ describe('Utils', () => {
       const result = createProgramDetailsViewModel(enrollment, []);
 
       expect(result.allowedStates).toEqual([]);
+    });
+
+    it('should extract careManagerDisplay from episodeOfCare when it has a careManager', () => {
+      const enrollment = mockEnrollment();
+      const episodeOfCare = {
+        careManager: { display: 'Dr. Test' },
+      } as EpisodeOfCare;
+
+      const result = createProgramDetailsViewModel(
+        enrollment,
+        [],
+        episodeOfCare,
+      );
+
+      expect(result.careManagerDisplay).toBe('Dr. Test');
+    });
+
+    it('should return null careManagerDisplay when episodeOfCare has no careManager', () => {
+      const enrollment = mockEnrollment();
+      const episodeOfCare = {} as EpisodeOfCare;
+
+      const result = createProgramDetailsViewModel(
+        enrollment,
+        [],
+        episodeOfCare,
+      );
+
+      expect(result.careManagerDisplay).toBeNull();
     });
   });
 });

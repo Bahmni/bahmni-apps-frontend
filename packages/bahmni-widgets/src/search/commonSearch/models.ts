@@ -83,6 +83,7 @@ export interface CriterionConfig {
   translationKey: string;
   default?: boolean;
   input: InputConfig;
+  additionalCriteria?: string[];
 }
 
 export type ResultFieldFilterType = 'text' | 'select' | 'dateRange' | 'numeric';
@@ -115,9 +116,10 @@ export interface SearchContextConfig {
   context: 'patient' | 'appointment' | 'patientProgram';
   translationKey: string;
   requiredPrivileges: string[];
-  locationAware: 'loggedInLocation' | 'allowedLocation';
+  locationAware?: 'loggedInLocation' | 'allowedLocation';
   url: string;
   pageSize: number;
+  batchSize: number;
   criteria: CriterionConfig[];
   resultFields: ResultFieldConfig[];
   actions?: ActionConfig[];
@@ -139,8 +141,12 @@ export interface CriterionRow {
 export interface CurrentSearchState {
   context: SearchContextConfig;
   rows: CriterionRow[];
-  resultFields: ResultFieldConfig[];
   results: unknown[];
+  currentSet: number;
+  searchId: string;
+  totalCount: number;
+  nextCursor: string | null;
+  prevCursor: string | null;
 }
 
 export interface ResolvedRow {
@@ -161,7 +167,41 @@ export interface SearchConditionGroup {
 
 export type SearchCondition = SearchConditionLeaf | SearchConditionGroup;
 
+export type CursorDirection = 'next' | 'prev';
+
+export interface SearchPaginationMeta {
+  includeTotalCount: boolean;
+  pagination: {
+    limit: number;
+    sortOrder: 'asc' | 'desc';
+    cursor: string | null;
+    direction?: CursorDirection;
+  };
+}
+
 export interface SearchPayload {
   entity: string;
   criteria: SearchConditionGroup;
+  meta?: SearchPaginationMeta;
+}
+
+export interface SearchResponse {
+  context: string;
+  meta?: {
+    timestamp?: number;
+    totalCount?: number;
+    pagination?: {
+      nextCursor: string | null;
+      prevCursor: string | null;
+    };
+  };
+  results?: unknown[];
+  error?: unknown;
+}
+
+export interface SearchPage {
+  results: unknown[];
+  totalCount: number | null;
+  nextCursor: string | null;
+  prevCursor: string | null;
 }

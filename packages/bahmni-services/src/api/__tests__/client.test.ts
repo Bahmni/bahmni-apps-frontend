@@ -38,8 +38,8 @@ describe('Axios Client', () => {
       const requestInterceptor = (client.interceptors.request as any)
         .handlers[0];
 
-      await expect(() => requestInterceptor.rejected(mockError)).rejects.toBe(
-        'Error: Test error message',
+      expect(() => requestInterceptor.rejected(mockError)).toThrow(
+        'Test error message',
       );
       expect(getFormattedError).toHaveBeenCalledWith(mockError);
     });
@@ -204,6 +204,51 @@ describe('Axios Client', () => {
         expect(globalThis.location.href).toBe('/bahmni/home/index.html#/login');
       });
 
+      it('should parse blob error response body and pass parsed data to getFormattedError', async () => {
+        const errorBody = {
+          error: { message: "User doesn't have Get Patient Photo privilege" },
+        };
+        const mockBlob = Object.assign(new Blob(), {
+          text: jest.fn().mockResolvedValue(JSON.stringify(errorBody)),
+        });
+        const mockError: any = {
+          response: { status: 403, data: mockBlob },
+          isAxiosError: true,
+        };
+
+        (axios.isAxiosError as unknown as jest.Mock) = jest
+          .fn()
+          .mockReturnValue(true);
+
+        const responseInterceptor = (client.interceptors.response as any)
+          .handlers[0];
+
+        await responseInterceptor.rejected(mockError).catch(() => {});
+        expect(mockError.response.data).toEqual(errorBody);
+        expect(getFormattedError).toHaveBeenCalledWith(mockError);
+      });
+
+      it('should leave blob as-is when JSON parsing fails', async () => {
+        const mockBlob = Object.assign(new Blob(), {
+          text: jest.fn().mockResolvedValue('not-json'),
+        });
+        const mockError: any = {
+          response: { status: 403, data: mockBlob },
+          isAxiosError: true,
+        };
+
+        (axios.isAxiosError as unknown as jest.Mock) = jest
+          .fn()
+          .mockReturnValue(true);
+
+        const responseInterceptor = (client.interceptors.response as any)
+          .handlers[0];
+
+        await responseInterceptor.rejected(mockError).catch(() => {});
+        expect(mockError.response.data).toBe(mockBlob);
+        expect(getFormattedError).toHaveBeenCalledWith(mockError);
+      });
+
       it('should handle non-401 Axios errors', async () => {
         const mockError = {
           response: { status: 500 },
@@ -219,7 +264,7 @@ describe('Axios Client', () => {
 
         await expect(() =>
           responseInterceptor.rejected(mockError),
-        ).rejects.toBe('Error: Test error message');
+        ).rejects.toThrow('Test error message');
         expect(getFormattedError).toHaveBeenCalledWith(mockError);
       });
 
@@ -235,7 +280,7 @@ describe('Axios Client', () => {
 
         await expect(() =>
           responseInterceptor.rejected(mockError),
-        ).rejects.toBe('Error: Test error message');
+        ).rejects.toThrow('Test error message');
         expect(getFormattedError).toHaveBeenCalledWith(mockError);
       });
 
@@ -254,7 +299,7 @@ describe('Axios Client', () => {
 
         await expect(() =>
           responseInterceptor.rejected(mockError),
-        ).rejects.toBe('Error: Test error message');
+        ).rejects.toThrow('Test error message');
         expect(getFormattedError).toHaveBeenCalledWith(mockError);
       });
 
@@ -275,21 +320,21 @@ describe('Axios Client', () => {
         const responseInterceptor = (client.interceptors.response as any)
           .handlers[0];
 
-        await expect(() =>
-          responseInterceptor.fulfilled(mockResponse),
-        ).rejects.toBe('Error: Test error message');
+        expect(() => responseInterceptor.fulfilled(mockResponse)).toThrow(
+          'Test error message',
+        );
         expect(getFormattedError).toHaveBeenCalled();
       });
 
-      it('should handle unexpected errors in response interceptor', async () => {
+      it('should handle unexpected errors in response interceptor', () => {
         const mockResponse = null; // forceful unexpected shape
 
         const responseInterceptor = (client.interceptors.response as any)
           .handlers[0];
 
-        await expect(() =>
-          responseInterceptor.fulfilled(mockResponse),
-        ).rejects.toBe('Error: Test error message');
+        expect(() => responseInterceptor.fulfilled(mockResponse)).toThrow(
+          'Test error message',
+        );
         expect(getFormattedError).toHaveBeenCalled();
       });
     });

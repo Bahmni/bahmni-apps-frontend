@@ -22,6 +22,7 @@ export const mockCommonSearchWidgetConfig: CommonSearchWidgetConfig = [
     locationAware: 'loggedInLocation',
     url: '/openmrs/ws/rest/v1/patient/search',
     pageSize: 20,
+    batchSize: 100,
     resultFields: mockResultFields,
     criteria: [
       {
@@ -46,6 +47,7 @@ export const mockMultiContextConfig: CommonSearchWidgetConfig = [
     locationAware: 'loggedInLocation',
     url: '/openmrs/ws/rest/v1/patient/search',
     pageSize: 20,
+    batchSize: 100,
     resultFields: mockResultFields,
     criteria: [
       {
@@ -66,7 +68,8 @@ export const mockMultiContextConfig: CommonSearchWidgetConfig = [
     requiredPrivileges: ['View Appointments'],
     locationAware: 'allowedLocation',
     url: '/openmrs/ws/rest/v1/appointment/search',
-    pageSize: 10,
+    pageSize: 20,
+    batchSize: 100,
     resultFields: mockResultFields,
     criteria: [
       {
@@ -82,6 +85,31 @@ export const mockMultiContextConfig: CommonSearchWidgetConfig = [
     ],
   },
 ];
+
+export const mockCommonSearchWidgetConfigWithoutLocationAware: CommonSearchWidgetConfig =
+  [
+    {
+      context: 'patient',
+      translationKey: 'PATIENT_SEARCH',
+      requiredPrivileges: ['View Patients'],
+      url: '/openmrs/ws/rest/v1/patientSearch',
+      pageSize: 20,
+      batchSize: 100,
+      resultFields: mockResultFields,
+      criteria: [
+        {
+          id: 'patient.name.given',
+          field: { key: 'patient.name.given' },
+          translationKey: 'PATIENT_GIVEN_NAME',
+          default: true,
+          input: {
+            kind: 'text',
+            placeholderTranslationKey: 'PATIENT_GIVEN_NAME_PLACEHOLDER',
+          },
+        },
+      ],
+    },
+  ];
 
 export const mockPrivilegeViewPatients: UserPrivilege[] = [
   { uuid: 'priv-uuid-1', name: 'View Patients' },
@@ -144,6 +172,7 @@ export const mockCommonSearchWidgetConfigWithRange: CommonSearchWidgetConfig = [
     locationAware: 'loggedInLocation',
     url: '/openmrs/ws/rest/v1/patient/search',
     pageSize: 20,
+    batchSize: 100,
     resultFields: mockResultFields,
     criteria: [mockNumericRangeCriterionConfig],
   },

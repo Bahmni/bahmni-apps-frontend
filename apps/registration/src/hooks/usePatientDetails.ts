@@ -12,6 +12,7 @@ import {
 } from '../utils/fhirPatientToFormData';
 import { useGenderData } from '../utils/identifierGenderUtils';
 import { usePersonAttributes } from './usePersonAttributes';
+import { useTelecomAttributeTypeMap } from './useTelecomAttributeTypeMap';
 
 interface UsePatientDetailsProps {
   patientUuid: string | undefined;
@@ -29,6 +30,7 @@ export const usePatientDetails = ({ patientUuid }: UsePatientDetailsProps) => {
   const { getGenderDisplay } = useGenderData(t);
   const { addNotification } = useNotification();
   const { personAttributes } = usePersonAttributes();
+  const { telecomAttributeTypeMap } = useTelecomAttributeTypeMap();
 
   const [metadata, setMetadata] = useState<PatientMetadata>({
     patientUuid: '',
@@ -68,9 +70,13 @@ export const usePatientDetails = ({ patientUuid }: UsePatientDetailsProps) => {
   const personAttributesInitialData = useMemo(
     () =>
       patientDetails
-        ? convertFhirToPersonAttributes(patientDetails, personAttributes)
+        ? convertFhirToPersonAttributes(
+            patientDetails,
+            personAttributes,
+            telecomAttributeTypeMap,
+          )
         : undefined,
-    [patientDetails, personAttributes],
+    [patientDetails, personAttributes, telecomAttributeTypeMap],
   );
 
   const addressInitialData = useMemo(

@@ -2,7 +2,7 @@ import { Tag } from '@carbon/react';
 import type { Meta, StoryObj } from '@storybook/react';
 import React from 'react';
 import { DataTable } from '../DataTable';
-import type { DataTableColumn } from '../types';
+import type { DataTableColumn, DataTableProps } from '../types';
 
 const TableDecorator = (Story: React.ComponentType) => (
   <div style={{ padding: '1rem', maxWidth: '100%' }}>
@@ -95,12 +95,24 @@ toolbar with title/description/action button.
     columns: { control: 'object', description: 'Column definitions' },
     rows: { control: 'object', description: 'Table row data' },
     renderCell: { control: false, description: 'Custom cell renderer' },
-    ariaLabel: { control: 'text', description: 'ARIA label for screen readers' },
+    ariaLabel: {
+      control: 'text',
+      description: 'ARIA label for screen readers',
+    },
     loading: { control: 'boolean', description: 'Skeleton loading state' },
-    errorStateMessage: { control: 'text', description: 'Error message shown in place of the table' },
-    emptyStateMessage: { control: 'text', description: 'Empty state fallback text' },
+    errorStateMessage: {
+      control: 'text',
+      description: 'Error message shown in place of the table',
+    },
+    emptyStateMessage: {
+      control: 'text',
+      description: 'Empty state fallback text',
+    },
     className: { control: 'text', description: 'Custom container class' },
-    dataTestId: { control: 'text', description: 'Root data-testid; sub-elements derive from it' },
+    dataTestId: {
+      control: 'text',
+      description: 'Root data-testid; sub-elements derive from it',
+    },
   },
 };
 
@@ -135,7 +147,7 @@ export const NoSortableColumns: Story = {
     docs: {
       description: {
         story:
-          'When no column declares `enableSorting`, headers render as plain text — equivalent to today\'s `SimpleDataTable`.',
+          "When no column declares `enableSorting`, headers render as plain text — equivalent to today's `SimpleDataTable`.",
       },
     },
   },
@@ -144,9 +156,7 @@ export const NoSortableColumns: Story = {
 export const WithDefaultSort: Story = {
   args: {
     columns: columns.map((c) =>
-      c.key === 'name'
-        ? { ...c, defaultSortDirection: 'desc' as const }
-        : c,
+      c.key === 'name' ? { ...c, defaultSortDirection: 'desc' as const } : c,
     ),
     rows,
     ariaLabel: 'Medications sorted by name',
@@ -235,42 +245,98 @@ const manyRows: Medication[] = Array.from({ length: 23 }, (_, i) => ({
   orderDate: '01/01/2026',
 }));
 
-export const WithPagination: Story = {
+export const DefaultPagination: Story = {
   args: {
     columns,
     rows: manyRows,
     ariaLabel: 'Paginated medications',
     renderCell,
-    enablePagination: true,
-    pageSize: 5,
+    pagination: { mode: 'default', pageSize: 5 },
   },
   parameters: {
     docs: {
       description: {
         story:
-          'Client-side pagination using TanStack’s pagination row model. The footer shows page size, page navigation, and total count.',
+          '`mode: "default"` — you pass every row and DataTable slices them in memory. No callback, no refetching. Page navigation and the page-size dropdown are handled entirely inside the component.',
       },
     },
   },
 };
 
-export const WithManualPagination: Story = {
+export const ManualPagination: Story = {
+  render: (args: DataTableProps<Medication>) => {
+    const [page, setPage] = React.useState(1);
+    const [pageSize, setPageSize] = React.useState(5);
+    const start = (page - 1) * pageSize;
+
+    return (
+      <DataTable
+        {...args}
+        columns={columns}
+        renderCell={renderCell}
+        rows={manyRows.slice(start, start + pageSize)}
+        pagination={{
+          mode: 'manual',
+          page,
+          pageSize,
+          totalItems: manyRows.length,
+          onPageChange: (nextPage, nextPageSize) => {
+            setPage(nextPage);
+            setPageSize(nextPageSize);
+          },
+        }}
+      />
+    );
+  },
   args: {
-    columns,
-    rows: manyRows.slice(0, 5),
     ariaLabel: 'Server-paginated medications',
-    renderCell,
-    enablePagination: true,
-    pageSize: 5,
-    manualPagination: true,
-    totalItems: 200,
-    onPageChange: (p, ps) => console.log('parent should fetch page', p, 'size', ps),
   },
   parameters: {
     docs: {
       description: {
         story:
-          'Server-side pagination mode: parent provides `manualPagination`, `totalItems`, and `onPageChange`. The component does not slice rows — the parent re-fetches on page change.',
+          '`mode: "manual"` — you pass exactly one page of rows and DataTable renders them verbatim. `totalItems` is required because the page count cannot be derived from a single page. `page` is controlled: the component shows whatever page you pass, and `onPageChange` tells you to fetch a new one.',
+      },
+    },
+  },
+};
+
+export const CursorPagination: Story = {
+  render: (args: DataTableProps<Medication>) => {
+    const BATCH_SIZE = 10;
+    const PAGE_SIZE = 5;
+    const [batch, setBatch] = React.useState(0);
+    const start = batch * BATCH_SIZE;
+    const pagesPerBatch = Math.ceil(BATCH_SIZE / PAGE_SIZE);
+
+    return (
+      <DataTable
+        {...args}
+        columns={columns}
+        renderCell={renderCell}
+        rows={manyRows.slice(start, start + BATCH_SIZE)}
+        pagination={{
+          mode: 'cursor',
+          pageSize: PAGE_SIZE,
+          startPage: batch * pagesPerBatch + 1,
+          hasPrevious: batch > 0,
+          hasNext: start + BATCH_SIZE < manyRows.length,
+          onSetChange: (direction, table) => {
+            setBatch((b) => (direction === 'next' ? b + 1 : b - 1));
+            table.resetColumnFilters();
+          },
+        }}
+      />
+    );
+  },
+  args: {
+    ariaLabel: 'Cursor-paginated medications',
+  },
+  parameters: {
+    docs: {
+      description: {
+        story:
+          '`mode: "cursor"` — you fetch one batch at a time and DataTable paginates within it, offering prev/next controls for the adjacent batch. DataTable knows nothing about cursors or batch sizes: you compute `startPage` so page numbers stay continuous. Each callback receives the table instance, so resetting filters or sorting on navigation is your choice — this story clears filters but keeps sorting.',
       },
     },
   },
@@ -385,7 +451,12 @@ export const FullyFeatured: Story = {
 };
 
 const filterableColumns: DataTableColumn<Medication>[] = [
-  { key: 'name', header: 'Medication', enableSorting: true, enableFiltering: true },
+  {
+    key: 'name',
+    header: 'Medication',
+    enableSorting: true,
+    enableFiltering: true,
+  },
   {
     key: 'status',
     header: 'Status',
@@ -393,7 +464,12 @@ const filterableColumns: DataTableColumn<Medication>[] = [
     filterType: 'select',
     enableGrouping: true,
   },
-  { key: 'orderedBy', header: 'Ordered By', enableFiltering: true, enableGrouping: true },
+  {
+    key: 'orderedBy',
+    header: 'Ordered By',
+    enableFiltering: true,
+    enableGrouping: true,
+  },
 ];
 
 export const WithGlobalSearch: Story = {
@@ -506,10 +582,30 @@ interface Order {
 }
 
 const orderRows: Order[] = [
-  { id: '1', name: 'Order A', orderedAt: Date.UTC(2026, 0, 15), status: 'open' },
-  { id: '2', name: 'Order B', orderedAt: Date.UTC(2026, 1, 20), status: 'closed' },
-  { id: '3', name: 'Order C', orderedAt: Date.UTC(2026, 3, 10), status: 'open' },
-  { id: '4', name: 'Order D', orderedAt: Date.UTC(2026, 4, 5), status: 'closed' },
+  {
+    id: '1',
+    name: 'Order A',
+    orderedAt: Date.UTC(2026, 0, 15),
+    status: 'open',
+  },
+  {
+    id: '2',
+    name: 'Order B',
+    orderedAt: Date.UTC(2026, 1, 20),
+    status: 'closed',
+  },
+  {
+    id: '3',
+    name: 'Order C',
+    orderedAt: Date.UTC(2026, 3, 10),
+    status: 'open',
+  },
+  {
+    id: '4',
+    name: 'Order D',
+    orderedAt: Date.UTC(2026, 4, 5),
+    status: 'closed',
+  },
 ];
 
 const orderColumns: DataTableColumn<Order>[] = [
@@ -524,8 +620,7 @@ const orderColumns: DataTableColumn<Order>[] = [
   { key: 'status', header: 'Status' },
 ];
 
-const formatDate = (ms: number) =>
-  new Date(ms).toISOString().slice(0, 10);
+const formatDate = (ms: number) => new Date(ms).toISOString().slice(0, 10);
 
 const orderRenderCell = (row: Order, key: string) => {
   if (key === 'orderedAt') return formatDate(row.orderedAt);

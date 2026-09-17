@@ -1,5 +1,7 @@
-import { Modal, SkeletonPlaceholder } from '@bahmni/design-system';
+import { DataTable, Modal } from '@bahmni/design-system';
 import {
+  fetchFormMetadata,
+  fetchObservationForms,
   formatDateTime,
   getEncounterByUuid,
   getObservationsBundleByEncounterUuid,
@@ -7,13 +9,15 @@ import {
   groupObservationsByEncounter,
   useTranslation,
   type EncounterGroup,
+  type FormMetadata,
+  type ObservationForm,
 } from '@bahmni/services';
 import { useQueries, useQuery } from '@tanstack/react-query';
 import type { Bundle, Encounter, Observation } from 'fhir/r4';
 import React, { useMemo } from 'react';
 import { extractFormFieldPath } from '../../../observations/utils';
 import { ObservationsRenderer } from '../../../observationsRenderer';
-import { extractId } from '../../../utils/Observations';
+import { deriveFormSchemaData, extractId } from '../../../utils/Observations';
 import type { TaskView, TaskViewModel } from '../../models';
 import { extractFormNameFromTask } from '../../utils';
 import styles from './ViewFormData.module.scss';
@@ -25,6 +29,13 @@ interface ViewFormDataProps {
   patientUuid: string;
   onClose: () => void;
 }
+
+// Headers are never shown (the skeleton hides its header row) — only their
+// count matters, to size the number of skeleton columns rendered.
+const VIEW_FORM_LOADING_SKELETON_COLUMNS = [
+  { key: 'field', header: '' },
+  { key: 'value', header: '' },
+];
 
 const ViewFormData: React.FC<ViewFormDataProps> = ({
   open,
@@ -141,6 +152,30 @@ const ViewFormData: React.FC<ViewFormDataProps> = ({
   const isLoading = isLoadingObservations || isLoadingEncounters;
   const error = observationsError ?? encountersError;
 
+  const { data: publishedForms = [] } = useQuery<ObservationForm[]>({
+    queryKey: ['observationForms'],
+    queryFn: () => fetchObservationForms(),
+    enabled: open && !!formName,
+  });
+
+  const formUuid = useMemo(() => {
+    if (!formName) return undefined;
+    return publishedForms.find(
+      (form) => form.name.toLowerCase() === formName.toLowerCase(),
+    )?.uuid;
+  }, [publishedForms, formName]);
+
+  const { data: formMetadata } = useQuery<FormMetadata>({
+    queryKey: ['formMetadata', formUuid],
+    queryFn: () => fetchFormMetadata(formUuid!),
+    enabled: open && !!formUuid,
+  });
+
+  const { controlOrder, sectionMap, conceptDatatypeMap } = useMemo(
+    () => deriveFormSchemaData(formMetadata?.schema),
+    [formMetadata],
+  );
+
   const renderEncounterGroup = (group: EncounterGroup) => {
     return (
       <div key={group.encounterUuid} className={styles.encounterGroup}>
@@ -152,6 +187,9 @@ const ViewFormData: React.FC<ViewFormDataProps> = ({
         <ObservationsRenderer
           observations={group.observations}
           testIdPrefix={`encounter-${group.encounterUuid}-observations`}
+          controlOrder={controlOrder}
+          sectionMap={sectionMap}
+          conceptDatatypeMap={conceptDatatypeMap}
         />
       </div>
     );
@@ -159,6 +197,7 @@ const ViewFormData: React.FC<ViewFormDataProps> = ({
 
   return (
     <Modal
+      portalId={'main-display-area'}
       open={open}
       onRequestClose={onClose}
       modalHeading={formName ?? t('VIEW_DATA')}
@@ -167,7 +206,15 @@ const ViewFormData: React.FC<ViewFormDataProps> = ({
       testId="view-form-modal"
     >
       <Modal.Body>
-        {isLoading && <SkeletonPlaceholder className={styles.loader} />}
+        {isLoading && (
+          <DataTable
+            columns={VIEW_FORM_LOADING_SKELETON_COLUMNS}
+            rows={[]}
+            loading
+            ariaLabel={t('OBSERVATIONS_LOADING')}
+            dataTestId="view-form-loading"
+          />
+        )}
         {error && <div>{t('ERROR_LOADING_OBSERVATIONS')}</div>}
         {!isLoading && !error && encounterGroups.length === 0 && (
           <div>{t('NO_OBSERVATIONS_FOR_TASK')}</div>

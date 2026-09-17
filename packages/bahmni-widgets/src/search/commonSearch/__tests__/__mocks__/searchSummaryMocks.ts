@@ -15,6 +15,7 @@ export const mockAppointmentContext: SearchContextConfig = {
   locationAware: 'loggedInLocation',
   url: '/api/appointment/search',
   pageSize: 20,
+  batchSize: 100,
   resultFields: mockResultFields,
   criteria: [
     {
@@ -190,6 +191,10 @@ export const mockOptionsWithTranslationRow: CriterionRow = {
 export const mockActiveSearchState: CurrentSearchState = {
   context: mockAppointmentContext,
   rows: [mockTextRow],
-  resultFields: mockResultFields,
   results: [],
+  currentSet: 0,
+  searchId: 'search-id',
+  totalCount: 0,
+  nextCursor: null,
+  prevCursor: null,
 };

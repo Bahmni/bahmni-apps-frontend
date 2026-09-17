@@ -1,3 +1,4 @@
+import type { Encounter } from 'fhir/r4';
 import type { AllergyInputEntry } from '../../models/allergy';
 
 export interface EncounterSessionStartContext {
@@ -7,9 +8,8 @@ export interface EncounterSessionStartContext {
   editOnly?: string;
   /** Translation key for the ConsultationPad panel title when in edit mode. */
   editTitle?: string;
-  /** UUID of the encounter being edited (used by edit flows for all input controls). */
-  editEncounterUuid?: string;
-  /** Form name to auto-open in the observation forms panel when editing. */
-  editFormName?: string;
+  /** Source encounter UUID for edit or copyover flows. */
+  sourceEncounterUuid?: string;
+  activeEncounter?: Encounter | null;
   [key: string]: unknown;
 }

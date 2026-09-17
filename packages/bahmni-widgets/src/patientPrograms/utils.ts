@@ -2,8 +2,9 @@ import {
   camelToScreamingSnakeCase,
   extractAttributes,
   getCurrentStateName,
-  PatientProgramsResponse,
+  ProgramEnrollment,
 } from '@bahmni/services';
+import { EpisodeOfCare } from 'fhir/r4';
 import { KNOWN_FIELDS } from './constants';
 import { PatientProgramViewModel, ProgramField } from './model';
 
@@ -26,32 +27,27 @@ export function createProgramHeaders(
   }));
 }
 
-export function createPatientProgramViewModal(
-  programs: PatientProgramsResponse,
+export const createPatientProgramViewModal = (
+  program: ProgramEnrollment,
   programAttributes: string[],
-): PatientProgramViewModel[] {
-  if (!programs.results || programs.results.length === 0) {
-    return [];
-  }
-
-  return programs.results.map((enrollment) => ({
-    id: enrollment.uuid,
-    uuid: enrollment.uuid,
-    programName: enrollment.program.name,
-    dateEnrolled: enrollment.dateEnrolled,
-    dateCompleted: enrollment.dateCompleted,
-    outcomeName: enrollment.outcome
-      ? enrollment.outcome.name
-        ? enrollment.outcome.name.name!
-        : null
-      : null,
-    outcomeDetails: enrollment.outcome
-      ? enrollment.outcome.descriptions &&
-        enrollment.outcome.descriptions.length > 0
-        ? enrollment.outcome.descriptions[0].description!
-        : null
-      : null,
-    currentStateName: getCurrentStateName(enrollment),
-    attributes: extractAttributes(enrollment, programAttributes),
-  }));
-}
+  episodeOfCare?: EpisodeOfCare,
+): PatientProgramViewModel => ({
+  id: program.uuid,
+  uuid: program.uuid,
+  programName: program.program.name,
+  dateEnrolled: program.dateEnrolled,
+  dateCompleted: program.dateCompleted,
+  outcomeName: program.outcome
+    ? program.outcome.name
+      ? program.outcome.name.name!
+      : null
+    : null,
+  outcomeDetails: program.outcome
+    ? program.outcome.descriptions && program.outcome.descriptions.length > 0
+      ? program.outcome.descriptions[0].description!
+      : null
+    : null,
+  careManagerDisplay: episodeOfCare?.careManager?.display ?? null,
+  currentStateName: getCurrentStateName(program),
+  attributes: extractAttributes(program, programAttributes),
+});

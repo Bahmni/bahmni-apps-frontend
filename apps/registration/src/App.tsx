@@ -5,6 +5,7 @@ import {
   NotificationProvider,
   NotificationServiceComponent,
   UserPrivilegeProvider,
+  ActivePractitionerProvider,
   UserActionProvider,
 } from '@bahmni/widgets';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -51,13 +52,15 @@ const RegistrationApp: React.FC = () => {
           <RegistrationConfigProvider>
             <PersonAttributesProvider>
               <UserPrivilegeProvider>
-                <UserActionProvider>
-                  <CommandPaletteProvider>
-                    <Suspense fallback={<Loading />}>
-                      <Routes>{renderRoutes(routes)}</Routes>
-                    </Suspense>
-                  </CommandPaletteProvider>
-                </UserActionProvider>
+                <ActivePractitionerProvider>
+                  <UserActionProvider>
+                    <CommandPaletteProvider>
+                      <Suspense fallback={<Loading />}>
+                        <Routes>{renderRoutes(routes)}</Routes>
+                      </Suspense>
+                    </CommandPaletteProvider>
+                  </UserActionProvider>
+                </ActivePractitionerProvider>
               </UserPrivilegeProvider>
             </PersonAttributesProvider>
           </RegistrationConfigProvider>

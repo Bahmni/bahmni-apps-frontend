@@ -31,6 +31,7 @@ export const mockPatientContext: SearchContextConfig = {
   locationAware: 'loggedInLocation',
   url: '/openmrs/ws/rest/v1/patient/search',
   pageSize: 20,
+  batchSize: 100,
   resultFields: mockResultFields,
   criteria: [
     {
@@ -75,6 +76,7 @@ export const mockAppointmentContext: SearchContextConfig = {
   locationAware: 'allowedLocation',
   url: '/openmrs/ws/rest/v1/appointment/search',
   pageSize: 10,
+  batchSize: 50,
   resultFields: mockResultFields,
   criteria: [
     {
@@ -107,6 +109,7 @@ export const mockContextNoDefaults: SearchContextConfig = {
   locationAware: 'loggedInLocation',
   url: '/openmrs/ws/rest/v1/program/search',
   pageSize: 10,
+  batchSize: 50,
   resultFields: mockResultFields,
   criteria: [
     {
@@ -138,6 +141,7 @@ export const mockPatientContextWithRangeNumeric: SearchContextConfig = {
   locationAware: 'loggedInLocation',
   url: '/openmrs/ws/rest/v1/patient/search',
   pageSize: 20,
+  batchSize: 100,
   resultFields: mockResultFields,
   criteria: [
     {
@@ -161,6 +165,7 @@ export const mockContextMultipleDefaults: SearchContextConfig = {
   locationAware: 'loggedInLocation',
   url: '/openmrs/ws/rest/v1/patient/search',
   pageSize: 20,
+  batchSize: 100,
   resultFields: mockResultFields,
   criteria: [
     {
@@ -197,6 +202,7 @@ export const mockPatientContextWithRegex: SearchContextConfig = {
   locationAware: 'loggedInLocation',
   url: '/openmrs/ws/rest/v1/patient/search',
   pageSize: 20,
+  batchSize: 100,
   resultFields: mockResultFields,
   criteria: [
     {
@@ -208,6 +214,28 @@ export const mockPatientContextWithRegex: SearchContextConfig = {
         kind: 'text',
         placeholderTranslationKey: 'PATIENT_GIVEN_NAME_PLACEHOLDER',
         regex: '^[A-Za-z]+$',
+      },
+    },
+  ],
+};
+
+export const mockPatientContextWithoutLocationAware: SearchContextConfig = {
+  context: 'patient',
+  translationKey: 'PATIENT_SEARCH',
+  requiredPrivileges: ['View Patients'],
+  url: '/openmrs/ws/rest/v1/patientSearch',
+  pageSize: 20,
+  batchSize: 100,
+  resultFields: mockResultFields,
+  criteria: [
+    {
+      id: 'patient.name.given',
+      field: { key: 'patient.name.given' },
+      translationKey: 'PATIENT_GIVEN_NAME',
+      default: true,
+      input: {
+        kind: 'text',
+        placeholderTranslationKey: 'PATIENT_GIVEN_NAME_PLACEHOLDER',
       },
     },
   ],

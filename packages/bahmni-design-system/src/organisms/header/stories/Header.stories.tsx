@@ -48,6 +48,33 @@ This component is typically used in layout components like \`ClinicalLayout\` to
   decorators: [HeaderDecorator],
   tags: ['autodocs'],
   argTypes: {
+    brandName: {
+      description: 'App/brand name rendered on the left as a HeaderName',
+      control: 'text',
+      table: { type: { summary: 'string' } },
+    },
+    brandPrefix: {
+      description: 'Small prefix label shown before the brand name',
+      control: 'text',
+      table: { type: { summary: 'string' } },
+    },
+    brandHref: {
+      description: 'Link target for the brand HeaderName',
+      control: 'text',
+      table: { type: { summary: 'string' }, defaultValue: { summary: '"/"' } },
+    },
+    globalFeatures: {
+      description:
+        'Self-contained elements (e.g. a location selector) rendered in the global bar before actions/userMenu',
+      control: false,
+      table: { type: { summary: 'ReactNode[]' }, defaultValue: { summary: '[]' } },
+    },
+    userMenu: {
+      description:
+        'Self-contained user menu rendered directly in the global bar (no icon-button wrapper)',
+      control: false,
+      table: { type: { summary: 'ReactNode' } },
+    },
     breadcrumbItems: {
       description: 'Array of breadcrumb items to display in the header',
       control: 'object',
@@ -184,6 +211,42 @@ export const WithGlobalActions: Story = {
       description: {
         story:
           'Header with global action buttons in the top-right corner. These provide quick access to frequently used functions like search, notifications, and settings.',
+      },
+    },
+  },
+};
+
+/**
+ * This example shows the branding slot (HeaderName) plus a global-features slot
+ * (e.g. a location selector) and a self-contained userMenu — the composition
+ * used by the Home header. `globalFeatures` and `userMenu` render directly in
+ * the global bar without the icon-button wrapper used by `globalActions`.
+ */
+export const WithBrandingAndUserMenu: Story = {
+  args: {
+    brandName: 'Bahmni',
+    brandPrefix: 'Home',
+    brandHref: '/',
+    globalFeatures: [
+      <div
+        key="location"
+        data-testid="location-selector"
+        style={{ display: 'flex', alignItems: 'center', padding: '0 1rem' }}
+      >
+        Location: Clinic A
+      </div>,
+    ],
+    userMenu: (
+      <div style={{ display: 'flex', alignItems: 'center', padding: '0 1rem' }}>
+        Hi, Dr. Jane
+      </div>
+    ),
+  },
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Header with branding (HeaderName), a global-features slot (location selector), and a self-contained user menu. This mirrors the unified Home header composition.',
       },
     },
   },

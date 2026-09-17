@@ -4,6 +4,7 @@ import { get, post, put } from '../api';
 import { APP_PROPERTY_URL } from '../applicationConfigService/constants';
 import { OPENMRS_REST_V1 } from '../constants/app';
 import { BIRTH_TIME_EXT_URL } from '../constants/fhir';
+import { PATIENT_NOT_FOUND_ERROR_KEY } from '../errorHandling';
 import { getUserLoginLocation } from '../userService';
 import { blobToDataUrl } from '../utils';
 import {
@@ -25,6 +26,7 @@ import {
   GET_PATIENT_PROFILE_URL,
   PERSON_ATTRIBUTE_TYPES_URL,
   RELATIONSHIP_TYPES_URL,
+  TELECOM_ATTRIBUTE_TYPE_MAP_PROPERTY,
 } from './constants';
 import {
   PatientSearchField,
@@ -39,6 +41,7 @@ import {
   PatientProfileResponse,
   PersonAttributeTypesResponse,
   RelationshipTypesResponse,
+  TelecomAttributeTypeMapping,
 } from './models';
 
 export const mapGenderFromFhir = (fhirGender: string): string => {
@@ -49,12 +52,16 @@ export const mapGenderFromFhir = (fhirGender: string): string => {
 };
 
 export const getPatientById = async (patientUUID: string): Promise<Patient> => {
-  if (!patientUUID || patientUUID.trim() === '') {
-    throw new Error('Invalid patient UUID: UUID cannot be empty');
-  }
-
-  if (!UUID_PATTERN.test(patientUUID)) {
-    throw new Error(`Invalid patient UUID format: ${patientUUID}`);
+  // A blank or malformed UUID can never identify a patient. This check runs
+  // before any network call, so throw the same translation key the 400/404
+  // response path produces — otherwise callers cannot distinguish "not found"
+  // from an unexpected failure and end up rendering nothing at all.
+  if (
+    !patientUUID ||
+    patientUUID.trim() === '' ||
+    !UUID_PATTERN.test(patientUUID)
+  ) {
+    throw new Error(PATIENT_NOT_FOUND_ERROR_KEY);
   }
 
   return get<Patient>(PATIENT_RESOURCE_URL(patientUUID));
@@ -551,4 +558,51 @@ export const getObservationByConceptName = async (
   } catch {
     return null;
   }
+};
+
+/**
+ * Parses the fhir2Extension.telecomAttributeTypeMap global property value into structured
+ * mappings. Mirrors the backend's own parsing (OpenmrsAppContext#parseTelecomAttributeTypeMappings):
+ * `;`-separated entries of the form `attributeTypeUuid:SYSTEM:USE:RANK`, where USE and RANK are
+ * optional. Malformed entries are skipped rather than thrown, so one bad entry doesn't break the rest.
+ */
+export const parseTelecomAttributeTypeMap = (
+  propertyValue: string | null,
+): TelecomAttributeTypeMapping[] => {
+  if (!propertyValue) return [];
+
+  return propertyValue
+    .split(';')
+    .map((entry) => entry.trim())
+    .filter(Boolean)
+    .reduce<TelecomAttributeTypeMapping[]>((mappings, entry) => {
+      const [attributeTypeUuid, system, use, rank] = entry.split(':');
+      if (!attributeTypeUuid?.trim() || !system?.trim()) return mappings;
+
+      mappings.push({
+        attributeTypeUuid: attributeTypeUuid.trim(),
+        system: system.trim().toLowerCase(),
+        use: use?.trim() ? use.trim().toLowerCase() : undefined,
+        rank:
+          rank?.trim() && !isNaN(Number(rank.trim()))
+            ? Number(rank.trim())
+            : undefined,
+      });
+      return mappings;
+    }, []);
+};
+
+/**
+ * Get the admin-configured person-attribute-type-to-telecom mapping
+ * (fhir2Extension.telecomAttributeTypeMap), used to resolve which Patient.telecom ContactPoint
+ * corresponds to which person attribute type, instead of assuming fixed attribute names.
+ * @returns Promise<TelecomAttributeTypeMapping[]>
+ */
+export const getTelecomAttributeTypeMap = async (): Promise<
+  TelecomAttributeTypeMapping[]
+> => {
+  const response = await get<string | null>(
+    APP_PROPERTY_URL(TELECOM_ATTRIBUTE_TYPE_MAP_PROPERTY),
+  );
+  return parseTelecomAttributeTypeMap(response ? String(response) : null);
 };

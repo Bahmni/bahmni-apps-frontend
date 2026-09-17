@@ -54,7 +54,6 @@ export const createEncounterResource = (
     period: {
       start: (existingEncounterStartTime ?? undefined) as string,
     },
-    //TODO : link correct episode of care uuid to the current encounter
     episodeOfCare: episodeOfCareUUID.map((uuid) =>
       createEpisodeOfCareReference(uuid),
     ),

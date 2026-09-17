@@ -204,7 +204,7 @@ const ObservationForms: React.FC<ObservationFormsProps> = React.memo(
         return [
           {
             id: '',
-            label: 'No forms available',
+            label: t('OBSERVATION_FORMS_NO_FORMS_AVAILABLE'),
             disabled: true,
           },
         ];

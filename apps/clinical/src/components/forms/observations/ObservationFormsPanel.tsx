@@ -1,3 +1,4 @@
+import { Loading } from '@bahmni/design-system';
 import { getObservationsFromFhir } from '@bahmni/form2-controls';
 import type { ObservationForm, Form2Observation } from '@bahmni/services';
 import {
@@ -6,8 +7,9 @@ import {
   fetchFormUuidByObservationDate,
 } from '@bahmni/services';
 import { useActivePractitioner, usePatientUUID } from '@bahmni/widgets';
-import type { Bundle } from 'fhir/r4';
+import type { Bundle, Task, Observation, Reference } from 'fhir/r4';
 import React, { useEffect, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import type { EncounterSessionStartContext } from '../../../events/startConsultation';
 import { useClinicalAppData } from '../../../hooks/useClinicalAppData';
 import useObservationFormsSearch from '../../../hooks/useObservationFormsSearch';
@@ -15,24 +17,55 @@ import { usePinnedObservationForms } from '../../../hooks/usePinnedObservationFo
 import { useSubmittedEncounterForms } from '../../../hooks/useSubmittedEncounterForms';
 import { useObservationFormsStore } from '../../../stores/observationFormsStore';
 import ObservationForms from './ObservationForms';
+import styles from './styles/ObservationFormsContainer.module.scss';
 
 interface ObservationFormsPanelProps {
   encounterSessionStartContext?: EncounterSessionStartContext;
 }
 
+interface ObservationExistingData {
+  status?: string;
+  basedOn?: Reference;
+}
+
 const ObservationFormsPanel: React.FC<ObservationFormsPanelProps> = ({
   encounterSessionStartContext,
 }) => {
+  const { t } = useTranslation();
   const { user } = useActivePractitioner();
   const patientUUID = usePatientUUID();
   const { episodeOfCare } = useClinicalAppData();
   const episodeOfCareUuids = episodeOfCare.map((eoc) => eoc.uuid);
 
+  const formName = encounterSessionStartContext?.formName as string | undefined;
+  const directFormMode = encounterSessionStartContext?.directFormMode as
+    | boolean
+    | undefined;
+  const sourceEncounterUuid = encounterSessionStartContext?.sourceEncounterUuid;
+  const activeEncounter = encounterSessionStartContext?.activeEncounter;
+  const isCopyover: boolean | undefined =
+    !sourceEncounterUuid || activeEncounter === undefined
+      ? undefined
+      : activeEncounter?.id !== sourceEncounterUuid;
+  const task = encounterSessionStartContext?.task as Task | undefined;
+  const basedOnRef = task?.basedOn?.[0]?.reference;
+  const basedOnId = basedOnRef?.split('/').pop() ?? undefined;
+  const isEditObservationFormsMode =
+    encounterSessionStartContext?.editOnly === 'observationForms';
+  const isEditMode =
+    isEditObservationFormsMode && !!sourceEncounterUuid && isCopyover === false;
+  const isCopyoverMode =
+    isEditObservationFormsMode && !!sourceEncounterUuid && isCopyover === true;
+  const isTaskDirectMode = !!(formName && directFormMode);
+
   const {
     forms: allForms,
     isLoading: isAllFormsLoading,
     error: observationFormsError,
-  } = useObservationFormsSearch('', episodeOfCareUuids);
+  } = useObservationFormsSearch(
+    '',
+    isTaskDirectMode ? undefined : episodeOfCareUuids,
+  );
 
   const {
     pinnedForms,
@@ -57,30 +90,30 @@ const ObservationFormsPanel: React.FC<ObservationFormsPanelProps> = ({
     prevViewingFormRef.current = viewingForm;
   }, [viewingForm, refetchPinnedForms]);
 
-  const taskFormName = encounterSessionStartContext?.taskFormName as
-    | string
-    | undefined;
-  const directFormMode = encounterSessionStartContext?.directFormMode as
-    | boolean
-    | undefined;
-
   useEffect(() => {
-    if (taskFormName && directFormMode && !isAllFormsLoading) {
+    if (
+      formName &&
+      directFormMode &&
+      !isAllFormsLoading &&
+      !sourceEncounterUuid
+    ) {
       useObservationFormsStore.getState().reset();
       const matchingForm = allForms.find(
-        (form) => form.name.toLowerCase() === taskFormName.toLowerCase(),
+        (form) => form.name.toLowerCase() === formName.toLowerCase(),
       );
 
       if (matchingForm) {
         addForm(matchingForm);
       }
     }
-  }, [taskFormName, directFormMode, allForms, isAllFormsLoading, addForm]);
-
-  const editFormName = encounterSessionStartContext?.editFormName;
-  const editEncounterUuid = encounterSessionStartContext?.editEncounterUuid;
-  const isEditObservationFormsMode =
-    encounterSessionStartContext?.editOnly === 'observationForms';
+  }, [
+    formName,
+    directFormMode,
+    allForms,
+    isAllFormsLoading,
+    sourceEncounterUuid,
+    addForm,
+  ]);
 
   // useObservationFormsStore is a session-wide singleton, not scoped to a single
   // edit session. Without this, `selectedForms` from a previous edit (or from the
@@ -90,16 +123,21 @@ const ObservationFormsPanel: React.FC<ObservationFormsPanelProps> = ({
   // pair so each edit session starts from a clean store.
   const editSessionKeyRef = useRef<string | null>(null);
   useEffect(() => {
-    if (!isEditObservationFormsMode || !editFormName || !editEncounterUuid) {
+    if (!isEditObservationFormsMode || !formName || !sourceEncounterUuid) {
       return;
     }
-    const sessionKey = `${editEncounterUuid}:${editFormName}`;
+    const sessionKey = `${sourceEncounterUuid}:${formName}:${isCopyoverMode ? 'copyover' : 'edit'}`;
     if (editSessionKeyRef.current === sessionKey) {
       return;
     }
     editSessionKeyRef.current = sessionKey;
     useObservationFormsStore.getState().reset();
-  }, [isEditObservationFormsMode, editFormName, editEncounterUuid]);
+  }, [
+    isEditObservationFormsMode,
+    formName,
+    sourceEncounterUuid,
+    isCopyoverMode,
+  ]);
 
   // Latches once the fetch for a given (encounter, form) session actually
   // starts. Guarding on `selectedForms` instead (as before) breaks as soon as
@@ -113,22 +151,23 @@ const ObservationFormsPanel: React.FC<ObservationFormsPanelProps> = ({
   useEffect(() => {
     if (
       !isEditObservationFormsMode ||
-      !editFormName ||
-      !editEncounterUuid ||
-      isAllFormsLoading
+      !formName ||
+      !sourceEncounterUuid ||
+      isAllFormsLoading ||
+      (!isEditMode && !isCopyoverMode)
     )
       return;
 
     const matchingForm = allForms.find(
-      (form) => form.name.toLowerCase() === editFormName.toLowerCase(),
+      (form) => form.name.toLowerCase() === formName.toLowerCase(),
     );
     if (!matchingForm) return;
 
-    const sessionKey = `${editEncounterUuid}:${editFormName}`;
+    const sessionKey = `${sourceEncounterUuid}:${formName}:${isCopyoverMode ? 'copyover' : 'edit'}`;
     if (editFetchSessionRef.current === sessionKey) return;
     editFetchSessionRef.current = sessionKey;
 
-    getObservationsBundleByEncounterUuid(editEncounterUuid)
+    getObservationsBundleByEncounterUuid(sourceEncounterUuid, basedOnId)
       .then(async (bundle) => {
         // getObservationsBundleByEncounterUuid fetches the WHOLE encounter's
         // observations — an encounter can carry multiple form submissions
@@ -141,7 +180,7 @@ const ObservationFormsPanel: React.FC<ObservationFormsPanelProps> = ({
           (obs) =>
             obs.formFieldPath
               ?.toLowerCase()
-              .startsWith(`${editFormName.toLowerCase()}.`),
+              .startsWith(`${formName.toLowerCase()}.`),
         );
 
         // Primary: read formUuid directly from the patient forms API —
@@ -165,8 +204,8 @@ const ObservationFormsPanel: React.FC<ObservationFormsPanelProps> = ({
           // submission happens to be first for the encounter.
           const encounterFormData = patientForms.find(
             (d) =>
-              d.encounterUuid === editEncounterUuid &&
-              d.formName.toLowerCase() === editFormName.toLowerCase(),
+              d.encounterUuid === sourceEncounterUuid &&
+              d.formName.toLowerCase() === formName.toLowerCase(),
           );
           // Primary: formUuid from patient forms API (same as old Bahmni Angular).
           // Fallback: version-string or date-based lookup using formVersion and
@@ -175,7 +214,7 @@ const ObservationFormsPanel: React.FC<ObservationFormsPanelProps> = ({
           savedFormUuid =
             encounterFormData?.formUuid ??
             (await fetchFormUuidByObservationDate(
-              editFormName,
+              formName,
               encounterFormData?.formVersion,
               encounterFormData?.encounterDateTime,
             ).catch(() => null));
@@ -186,14 +225,23 @@ const ObservationFormsPanel: React.FC<ObservationFormsPanelProps> = ({
         }
 
         if (form2Observations.length > 0) {
-          // Build uuid → status map from the raw FHIR bundle so PUT requests can
-          // echo back the same status value (OpenMRS rejects status changes and
-          // also errors when status is absent on PUT).
-          const statusByUuid = buildStatusMap(bundle as Bundle);
-          const observationsWithStatus = enrichObservationsWithStatus(
-            form2Observations as Form2Observation[],
-            statusByUuid,
-          );
+          let obsWithExistingData: Form2Observation[];
+          if (isCopyoverMode) {
+            // Copyover: strip UUIDs so submission creates new observation resources
+            // instead of updating the old ones.
+            obsWithExistingData = stripObservationUuids(
+              form2Observations as Form2Observation[],
+            );
+          } else {
+            // Edit: preserve UUIDs and echo back status + basedOn for PUT requests.
+            const existingDataByUuid = buildObsExistingDataMap(
+              bundle as Bundle,
+            );
+            obsWithExistingData = enrichObsWithExistingData(
+              form2Observations as Form2Observation[],
+              existingDataByUuid,
+            );
+          }
 
           // Pre-populate formsData directly — bypasses the selectedForms guard in
           // updateFormData because the form is not yet in selectedForms at this point.
@@ -203,7 +251,7 @@ const ObservationFormsPanel: React.FC<ObservationFormsPanelProps> = ({
               [formToOpen.uuid]: {
                 formUuid: formToOpen.uuid,
                 formName: formToOpen.name,
-                observations: observationsWithStatus,
+                observations: obsWithExistingData,
                 timestamp: Date.now(),
               },
             },
@@ -216,24 +264,42 @@ const ObservationFormsPanel: React.FC<ObservationFormsPanelProps> = ({
       })
       .catch((err) => {
         // eslint-disable-next-line no-console
-        console.error('[EditMode] FHIR fetch FAILED for', editFormName, err);
+        console.error('[EditMode] FHIR fetch FAILED for', formName, err);
         // Fetch failed — open the form blank so the user can re-enter data.
         addForm(matchingForm);
       });
   }, [
     isEditObservationFormsMode,
-    editFormName,
-    editEncounterUuid,
+    formName,
+    sourceEncounterUuid,
+    basedOnId,
     isAllFormsLoading,
+    isEditMode,
+    isCopyoverMode,
     allForms,
     addForm,
     patientUUID,
   ]);
 
-  // In edit mode the add-form search panel must never appear.
-  // Return null while the FHIR fetch is in flight; once addForm() fires,
-  // ConsultationPad switches to ObservationFormsContainer directly.
-  if (isEditObservationFormsMode) return null;
+  // In edit mode the add-form search panel must never appear. Show a loading
+  // indicator while addForm() hasn't fired yet — the fetch it waits on can
+  // take several seconds — then render nothing once it has: ConsultationPad
+  // switches to ObservationFormsContainer directly as soon as viewingForm is set.
+  if (isEditObservationFormsMode) {
+    if (!viewingForm) {
+      return (
+        <div className={styles.loadingWrapper}>
+          <Loading
+            description={t('OBSERVATION_FORM_LOADING_METADATA')}
+            role="status"
+            testId="edit-observation-form-loading"
+            withOverlay={false}
+          />
+        </div>
+      );
+    }
+    return null;
+  }
 
   const handleFormSelect = (form: ObservationForm) => {
     addForm(form);
@@ -257,41 +323,60 @@ const ObservationFormsPanel: React.FC<ObservationFormsPanelProps> = ({
 
 export default ObservationFormsPanel;
 
-/** Build a map of observation uuid → FHIR status from a raw FHIR bundle. */
-function buildStatusMap(bundle: Bundle): Map<string, string> {
-  const map = new Map<string, string>();
+/** Extracts existing fields (status, basedOn) from a raw FHIR Observation bundle, keyed by uuid. */
+function buildObsExistingDataMap(
+  bundle: Bundle,
+): Map<string, ObservationExistingData> {
+  const map = new Map<string, ObservationExistingData>();
   bundle.entry?.forEach((entry) => {
     const resource = entry.resource;
-    if (
-      resource?.resourceType === 'Observation' &&
-      resource.id &&
-      (resource as { status?: string }).status
-    ) {
-      map.set(resource.id, (resource as { status: string }).status);
-    }
+    if (resource?.resourceType !== 'Observation' || !resource.id) return;
+    const obs = resource as Observation;
+    const existing: ObservationExistingData = {};
+    if (obs.status) existing.status = obs.status;
+    if (obs.basedOn?.[0]) existing.basedOn = obs.basedOn[0];
+    if (existing.status || existing.basedOn) map.set(resource.id, existing);
   });
   return map;
 }
 
 /**
- * Recursively copies the FHIR status from the status map into each
- * Form2Observation that has a matching uuid.  This lets PUT requests
- * echo back exactly what OpenMRS currently has stored, avoiding the
- * "Editing the fields [status] on Obs is not allowed" error.
+ * Recursively strips the uuid from every Form2Observation so they are
+ * submitted as new resources (POST) rather than updates to existing ones.
+ * Used for copyover: pre-fill the form with old values but create fresh obs.
  */
-function enrichObservationsWithStatus(
+function stripObservationUuids(
   observations: Form2Observation[],
-  statusByUuid: Map<string, string>,
+): Form2Observation[] {
+  return observations.map((obs) => {
+    const stripped: Form2Observation = { ...obs, uuid: undefined };
+    if (obs.groupMembers) {
+      stripped.groupMembers = stripObservationUuids(obs.groupMembers);
+    }
+    return stripped;
+  });
+}
+
+/** Recursively copies status + basedOn onto Form2Observations with a matching uuid.
+ *  status → OpenMRS rejects PUT without exact status ("Editing the fields [status] on Obs is not allowed").
+ *  basedOn → OpenMRS strips the ServiceRequest linkage if PUT omits it. */
+function enrichObsWithExistingData(
+  observations: Form2Observation[],
+  existingDataByUuid: Map<string, ObservationExistingData>,
 ): Form2Observation[] {
   return observations.map((obs) => {
     const enriched: Form2Observation = { ...obs };
-    if (obs.uuid && statusByUuid.has(obs.uuid)) {
-      enriched.status = statusByUuid.get(obs.uuid);
+    if (obs.uuid) {
+      const existing = existingDataByUuid.get(obs.uuid);
+      if (existing) {
+        if (existing.status) enriched.status = existing.status;
+        if (existing.basedOn) enriched.basedOn = existing.basedOn;
+      }
     }
     if (obs.groupMembers) {
-      enriched.groupMembers = enrichObservationsWithStatus(
+      enriched.groupMembers = enrichObsWithExistingData(
         obs.groupMembers,
-        statusByUuid,
+        existingDataByUuid,
       );
     }
     return enriched;

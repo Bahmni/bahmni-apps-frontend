@@ -181,6 +181,10 @@ export function buildFhirPatient(input: MapperInput): Patient {
       addr.postalCode = address.postalCode.trim();
       hasValue = true;
     }
+    if (address.country?.trim()) {
+      addr.country = address.country.trim();
+      hasValue = true;
+    }
     if (hasValue) fhirAddresses.push(addr);
   }
 

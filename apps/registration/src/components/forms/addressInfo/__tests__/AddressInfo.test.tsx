@@ -287,6 +287,110 @@ describe('AddressInfo', () => {
     });
   });
 
+  describe('Validation - Required Fields', () => {
+    beforeEach(() => {
+      mockGetOrderedAddressHierarchyLevels.mockResolvedValue([
+        {
+          addressField: 'address1',
+          name: 'CREATE_PATIENT_HOUSE_NUMBER',
+          required: true,
+        },
+        {
+          addressField: 'address2',
+          name: 'CREATE_PATIENT_LOCALITY',
+          required: false,
+        },
+        {
+          addressField: 'stateProvince',
+          name: 'CREATE_PATIENT_STATE',
+          required: false,
+        },
+        {
+          addressField: 'countyDistrict',
+          name: 'CREATE_PATIENT_DISTRICT',
+          required: false,
+        },
+        {
+          addressField: 'cityVillage',
+          name: 'CREATE_PATIENT_CITY',
+          required: false,
+        },
+        {
+          addressField: 'postalCode',
+          name: 'CREATE_PATIENT_PINCODE',
+          required: false,
+        },
+      ]);
+    });
+
+    it('should fail validation and show an error when a required field is left empty', async () => {
+      const ref = createRef<AddressInfoRef>();
+      await renderWithQueryClient(<AddressInfo ref={ref} />);
+
+      let isValid: boolean | undefined;
+      act(() => {
+        isValid = ref.current?.validate();
+      });
+
+      expect(isValid).toBe(false);
+
+      const houseNumberInput = screen.getByLabelText(
+        /CREATE_PATIENT_HOUSE_NUMBER/,
+      );
+      expect(houseNumberInput).toBeInvalid();
+    });
+
+    it('should fail validation when a required field only contains whitespace', async () => {
+      const ref = createRef<AddressInfoRef>();
+      await renderWithQueryClient(<AddressInfo ref={ref} />);
+
+      fireEvent.change(screen.getByLabelText(/CREATE_PATIENT_HOUSE_NUMBER/), {
+        target: { value: '   ' },
+      });
+
+      let isValid: boolean | undefined;
+      act(() => {
+        isValid = ref.current?.validate();
+      });
+
+      expect(isValid).toBe(false);
+    });
+
+    it('should pass validation once the required field is filled', async () => {
+      const ref = createRef<AddressInfoRef>();
+      await renderWithQueryClient(<AddressInfo ref={ref} />);
+
+      fireEvent.change(screen.getByLabelText(/CREATE_PATIENT_HOUSE_NUMBER/), {
+        target: { value: '123' },
+      });
+
+      let isValid: boolean | undefined;
+      act(() => {
+        isValid = ref.current?.validate();
+      });
+
+      expect(isValid).toBe(true);
+    });
+
+    it('should clear the required field error once the user starts typing', async () => {
+      const ref = createRef<AddressInfoRef>();
+      await renderWithQueryClient(<AddressInfo ref={ref} />);
+
+      act(() => {
+        ref.current?.validate();
+      });
+
+      const houseNumberInput = screen.getByLabelText(
+        /CREATE_PATIENT_HOUSE_NUMBER/,
+      );
+      expect(houseNumberInput).toBeInvalid();
+
+      fireEvent.change(houseNumberInput, { target: { value: '123' } });
+
+      expect(houseNumberInput).not.toBeInvalid();
+    });
+  });
+
   describe('Autocomplete Fields with Strict Entry', () => {
     beforeEach(() => {
       // Configure strict autocomplete from countyDistrict

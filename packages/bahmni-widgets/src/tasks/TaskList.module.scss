@@ -29,8 +29,11 @@
 
 .tasksTableBody {
   padding: 0 !important;
-  td {
-    width: 16%;
+  table {
+    table-layout: auto;
+  }
+  td{
+    width: 16% !important;
     border-block-end: 0 !important;
   }
 }

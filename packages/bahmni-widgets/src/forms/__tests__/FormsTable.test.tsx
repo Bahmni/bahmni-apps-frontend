@@ -943,8 +943,8 @@ describe('FormsTable', () => {
           detail: expect.objectContaining({
             editOnly: 'observationForms',
             editTitle: 'EDIT_OBSERVATION_FORM_TITLE',
-            editEncounterUuid: 'encounter-1',
-            editFormName: 'Vitals Form',
+            sourceEncounterUuid: 'encounter-1',
+            formName: 'Vitals Form',
           }),
         }),
       );
@@ -1083,8 +1083,8 @@ describe('FormsTable', () => {
           type: 'startConsultation',
           detail: expect.objectContaining({
             editOnly: 'observationForms',
-            editEncounterUuid: 'encounter-1',
-            editFormName: 'Vitals Form',
+            sourceEncounterUuid: 'encounter-1',
+            formName: 'Vitals Form',
           }),
         }),
       );

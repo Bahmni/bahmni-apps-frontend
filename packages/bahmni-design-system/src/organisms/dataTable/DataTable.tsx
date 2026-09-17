@@ -6,10 +6,7 @@ import { DataTableError } from './components/DataTableError';
 import { DataTableFilterRow } from './components/DataTableFilterRow';
 import { DataTableHeaderRow } from './components/DataTableHeaderRow';
 import { DataTableLoading } from './components/DataTableLoading';
-import {
-  DataTablePagination,
-  DEFAULT_PAGE_SIZES,
-} from './components/DataTablePagination';
+import { DataTablePagination } from './components/DataTablePagination';
 import { DataTableToolbar } from './components/DataTableToolbar';
 import { useDataTable } from './hooks/useDataTable';
 import styles from './styles/DataTable.module.scss';
@@ -29,13 +26,7 @@ export const DataTable = <T extends { id: string }>({
   renderExpandedContent,
   shouldRowBeExpandable,
   initialExpandedRows,
-  enablePagination = false,
-  pageSize,
-  pageSizes = DEFAULT_PAGE_SIZES,
-  page,
-  onPageChange,
-  totalItems,
-  manualPagination = false,
+  pagination,
   enableGlobalSearch = false,
   globalSearchPlaceholder,
   id,
@@ -50,12 +41,7 @@ export const DataTable = <T extends { id: string }>({
     rows,
     renderCell,
     accessor,
-    enablePagination,
-    pageSize,
-    page,
-    totalItems,
-    manualPagination,
-    onPaginationChange: onPageChange,
+    pagination,
     initialExpandedRows,
   });
 
@@ -85,9 +71,6 @@ export const DataTable = <T extends { id: string }>({
   }
 
   const expandable = !!renderExpandedContent;
-  const totalForPagination = manualPagination
-    ? (totalItems ?? rows.length)
-    : table.getFilteredRowModel().rows.length;
 
   return (
     <TableContainer
@@ -132,11 +115,10 @@ export const DataTable = <T extends { id: string }>({
           shouldRowBeExpandable={shouldRowBeExpandable}
         />
       </Table>
-      {enablePagination && (
+      {pagination && (
         <DataTablePagination
           table={table}
-          pageSizes={pageSizes}
-          totalItems={totalForPagination}
+          pagination={pagination}
           dataTestId={dataTestId}
         />
       )}

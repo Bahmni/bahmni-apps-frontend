@@ -1,6 +1,7 @@
 import {
   HeaderContainer,
   Header as CarbonHeader,
+  HeaderName,
   HeaderGlobalBar,
   HeaderGlobalAction,
   SideNav,
@@ -26,8 +27,12 @@ import { isMobile } from './utils';
  */
 export const Header: React.FC<HeaderProps> = React.memo(
   ({
+    brandName,
+    brandPrefix,
+    brandHref = '/',
     breadcrumbItems = [],
     globalActions = [],
+    globalFeatures = [],
     sideNavItems = [],
     activeSideNavItemId = null,
     onSideNavItemClick = () => {},
@@ -38,6 +43,20 @@ export const Header: React.FC<HeaderProps> = React.memo(
   }) => {
     const { isSideNavExpanded, handleSideNavItemClick } =
       useHeaderSideNav(onSideNavItemClick);
+
+    const renderBrand = () => {
+      if (!brandName && !brandPrefix) return null;
+
+      return (
+        <HeaderName
+          href={brandHref}
+          prefix={brandPrefix}
+          data-testid="header-name"
+        >
+          {brandName}
+        </HeaderName>
+      );
+    };
 
     const renderBreadcrumbs = () => {
       if (breadcrumbItems.length === 0) return null;
@@ -62,10 +81,16 @@ export const Header: React.FC<HeaderProps> = React.memo(
     };
 
     const renderGlobalBar = () => {
-      if (globalActions.length === 0 && !userMenu) return null;
+      if (
+        globalActions.length === 0 &&
+        !userMenu &&
+        globalFeatures.length === 0
+      )
+        return null;
 
       return (
         <HeaderGlobalBar data-testid="header-global-bar">
+          {globalFeatures}
           {globalActions.map((action) => (
             <HeaderGlobalAction
               key={action.id}
@@ -124,6 +149,7 @@ export const Header: React.FC<HeaderProps> = React.memo(
       <HeaderContainer
         render={() => (
           <CarbonHeader aria-label={ariaLabel} data-testid="header">
+            {renderBrand()}
             {renderBreadcrumbs()}
             {renderGlobalBar()}
             {renderSideNav()}

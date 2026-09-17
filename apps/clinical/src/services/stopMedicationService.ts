@@ -1,36 +1,52 @@
-import { get, post } from '@bahmni/services';
-import { MedicationRequest, ValueSet, Bundle } from 'fhir/r4';
 import {
-  STOP_REASON_VALUESET_URL,
-  STOP_REASON_VALUESET_EXPAND_URL,
-  STOP_MEDICATION_URL,
-} from '../constants/app';
+  get,
+  createBundleEntry,
+  dispatchAuditEvent,
+  AUDIT_LOG_EVENT_DETAILS,
+  AuditEventType,
+  FHIR_EXT_MEDICATION_REQUEST_NOTE_CATEGORY,
+  MedicationStatus,
+  OPENMRS_FHIR_R4,
+} from '@bahmni/services';
+import { CANCEL_VACCINATION_INPUT_CONTROL_KEY } from '@bahmni/widgets';
+import { BundleEntry, MedicationRequest, ValueSet, Bundle } from 'fhir/r4';
+import type { EncounterContext } from '../components/forms/models';
+import { STOP_REASON_VALUESET_EXPAND_URL } from '../constants/app';
+import { useStopMedicationStore } from '../stores/stopMedicationsStore';
+import { createEncounterReferenceFromString } from '../utils/fhir/referenceCreator';
+
+export const FHIR_EXT_MEDICATION_REQUEST_DATE_STOPPED =
+  'http://fhir.bahmni.org/ext/medicationRequest/dateStopped'; // NOSONAR
 
 export interface StopReason {
   uuid: string;
   display: string;
 }
 
-/**
- * Fetches stop reasons from the FHIR ValueSet "Stopped Order Reason".
- *
- * 1. Searches: GET /ws/fhir2/R4/ValueSet?title=Stopped+Order+Reason
- * 2. Expands: GET /ws/fhir2/R4/ValueSet/{uuid}/$expand
- * 3. Returns the expanded concepts as stop reasons
- */
-export async function fetchStopReasons(): Promise<StopReason[]> {
+const UUID_REGEX =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+export async function fetchStopReasons(
+  conceptSetUuid: string,
+): Promise<StopReason[]> {
   try {
-    const searchBundle = await get<Bundle>(STOP_REASON_VALUESET_URL);
+    let valueSetId: string | undefined;
 
-    const valueSetEntry = searchBundle.entry?.[0]?.resource as
-      | ValueSet
-      | undefined;
-    if (!valueSetEntry?.id) return [];
+    if (UUID_REGEX.test(conceptSetUuid)) {
+      valueSetId = conceptSetUuid;
+    } else {
+      const url = `${OPENMRS_FHIR_R4}/ValueSet?title=${encodeURIComponent(conceptSetUuid)}`;
+      const searchBundle = await get<Bundle>(url);
+      const valueSetEntry = searchBundle.entry?.[0]?.resource as
+        | ValueSet
+        | undefined;
+      valueSetId = valueSetEntry?.id;
+    }
 
+    if (!valueSetId) return [];
     const expanded = await get<ValueSet>(
-      STOP_REASON_VALUESET_EXPAND_URL(valueSetEntry.id),
+      STOP_REASON_VALUESET_EXPAND_URL(valueSetId),
     );
-
     const contains = expanded.expansion?.contains ?? [];
     return contains.map((c) => ({
       uuid: c.code ?? '',
@@ -41,36 +57,76 @@ export async function fetchStopReasons(): Promise<StopReason[]> {
   }
 }
 
-interface StopMedicationParams {
-  medicationRequestId: string;
-  reason: string;
-  effectiveDate: Date;
-  note?: string;
-}
+export function createStopMedicationEntry(
+  ctx: EncounterContext,
+): BundleEntry[] {
+  const state = useStopMedicationStore.getState();
+  if (!state.medicationToStop?.id || !state.stopReason) return [];
 
-/**
- * Calls the FHIR $stop operation on a MedicationRequest.
- * POST /openmrs/ws/fhir2/R4/MedicationRequest/{id}/$stop
- */
-export async function stopMedication(
-  params: StopMedicationParams,
-): Promise<MedicationRequest> {
-  const { medicationRequestId, reason, effectiveDate, note } = params;
+  const patientUuid = state.medicationToStop.subject?.reference
+    ?.split('/')
+    .pop();
+  if (!patientUuid) return [];
 
-  const fhirParams = {
-    resourceType: 'Parameters' as const,
-    parameter: [
-      { name: 'reason', valueString: reason },
+  const isCancelVaccination =
+    state.inputControlKey === CANCEL_VACCINATION_INPUT_CONTROL_KEY;
+  const status = isCancelVaccination
+    ? MedicationStatus.Cancelled
+    : MedicationStatus.Stopped;
+
+  const stopDate = `${state.stopDate.getFullYear()}-${String(state.stopDate.getMonth() + 1).padStart(2, '0')}-${String(state.stopDate.getDate()).padStart(2, '0')}`;
+
+  const resource: MedicationRequest = {
+    resourceType: 'MedicationRequest',
+    status: status as MedicationRequest['status'],
+    intent: 'order',
+    subject: { reference: `Patient/${patientUuid}` },
+    medicationCodeableConcept: { text: '' },
+    encounter: createEncounterReferenceFromString(ctx.encounterReference),
+    priorPrescription: {
+      reference: `MedicationRequest/${state.medicationToStop.id}`,
+    },
+    statusReason: {
+      coding: [
+        { code: state.stopReason.uuid, display: state.stopReason.display },
+      ],
+      text: state.stopReason.display,
+    },
+    extension: [
       {
-        name: 'effectiveDate',
-        valueDate: `${effectiveDate.getFullYear()}-${String(effectiveDate.getMonth() + 1).padStart(2, '0')}-${String(effectiveDate.getDate()).padStart(2, '0')}`,
+        url: FHIR_EXT_MEDICATION_REQUEST_DATE_STOPPED,
+        valueDateTime: stopDate,
       },
-      ...(note ? [{ name: 'note', valueString: note }] : []),
     ],
   };
 
-  return post<MedicationRequest>(
-    STOP_MEDICATION_URL(medicationRequestId),
-    fhirParams,
-  );
+  if (state.note) {
+    resource.note = [
+      {
+        extension: [
+          {
+            url: FHIR_EXT_MEDICATION_REQUEST_NOTE_CATEGORY,
+            valueCode: 'cancellation-note',
+          },
+        ],
+        text: state.note,
+      },
+    ];
+  }
+
+  // [Todo] Refactor | Should Be Dispatched After Submission
+  dispatchAuditEvent({
+    eventType: AUDIT_LOG_EVENT_DETAILS.STOP_MEDICATION
+      .eventType as AuditEventType,
+    patientUuid,
+    messageParams: {},
+  });
+
+  return [
+    createBundleEntry(
+      `urn:uuid:stop-${state.medicationToStop.id}`,
+      resource,
+      'POST',
+    ),
+  ];
 }

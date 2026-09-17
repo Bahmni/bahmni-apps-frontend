@@ -8,7 +8,7 @@ import {
   SearchStrategy,
   SearchContext,
   ValidationResult,
-} from '../SearchStrategy.interface';
+} from './SearchStrategy.interface';
 
 /**
  * Strategy for searching patients by custom attributes (e.g., phone number)

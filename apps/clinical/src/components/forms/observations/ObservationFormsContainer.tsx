@@ -3,7 +3,7 @@ import {
   Icon,
   ICON_SIZE,
   InlineNotification,
-  SkeletonText,
+  Loading,
   MenuItemDivider,
 } from '@bahmni/design-system';
 import {
@@ -30,7 +30,7 @@ import {
 } from '@bahmni/services';
 import { useActivePractitioner, usePatientUUID } from '@bahmni/widgets';
 import { useQuery } from '@tanstack/react-query';
-import type { Reference, Task } from 'fhir/r4';
+import type { Encounter, Reference, Task } from 'fhir/r4';
 import React, { useState, useRef, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
@@ -41,15 +41,17 @@ import {
   VALIDATION_STATE_SCRIPT_ERROR,
 } from '../../../constants/forms';
 import type { EncounterSessionStartContext } from '../../../events/startConsultation';
+import { useActionAreaExpandProps } from '../../../hooks/useActionAreaExpandProps';
 import { useClinicalAppData } from '../../../hooks/useClinicalAppData';
 import { useObservationFormData } from '../../../hooks/useObservationFormData';
 import useObservationFormsSearch from '../../../hooks/useObservationFormsSearch';
 import { usePinnedObservationForms } from '../../../hooks/usePinnedObservationForms';
 import {
   extractVersionFromFormFieldPath,
+  findBasedOnFromObservations,
   injectMissingDeleteObs,
   markUnchangedObservations,
-  mergeObservationStatuses,
+  mergeObsExistingData,
   restoreComplexValues,
 } from '../../../utils/fhir/observationReconciliation';
 import EncounterDetails from '../encounterDetails/EncounterDetails';
@@ -80,11 +82,12 @@ interface ObservationFormsContainerProps {
     basedOn?: Reference,
   ) => void;
   existingObservations?: Form2Observation[];
-  activeEncounterUuid?: string | null;
   directMode?: boolean;
   onDirectModeSubmit?: () => void | Promise<void>;
   onDirectModeCancel?: () => void;
   encounterSessionStartContext?: EncounterSessionStartContext;
+  isActionAreaExpanded?: boolean;
+  onToggleActionAreaExpand?: () => void;
 }
 
 const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
@@ -93,24 +96,43 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
   onRemoveForm,
   onFormObservationsChange,
   existingObservations,
-  activeEncounterUuid,
   directMode = false,
   onDirectModeSubmit,
   onDirectModeCancel,
   encounterSessionStartContext,
+  isActionAreaExpanded,
+  onToggleActionAreaExpand,
 }) => {
   const { t } = useTranslation();
+  const actionAreaExpandProps = useActionAreaExpandProps({
+    isExpanded: isActionAreaExpanded,
+    onToggleExpand: onToggleActionAreaExpand,
+  });
 
   // Derive early so it can be used for hook initialisation below.
   const isEditMode =
-    encounterSessionStartContext?.editOnly === 'observationForms';
+    encounterSessionStartContext?.editOnly === 'observationForms' &&
+    !!encounterSessionStartContext?.sourceEncounterUuid;
+
+  const activeEncounter = encounterSessionStartContext?.activeEncounter as
+    | Encounter
+    | null
+    | undefined;
+  const sourceEncounterUuidFromContext =
+    encounterSessionStartContext?.sourceEncounterUuid as string | undefined;
+  const isCopyover: boolean | undefined =
+    !sourceEncounterUuidFromContext || activeEncounter === undefined
+      ? undefined
+      : activeEncounter?.id !== sourceEncounterUuidFromContext;
+  // Blank string (e.g. a locale with no translated copy yet) means "don't show".
+  const copyoverNoticeMessage =
+    isCopyover && t('OBSERVATION_FORM_COPYOVER_NOTICE').trim();
 
   // Tracks whether the form differs from its initial values — driven by CarbonContainer's
   // own setIsFormUpdated (uuid-based comparison against the observations it was mounted with).
   const [isFormUpdated, setIsFormUpdated] = React.useState(false);
 
   const task = encounterSessionStartContext?.task as Task | undefined;
-  const basedOn = task?.basedOn?.[0];
   const patientUUID = usePatientUUID();
   const { user } = useActivePractitioner();
   const { episodeOfCare, activeVisitId } = useClinicalAppData();
@@ -144,10 +166,10 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
         ? mapGenderFromFhir(fhirPatient.gender)
         : undefined,
       activeVisitUuid: activeVisitId ?? undefined,
-      currentEncounterUuid: activeEncounterUuid ?? undefined,
+      currentEncounterUuid: activeEncounter?.id ?? undefined,
       getAgeDetails: () => ageDetails ?? AGE_DETAILS_DEFAULT,
     };
-  }, [fhirPatient, patientUUID, activeVisitId, activeEncounterUuid]);
+  }, [fhirPatient, patientUUID, activeVisitId, activeEncounter?.id]);
   const episodeOfCareUuids = episodeOfCare.map((eoc) => eoc.uuid);
   const { forms: allForms, isLoading: isAllFormsLoading } =
     useObservationFormsSearch('', episodeOfCareUuids);
@@ -169,16 +191,20 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
     typeof CarbonContainer
   > | null>(null);
 
-  // One-way latch onto the first render with FHIR-enriched observations (uuid + status).
-  const statusSourceRef = useRef<Form2Observation[]>(
+  // One-way latch onto the first render with FHIR-enriched observations (uuid + status + basedOn).
+  const initialObservationsRef = useRef<Form2Observation[]>(
     existingObservations ?? [],
   );
   if (
-    !statusSourceRef.current.some((o) => !!o.uuid) &&
+    !initialObservationsRef.current.some((o) => !!o.uuid) &&
     existingObservations?.some((o) => !!o.uuid)
   ) {
-    statusSourceRef.current = existingObservations;
+    initialObservationsRef.current = existingObservations;
   }
+
+  const basedOn =
+    task?.basedOn?.[0] ??
+    findBasedOnFromObservations(initialObservationsRef.current);
 
   const {
     observations,
@@ -353,18 +379,21 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
               )
             : [];
 
-        mergeObservationStatuses(
+        mergeObsExistingData(
           transformedObservations,
-          statusSourceRef.current,
+          initialObservationsRef.current,
         );
-        restoreComplexValues(transformedObservations, statusSourceRef.current);
+        restoreComplexValues(
+          transformedObservations,
+          initialObservationsRef.current,
+        );
         injectMissingDeleteObs(
           transformedObservations,
-          statusSourceRef.current,
+          initialObservationsRef.current,
         );
         markUnchangedObservations(
           transformedObservations,
-          statusSourceRef.current,
+          initialObservationsRef.current,
         );
 
         handleSaveForm(transformedObservations, validationErrorType);
@@ -427,18 +456,21 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
       setValidationErrorMessage(null);
 
       try {
-        mergeObservationStatuses(
+        mergeObsExistingData(
           transformedObservations,
-          statusSourceRef.current,
+          initialObservationsRef.current,
         );
-        restoreComplexValues(transformedObservations, statusSourceRef.current);
+        restoreComplexValues(
+          transformedObservations,
+          initialObservationsRef.current,
+        );
         injectMissingDeleteObs(
           transformedObservations,
-          statusSourceRef.current,
+          initialObservationsRef.current,
         );
         markUnchangedObservations(
           transformedObservations,
-          statusSourceRef.current,
+          initialObservationsRef.current,
         );
 
         // Extract and append notes-only observations to the existing array
@@ -498,15 +530,21 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
         transformedObservations,
       );
 
-      mergeObservationStatuses(
+      mergeObsExistingData(
         transformedObservations,
-        statusSourceRef.current,
+        initialObservationsRef.current,
       );
-      restoreComplexValues(transformedObservations, statusSourceRef.current);
-      injectMissingDeleteObs(transformedObservations, statusSourceRef.current);
+      restoreComplexValues(
+        transformedObservations,
+        initialObservationsRef.current,
+      );
+      injectMissingDeleteObs(
+        transformedObservations,
+        initialObservationsRef.current,
+      );
       markUnchangedObservations(
         transformedObservations,
-        statusSourceRef.current,
+        initialObservationsRef.current,
       );
 
       handleSaveForm(transformedObservations, validationErrorType);
@@ -546,12 +584,23 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
               <span>{viewingForm.name}</span>
             </div>
           )}
+          {isEditMode && viewingForm && copyoverNoticeMessage && (
+            <div className={styles.inlineNotificationWrapper}>
+              <InlineNotification
+                kind="info"
+                title={copyoverNoticeMessage}
+                lowContrast
+                hideCloseButton
+                testId="observation-form-copyover-notice"
+              />
+            </div>
+          )}
         </>
       )}
 
       {validationErrorType &&
         validationErrorType !== VALIDATION_STATE_SCRIPT_ERROR && (
-          <div className={styles.errorNotificationWrapper}>
+          <div className={styles.inlineNotificationWrapper}>
             <InlineNotification
               kind="error"
               title={t(
@@ -569,7 +618,7 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
 
       {validationErrorType === VALIDATION_STATE_SCRIPT_ERROR &&
         validationErrorMessage && (
-          <div className={styles.errorNotificationWrapper}>
+          <div className={styles.inlineNotificationWrapper}>
             <InlineNotification
               kind="error"
               title={t('OBSERVATION_FORM_SCRIPT_ERROR_TITLE')}
@@ -589,11 +638,14 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
         data-testid="observation-form-content"
       >
         {isLoadingMetadata || isPatientLoading ? (
-          <SkeletonText
-            width="100%"
-            lineCount={3}
-            data-testid="observation-form-loading"
-          />
+          <div className={styles.loadingWrapper}>
+            <Loading
+              description={t('OBSERVATION_FORM_LOADING_METADATA')}
+              role="status"
+              testId="observation-form-loading"
+              withOverlay={false}
+            />
+          </div>
         ) : error ? (
           <div>{error.message}</div>
         ) : formMetadata && patientUUID && patientContext ? (
@@ -605,7 +657,7 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
               // Use the version embedded in the saved observations' formFieldPath when editing.
               version:
                 extractVersionFromFormFieldPath(
-                  statusSourceRef.current[0]?.formFieldPath,
+                  initialObservationsRef.current[0]?.formFieldPath,
                 ) ??
                 formMetadata.version ??
                 '1',
@@ -627,26 +679,28 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
     </div>
   );
 
-  const formTitleWithPin = (
+  const formTitle = (
+    <span data-testid="observation-form-name">
+      {isEditMode
+        ? `${t('EDIT_OBSERVATION_FORM')} ${viewingForm?.name}`
+        : viewingForm?.name}
+    </span>
+  );
+
+  const canPinForm =
+    !directMode && !DEFAULT_FORM_API_NAMES.includes(viewingForm?.name ?? '');
+
+  const pinIcon = canPinForm && (
     <div
-      className={styles.formTitleContainer}
-      data-testid="observation-form-title-container"
+      onClick={handlePinToggle}
+      className={`${styles.pinIconContainer} ${isCurrentFormPinned ? styles.pinned : styles.unpinned}`}
+      title={
+        isCurrentFormPinned
+          ? t('OBSERVATION_FORMS_UNPIN_TOOLTIP')
+          : t('OBSERVATION_FORMS_PIN_TOOLTIP')
+      }
     >
-      <span data-testid="observation-form-name">
-        {isEditMode
-          ? `${t('EDIT_OBSERVATION_FORM')} ${viewingForm?.name}`
-          : viewingForm?.name}
-      </span>
-      {!directMode &&
-        !DEFAULT_FORM_API_NAMES.includes(viewingForm?.name ?? '') && (
-          <div
-            onClick={handlePinToggle}
-            className={`${styles.pinIconContainer} ${isCurrentFormPinned ? styles.pinned : styles.unpinned}`}
-            title={isCurrentFormPinned ? 'Unpin form' : 'Pin form'}
-          >
-            <Icon id="pin-icon" name="fa-thumbtack" size={ICON_SIZE.SM} />
-          </div>
-        )}
+      <Icon id="pin-icon" name="fa-thumbtack" size={ICON_SIZE.SM} />
     </div>
   );
 
@@ -676,7 +730,8 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
     return (
       <ActionArea
         className={styles.formViewActionArea}
-        title={formTitleWithPin as unknown as string}
+        title={formTitle}
+        headerActions={pinIcon}
         primaryButtonText={primaryButtonText}
         onPrimaryButtonClick={handlePrimaryClick}
         isPrimaryButtonDisabled={
@@ -685,6 +740,7 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
         secondaryButtonText={secondaryButtonText}
         onSecondaryButtonClick={handleSecondaryClick}
         content={formViewContent}
+        {...actionAreaExpandProps}
       />
     );
   }

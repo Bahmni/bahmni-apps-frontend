@@ -131,7 +131,7 @@ describe('ObservationFormsPanel', () => {
     expect(receivedProps.isPinnedFormsLoading).toBe(false);
   });
 
-  it('passes episodeOfCare UUIDs to useObservationFormsSearch', () => {
+  it('passes episodeOfCare UUIDs to useObservationFormsSearch when directFormMode is false', () => {
     render(<ObservationFormsPanel />);
 
     expect(jest.mocked(useObservationFormsSearch)).toHaveBeenCalledWith('', [
@@ -226,9 +226,25 @@ describe('ObservationFormsPanel', () => {
       }));
     });
 
-    it('should reset store and add matching form when directFormMode is true and taskFormName is provided', () => {
+    it('calls useObservationFormsSearch without episodeUuids when directFormMode is true and formName is provided', () => {
+      render(
+        <ObservationFormsPanel
+          encounterSessionStartContext={{
+            formName: 'Vitals',
+            directFormMode: true,
+          }}
+        />,
+      );
+
+      expect(jest.mocked(useObservationFormsSearch)).toHaveBeenCalledWith(
+        '',
+        undefined,
+      );
+    });
+
+    it('should reset store and add matching form when directFormMode is true and formName is provided', () => {
       const encounterContext = {
-        taskFormName: 'Vitals',
+        formName: 'Vitals',
         directFormMode: true,
       };
 
@@ -244,7 +260,7 @@ describe('ObservationFormsPanel', () => {
 
     it('should not reset store when directFormMode is false', () => {
       const encounterContext = {
-        taskFormName: 'Vitals',
+        formName: 'Vitals',
         directFormMode: false,
       };
 
@@ -258,7 +274,7 @@ describe('ObservationFormsPanel', () => {
       expect(mockAddForm).not.toHaveBeenCalled();
     });
 
-    it('should not reset store when taskFormName is not provided', () => {
+    it('should not reset store when formName is not provided', () => {
       const encounterContext = {
         directFormMode: true,
       };
@@ -275,7 +291,7 @@ describe('ObservationFormsPanel', () => {
 
     it('should not add form when matching form is not found', () => {
       const encounterContext = {
-        taskFormName: 'Non-existent Form',
+        formName: 'Non-existent Form',
         directFormMode: true,
       };
 
@@ -297,7 +313,7 @@ describe('ObservationFormsPanel', () => {
       });
 
       const encounterContext = {
-        taskFormName: 'Vitals',
+        formName: 'Vitals',
         directFormMode: true,
       };
 
@@ -329,6 +345,26 @@ describe('ObservationFormsPanel', () => {
       ).setState = mockSetState;
     });
 
+    it('shows the loading indicator while the edit fetch is in flight (viewingForm not yet set)', () => {
+      jest
+        .mocked(getObservationsBundleByEncounterUuid)
+        .mockImplementation(() => new Promise(() => {}));
+
+      render(
+        <ObservationFormsPanel
+          encounterSessionStartContext={{
+            editOnly: 'observationForms',
+            editFormName: 'Vitals',
+            sourceEncounterUuid: 'encounter-uuid-1',
+          }}
+        />,
+      );
+
+      expect(
+        screen.getByTestId('edit-observation-form-loading'),
+      ).toBeInTheDocument();
+    });
+
     it('fetches bundle and calls addForm when edit context is provided', async () => {
       const mockBundle = {
         entry: [{ resource: { resourceType: 'Observation', id: 'obs-1' } }],
@@ -346,8 +382,9 @@ describe('ObservationFormsPanel', () => {
         <ObservationFormsPanel
           encounterSessionStartContext={{
             editOnly: 'observationForms',
-            editFormName: 'Vitals',
-            editEncounterUuid: 'encounter-uuid-1',
+            formName: 'Vitals',
+            sourceEncounterUuid: 'encounter-uuid-1',
+            activeEncounter: { id: 'encounter-uuid-1' } as any,
           }}
         />,
       );
@@ -355,11 +392,48 @@ describe('ObservationFormsPanel', () => {
       await waitFor(() => {
         expect(getObservationsBundleByEncounterUuid).toHaveBeenCalledWith(
           'encounter-uuid-1',
+          undefined,
         );
       });
 
       await waitFor(() => {
         expect(mockAddForm).toHaveBeenCalledWith(mockForm1);
+      });
+    });
+
+    it('passes the ServiceRequest id extracted from task.basedOn to the encounter fetch', async () => {
+      const mockBundle = {
+        entry: [{ resource: { resourceType: 'Observation', id: 'obs-1' } }],
+      };
+      jest
+        .mocked(getObservationsBundleByEncounterUuid)
+        .mockResolvedValue(mockBundle as never);
+      jest
+        .mocked(getObservationsFromFhir)
+        .mockReturnValue([
+          { concept: { uuid: 'concept-1' }, value: 42 },
+        ] as never);
+
+      render(
+        <ObservationFormsPanel
+          encounterSessionStartContext={{
+            editOnly: 'observationForms',
+            formName: 'Vitals',
+            sourceEncounterUuid: 'encounter-uuid-1',
+            activeEncounter: { id: 'encounter-uuid-1' } as any,
+            task: {
+              resourceType: 'Task',
+              basedOn: [{ reference: 'ServiceRequest/service-request-42' }],
+            },
+          }}
+        />,
+      );
+
+      await waitFor(() => {
+        expect(getObservationsBundleByEncounterUuid).toHaveBeenCalledWith(
+          'encounter-uuid-1',
+          'service-request-42',
+        );
       });
     });
 
@@ -394,8 +468,9 @@ describe('ObservationFormsPanel', () => {
         <ObservationFormsPanel
           encounterSessionStartContext={{
             editOnly: 'observationForms',
-            editFormName: 'Vitals',
-            editEncounterUuid: 'encounter-uuid-1',
+            formName: 'Vitals',
+            sourceEncounterUuid: 'encounter-uuid-1',
+            activeEncounter: { id: 'encounter-uuid-1' } as any,
           }}
         />,
       );
@@ -420,8 +495,9 @@ describe('ObservationFormsPanel', () => {
         <ObservationFormsPanel
           encounterSessionStartContext={{
             editOnly: 'observationForms',
-            editFormName: 'Vitals',
-            editEncounterUuid: 'encounter-uuid-1',
+            formName: 'Vitals',
+            sourceEncounterUuid: 'encounter-uuid-1',
+            activeEncounter: { id: 'encounter-uuid-1' } as any,
           }}
         />,
       );
@@ -431,13 +507,14 @@ describe('ObservationFormsPanel', () => {
       });
     });
 
-    it('does not fetch when editFormName does not match any form', async () => {
+    it('does not fetch when formName does not match any form', async () => {
       render(
         <ObservationFormsPanel
           encounterSessionStartContext={{
             editOnly: 'observationForms',
-            editFormName: 'NonExistentForm',
-            editEncounterUuid: 'encounter-uuid-1',
+            formName: 'NonExistentForm',
+            sourceEncounterUuid: 'encounter-uuid-1',
+            activeEncounter: { id: 'encounter-uuid-1' } as any,
           }}
         />,
       );
@@ -468,8 +545,9 @@ describe('ObservationFormsPanel', () => {
 
       const sessionContext = {
         editOnly: 'observationForms',
-        editFormName: 'Vitals',
-        editEncounterUuid: 'encounter-uuid-1',
+        formName: 'Vitals',
+        sourceEncounterUuid: 'encounter-uuid-1',
+        activeEncounter: { id: 'encounter-uuid-1' } as any,
       };
 
       const { rerender } = render(
@@ -487,6 +565,52 @@ describe('ObservationFormsPanel', () => {
       await waitFor(() => {
         expect(getObservationsBundleByEncounterUuid).toHaveBeenCalledTimes(1);
       });
+    });
+
+    it('enriches stored observations with status and basedOn from the FHIR bundle', async () => {
+      const basedOnRef = { reference: 'ServiceRequest/sr-1' };
+      const mockBundle = {
+        entry: [
+          {
+            resource: {
+              resourceType: 'Observation',
+              id: 'obs-uuid-1',
+              status: 'final',
+              basedOn: [basedOnRef],
+            },
+          },
+        ],
+      };
+      jest
+        .mocked(getObservationsBundleByEncounterUuid)
+        .mockResolvedValue(mockBundle as never);
+      jest.mocked(getObservationsFromFhir).mockReturnValue([
+        {
+          concept: { uuid: 'concept-1' },
+          value: 42,
+          uuid: 'obs-uuid-1',
+          formFieldPath: 'Vitals.1/1-0',
+        },
+      ] as never);
+
+      render(
+        <ObservationFormsPanel
+          encounterSessionStartContext={{
+            editOnly: 'observationForms',
+            formName: 'Vitals',
+            sourceEncounterUuid: 'encounter-uuid-1',
+            activeEncounter: { id: 'encounter-uuid-1' } as any,
+          }}
+        />,
+      );
+
+      await waitFor(() => expect(mockSetState).toHaveBeenCalled());
+
+      const updater = mockSetState.mock.calls[0][0];
+      const result = updater({ formsData: {} });
+      const stored = result.formsData['form-uuid-1'].observations;
+      expect(stored[0].status).toBe('final');
+      expect(stored[0].basedOn).toBe(basedOnRef);
     });
 
     it('skips fetch when not in edit mode', async () => {
@@ -527,8 +651,9 @@ describe('ObservationFormsPanel', () => {
         <ObservationFormsPanel
           encounterSessionStartContext={{
             editOnly: 'observationForms',
-            editFormName: 'Vitals',
-            editEncounterUuid: 'encounter-uuid-1',
+            formName: 'Vitals',
+            sourceEncounterUuid: 'encounter-uuid-1',
+            activeEncounter: { id: 'encounter-uuid-1' } as any,
           }}
         />,
       );
@@ -586,8 +711,9 @@ describe('ObservationFormsPanel', () => {
         <ObservationFormsPanel
           encounterSessionStartContext={{
             editOnly: 'observationForms',
-            editFormName: 'Vitals',
-            editEncounterUuid: 'encounter-uuid-1',
+            formName: 'Vitals',
+            sourceEncounterUuid: 'encounter-uuid-1',
+            activeEncounter: { id: 'encounter-uuid-1' } as any,
           }}
         />,
       );
@@ -632,8 +758,9 @@ describe('ObservationFormsPanel', () => {
         <ObservationFormsPanel
           encounterSessionStartContext={{
             editOnly: 'observationForms',
-            editFormName: 'Vitals',
-            editEncounterUuid: 'encounter-uuid-1',
+            formName: 'Vitals',
+            sourceEncounterUuid: 'encounter-uuid-1',
+            activeEncounter: { id: 'encounter-uuid-1' } as any,
           }}
         />,
       );
@@ -681,8 +808,9 @@ describe('ObservationFormsPanel', () => {
         <ObservationFormsPanel
           encounterSessionStartContext={{
             editOnly: 'observationForms',
-            editFormName: 'Vitals',
-            editEncounterUuid: 'encounter-uuid-1',
+            formName: 'Vitals',
+            sourceEncounterUuid: 'encounter-uuid-1',
+            activeEncounter: { id: 'encounter-uuid-1' } as any,
           }}
         />,
       );
@@ -691,6 +819,73 @@ describe('ObservationFormsPanel', () => {
         expect(fetchFormUuidByObservationDate).not.toHaveBeenCalled();
         expect(mockAddForm).toHaveBeenCalledWith(mockForm1);
       });
+    });
+
+    it('blocks fetch while activeEncounter is undefined (session query still pending)', async () => {
+      render(
+        <ObservationFormsPanel
+          encounterSessionStartContext={{
+            editOnly: 'observationForms',
+            formName: 'Vitals',
+            sourceEncounterUuid: 'encounter-uuid-1',
+            // activeEncounter intentionally absent — undefined means mode not yet determined
+          }}
+        />,
+      );
+
+      await waitFor(() => {
+        expect(getObservationsBundleByEncounterUuid).not.toHaveBeenCalled();
+      });
+    });
+
+    it('fetches in copyover mode and strips observation UUIDs before storing', async () => {
+      const mockSetState = jest.fn();
+      (
+        useObservationFormsStore as unknown as { setState: jest.Mock }
+      ).setState = mockSetState;
+
+      const mockBundle = { entry: [] };
+      jest
+        .mocked(getObservationsBundleByEncounterUuid)
+        .mockResolvedValue(mockBundle as never);
+      jest.mocked(getObservationsFromFhir).mockReturnValue([
+        {
+          uuid: 'obs-uuid-parent',
+          concept: { uuid: 'concept-parent' },
+          value: 'yes',
+          formFieldPath: 'Vitals.3/1-0',
+          groupMembers: [
+            {
+              uuid: 'obs-uuid-child',
+              concept: { uuid: 'concept-child' },
+              value: 'x',
+              formFieldPath: 'Vitals.3/2-0',
+            },
+          ],
+        },
+      ] as never);
+
+      render(
+        <ObservationFormsPanel
+          encounterSessionStartContext={{
+            editOnly: 'observationForms',
+            formName: 'Vitals',
+            sourceEncounterUuid: 'encounter-uuid-1',
+            activeEncounter: { id: 'session-different-uuid' } as any,
+          }}
+        />,
+      );
+
+      await waitFor(() => expect(mockSetState).toHaveBeenCalled());
+
+      const updater = mockSetState.mock.calls[0][0];
+      const result = updater({ formsData: {} });
+      const stored = result.formsData['form-uuid-1'].observations;
+
+      expect(stored[0].uuid).toBeUndefined();
+      expect(stored[0].groupMembers[0].uuid).toBeUndefined();
+      expect(stored[0].value).toBe('yes');
+      expect(stored[0].groupMembers[0].value).toBe('x');
     });
   });
 });

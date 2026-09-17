@@ -3,8 +3,9 @@ import type { TaskViewModel } from '../models';
 import {
   extractFormNameFromTask,
   hasViewFormConfig,
-  hasLaunchFormActions,
+  hasFormActions,
   isViewFormDataVisible,
+  isFormActionVisible,
   canUserAccessForm,
 } from '../utils';
 import {
@@ -19,10 +20,14 @@ import {
   mockTaskViewModelWithoutInput,
   mockTaskViewModelWithEmptyInput,
   mockTaskViewModelWithCaseInsensitiveForm,
+  mockTaskViewModelCompleted,
+  mockLaunchFormAction,
+  mockEditFormAction,
   mockUserPrivileges,
   mockEmptyUserPrivileges,
   mockObservationForms,
   mockTaskConfig,
+  mockTaskConfigWithEditForm,
 } from './__mocks__/taskActionsMocks';
 import { VITALS_TASK_CODE } from './__mocks__/taskListMocks';
 
@@ -201,12 +206,107 @@ describe('canUserAccessForm', () => {
   );
 });
 
-describe('hasLaunchFormActions', () => {
+describe('hasFormActions', () => {
   it.each([
     ['config with launch form actions', mockTaskConfig, VITALS_TASK_CODE, true],
+    [
+      'config with edit form actions',
+      mockTaskConfigWithEditForm,
+      VITALS_TASK_CODE,
+      true,
+    ],
     ['empty taskConfig', [], VITALS_TASK_CODE, false],
     ['non-matching task code', mockTaskConfig, 'non-existent-code', false],
   ])('should handle %s', (_desc, config, taskCode, expected) => {
-    expect(hasLaunchFormActions(config, taskCode)).toBe(expected);
+    expect(hasFormActions(config, taskCode)).toBe(expected);
+  });
+});
+
+describe('isFormActionVisible', () => {
+  describe('LAUNCH_FORM action', () => {
+    it('should be visible for ready task with matching form and privilege', () => {
+      const readyTask = { ...mockTaskViewModelWithInput, status: 'ready' };
+      expect(
+        isFormActionVisible(
+          mockLaunchFormAction,
+          readyTask,
+          mockObservationForms,
+          mockUserPrivileges,
+        ),
+      ).toBe(true);
+    });
+
+    it('should not be visible for completed task', () => {
+      expect(
+        isFormActionVisible(
+          mockLaunchFormAction,
+          mockTaskViewModelCompleted,
+          mockObservationForms,
+          mockUserPrivileges,
+        ),
+      ).toBe(false);
+    });
+
+    it('should not be visible when form name is missing', () => {
+      expect(
+        isFormActionVisible(
+          mockLaunchFormAction,
+          mockTaskViewModelWithoutInput,
+          mockObservationForms,
+          mockUserPrivileges,
+        ),
+      ).toBe(false);
+    });
+  });
+
+  describe('EDIT_FORM action', () => {
+    it('should be visible for completed task with matching form and privilege', () => {
+      expect(
+        isFormActionVisible(
+          mockEditFormAction,
+          mockTaskViewModelCompleted,
+          mockObservationForms,
+          mockUserPrivileges,
+        ),
+      ).toBe(true);
+    });
+
+    it('should not be visible for non-completed task', () => {
+      const readyTask = { ...mockTaskViewModelWithInput, status: 'ready' };
+      expect(
+        isFormActionVisible(
+          mockEditFormAction,
+          readyTask,
+          mockObservationForms,
+          mockUserPrivileges,
+        ),
+      ).toBe(false);
+    });
+
+    it('should not be visible when form name is missing', () => {
+      const completedTaskNoInput: TaskViewModel = {
+        ...mockTaskViewModelCompleted,
+        fhirResource: { ...mockTaskViewModelCompleted.fhirResource, input: [] },
+      };
+      expect(
+        isFormActionVisible(
+          mockEditFormAction,
+          completedTaskNoInput,
+          mockObservationForms,
+          mockUserPrivileges,
+        ),
+      ).toBe(false);
+    });
+
+    it('should not be visible when user lacks edit privilege', () => {
+      expect(
+        isFormActionVisible(
+          mockEditFormAction,
+          mockTaskViewModelCompleted,
+          mockObservationForms,
+          mockEmptyUserPrivileges,
+        ),
+      ).toBe(false);
+    });
   });
 });

@@ -6,6 +6,7 @@ import {
   LocationProvider,
   NotificationProvider,
   NotificationServiceComponent,
+  UserActionProvider,
   UserPrivilegeProvider,
 } from '@bahmni/widgets';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -45,15 +46,17 @@ export function App() {
       <QueryClientProvider client={queryClient}>
         <ActivePractitionerProvider>
           <UserPrivilegeProvider>
-            <NotificationProvider>
-              <LocationProvider>
-                <NotificationServiceComponent />
-                <Suspense fallback={<Loading />}>
-                  <Routes>{renderRoutes(routes)}</Routes>
-                </Suspense>
-                <ReactQueryDevtools initialIsOpen={false} />
-              </LocationProvider>
-            </NotificationProvider>
+            <UserActionProvider>
+              <NotificationProvider>
+                <LocationProvider>
+                  <NotificationServiceComponent />
+                  <Suspense fallback={<Loading />}>
+                    <Routes>{renderRoutes(routes)}</Routes>
+                  </Suspense>
+                  <ReactQueryDevtools initialIsOpen={false} />
+                </LocationProvider>
+              </NotificationProvider>
+            </UserActionProvider>
           </UserPrivilegeProvider>
         </ActivePractitionerProvider>
       </QueryClientProvider>

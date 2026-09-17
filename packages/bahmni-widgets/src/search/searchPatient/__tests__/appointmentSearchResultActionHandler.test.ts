@@ -15,7 +15,7 @@ import {
   shouldRenderActionButton,
   appDateValidator,
   appointmentServiceValidator,
-} from '../appointmentSearchResultActionHandler';
+} from '../actions/appointmentSearchResultActionHandler';
 import { PatientSearchViewModel } from '../utils';
 
 jest.mock('@bahmni/services', () => ({

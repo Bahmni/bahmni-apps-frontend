@@ -341,6 +341,7 @@ const RadiologyInvestigationTable: React.FC<WidgetProps> = ({
               onClick={() => {
                 setSelectedInvestigation(investigation);
                 setModalType(ModalType.QA);
+                handleRadiologyResultClick();
               }}
             >
               {t('RADIOLOGY_VIEW_QA')}
@@ -353,6 +354,7 @@ const RadiologyInvestigationTable: React.FC<WidgetProps> = ({
               onClick={() => {
                 setSelectedInvestigation(investigation);
                 setModalType(ModalType.REPORT);
+                handleRadiologyResultClick();
               }}
             >
               {t('RADIOLOGY_VIEW_REPORT')}

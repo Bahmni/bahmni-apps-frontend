@@ -9,11 +9,14 @@ import { useQuery } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
 import { useNotification } from '../../notification';
 import { SearchWidgetProps } from '../models';
+import PatientSearchResults from './components/PatientSearchResults';
+import SearchPatientInput from './components/SearchPatientInput';
 import { SearchPatientConfig } from './models';
-import PatientSearchResults from './PatientSearchResults';
 import schema from './schema.json';
-import SearchPatientInput from './SearchPatientInput';
-import { PatientSearchType, SearchContext } from './SearchStrategy.interface';
+import {
+  PatientSearchType,
+  SearchContext,
+} from './strategies/SearchStrategy.interface';
 import searchStrategyRegistry from './strategies/SearchStrategyRegistry';
 import styles from './styles/SearchPatient.module.scss';
 

@@ -19,7 +19,10 @@ export { AllergiesTable } from './allergies';
 export { AppointmentsTable } from './appointments';
 export { ConditionsTable } from './conditions';
 export { DiagnosesTable } from './diagnoses';
-export { MedicationsTable } from './medications';
+export {
+  MedicationsTable,
+  CANCEL_VACCINATION_INPUT_CONTROL_KEY,
+} from './medications';
 export { RadiologyInvestigationTable } from './radiologyInvestigation';
 export { RadiologyInvestigationReport } from './radiologyInvestigationReport';
 export { ObservationsRenderer } from './observationsRenderer';
@@ -57,13 +60,13 @@ export {
 // Hooks
 export { useDebounce } from './commandPalette/useDebounce';
 export { usePatientUUID } from './hooks/usePatientUUID';
+export { usePatientPhoto } from './hooks/usePatientPhoto';
 export { useUserPrivilege } from './userPrivileges/useUserPrivilege';
 export { useHasPrivilege } from './userPrivileges/useHasPrivilege';
 
 // User Privileges
 export { UserPrivilegeProvider } from './userPrivileges/UserPrivilegeProvider';
 export { CONSULTATION_PAD_PRIVILEGES } from './userPrivileges/consultationPadPrivileges';
-export { GET_PATIENT_PHOTO_PRIVILEGE } from './userPrivileges/patientPhotoPrivileges';
 
 // App Context
 export { AppContextProvider } from './appContext';
@@ -116,3 +119,5 @@ export {
   LocationProvider,
   LocationSelector,
 } from './location';
+
+export { deriveFormSchemaData } from './utils/Observations';

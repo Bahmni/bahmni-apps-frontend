@@ -10,26 +10,30 @@ import {
   resolveComboBoxItems,
   type UserPrivilege,
 } from '@bahmni/services';
-import { format } from 'date-fns';
-import jsonata from 'jsonata';
+import { endOfDay, format } from 'date-fns';
 import { v4 as uuidv4 } from 'uuid';
 import {
   KEY_TYPE_KIND_SUFFIX,
   KEY_TYPE_VALUE_SUFFIX,
   LOCAL_ISO_DATE_FORMAT,
   LOCATION_UUID_FIELD,
+  SEARCH_SORT_ORDER,
 } from './constants';
 import {
   CriterionConfig,
   CriterionRow,
   CriterionValue,
+  CursorDirection,
   FieldConfig,
   InputConfig,
   LookupOption,
   ResolvedRow,
   ScalarValue,
   SearchCondition,
+  SearchPage,
+  SearchPaginationMeta,
   SearchPayload,
+  SearchResponse,
   SearchContextConfig,
   TextInput,
 } from './models';
@@ -139,7 +143,7 @@ export const getRangeOrderError = (
   return new Date(fromVal) > new Date(toVal) ? errorMessage : null;
 };
 
-const getCriterionId = (field: FieldConfig): string =>
+export const getCriterionId = (field: FieldConfig): string =>
   field.keyType ? `${field.key}:${field.keyType}` : field.key;
 
 export const processContextConfigs = (
@@ -152,7 +156,7 @@ export const processContextConfigs = (
       ...ctx,
       criteria: ctx.criteria.map((c) => ({
         ...c,
-        id: getCriterionId(c.field),
+        id: c.id ?? getCriterionId(c.field),
       })),
     }));
 
@@ -207,11 +211,16 @@ export const updateRow = (
 ): CriterionRow[] =>
   rows.map((r) => (r.rowId === rowId ? { ...r, ...updater(r) } : r));
 
+type TranslateFn = (
+  key: string,
+  options?: { defaultValue?: string; criteriaList?: string },
+) => string;
+
 const validateByType = (
   value: CriterionValue | null,
   criterion: CriterionConfig,
   rangeOrderMessage: string,
-  t: (key: string, options?: { defaultValue?: string }) => string,
+  t: TranslateFn,
 ): { validationError: string | null; rangeOrderError: string | null } => {
   switch (criterion.input.kind) {
     case 'text':
@@ -245,8 +254,8 @@ const buildCondition = ({ field, value }: ResolvedRow): SearchCondition => {
     return {
       operator: 'AND',
       conditions: [
-        { field: field.key, comparator: 'gt', value: value.from.value! },
-        { field: field.key, comparator: 'lt', value: value.to!.value! },
+        { field: field.key, comparator: 'ge', value: value.from.value! },
+        { field: field.key, comparator: 'le', value: value.to!.value! },
       ],
     };
   }
@@ -270,8 +279,11 @@ const buildCondition = ({ field, value }: ResolvedRow): SearchCondition => {
   return { field: field.key, comparator: 'eq', value: value.value };
 };
 
-const toLocalIso = (v: string): string =>
-  format(new Date(v), LOCAL_ISO_DATE_FORMAT);
+const toLocalIso = (v: string, isEndOfDay = false): string =>
+  format(
+    isEndOfDay ? endOfDay(new Date(v)) : new Date(v),
+    LOCAL_ISO_DATE_FORMAT,
+  );
 
 const localizeDateTime = (value: CriterionValue): CriterionValue => {
   if (isScalarValue(value)) return { value: toLocalIso(value.value) };
@@ -283,7 +295,7 @@ const localizeDateTime = (value: CriterionValue): CriterionValue => {
     ...(value.to && {
       to: {
         ...value.to,
-        value: value.to.value ? toLocalIso(value.to.value) : null,
+        value: value.to.value ? toLocalIso(value.to.value, true) : null,
       },
     }),
   };
@@ -330,20 +342,77 @@ export const resolveRows = (
       return [{ field: criterion.field, value }];
     });
 
+export const buildPaginationMeta = (
+  limit: number,
+  cursor: string | null,
+  direction?: CursorDirection,
+): SearchPaginationMeta => ({
+  includeTotalCount: !direction,
+  pagination: {
+    limit,
+    sortOrder: SEARCH_SORT_ORDER,
+    cursor,
+    ...(direction ? { direction } : {}),
+  },
+});
+
 export const buildPayload = (
   resolvedRows: ResolvedRow[],
   entity: string,
-  locationUuid: string,
+  locationUuid?: string | undefined,
+  meta?: SearchPaginationMeta,
 ): SearchPayload => ({
   entity,
   criteria: {
     operator: 'AND',
     conditions: [
       ...resolvedRows.map(buildCondition),
-      { field: LOCATION_UUID_FIELD, comparator: 'eq', value: locationUuid },
+      ...(locationUuid
+        ? [
+            {
+              field: LOCATION_UUID_FIELD,
+              comparator: 'eq' as const,
+              value: locationUuid,
+            },
+          ]
+        : []),
     ],
   },
+  ...(meta ? { meta } : {}),
 });
+
+export const extractSearchPage = (data: unknown): SearchPage => {
+  const response = (data ?? {}) as SearchResponse;
+  return {
+    results: response.results ?? [],
+    totalCount: response.meta?.totalCount ?? null,
+    nextCursor: response.meta?.pagination?.nextCursor ?? null,
+    prevCursor: response.meta?.pagination?.prevCursor ?? null,
+  };
+};
+
+const hasQualifyingPartner = (
+  row: CriterionRow,
+  rows: CriterionRow[],
+  criterion: CriterionConfig,
+): boolean =>
+  rows.some(
+    (other) =>
+      other.rowId !== row.rowId &&
+      other.criterionKey !== null &&
+      criterion.additionalCriteria!.includes(other.criterionKey),
+  );
+
+const buildAdditionalCriteriaLabel = (
+  additionalCriteria: string[],
+  criteria: CriterionConfig[],
+  t: TranslateFn,
+): string =>
+  additionalCriteria
+    .map((id) => criteria.find((c) => c.id === id))
+    .filter((c): c is CriterionConfig => !!c)
+    .map((c) => t(c.translationKey))
+    .join(', ');
 
 export const validateRows = (
   rows: CriterionRow[],
@@ -351,7 +420,7 @@ export const validateRows = (
   criterionError: string,
   valueError: string,
   rangeOrderMessage: string,
-  t: (key: string, options?: { defaultValue?: string }) => string,
+  t: TranslateFn,
 ): CriterionRow[] =>
   rows.map((r) => {
     if (!r.criterionKey)
@@ -375,7 +444,38 @@ export const validateRows = (
       rangeOrderMessage,
       t,
     );
+    if (
+      !validationError &&
+      !rangeOrderError &&
+      criterion.additionalCriteria?.length &&
+      !hasQualifyingPartner(r, rows, criterion)
+    ) {
+      return {
+        ...r,
+        validationError: t('COMMON_SEARCH_ADDITIONAL_CRITERIA_REQUIRED', {
+          criteriaList: buildAdditionalCriteriaLabel(
+            criterion.additionalCriteria,
+            criteria,
+            t,
+          ),
+        }),
+        rangeOrderError: null,
+      };
+    }
     return { ...r, validationError, rangeOrderError };
+  });
+
+export const reconcileAdditionalCriteriaErrors = (
+  rows: CriterionRow[],
+  criteria: CriterionConfig[],
+): CriterionRow[] =>
+  rows.map((r) => {
+    if (!r.validationError || !r.criterionKey || !r.value) return r;
+    const criterion = criteria.find((c) => c.id === r.criterionKey);
+    if (!criterion?.additionalCriteria?.length) return r;
+    return hasQualifyingPartner(r, rows, criterion)
+      ? { ...r, validationError: null }
+      : r;
   });
 
 export const validateConfigForActions = (
@@ -412,23 +512,28 @@ export const validateConfigForActions = (
   return null;
 };
 
-export const resolveNavigationURL = async (
-  template: string,
-  rowData: unknown,
-): Promise<string | null> => {
-  try {
-    const placeholders = [...template.matchAll(/\{([^}]+)\}/g)];
-    let resolved = template;
-
-    for (const [fullMatch, expression] of placeholders) {
-      const compiled = jsonata(expression);
-      const value = await compiled.evaluate(rowData as Record<string, unknown>);
-      if (value == null) return null;
-      resolved = resolved.replace(fullMatch, encodeURIComponent(String(value)));
+export const validateConfigForCriteria = (
+  contexts: SearchContextConfig[],
+): string | null => {
+  for (const context of contexts) {
+    const effectiveIds = context.criteria.map(
+      (c) => c.id ?? getCriterionId(c.field),
+    );
+    const duplicateIds = effectiveIds.filter(
+      (id, idx) => effectiveIds.indexOf(id) !== idx,
+    );
+    if (duplicateIds.length > 0) {
+      return 'COMMON_SEARCH_CONFIG_VALIDATION_DUPLICATE_CRITERION_ID';
     }
 
-    return resolved;
-  } catch {
-    return null;
+    const idSet = new Set(effectiveIds);
+    for (const criterion of context.criteria) {
+      for (const referencedId of criterion.additionalCriteria ?? []) {
+        if (!idSet.has(referencedId)) {
+          return 'COMMON_SEARCH_CONFIG_VALIDATION_UNKNOWN_ADDITIONAL_CRITERION';
+        }
+      }
+    }
   }
+  return null;
 };

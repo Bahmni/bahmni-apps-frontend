@@ -271,6 +271,63 @@ describe('Header', () => {
       expect(screen.getByTestId('global-action-search')).toBeInTheDocument();
       expect(screen.getByTestId('user-menu')).toBeInTheDocument();
     });
+
+    it('renders globalFeatures in the global bar', () => {
+      render(
+        <Header
+          {...defaultProps}
+          globalActions={[]}
+          globalFeatures={[
+            <div key="loc" data-testid="location-selector">
+              Loc
+            </div>,
+          ]}
+        />,
+      );
+
+      expect(screen.getByTestId('header-global-bar')).toBeInTheDocument();
+      expect(screen.getByTestId('location-selector')).toBeInTheDocument();
+    });
+
+    it('renders the global bar when only globalFeatures are provided', () => {
+      render(
+        <Header
+          globalFeatures={[
+            <div key="loc" data-testid="location-selector">
+              Loc
+            </div>,
+          ]}
+        />,
+      );
+
+      expect(screen.getByTestId('header-global-bar')).toBeInTheDocument();
+      expect(screen.getByTestId('location-selector')).toBeInTheDocument();
+    });
+  });
+
+  describe('Brand', () => {
+    it('renders brand name and prefix as a HeaderName link', () => {
+      render(<Header brandName="Bahmni" brandPrefix="Home" brandHref="/" />);
+
+      const name = screen.getByTestId('header-name');
+      expect(name).toBeInTheDocument();
+      expect(name).toHaveAttribute('href', '/');
+      expect(screen.getByText('Bahmni')).toBeInTheDocument();
+      expect(screen.getByText('Home')).toBeInTheDocument();
+    });
+
+    it('renders brand with only a prefix', () => {
+      render(<Header brandPrefix="Home" />);
+
+      expect(screen.getByTestId('header-name')).toBeInTheDocument();
+      expect(screen.getByText('Home')).toBeInTheDocument();
+    });
+
+    it('does not render brand when neither name nor prefix provided', () => {
+      render(<Header {...defaultProps} />);
+
+      expect(screen.queryByTestId('header-name')).not.toBeInTheDocument();
+    });
   });
 
   describe('Side Navigation', () => {
@@ -391,6 +448,30 @@ describe('Header', () => {
   describe('Accessibility', () => {
     it('should have no accessibility violations', async () => {
       const { container } = render(<Header {...defaultProps} />);
+      const results = await axe(container);
+      expect(results).toHaveNoViolations();
+    });
+
+    it('should have no accessibility violations with brand, globalFeatures and userMenu slots', async () => {
+      const { container } = render(
+        <Header
+          {...defaultProps}
+          globalActions={[]}
+          brandName="Bahmni"
+          brandPrefix="Home"
+          brandHref="/"
+          globalFeatures={[
+            <div key="loc" data-testid="location-selector">
+              Location
+            </div>,
+          ]}
+          userMenu={
+            <button type="button" aria-label="User menu">
+              User
+            </button>
+          }
+        />,
+      );
       const results = await axe(container);
       expect(results).toHaveNoViolations();
     });

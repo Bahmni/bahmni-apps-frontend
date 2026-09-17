@@ -1,13 +1,19 @@
 import { get, post } from '../../api';
-import { mockEnrollments, patientUUID } from '../__mocks__/mocks';
+import { mockEnrollments, patientUUID, mockPrograms } from '../__mocks__/mocks';
 import {
   PROGRAM_DETAILS_URL,
   PATIENT_PROGRAMS_URL,
   PATIENT_PROGRAMS_PAGE_URL,
+  ALL_PROGRAMS_URL,
 } from '../constants';
-import { ProgramEnrollment, PatientProgramsResponse } from '../model';
+import {
+  ProgramEnrollment,
+  PatientProgramsResponse,
+  ProgramsResponse,
+} from '../model';
 import {
   extractAttributes,
+  getAllPrograms,
   getCurrentStateName,
   getPatientPrograms,
   getPatientProgramsPage,
@@ -82,7 +88,7 @@ describe('programService', () => {
       expect(result).toEqual({
         ID_Number: '123145',
         'Patient Stage': 'Initial Stage',
-        'Treatment Date': '2026-02-04T00:00:00.000+0000',
+        'Treatment Date': new Date('2026-02-04T00:00:00.000+0000'),
       });
     });
 
@@ -98,6 +104,21 @@ describe('programService', () => {
       expect(result).toEqual({
         Non_Existent_Attribute: null,
       });
+    });
+
+    it('should convert ISO date string attribute values to Date objects', () => {
+      const result = extractAttributes(mockEnrollments[0], ['Treatment Date']);
+
+      expect(result['Treatment Date']).toBeInstanceOf(Date);
+      expect((result['Treatment Date'] as Date).toISOString()).toBe(
+        new Date('2026-02-04T00:00:00.000+0000').toISOString(),
+      );
+    });
+
+    it('should keep non-date string attribute values as strings', () => {
+      const result = extractAttributes(mockEnrollments[0], ['ID_Number']);
+
+      expect(result['ID_Number']).toBe('123145');
     });
   });
 
@@ -294,6 +315,41 @@ describe('programService', () => {
       await expect(getPatientProgramsPage(patientUUID)).rejects.toThrow(
         'Network error',
       );
+    });
+  });
+
+  describe('getAllPrograms', () => {
+    it('should call get with ALL_PROGRAMS_URL', async () => {
+      const mockResponse: ProgramsResponse = { results: mockPrograms };
+      (get as jest.Mock).mockResolvedValue(mockResponse);
+
+      await getAllPrograms();
+
+      expect(get).toHaveBeenCalledWith(ALL_PROGRAMS_URL);
+    });
+
+    it('should return the results from the response', async () => {
+      const mockResponse: ProgramsResponse = { results: mockPrograms };
+      (get as jest.Mock).mockResolvedValue(mockResponse);
+
+      const result = await getAllPrograms();
+
+      expect(result).toEqual(mockPrograms);
+    });
+
+    it('should return an empty array when no programs exist', async () => {
+      const mockResponse: ProgramsResponse = { results: [] };
+      (get as jest.Mock).mockResolvedValue(mockResponse);
+
+      const result = await getAllPrograms();
+
+      expect(result).toEqual([]);
+    });
+
+    it('should propagate API errors', async () => {
+      (get as jest.Mock).mockRejectedValue(new Error('Network error'));
+
+      await expect(getAllPrograms()).rejects.toThrow('Network error');
     });
   });
 });

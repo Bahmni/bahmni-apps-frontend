@@ -117,7 +117,7 @@ describe('handleTaskAction', () => {
           type: 'startConsultation',
           detail: {
             encounterType: 'consultation',
-            taskFormName: 'Vitals',
+            formName: 'Vitals',
             directFormMode: true,
             editOnly: 'observationForms',
             task: mockTaskViewModelWithInput.fhirResource,
@@ -157,7 +157,7 @@ describe('handleTaskAction', () => {
       expect(dispatchEventSpy).toHaveBeenCalledWith(
         expect.objectContaining({
           detail: expect.objectContaining({
-            taskFormName: expectedFormName,
+            formName: expectedFormName,
           }),
         }),
       );

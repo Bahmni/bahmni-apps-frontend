@@ -1,6 +1,7 @@
 import { Patient } from 'fhir/r4';
 import { get, post } from '../../api';
 import { APP_PROPERTY_URL } from '../../applicationConfigService/constants';
+import { PATIENT_NOT_FOUND_ERROR_KEY } from '../../errorHandling';
 import { getUserLoginLocation } from '../../userService';
 import { blobToDataUrl } from '../../utils';
 import {
@@ -12,6 +13,7 @@ import {
   PRIMARY_IDENTIFIER_TYPE_PROPERTY,
   CREATE_PATIENT_URL,
   ADDRESS_HIERARCHY_URL,
+  TELECOM_ATTRIBUTE_TYPE_MAP_PROPERTY,
 } from '../constants';
 import {
   getPatientById,
@@ -31,6 +33,8 @@ import {
   fetchPatientPhotoFromUrl,
   calculateDaysSince,
   getObservationByConceptName,
+  getTelecomAttributeTypeMap,
+  parseTelecomAttributeTypeMap,
 } from '../patientService';
 
 jest.mock('../../api');
@@ -71,34 +75,37 @@ describe('Patient Service', () => {
       expect(mockedGet).toHaveBeenCalledWith(PATIENT_RESOURCE_URL(patientUUID));
     });
 
-    it('should throw error for empty UUID', async () => {
+    it('should throw patient not found for empty UUID', async () => {
       await expect(getPatientById('')).rejects.toThrow(
-        'Invalid patient UUID: UUID cannot be empty',
+        PATIENT_NOT_FOUND_ERROR_KEY,
       );
       expect(mockedGet).not.toHaveBeenCalled();
     });
 
-    it('should throw error for whitespace-only UUID', async () => {
+    it('should throw patient not found for whitespace-only UUID', async () => {
       await expect(getPatientById('   ')).rejects.toThrow(
-        'Invalid patient UUID: UUID cannot be empty',
+        PATIENT_NOT_FOUND_ERROR_KEY,
       );
       expect(mockedGet).not.toHaveBeenCalled();
     });
 
-    it('should throw error for invalid UUID format', async () => {
-      const invalidUUID = 'not-a-valid-uuid';
+    // A malformed UUID is rejected before any network call, so it must produce
+    // the same translation key as a 400/404 — otherwise the caller cannot tell
+    // "patient not found" apart from an unexpected failure.
+    it('should throw patient not found for invalid UUID format', async () => {
+      const invalidUUID = 'abc-not-uuid';
 
       await expect(getPatientById(invalidUUID)).rejects.toThrow(
-        'Invalid patient UUID format: not-a-valid-uuid',
+        PATIENT_NOT_FOUND_ERROR_KEY,
       );
       expect(mockedGet).not.toHaveBeenCalled();
     });
 
-    it('should throw error for UUID with invalid characters', async () => {
+    it('should throw patient not found for UUID with invalid characters', async () => {
       const invalidUUID = '12345678-1234-1234-1234-12345678ZZZZ';
 
       await expect(getPatientById(invalidUUID)).rejects.toThrow(
-        'Invalid patient UUID format',
+        PATIENT_NOT_FOUND_ERROR_KEY,
       );
       expect(mockedGet).not.toHaveBeenCalled();
     });
@@ -1436,6 +1443,71 @@ describe('Patient Service', () => {
       mockedGet.mockRejectedValueOnce(mockError);
 
       await expect(getGenders()).rejects.toThrow('Failed to fetch genders');
+    });
+  });
+
+  describe('parseTelecomAttributeTypeMap', () => {
+    it('should parse full entries with system, use and rank', () => {
+      const result = parseTelecomAttributeTypeMap(
+        'uuid-1:PHONE:MOBILE:1;uuid-2:EMAIL',
+      );
+      expect(result).toEqual([
+        {
+          attributeTypeUuid: 'uuid-1',
+          system: 'phone',
+          use: 'mobile',
+          rank: 1,
+        },
+        {
+          attributeTypeUuid: 'uuid-2',
+          system: 'email',
+          use: undefined,
+          rank: undefined,
+        },
+      ]);
+    });
+
+    it('should skip malformed entries', () => {
+      expect(parseTelecomAttributeTypeMap(':PHONE;uuid-1:')).toEqual([]);
+    });
+
+    it('should return an empty array for null/empty input', () => {
+      expect(parseTelecomAttributeTypeMap(null)).toEqual([]);
+      expect(parseTelecomAttributeTypeMap('')).toEqual([]);
+    });
+  });
+
+  describe('getTelecomAttributeTypeMap', () => {
+    it('should fetch and parse the global property', async () => {
+      mockedGet.mockResolvedValueOnce('uuid-1:PHONE:MOBILE:1;uuid-2:EMAIL');
+
+      const result = await getTelecomAttributeTypeMap();
+
+      expect(mockedGet).toHaveBeenCalledWith(
+        APP_PROPERTY_URL(TELECOM_ATTRIBUTE_TYPE_MAP_PROPERTY),
+      );
+      expect(result).toEqual([
+        {
+          attributeTypeUuid: 'uuid-1',
+          system: 'phone',
+          use: 'mobile',
+          rank: 1,
+        },
+        {
+          attributeTypeUuid: 'uuid-2',
+          system: 'email',
+          use: undefined,
+          rank: undefined,
+        },
+      ]);
+    });
+
+    it('should return an empty array when the property is unset', async () => {
+      mockedGet.mockResolvedValueOnce(null);
+
+      const result = await getTelecomAttributeTypeMap();
+
+      expect(result).toEqual([]);
     });
   });
 

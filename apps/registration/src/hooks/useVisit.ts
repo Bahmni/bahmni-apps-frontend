@@ -7,7 +7,6 @@ import {
 } from '@bahmni/services';
 import { useNotification } from '@bahmni/widgets';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { useParams } from 'react-router-dom';
 import { createRegistrationEncounterForPatient } from '../services/registrationEncounterService';
 import { useRegistrationEncounterTypeUuid } from './useRegistrationEncounterTypeUuid';
 
@@ -37,19 +36,34 @@ export const useActiveVisit = (patientUuid?: string) => {
   return { hasActiveVisit, isLoading };
 };
 
+// Backed by the shared QueryClient cache (not component state) so the
+// in-flight flag survives the remount that happens when navigating from
+// the "new patient" route to the "existing patient" route mid-click. Uses a
+// static key (not scoped to patientUuid) because the flag must be set by the
+// caller *before* the patient uuid is known (see RegistrationActions.tsx).
+export const useIsCreatingVisit = () => {
+  const { data } = useQuery({
+    queryKey: ['startVisitInProgress'],
+    queryFn: () => false,
+    enabled: false,
+    initialData: false,
+  });
+
+  return Boolean(data);
+};
+
 export const useCreateVisit = () => {
   const { t } = useTranslation();
   const { addNotification } = useNotification();
-  const { patientUuid } = useParams<{ patientUuid: string }>();
-  const { hasActiveVisit } = useActiveVisit(patientUuid);
   const queryClient = useQueryClient();
   const encounterTypeUuid = useRegistrationEncounterTypeUuid();
 
   const createVisit = async (patientUuid: string, visitType: VisitType) => {
+    if (queryClient.getQueryData(['hasActiveVisit', patientUuid])) {
+      return;
+    }
+
     try {
-      if (hasActiveVisit) {
-        return;
-      }
       const createdVisit = await createVisitForPatient(patientUuid, visitType);
       queryClient.setQueryData(['hasActiveVisit', patientUuid], true);
 

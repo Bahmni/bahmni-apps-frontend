@@ -81,9 +81,12 @@ jest.mock('../../../hooks/useEncounterConcepts');
 jest.mock('../../../providers/clinicalConfig');
 jest.mock('../../../stores/encounterDetailsStore');
 
+const mockConsultationPad = jest.fn(() => (
+  <div data-testid="consultation-pad" />
+));
 jest.mock('../../consultationPad', () => ({
   __esModule: true,
-  default: () => <div data-testid="consultation-pad" />,
+  default: (props: any) => mockConsultationPad(props),
 }));
 
 jest.mock('../../forms/encounterDetails/EncounterDetails', () => ({
@@ -272,6 +275,23 @@ describe('ConsultationPadContainer', () => {
     expect(screen.getByTestId('consultation-pad')).toBeInTheDocument();
   });
 
+  it('forwards isActionAreaExpanded/onToggleActionAreaExpand to ConsultationPad so the maximize/minimize toggle stays available', () => {
+    jest.mocked(useQuery).mockReturnValue({
+      data: { id: 'visit-1' },
+      error: null,
+      isLoading: false,
+    } as any);
+    const onToggleActionAreaExpand = jest.fn();
+    renderComponent({ isActionAreaExpanded: true, onToggleActionAreaExpand });
+
+    expect(mockConsultationPad).toHaveBeenCalledWith(
+      expect.objectContaining({
+        isActionAreaExpanded: true,
+        onToggleActionAreaExpand,
+      }),
+    );
+  });
+
   it('renders ConsultationPad after visit is successfully created', async () => {
     jest.mocked(useClinicalConfig).mockReturnValue(buildConfig(['OPD']) as any);
     jest.mocked(useEncounterConcepts).mockReturnValue({
@@ -454,6 +474,19 @@ describe('ConsultationPadContainer', () => {
   it('sets consultation date on mount', () => {
     renderComponent();
     expect(mockSetConsultationDate).toHaveBeenCalledWith(expect.any(Date));
+  });
+
+  it('prefers encounterType from encounterSessionStartContext over config defaultEncounterType', () => {
+    jest
+      .mocked(useClinicalConfig)
+      .mockReturnValue(buildConfig(['OPD', 'IPD'], 'Consultation') as any);
+    renderComponent({
+      encounterSessionStartContext: {
+        isVisitActive: false,
+        encounterType: 'Examination',
+      },
+    });
+    expect(mockSetRequestedEncounterType).toHaveBeenCalledWith('Examination');
   });
 
   it('sets requestedEncounterType from config defaultEncounterType, or null when absent', () => {

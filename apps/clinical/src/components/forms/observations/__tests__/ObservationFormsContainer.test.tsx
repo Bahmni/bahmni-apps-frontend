@@ -1,6 +1,7 @@
 import { ObservationForm } from '@bahmni/services';
 import { useQuery } from '@tanstack/react-query';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { useTranslation } from 'react-i18next';
 import { useClinicalAppData } from '../../../../hooks/useClinicalAppData';
 import ObservationFormsContainer from '../ObservationFormsContainer';
 import {
@@ -110,12 +111,19 @@ jest.mock('../utils/formEventExecutor', () => ({
     mockExecuteOnFormSaveEvent(...args),
 }));
 
+// Mock EncounterDetails (directMode rendering) — its own hooks/stores are out of scope here
+jest.mock('../../encounterDetails/EncounterDetails', () => ({
+  __esModule: true,
+  default: jest.fn(() => <div data-testid="mocked-encounter-details" />),
+}));
+
 // Mock ActionArea component
 jest.mock('@bahmni/design-system', () => ({
   ActionArea: jest.fn(
     ({
       className,
       title,
+      headerActions,
       primaryButtonText,
       onPrimaryButtonClick,
       isPrimaryButtonDisabled,
@@ -124,9 +132,14 @@ jest.mock('@bahmni/design-system', () => ({
       tertiaryButtonText,
       onTertiaryButtonClick,
       content,
+      isExpanded,
+      onToggleExpand,
+      expandAriaLabel,
+      collapseAriaLabel,
     }) => (
       <div data-testid="action-area" className={className}>
         <div data-testid="action-area-title">{title}</div>
+        <div data-testid="action-area-header-actions">{headerActions}</div>
         <div data-testid="action-area-content">{content}</div>
         <div data-testid="action-area-buttons">
           <button
@@ -146,6 +159,15 @@ jest.mock('@bahmni/design-system', () => ({
             {tertiaryButtonText}
           </button>
         </div>
+        {onToggleExpand && (
+          <button
+            data-testid="expand-toggle-button"
+            aria-label={isExpanded ? collapseAriaLabel : expandAriaLabel}
+            onClick={onToggleExpand}
+          >
+            {isExpanded ? 'Collapse' : 'Expand'}
+          </button>
+        )}
       </div>
     ),
   ),
@@ -154,17 +176,13 @@ jest.mock('@bahmni/design-system', () => ({
       Icon
     </div>
   )),
-  SkeletonText: jest.fn(({ width, lineCount }) => (
-    <div
-      data-testid="skeleton-text"
-      data-width={width}
-      data-line-count={lineCount}
-    />
+  Loading: jest.fn(({ description, testId }) => (
+    <div data-testid={testId} aria-label={description} />
   )),
   InlineNotification: jest.fn(
-    ({ kind, title, subtitle, onClose, hideCloseButton }) => (
+    ({ kind, title, subtitle, onClose, hideCloseButton, testId }) => (
       <div
-        data-testid="inline-notification"
+        data-testid={testId ?? 'inline-notification'}
         data-kind={kind}
         data-hide-close-button={hideCloseButton}
       >
@@ -183,6 +201,7 @@ jest.mock('@bahmni/design-system', () => ({
     MD: 'MD',
     LG: 'LG',
   },
+  MenuItemDivider: jest.fn(() => <hr data-testid="menu-item-divider" />),
 }));
 
 // Mock styles
@@ -190,11 +209,10 @@ jest.mock('../styles/ObservationFormsContainer.module.scss', () => ({
   formView: 'formView',
   formContent: 'formContent',
   formViewActionArea: 'formViewActionArea',
-  formTitleContainer: 'formTitleContainer',
   pinIconContainer: 'pinIconContainer',
   pinned: 'pinned',
   unpinned: 'unpinned',
-  errorNotificationWrapper: 'errorNotificationWrapper',
+  inlineNotificationWrapper: 'inlineNotificationWrapper',
 }));
 
 describe('ObservationFormsContainer', () => {
@@ -288,6 +306,49 @@ describe('ObservationFormsContainer', () => {
         <ObservationFormsContainer {...defaultProps} viewingForm={null} />,
       );
       expect(container).toMatchSnapshot();
+    });
+
+    it('should not render the expand toggle when onToggleActionAreaExpand is not provided', () => {
+      render(
+        <ObservationFormsContainer {...defaultProps} viewingForm={mockForm} />,
+      );
+
+      expect(
+        screen.queryByTestId('expand-toggle-button'),
+      ).not.toBeInTheDocument();
+    });
+
+    it('should render the expand toggle and forward isActionAreaExpanded/onToggleActionAreaExpand to ActionArea', () => {
+      const mockOnToggleActionAreaExpand = jest.fn();
+      render(
+        <ObservationFormsContainer
+          {...defaultProps}
+          viewingForm={mockForm}
+          isActionAreaExpanded={false}
+          onToggleActionAreaExpand={mockOnToggleActionAreaExpand}
+        />,
+      );
+
+      const toggleButton = screen.getByTestId('expand-toggle-button');
+      expect(toggleButton).toHaveTextContent('Expand');
+
+      fireEvent.click(toggleButton);
+      expect(mockOnToggleActionAreaExpand).toHaveBeenCalledTimes(1);
+    });
+
+    it('should show the collapse label on the toggle when isActionAreaExpanded is true', () => {
+      render(
+        <ObservationFormsContainer
+          {...defaultProps}
+          viewingForm={mockForm}
+          isActionAreaExpanded
+          onToggleActionAreaExpand={jest.fn()}
+        />,
+      );
+
+      expect(screen.getByTestId('expand-toggle-button')).toHaveTextContent(
+        'Collapse',
+      );
     });
   });
 
@@ -438,7 +499,7 @@ describe('ObservationFormsContainer', () => {
         <ObservationFormsContainer
           {...defaultProps}
           viewingForm={mockForm}
-          // Seed with ABNORMAL interpretation to populate statusSourceRef.
+          // Seed with ABNORMAL interpretation to populate initialObservationsRef.
           existingObservations={[
             {
               concept: { uuid: 'c1' },
@@ -617,6 +678,26 @@ describe('ObservationFormsContainer', () => {
       expect(screen.getByTestId('form2-container')).toBeInTheDocument();
     });
 
+    it('should show the loading indicator while metadata is loading, instead of the form container', () => {
+      mockUseObservationFormData.mockReturnValue({
+        observations: [],
+        handleFormDataChange: jest.fn(),
+        resetForm: jest.fn(),
+        formMetadata: undefined,
+        isLoadingMetadata: true,
+        metadataError: null,
+      });
+
+      render(
+        <ObservationFormsContainer {...defaultProps} viewingForm={mockForm} />,
+      );
+
+      expect(
+        screen.getByTestId('observation-form-loading'),
+      ).toBeInTheDocument();
+      expect(screen.queryByTestId('form2-container')).not.toBeInTheDocument();
+    });
+
     it('should display error message when metadata fetch fails', async () => {
       const mockError = new Error('Failed to fetch');
       mockGetFormattedError.mockReturnValue({
@@ -673,7 +754,9 @@ describe('ObservationFormsContainer', () => {
         <ObservationFormsContainer
           {...defaultProps}
           viewingForm={mockForm}
-          activeEncounterUuid="encounter-uuid-789"
+          encounterSessionStartContext={{
+            activeEncounter: { id: 'encounter-uuid-789' } as any,
+          }}
         />,
       );
 
@@ -712,11 +795,7 @@ describe('ObservationFormsContainer', () => {
       });
 
       render(
-        <ObservationFormsContainer
-          {...defaultProps}
-          viewingForm={mockForm}
-          activeEncounterUuid={null}
-        />,
+        <ObservationFormsContainer {...defaultProps} viewingForm={mockForm} />,
       );
 
       fireEvent.click(screen.getByTestId('primary-button'));
@@ -742,6 +821,100 @@ describe('ObservationFormsContainer', () => {
           queryKey: ['patient', 'test-patient-uuid'],
         }),
       );
+    });
+  });
+
+  describe('Copyover notice', () => {
+    const editCopyoverContext = {
+      editOnly: 'observationForms',
+      sourceEncounterUuid: 'source-encounter-uuid',
+      activeEncounter: { id: 'session-different-uuid' } as any,
+    };
+
+    it('shows the info notice right under the edit form section title when isCopyover is true and the translation is non-empty', () => {
+      render(
+        <ObservationFormsContainer
+          {...defaultProps}
+          viewingForm={mockForm}
+          directMode
+          encounterSessionStartContext={editCopyoverContext}
+        />,
+      );
+
+      expect(screen.getByTestId('edit-form-section-title')).toBeInTheDocument();
+      const notice = screen.getByTestId('observation-form-copyover-notice');
+      expect(notice).toBeInTheDocument();
+      expect(notice).toHaveAttribute('data-kind', 'info');
+    });
+
+    it('does not show the notice when isCopyover is false (session matches source)', () => {
+      render(
+        <ObservationFormsContainer
+          {...defaultProps}
+          viewingForm={mockForm}
+          directMode
+          encounterSessionStartContext={{
+            ...editCopyoverContext,
+            activeEncounter: { id: 'source-encounter-uuid' } as any,
+          }}
+        />,
+      );
+
+      expect(
+        screen.queryByTestId('observation-form-copyover-notice'),
+      ).not.toBeInTheDocument();
+    });
+
+    it('does not show the notice outside the edit form section (directMode off)', () => {
+      render(
+        <ObservationFormsContainer
+          {...defaultProps}
+          viewingForm={mockForm}
+          encounterSessionStartContext={editCopyoverContext}
+        />,
+      );
+
+      expect(
+        screen.queryByTestId('edit-form-section-title'),
+      ).not.toBeInTheDocument();
+      expect(
+        screen.queryByTestId('observation-form-copyover-notice'),
+      ).not.toBeInTheDocument();
+    });
+
+    it('does not show the notice when encounterSessionStartContext is not provided', () => {
+      render(
+        <ObservationFormsContainer
+          {...defaultProps}
+          viewingForm={mockForm}
+          directMode
+        />,
+      );
+
+      expect(
+        screen.queryByTestId('observation-form-copyover-notice'),
+      ).not.toBeInTheDocument();
+    });
+
+    it('does not show the notice when isCopyover is true but the translation resolves to an empty string', () => {
+      jest.mocked(useTranslation).mockReturnValueOnce({
+        t: jest.fn((key: string) =>
+          key === 'OBSERVATION_FORM_COPYOVER_NOTICE' ? '' : `translated_${key}`,
+        ),
+      } as unknown as ReturnType<typeof useTranslation>);
+
+      render(
+        <ObservationFormsContainer
+          {...defaultProps}
+          viewingForm={mockForm}
+          directMode
+          encounterSessionStartContext={editCopyoverContext}
+        />,
+      );
+
+      expect(
+        screen.queryByTestId('observation-form-copyover-notice'),
+      ).not.toBeInTheDocument();
     });
   });
 
@@ -774,7 +947,30 @@ describe('ObservationFormsContainer', () => {
       const pinContainer = pinIcon.parentElement;
 
       expect(pinContainer).toHaveClass('pinned');
-      expect(pinContainer).toHaveAttribute('title', 'Unpin form');
+      expect(pinContainer).toHaveAttribute(
+        'title',
+        'translated_OBSERVATION_FORMS_UNPIN_TOOLTIP',
+      );
+    });
+
+    it('should render the pin icon alongside the maximize/minimize toggle, not inside the title', () => {
+      render(
+        <ObservationFormsContainer
+          {...defaultProps}
+          viewingForm={nonDefaultForm}
+          isActionAreaExpanded={false}
+          onToggleActionAreaExpand={jest.fn()}
+        />,
+      );
+
+      const titleContainer = screen.getByTestId('action-area-title');
+      const headerActionsContainer = screen.getByTestId(
+        'action-area-header-actions',
+      );
+      const pinIcon = screen.getByTestId('icon-pin-icon');
+
+      expect(titleContainer).not.toContainElement(pinIcon);
+      expect(headerActionsContainer).toContainElement(pinIcon);
     });
 
     it('should show unpinned state when form is not in pinnedForms array', () => {
@@ -789,7 +985,10 @@ describe('ObservationFormsContainer', () => {
       const pinContainer = pinIcon.parentElement;
 
       expect(pinContainer).toHaveClass('unpinned');
-      expect(pinContainer).toHaveAttribute('title', 'Pin form');
+      expect(pinContainer).toHaveAttribute(
+        'title',
+        'translated_OBSERVATION_FORMS_PIN_TOOLTIP',
+      );
     });
 
     it('should call updatePinnedForms when pin icon is clicked', () => {
@@ -1717,6 +1916,7 @@ describe('Edit mode - hasFormChanges / change detection', () => {
 
   const editModeContext = {
     editOnly: 'observationForms' as const,
+    sourceEncounterUuid: 'edit-encounter-uuid',
   };
 
   const defaultProps = {

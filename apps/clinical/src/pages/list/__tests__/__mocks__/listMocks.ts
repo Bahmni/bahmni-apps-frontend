@@ -4,6 +4,7 @@ export const mockSearchExtension: Extension = {
   id: 'ext-1',
   extensionPointId: 'org.bahmni.clinical.v2.search',
   translationKey: 'ACTIVE_PATIENTS_SEARCH_LABEL',
+  extensionParams: { searchHandler: 'defaultSearch' },
 };
 
 export const mockPrivilegedSearchExtension: Extension = {
@@ -11,6 +12,7 @@ export const mockPrivilegedSearchExtension: Extension = {
   extensionPointId: 'org.bahmni.clinical.v2.search',
   translationKey: 'ACTIVE_PATIENTS_SEARCH_LABEL',
   requiredPrivileges: ['app:clinical'],
+  extensionParams: { searchHandler: 'defaultSearch' },
 };
 
 export const mockOtherExtension: Extension = {
