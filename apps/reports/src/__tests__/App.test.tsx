@@ -1,3 +1,4 @@
+import * as bahmniServices from '@bahmni/services';
 import { render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import App from '../App';
@@ -91,5 +92,22 @@ describe('App', () => {
     expect(userAction).toContainElement(page);
     expect(activePractitioner).toContainElement(userAction);
     expect(userPrivilege).toContainElement(activePractitioner);
+  });
+
+  it('still initializes and logs error if i18n initialization fails', async () => {
+    const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation();
+    const initError = new Error('i18n init failed');
+
+    jest.mocked(bahmniServices.initAppI18n).mockRejectedValueOnce(initError);
+
+    renderApp();
+
+    expect(await screen.findByTestId('reports-page-test-id')).toBeVisible();
+    expect(consoleErrorSpy).toHaveBeenCalledWith(
+      'Failed to initialize app:',
+      initError,
+    );
+
+    consoleErrorSpy.mockRestore();
   });
 });
