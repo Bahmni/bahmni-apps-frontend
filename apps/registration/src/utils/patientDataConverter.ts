@@ -177,7 +177,9 @@ export const buildRelatedPersonPayload = (
   patient: { reference: `Patient/${patientUuid}` },
   relationship: [
     {
-      coding: [{ system: RELATIONSHIP_TYPE_SYSTEM, code: rel.relationshipType }],
+      coding: [
+        { system: RELATIONSHIP_TYPE_SYSTEM, code: rel.relationshipType },
+      ],
     },
   ],
   extension: [
