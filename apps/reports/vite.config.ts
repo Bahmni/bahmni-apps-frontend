@@ -16,7 +16,7 @@ export default defineConfig(() => ({
   ],
   publicDir: 'public',
   css: {
-    modules: {
+    modules: process.env['VITEST'] ? {} : {
       generateScopedName: '[name]_[local]__[hash:base64:5]',
     },
   },

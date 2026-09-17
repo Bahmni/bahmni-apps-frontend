@@ -9,7 +9,7 @@ import {
 } from '@bahmni/design-system';
 import { BAHMNI_HOME_PATH, useTranslation } from '@bahmni/services';
 import { UserGlobalAction } from '@bahmni/widgets';
-import React, { useMemo } from 'react';
+import React, { useCallback, useMemo } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { MY_REPORTS_TAB_PATH, REPORTS_TAB_PATH } from '../constants/app';
 import styles from './styles/ReportsPage.module.scss';
@@ -30,19 +30,19 @@ export const ReportsPage: React.FC = () => {
     [t],
   );
 
-  const selectedIndex = location.pathname.endsWith('/my-reports')
-    ? MY_REPORTS_TAB_INDEX
-    : REPORTS_TAB_INDEX;
+  const selectedIndex =
+    location.pathname === MY_REPORTS_TAB_PATH
+      ? MY_REPORTS_TAB_INDEX
+      : REPORTS_TAB_INDEX;
 
-  const handleTabChange = ({
-    selectedIndex: index,
-  }: {
-    selectedIndex: number;
-  }) => {
-    navigate(
-      index === MY_REPORTS_TAB_INDEX ? MY_REPORTS_TAB_PATH : REPORTS_TAB_PATH,
-    );
-  };
+  const handleTabChange = useCallback(
+    ({ selectedIndex: index }: { selectedIndex: number }) => {
+      navigate(
+        index === MY_REPORTS_TAB_INDEX ? MY_REPORTS_TAB_PATH : REPORTS_TAB_PATH,
+      );
+    },
+    [navigate],
+  );
 
   return (
     <BaseLayout

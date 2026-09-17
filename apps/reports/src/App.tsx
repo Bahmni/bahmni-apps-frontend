@@ -1,5 +1,5 @@
-import { Loading, initFontAwesome } from '@bahmni/design-system';
-import { initAppI18n } from '@bahmni/services';
+import { Content, Loading, initFontAwesome } from '@bahmni/design-system';
+import { initAppI18n, initializeAuditListener } from '@bahmni/services';
 import {
   ActivePractitionerProvider,
   NotificationProvider,
@@ -26,6 +26,7 @@ export function App() {
       try {
         await initAppI18n(BAHMNI_REPORTS_NAMESPACE);
         initFontAwesome();
+        initializeAuditListener();
         setIsInitialized(true);
       } catch (error) {
         // eslint-disable-next-line no-console
@@ -41,23 +42,25 @@ export function App() {
     return <Loading />;
   }
   return (
-    <QueryClientProvider client={queryClient}>
-      <NotificationProvider>
-        <UserPrivilegeProvider>
-          <ActivePractitionerProvider>
-            <UserActionProvider>
-              <NotificationServiceComponent />
-              <PrivilegeGuard>
-                <Suspense fallback={<Loading />}>
-                  <Routes>{renderRoutes(routes)}</Routes>
-                </Suspense>
-              </PrivilegeGuard>
-              <ReactQueryDevtools initialIsOpen={false} />
-            </UserActionProvider>
-          </ActivePractitionerProvider>
-        </UserPrivilegeProvider>
-      </NotificationProvider>
-    </QueryClientProvider>
+    <Content>
+      <QueryClientProvider client={queryClient}>
+        <NotificationProvider>
+          <UserPrivilegeProvider>
+            <ActivePractitionerProvider>
+              <UserActionProvider>
+                <NotificationServiceComponent />
+                <PrivilegeGuard>
+                  <Suspense fallback={<Loading />}>
+                    <Routes>{renderRoutes(routes)}</Routes>
+                  </Suspense>
+                </PrivilegeGuard>
+                <ReactQueryDevtools initialIsOpen={false} />
+              </UserActionProvider>
+            </ActivePractitionerProvider>
+          </UserPrivilegeProvider>
+        </NotificationProvider>
+      </QueryClientProvider>
+    </Content>
   );
 }
 
