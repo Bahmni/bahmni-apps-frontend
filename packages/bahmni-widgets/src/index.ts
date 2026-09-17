@@ -120,4 +120,11 @@ export {
   LocationSelector,
 } from './location';
 
+// Module Tiles
+export {
+  AppTile,
+  ModuleTileGrid,
+  MODULE_TILES_SKELETON_COUNT,
+} from './moduleTiles';
+
 export { deriveFormSchemaData } from './utils/Observations';

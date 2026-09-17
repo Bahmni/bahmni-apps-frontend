@@ -30,6 +30,15 @@ describe('AppTile', () => {
     );
   });
 
+  it('renders no icon when the config supplies a non-FontAwesome icon name', () => {
+    // Legacy Bahmni config used names like `icon-bahmni-inpatient`, which the
+    // design-system Icon rejects. The tile must still render its label.
+    render(<AppTile {...defaultProps} icon="icon-bahmni-inpatient" />);
+
+    expect(screen.getByTestId('app-tile-registration')).toBeInTheDocument();
+    expect(screen.queryByRole('img')).not.toBeInTheDocument();
+  });
+
   it('has no accessibility violations', async () => {
     const { container } = render(<AppTile {...defaultProps} />);
 
