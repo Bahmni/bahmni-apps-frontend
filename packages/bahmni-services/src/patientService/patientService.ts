@@ -24,6 +24,7 @@ import {
   GET_PATIENT_PROFILE_URL,
   PERSON_ATTRIBUTE_TYPES_URL,
   RELATIONSHIP_TYPES_URL,
+  TELECOM_ATTRIBUTE_TYPE_MAP_PROPERTY,
 } from './constants';
 import {
   PatientSearchField,
@@ -38,6 +39,7 @@ import {
   PatientProfileResponse,
   PersonAttributeTypesResponse,
   RelationshipTypesResponse,
+  TelecomAttributeTypeMapping,
 } from './models';
 
 export const mapGenderFromFhir = (fhirGender: string): string => {
@@ -491,3 +493,50 @@ export const getPersonAttributeTypes =
   async (): Promise<PersonAttributeTypesResponse> => {
     return get<PersonAttributeTypesResponse>(PERSON_ATTRIBUTE_TYPES_URL);
   };
+
+/**
+ * Parses the fhir2Extension.telecomAttributeTypeMap global property value into structured
+ * mappings. Mirrors the backend's own parsing (OpenmrsAppContext#parseTelecomAttributeTypeMappings):
+ * `;`-separated entries of the form `attributeTypeUuid:SYSTEM:USE:RANK`, where USE and RANK are
+ * optional. Malformed entries are skipped rather than thrown, so one bad entry doesn't break the rest.
+ */
+export const parseTelecomAttributeTypeMap = (
+  propertyValue: string | null,
+): TelecomAttributeTypeMapping[] => {
+  if (!propertyValue) return [];
+
+  return propertyValue
+    .split(';')
+    .map((entry) => entry.trim())
+    .filter(Boolean)
+    .reduce<TelecomAttributeTypeMapping[]>((mappings, entry) => {
+      const [attributeTypeUuid, system, use, rank] = entry.split(':');
+      if (!attributeTypeUuid?.trim() || !system?.trim()) return mappings;
+
+      mappings.push({
+        attributeTypeUuid: attributeTypeUuid.trim(),
+        system: system.trim().toLowerCase(),
+        use: use?.trim() ? use.trim().toLowerCase() : undefined,
+        rank:
+          rank?.trim() && !isNaN(Number(rank.trim()))
+            ? Number(rank.trim())
+            : undefined,
+      });
+      return mappings;
+    }, []);
+};
+
+/**
+ * Get the admin-configured person-attribute-type-to-telecom mapping
+ * (fhir2Extension.telecomAttributeTypeMap), used to resolve which Patient.telecom ContactPoint
+ * corresponds to which person attribute type, instead of assuming fixed attribute names.
+ * @returns Promise<TelecomAttributeTypeMapping[]>
+ */
+export const getTelecomAttributeTypeMap = async (): Promise<
+  TelecomAttributeTypeMapping[]
+> => {
+  const response = await get<string | null>(
+    APP_PROPERTY_URL(TELECOM_ATTRIBUTE_TYPE_MAP_PROPERTY),
+  );
+  return parseTelecomAttributeTypeMap(response ? String(response) : null);
+};
