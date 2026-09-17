@@ -1,5 +1,7 @@
 import {
   updateFhirPatient,
+  createRelatedPerson,
+  deleteRelatedPerson,
   PatientIdentifier,
   PatientAddress,
   AUDIT_LOG_EVENT_DETAILS,
@@ -18,6 +20,7 @@ import {
   AdditionalIdentifiersData,
 } from '../models/patient';
 import { buildFhirPatient } from '../utils/fhirPatientMapper';
+import { buildRelatedPersonPayload } from '../utils/patientDataConverter';
 import { useIdentifierTypes } from './useAdditionalIdentifiers';
 import { usePersonAttributes } from './usePersonAttributes';
 
@@ -56,7 +59,7 @@ export const useUpdatePatient = () => {
   const queryClient = useQueryClient();
 
   const mutation = useMutation({
-    mutationFn: (formData: UpdatePatientFormData) => {
+    mutationFn: async (formData: UpdatePatientFormData) => {
       const payload = buildFhirPatient({
         profile: formData.profile,
         address: formData.address,
@@ -70,7 +73,37 @@ export const useUpdatePatient = () => {
         personAttributes,
         patientUuid: formData.patientUuid,
       });
-      return updateFhirPatient<Patient>(formData.patientUuid, payload);
+      const patient = await updateFhirPatient<Patient>(
+        formData.patientUuid,
+        payload,
+      );
+
+      if (formData.relationships?.length) {
+        const newRels = formData.relationships.filter(
+          (rel) =>
+            !rel.isExisting &&
+            !rel.isDeleted &&
+            rel.patientUuid &&
+            rel.relationshipType,
+        );
+        const deletedRels = formData.relationships.filter(
+          (rel) => rel.isExisting && rel.isDeleted,
+        );
+
+        const results = await Promise.allSettled([
+          ...newRels.map((rel) =>
+            createRelatedPerson(
+              buildRelatedPersonPayload(formData.patientUuid, rel),
+            ),
+          ),
+          ...deletedRels.map((rel) => deleteRelatedPerson(rel.id)),
+        ]);
+        if (results.some((r) => r.status === 'rejected')) {
+          throw new Error(t('ERROR_SAVING_RELATIONSHIPS'));
+        }
+      }
+
+      return patient;
     },
     onSuccess: (response, variables) => {
       addNotification({
@@ -85,6 +118,20 @@ export const useUpdatePatient = () => {
         queryClient.invalidateQueries({
           queryKey: ['formattedPatient', variables.patientUuid],
         });
+
+        const hasRelationshipChanges = variables.relationships?.some(
+          (rel) =>
+            (!rel.isExisting &&
+              !rel.isDeleted &&
+              !!rel.patientUuid &&
+              !!rel.relationshipType) ||
+            (rel.isExisting && rel.isDeleted),
+        );
+        if (hasRelationshipChanges) {
+          queryClient.invalidateQueries({
+            queryKey: ['relatedPersons', variables.patientUuid],
+          });
+        }
 
         dispatchAuditEvent({
           eventType: AUDIT_LOG_EVENT_DETAILS.EDIT_PATIENT_DETAILS
