@@ -2,10 +2,12 @@ import {
   Bundle,
   Medication,
   MedicationRequest as FhirMedicationRequest,
+  Resource,
 } from 'fhir/r4';
 import { get } from '../api';
 import {
   MEDICATION_ORDERS_METADATA_URL,
+  MEDICATION_REQUESTS_WORKLIST_URL,
   MEDICATIONS_SEARCH_URL,
   PATIENT_MEDICATION_RESOURCE_URL,
   PATIENT_MEDICATION_RESOURCE_URL_WITH_INCLUDE,
@@ -445,4 +447,12 @@ export async function searchMedications(
  */
 export async function getVaccinations(): Promise<Bundle<Medication>> {
   return await get<Bundle<Medication>>(VACCINES_URL);
+}
+
+export async function getMedicationRequestsForWorklist(
+  locationUuid: string,
+): Promise<Bundle<Resource>> {
+  return await get<Bundle<Resource>>(
+    MEDICATION_REQUESTS_WORKLIST_URL(locationUuid),
+  );
 }

@@ -82,3 +82,18 @@ export const VACCINES_URL =
   OPENMRS_FHIR_R4 + '/Medication?code=http://hl7.org/fhir/sid/cvx|&_count=100';
 
 export const MEDICATIONS_INPUT_CONTROL_KEY = 'medication';
+
+export const MEDICATION_REQUESTS_WORKLIST_URL = (
+  locationUuid: string,
+  revinclude?: string,
+) => {
+  // status=active is intentionally NOT passed here: a fhir2-core bug (missing `break` in
+  // FhirMedicationRequestDaoImpl#setupSearchParams's STATUS_SEARCH_HANDLER case falls through
+  // into handleCommonSearchParameters, which NPEs on a null property name) turns any status
+  // filter into a 500.
+  let url = `${OPENMRS_FHIR_R4}/MedicationRequest?_sort=-_lastUpdated&location=${locationUuid}&_include=MedicationRequest:patient&_include=MedicationRequest:requester`;
+  if (revinclude) {
+    url += `&_revinclude=${revinclude}`;
+  }
+  return url;
+};

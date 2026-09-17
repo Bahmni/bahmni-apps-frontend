@@ -1,0 +1,14 @@
+@use "@carbon/react/scss/type" as *;
+@use "@carbon/react/scss/spacing" as *;
+
+.priorityBadge {
+  @include type-style("label-01");
+  display: inline-flex;
+  align-items: flex-start;
+  padding: $spacing-01 $spacing-03;
+  background-color: #ffd7d9;
+  color: #a2191f;
+  border-radius: 24px;
+  font-weight: 400;
+  white-space: nowrap;
+}

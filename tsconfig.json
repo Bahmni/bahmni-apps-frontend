@@ -35,6 +35,9 @@
     },
     {
       "path": "./apps/patient-documents"
+    },
+    {
+      "path": "./apps/orders"
     }
   ]
 }
