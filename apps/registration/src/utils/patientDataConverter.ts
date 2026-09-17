@@ -5,7 +5,10 @@ import type {
 import { calculateAge } from '@bahmni/services';
 import { format, isValid, parseISO } from 'date-fns';
 import type { RelationshipData } from '../components/forms/patientRelationships/PatientRelationships';
-import { RELATED_PATIENT_EXT_URL } from '../constants/relatedPerson';
+import {
+  RELATED_PATIENT_EXT_URL,
+  RELATIONSHIP_TYPE_SYSTEM,
+} from '../constants/relatedPerson';
 import { AddressData } from '../hooks/useAddressFields';
 import type { BasicInfoData, PersonAttributesData } from '../models/patient';
 
@@ -165,6 +168,26 @@ export const convertFhirRelatedPersonsToRelationshipData = (
       };
     });
 };
+
+export const buildRelatedPersonPayload = (
+  patientUuid: string,
+  rel: RelationshipData,
+): FhirRelatedPerson => ({
+  resourceType: 'RelatedPerson',
+  patient: { reference: `Patient/${patientUuid}` },
+  relationship: [
+    {
+      coding: [{ system: RELATIONSHIP_TYPE_SYSTEM, code: rel.relationshipType }],
+    },
+  ],
+  extension: [
+    {
+      url: RELATED_PATIENT_EXT_URL,
+      valueReference: { reference: `Patient/${rel.patientUuid}` },
+    },
+  ],
+  ...(rel.tillDate && { period: { end: rel.tillDate } }),
+});
 
 export const convertToRelationshipsData = (
   patientData: PatientProfileResponse | undefined,

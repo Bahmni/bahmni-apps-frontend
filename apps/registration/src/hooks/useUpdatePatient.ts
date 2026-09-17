@@ -15,15 +15,12 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import type { Patient } from 'fhir/r4';
 import type { RelationshipData } from '../components/forms/patientRelationships/PatientRelationships';
 import {
-  RELATIONSHIP_TYPE_SYSTEM,
-  RELATED_PATIENT_EXT_URL,
-} from '../constants/relatedPerson';
-import {
   BasicInfoData,
   PersonAttributesData,
   AdditionalIdentifiersData,
 } from '../models/patient';
 import { buildFhirPatient } from '../utils/fhirPatientMapper';
+import { buildRelatedPersonPayload } from '../utils/patientDataConverter';
 import { useIdentifierTypes } from './useAdditionalIdentifiers';
 import { usePersonAttributes } from './usePersonAttributes';
 
@@ -95,27 +92,9 @@ export const useUpdatePatient = () => {
 
         const results = await Promise.allSettled([
           ...newRels.map((rel) =>
-            createRelatedPerson({
-              resourceType: 'RelatedPerson',
-              patient: { reference: `Patient/${formData.patientUuid}` },
-              relationship: [
-                {
-                  coding: [
-                    {
-                      system: RELATIONSHIP_TYPE_SYSTEM,
-                      code: rel.relationshipType,
-                    },
-                  ],
-                },
-              ],
-              extension: [
-                {
-                  url: RELATED_PATIENT_EXT_URL,
-                  valueReference: { reference: `Patient/${rel.patientUuid}` },
-                },
-              ],
-              ...(rel.tillDate && { period: { end: rel.tillDate } }),
-            }),
+            createRelatedPerson(
+              buildRelatedPersonPayload(formData.patientUuid, rel),
+            ),
           ),
           ...deletedRels.map((rel) => deleteRelatedPerson(rel.id)),
         ]);
