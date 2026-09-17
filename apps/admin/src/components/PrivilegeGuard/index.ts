@@ -1,0 +1,1 @@
+export { PrivilegeGuard } from './PrivilegeGuard';
