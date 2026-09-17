@@ -19,6 +19,7 @@ import {
 } from '@bahmni/widgets';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import React, { useMemo, useState } from 'react';
+import { APPOINTMENTS_APP_HREF } from '../../../constants/app';
 import { useAppointmentsConfig } from '../../../providers/appointmentsConfig';
 import DeleteServiceModal from './components/DeleteServiceModal';
 import {
@@ -125,6 +126,11 @@ const AllServicesPage: React.FC = () => {
 
   const breadcrumbs = [
     { id: 'home', label: t('BREADCRUMB_HOME'), href: BAHMNI_HOME_PATH },
+    {
+      id: 'appointments',
+      label: t('BREADCRUMB_APPOINTMENTS'),
+      href: APPOINTMENTS_APP_HREF,
+    },
     { id: 'admin', label: t('BREADCRUMB_ADMIN'), isCurrentPage: true },
   ];
 
