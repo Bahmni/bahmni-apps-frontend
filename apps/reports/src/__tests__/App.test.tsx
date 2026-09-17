@@ -20,6 +20,7 @@ import App from '../App';
 jest.mock('@bahmni/services', () => ({
   ...jest.requireActual('@bahmni/services'),
   initAppI18n: jest.fn().mockResolvedValue(undefined),
+  initializeAuditListener: jest.fn(),
   useTranslation: () => ({ t: (key: string) => key }),
 }));
 
@@ -43,6 +44,11 @@ jest.mock('@bahmni/widgets', () => ({
     isLoading: false,
     error: null,
   }),
+}));
+
+jest.mock('@bahmni/design-system', () => ({
+  ...jest.requireActual('@bahmni/design-system'),
+  initFontAwesome: jest.fn(),
 }));
 
 jest.mock('@tanstack/react-query-devtools', () => ({
