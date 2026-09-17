@@ -272,6 +272,7 @@ export const searchPatientByCustomAttribute = async (
   fieldType: string,
   fieldsToSearch: string[],
   allSearchFields: PatientSearchField[],
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   t: (key: string) => string,
 ): Promise<PatientSearchResultBundle> => {
   const loginLocation = getUserLoginLocation();
