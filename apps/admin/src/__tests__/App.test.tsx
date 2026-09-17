@@ -56,13 +56,14 @@ jest.mock('@tanstack/react-query-devtools', () => ({
 }));
 
 describe('App', () => {
-  it('renders the loading state before initialization', () => {
+  it('renders the loading state before initialization', async () => {
     render(
       <MemoryRouter>
         <App />
       </MemoryRouter>,
     );
     expect(screen.getByTestId('loading')).toBeInTheDocument();
+    await waitForElementToBeRemoved(() => screen.queryByTestId('loading'));
   });
 
   it('renders the app after initialization', async () => {
