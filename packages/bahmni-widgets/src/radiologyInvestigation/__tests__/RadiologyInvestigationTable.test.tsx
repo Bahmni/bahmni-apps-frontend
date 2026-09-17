@@ -492,6 +492,10 @@ describe('RadiologyInvestigationTable', () => {
     await waitFor(() => {
       expect(screen.getByTestId('diagnostic-report-modal')).toBeInTheDocument();
     });
+    expect(mockDispatchAuditEvent).toHaveBeenCalledWith({
+      eventType: 'VIEWED_RADIOLOGY_RESULTS',
+      patientUuid: 'test-patient-uuid',
+    });
   });
 
   it('should not render "View Report" link when investigation has no reportId', async () => {
@@ -672,6 +676,10 @@ describe('RadiologyInvestigationTable', () => {
         screen.getByTestId('quality-assessment-test-id'),
       ).toBeInTheDocument();
       expect(screen.getByText('Imaging Study ID: study-1')).toBeInTheDocument();
+      expect(mockDispatchAuditEvent).toHaveBeenCalledWith({
+        eventType: 'VIEWED_RADIOLOGY_RESULTS',
+        patientUuid: 'test-patient-uuid',
+      });
     });
   });
 

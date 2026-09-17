@@ -48,8 +48,8 @@ export const logAuditEvent = async (
     patientUuid,
     eventType: eventDetail.eventType,
     message: messageParams
-      ? `${eventDetail.message}~${JSON.stringify(messageParams)}`
-      : eventDetail.message,
+      ? `${i18next.t(eventDetail.message)}~${JSON.stringify(messageParams)}`
+      : i18next.t(eventDetail.message),
     module,
   };
 
