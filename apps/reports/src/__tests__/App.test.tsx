@@ -46,11 +46,6 @@ jest.mock('@bahmni/widgets', () => ({
   }),
 }));
 
-jest.mock('@bahmni/design-system', () => ({
-  ...jest.requireActual('@bahmni/design-system'),
-  initFontAwesome: jest.fn(),
-}));
-
 jest.mock('@tanstack/react-query-devtools', () => ({
   ReactQueryDevtools: () => null,
 }));
