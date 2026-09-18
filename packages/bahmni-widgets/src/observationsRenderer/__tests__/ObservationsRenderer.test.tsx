@@ -1,4 +1,6 @@
-import { render, screen } from '@testing-library/react';
+import { fetchFormMetadata, fetchObservationForms } from '@bahmni/services';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { render, screen, waitFor } from '@testing-library/react';
 import { Observation } from 'fhir/r4';
 import { ObservationsRenderer } from '../ObservationsRenderer';
 
@@ -7,6 +9,8 @@ jest.mock('@bahmni/services', () => ({
   useTranslation: () => ({
     t: (key: string) => key,
   }),
+  fetchObservationForms: jest.fn(),
+  fetchFormMetadata: jest.fn(),
 }));
 
 describe('ObservationsRenderer', () => {
@@ -1012,6 +1016,169 @@ describe('ObservationsRenderer', () => {
 
       const renderer = container.querySelector('.custom-class');
       expect(renderer).toBeInTheDocument();
+    });
+  });
+
+  describe('formName prop', () => {
+    const mockFetchObservationForms =
+      fetchObservationForms as jest.MockedFunction<
+        typeof fetchObservationForms
+      >;
+    const mockFetchFormMetadata = fetchFormMetadata as jest.MockedFunction<
+      typeof fetchFormMetadata
+    >;
+
+    const renderWithQueryClient = (ui: React.ReactElement) => {
+      const queryClient = new QueryClient({
+        defaultOptions: { queries: { retry: false } },
+      });
+      return render(
+        <QueryClientProvider client={queryClient}>{ui}</QueryClientProvider>,
+      );
+    };
+
+    const makeObs = (
+      id: string,
+      display: string,
+      controlId: string,
+    ): Observation => ({
+      resourceType: 'Observation',
+      id,
+      status: 'final',
+      code: { text: display },
+      valueString: display,
+      extension: [
+        {
+          url: 'http://fhir.bahmni.org/ext/observation/form-namespace-path',
+          valueString: `Bahmni^Vitals.1/${controlId}-0`,
+        },
+      ],
+    });
+
+    const vitalsForm = {
+      uuid: 'form-uuid-1',
+      name: 'Vitals',
+      id: 1,
+      privileges: [],
+    };
+
+    const vitalsMetadata = {
+      uuid: 'form-uuid-1',
+      name: 'Vitals',
+      version: '1',
+      published: true,
+      schema: {
+        controls: [
+          {
+            id: 100,
+            type: 'section',
+            label: { value: 'Vitals Section' },
+            controls: [{ id: 31 }, { id: 30 }],
+          },
+        ],
+      },
+    };
+
+    beforeEach(() => {
+      jest.clearAllMocks();
+    });
+
+    it('should derive control order and section grouping from the named form schema', async () => {
+      mockFetchObservationForms.mockResolvedValue([vitalsForm]);
+      mockFetchFormMetadata.mockResolvedValue(vitalsMetadata);
+
+      renderWithQueryClient(
+        <ObservationsRenderer
+          observations={[makeObs('obs-30', 'Pulse', '30')]}
+          formName="Vitals"
+        />,
+      );
+
+      await waitFor(() => {
+        expect(
+          screen.getByTestId('section-label-Vitals Section'),
+        ).toHaveTextContent('Vitals Section');
+      });
+      expect(mockFetchFormMetadata).toHaveBeenCalledWith('form-uuid-1');
+      expect(screen.getByTestId('obs-member-row-Pulse-0')).toBeInTheDocument();
+    });
+
+    it('should show the loading skeleton while the form schema is being fetched', () => {
+      mockFetchObservationForms.mockReturnValue(new Promise(() => {}));
+      mockFetchFormMetadata.mockReturnValue(new Promise(() => {}));
+
+      renderWithQueryClient(
+        <ObservationsRenderer
+          observations={[makeObs('obs-30', 'Pulse', '30')]}
+          formName="Vitals"
+        />,
+      );
+
+      expect(
+        screen.getByTestId('observations-table-skeleton'),
+      ).toBeInTheDocument();
+    });
+
+    it('should render the error state when the form metadata fetch fails', async () => {
+      mockFetchObservationForms.mockResolvedValue([vitalsForm]);
+      mockFetchFormMetadata.mockRejectedValue(new Error('metadata boom'));
+
+      renderWithQueryClient(
+        <ObservationsRenderer
+          observations={[makeObs('obs-30', 'Pulse', '30')]}
+          formName="Vitals"
+        />,
+      );
+
+      await waitFor(() => {
+        expect(screen.getByText('metadata boom')).toBeInTheDocument();
+      });
+      expect(screen.queryByText('Pulse')).not.toBeInTheDocument();
+    });
+
+    it('should fall back to sortId ordering when no published form matches the name', async () => {
+      mockFetchObservationForms.mockResolvedValue([
+        { uuid: 'other-uuid', name: 'Some Other Form', id: 2, privileges: [] },
+      ]);
+
+      renderWithQueryClient(
+        <ObservationsRenderer
+          observations={[makeObs('obs-30', 'Pulse', '30')]}
+          formName="Vitals"
+        />,
+      );
+
+      await waitFor(() => {
+        expect(
+          screen.getByTestId('observation-item-Pulse-0'),
+        ).toBeInTheDocument();
+      });
+      expect(mockFetchFormMetadata).not.toHaveBeenCalled();
+      expect(
+        screen.queryByTestId('section-label-Vitals Section'),
+      ).not.toBeInTheDocument();
+    });
+
+    it('should let an explicitly passed sectionMap override the derived one', async () => {
+      mockFetchObservationForms.mockResolvedValue([vitalsForm]);
+      mockFetchFormMetadata.mockResolvedValue(vitalsMetadata);
+
+      renderWithQueryClient(
+        <ObservationsRenderer
+          observations={[makeObs('obs-30', 'Pulse', '30')]}
+          formName="Vitals"
+          sectionMap={{ '30': 'Explicit Section' }}
+        />,
+      );
+
+      await waitFor(() => {
+        expect(
+          screen.getByTestId('section-label-Explicit Section'),
+        ).toBeInTheDocument();
+      });
+      expect(
+        screen.queryByTestId('section-label-Vitals Section'),
+      ).not.toBeInTheDocument();
     });
   });
 });
