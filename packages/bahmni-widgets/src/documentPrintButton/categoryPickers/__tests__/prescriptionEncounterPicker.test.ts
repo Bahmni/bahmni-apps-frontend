@@ -35,6 +35,23 @@ const buildEncounter = (
   }),
 });
 
+const buildVisit = (id: string, start: string, end?: string): Encounter => ({
+  resourceType: 'Encounter',
+  id,
+  status: 'finished',
+  class: {},
+  period: { start, ...(end && { end }) },
+});
+
+const buildChildEncounter = (
+  id: string,
+  start: string,
+  visitId: string,
+): Encounter => ({
+  ...buildEncounter(id, start),
+  partOf: { reference: `Encounter/${visitId}` },
+});
+
 beforeEach(() => {
   jest.clearAllMocks();
   mockFormatDateTime.mockReturnValue({ formattedResult: '01-Jan-2024' });
@@ -109,6 +126,49 @@ describe('prescriptionEncounterPicker', () => {
         'p-1',
         new Date('2024-01-01T00:00:00Z').toISOString(),
       );
+    });
+
+    it('attaches the parent visit to a child encounter via its partOf reference', async () => {
+      const visit = buildVisit(
+        'visit-1',
+        '2024-01-01T00:00:00Z',
+        '2024-01-02T00:00:00Z',
+      );
+      mockGetVisits.mockResolvedValue([visit]);
+      mockGetPatientEncounters.mockResolvedValue([
+        buildChildEncounter('enc-1', '2024-01-01T10:00:00Z', 'visit-1'),
+      ]);
+
+      const [result] = await prescriptionEncounterPicker.fetchItems({
+        patientUUID: 'p-1',
+      });
+
+      expect(result.visit).toEqual(visit);
+    });
+
+    it('attaches itself as the visit when the returned encounter is a visit-tagged encounter', async () => {
+      const visit = buildVisit('visit-1', '2024-01-01T00:00:00Z');
+      mockGetVisits.mockResolvedValue([visit]);
+      mockGetPatientEncounters.mockResolvedValue([visit]);
+
+      const [result] = await prescriptionEncounterPicker.fetchItems({
+        patientUUID: 'p-1',
+      });
+
+      expect(result.visit).toEqual(visit);
+    });
+
+    it('leaves visit undefined when the encounter has no partOf reference to a known visit', async () => {
+      mockGetVisits.mockResolvedValue([]);
+      mockGetPatientEncounters.mockResolvedValue([
+        buildEncounter('enc-1', '2024-01-01T10:00:00Z'),
+      ]);
+
+      const [result] = await prescriptionEncounterPicker.fetchItems({
+        patientUUID: 'p-1',
+      });
+
+      expect(result.visit).toBeUndefined();
     });
   });
 
@@ -200,9 +260,55 @@ describe('prescriptionEncounterPicker', () => {
 
       expect(result).toEqual({
         context: { patientUUID: 'p-1', encounterUuid: 'enc-1' },
-        data: { encounter },
       });
       expect(context).toEqual({ patientUUID: 'p-1' });
+    });
+
+    it('adds visitUuid, visitStartDate and visitEndDate when the encounter has a resolved visit', () => {
+      const visit = buildVisit(
+        'visit-1',
+        '2024-01-01T00:00:00Z',
+        '2024-01-02T00:00:00Z',
+      );
+      const encounter = { ...buildEncounter('enc-1'), visit };
+
+      const result = prescriptionEncounterPicker.resolveSelection(encounter, {
+        patientUUID: 'p-1',
+      });
+
+      expect(result.context).toEqual({
+        patientUUID: 'p-1',
+        encounterUuid: 'enc-1',
+        visitUuid: 'visit-1',
+        visitStartDate: '2024-01-01T00:00:00Z',
+        visitEndDate: '2024-01-02T00:00:00Z',
+      });
+    });
+
+    it('defaults visitEndDate to now when the visit is still in progress', () => {
+      jest.useFakeTimers().setSystemTime(new Date('2024-03-01T00:00:00Z'));
+      const visit = buildVisit('visit-1', '2024-01-01T00:00:00Z');
+      const encounter = { ...buildEncounter('enc-1'), visit };
+
+      const result = prescriptionEncounterPicker.resolveSelection(encounter, {
+        patientUUID: 'p-1',
+      });
+
+      expect(result.context.visitEndDate).toBe('2024-03-01T00:00:00.000Z');
+      jest.useRealTimers();
+    });
+
+    it('omits visit context keys when no visit was resolved', () => {
+      const encounter = buildEncounter('enc-1');
+
+      const result = prescriptionEncounterPicker.resolveSelection(encounter, {
+        patientUUID: 'p-1',
+      });
+
+      expect(result.context).toEqual({
+        patientUUID: 'p-1',
+        encounterUuid: 'enc-1',
+      });
     });
   });
 });

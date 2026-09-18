@@ -482,7 +482,6 @@ describe('DocumentPrintButton', () => {
           expect.objectContaining({
             templateId: 'prescription-encounter',
             context: { ...renderContext, encounterUuid: 'enc-1' },
-            data: { encounter },
           }),
         ),
       );
