@@ -3,7 +3,7 @@
 exports[`RegistrationList Snapshot matches snapshot 1`] = `
 <div
   aria-label="base-layout-aria-label"
-  class="_layout_ma379_85"
+  class="_layout_1avlc_85"
   data-testid="base-layout-test-id"
   id="base-layout"
 >
@@ -67,7 +67,7 @@ exports[`RegistrationList Snapshot matches snapshot 1`] = `
   </div>
   <div
     aria-label="main-display-area-aria-label"
-    class="_main_ma379_93"
+    class="_main_1avlc_103"
     data-testid="main-display-area-test-id"
     id="main-display-area"
   >
