@@ -113,7 +113,9 @@ const FormsTable: React.FC<WidgetProps> = ({
   // AND that privilege must be marked editable. Forms with no privileges are open to all.
   const canEditForm = useCallback(
     (formName: string): boolean => {
-      const form = publishedForms.find((f) => f.name === formName);
+      const form = publishedForms.find(
+        (f) => f.name.toLowerCase() === formName.toLowerCase(),
+      );
       if (!form?.privileges || form.privileges.length === 0) return true;
       if (!userPrivileges || userPrivileges.length === 0) return false;
       const userPrivilegeNames = new Set(userPrivileges.map((p) => p.name));

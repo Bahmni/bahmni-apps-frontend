@@ -150,4 +150,79 @@ describe('useFormSchemaData', () => {
     expect(result.current.errorMessage).toBeUndefined();
     expect(mockFetchFormMetadata).not.toHaveBeenCalled();
   });
+
+  it('should refetch metadata when formName changes while mounted', async () => {
+    mockFetchObservationForms.mockResolvedValue([
+      vitalsForm,
+      { uuid: 'form-uuid-2', name: 'Examination', id: 2, privileges: [] },
+    ]);
+    mockFetchFormMetadata
+      .mockResolvedValueOnce(vitalsMetadata)
+      .mockResolvedValueOnce({
+        uuid: 'form-uuid-2',
+        name: 'Examination',
+        version: '1',
+        published: true,
+        schema: {
+          controls: [
+            {
+              id: 200,
+              type: 'section',
+              label: { value: 'Exam Section' },
+              controls: [{ id: 5 }, { id: 6 }],
+            },
+          ],
+        },
+      });
+
+    const { result, rerender } = renderHook(
+      ({ formName }: { formName?: string }) => useFormSchemaData(formName),
+      {
+        wrapper: createWrapper(),
+        initialProps: { formName: 'Vitals' },
+      },
+    );
+
+    await waitFor(() => expect(result.current.controlOrder).toBeDefined());
+    const initialCallCount = mockFetchFormMetadata.mock.calls.length;
+    expect(mockFetchFormMetadata).toHaveBeenCalledWith('form-uuid-1');
+
+    rerender({ formName: 'Examination' });
+
+    await waitFor(() => {
+      expect(mockFetchFormMetadata.mock.calls.length).toBeGreaterThan(
+        initialCallCount,
+      );
+    });
+    expect(mockFetchFormMetadata).toHaveBeenCalledWith('form-uuid-2');
+  });
+
+  it('should not fetch when formName is empty string', () => {
+    renderHook(() => useFormSchemaData(''), {
+      wrapper: createWrapper(),
+    });
+
+    expect(mockFetchObservationForms).not.toHaveBeenCalled();
+    expect(mockFetchFormMetadata).not.toHaveBeenCalled();
+  });
+
+  it('should take non-fetching path for both undefined and empty string', async () => {
+    const { result: resultUndefined } = renderHook(
+      () => useFormSchemaData(undefined),
+      {
+        wrapper: createWrapper(),
+      },
+    );
+    const { result: resultEmpty } = renderHook(() => useFormSchemaData(''), {
+      wrapper: createWrapper(),
+    });
+
+    await waitFor(() => {
+      expect(resultUndefined.current.isLoading).toBe(false);
+      expect(resultEmpty.current.isLoading).toBe(false);
+    });
+
+    expect(resultUndefined.current.controlOrder).toBeUndefined();
+    expect(resultEmpty.current.controlOrder).toBeUndefined();
+  });
 });

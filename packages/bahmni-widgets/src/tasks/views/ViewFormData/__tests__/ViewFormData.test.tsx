@@ -29,6 +29,17 @@ jest.mock('@bahmni/services', () => ({
   formatDateTime: jest.fn(),
 }));
 
+jest.mock('../../../../hooks/useFormSchemaData', () => ({
+  useFormSchemaData: jest.fn(() => ({
+    controlOrder: ['1', '2'],
+    sectionMap: { '1': 'Section 1' },
+    conceptDatatypeMap: { 'concept-1': 'Datetime' },
+    isLoading: false,
+    isError: false,
+    errorMessage: undefined,
+  })),
+}));
+
 jest.mock('../../../../observationsRenderer', () => ({
   ObservationsRenderer: jest.fn(({ observations, testIdPrefix }) => (
     <div data-testid={testIdPrefix}>
@@ -506,7 +517,7 @@ describe('ViewFormData', () => {
     });
   });
 
-  describe('Form schema (form name passthrough)', () => {
+  describe('Form schema (resolved at ViewFormData level)', () => {
     beforeEach(() => {
       mockGetPatientObservationsBundle.mockResolvedValue(
         mockObservationAndEncounterBundle as Bundle<Observation>,
@@ -514,15 +525,18 @@ describe('ViewFormData', () => {
       mockGetEncounterByUuid.mockResolvedValue(mockEncounterWithProvider);
     });
 
-    // The renderer resolves the schema itself, so this view only has to hand it
-    // the form name — control order and section derivation are covered by the
-    // ObservationsRenderer and useFormSchemaData tests.
-    it('should pass the task form name to the observations renderer', async () => {
+    // ViewFormData resolves the schema once at this level and passes derived props
+    // to each encounter group, avoiding duplicate derivation across groups.
+    it('should resolve form schema once and pass derived props to observations renderer', async () => {
       renderComponent();
 
       await waitFor(() => {
         const lastCallProps = mockObservationsRenderer.mock.calls.at(-1)?.[0];
-        expect(lastCallProps.formName).toBe('Vitals');
+        expect(lastCallProps.controlOrder).toEqual(['1', '2']);
+        expect(lastCallProps.sectionMap).toEqual({ '1': 'Section 1' });
+        expect(lastCallProps.conceptDatatypeMap).toEqual({
+          'concept-1': 'Datetime',
+        });
       });
     });
   });
