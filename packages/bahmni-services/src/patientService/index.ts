@@ -19,6 +19,7 @@ export {
   getPatientProfile,
   getRelationshipTypes,
   getPersonAttributeTypes,
+  getTelecomAttributeTypeMap,
 } from './patientService';
 export {
   type FormattedPatientData,
@@ -39,6 +40,7 @@ export {
   type PatientProfileResponse,
   type PersonAttributeType,
   type PersonAttributeTypesResponse,
+  type TelecomAttributeTypeMapping,
   type ConceptAnswer,
   type PersonAttributeConcept,
   type PatientSearchField,

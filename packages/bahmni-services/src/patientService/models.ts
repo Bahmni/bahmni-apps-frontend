@@ -370,6 +370,15 @@ export interface PersonAttributeTypesResponse {
   results: PersonAttributeType[];
 }
 
+// One entry of the fhir2Extension.telecomAttributeTypeMap global property: declares that a
+// person attribute type should appear in Patient.telecom with the given system/use/rank.
+export interface TelecomAttributeTypeMapping {
+  attributeTypeUuid: string;
+  system: string;
+  use?: string;
+  rank?: number;
+}
+
 export interface RelationshipType {
   uuid: string;
   display: string;

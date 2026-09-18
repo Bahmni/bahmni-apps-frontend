@@ -13,6 +13,7 @@ import {
   PRIMARY_IDENTIFIER_TYPE_PROPERTY,
   CREATE_PATIENT_URL,
   ADDRESS_HIERARCHY_URL,
+  TELECOM_ATTRIBUTE_TYPE_MAP_PROPERTY,
 } from '../constants';
 import {
   getPatientById,
@@ -30,6 +31,8 @@ import {
   getAddressHierarchyEntries,
   getPatientProfile,
   fetchPatientPhotoFromUrl,
+  getTelecomAttributeTypeMap,
+  parseTelecomAttributeTypeMap,
 } from '../patientService';
 
 jest.mock('../../api');
@@ -1438,6 +1441,71 @@ describe('Patient Service', () => {
       mockedGet.mockRejectedValueOnce(mockError);
 
       await expect(getGenders()).rejects.toThrow('Failed to fetch genders');
+    });
+  });
+
+  describe('parseTelecomAttributeTypeMap', () => {
+    it('should parse full entries with system, use and rank', () => {
+      const result = parseTelecomAttributeTypeMap(
+        'uuid-1:PHONE:MOBILE:1;uuid-2:EMAIL',
+      );
+      expect(result).toEqual([
+        {
+          attributeTypeUuid: 'uuid-1',
+          system: 'phone',
+          use: 'mobile',
+          rank: 1,
+        },
+        {
+          attributeTypeUuid: 'uuid-2',
+          system: 'email',
+          use: undefined,
+          rank: undefined,
+        },
+      ]);
+    });
+
+    it('should skip malformed entries', () => {
+      expect(parseTelecomAttributeTypeMap(':PHONE;uuid-1:')).toEqual([]);
+    });
+
+    it('should return an empty array for null/empty input', () => {
+      expect(parseTelecomAttributeTypeMap(null)).toEqual([]);
+      expect(parseTelecomAttributeTypeMap('')).toEqual([]);
+    });
+  });
+
+  describe('getTelecomAttributeTypeMap', () => {
+    it('should fetch and parse the global property', async () => {
+      mockedGet.mockResolvedValueOnce('uuid-1:PHONE:MOBILE:1;uuid-2:EMAIL');
+
+      const result = await getTelecomAttributeTypeMap();
+
+      expect(mockedGet).toHaveBeenCalledWith(
+        APP_PROPERTY_URL(TELECOM_ATTRIBUTE_TYPE_MAP_PROPERTY),
+      );
+      expect(result).toEqual([
+        {
+          attributeTypeUuid: 'uuid-1',
+          system: 'phone',
+          use: 'mobile',
+          rank: 1,
+        },
+        {
+          attributeTypeUuid: 'uuid-2',
+          system: 'email',
+          use: undefined,
+          rank: undefined,
+        },
+      ]);
+    });
+
+    it('should return an empty array when the property is unset', async () => {
+      mockedGet.mockResolvedValueOnce(null);
+
+      const result = await getTelecomAttributeTypeMap();
+
+      expect(result).toEqual([]);
     });
   });
 
