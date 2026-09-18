@@ -1,6 +1,6 @@
 import { CommandPaletteProvider } from '@bahmni/command-palette-app';
 import { Content, initFontAwesome, Loading } from '@bahmni/design-system';
-import { initAppI18n, initializeAuditListener } from '@bahmni/services';
+import { initAppI18n, useAuditListenerInitialization } from '@bahmni/services';
 import {
   NotificationProvider,
   NotificationServiceComponent,
@@ -23,12 +23,13 @@ const queryClient = new QueryClient(queryClientConfig);
 const RegistrationApp: React.FC = () => {
   const [isInitialized, setIsInitialized] = useState(false);
 
+  useAuditListenerInitialization();
+
   useEffect(() => {
     const initializeApp = async () => {
       try {
         await initAppI18n(REGISTRATION_NAMESPACE);
         initFontAwesome();
-        initializeAuditListener();
         setIsInitialized(true);
       } catch (error) {
         // eslint-disable-next-line no-console

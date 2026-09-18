@@ -1,5 +1,5 @@
 import { Content, Loading, initFontAwesome } from '@bahmni/design-system';
-import { initAppI18n, initializeAuditListener } from '@bahmni/services';
+import { initAppI18n, useAuditListenerInitialization } from '@bahmni/services';
 import {
   ActivePractitionerProvider,
   NotificationProvider,
@@ -20,12 +20,13 @@ const queryClient = new QueryClient(queryClientConfig);
 export function App() {
   const [isInitialized, setIsInitialized] = useState(false);
 
+  useAuditListenerInitialization();
+
   useEffect(() => {
     const initializeApp = async () => {
       try {
         await initAppI18n(BAHMNI_PATIENT_DOCUMENTS_NAMESPACE);
         initFontAwesome();
-        initializeAuditListener();
         setIsInitialized(true);
       } catch (error) {
         // eslint-disable-next-line no-console

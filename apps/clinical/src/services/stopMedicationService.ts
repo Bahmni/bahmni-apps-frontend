@@ -1,9 +1,6 @@
 import {
   get,
   createBundleEntry,
-  dispatchAuditEvent,
-  AUDIT_LOG_EVENT_DETAILS,
-  AuditEventType,
   FHIR_EXT_MEDICATION_REQUEST_NOTE_CATEGORY,
   MedicationStatus,
   OPENMRS_FHIR_R4,
@@ -113,14 +110,6 @@ export function createStopMedicationEntry(
       },
     ];
   }
-
-  // [Todo] Refactor | Should Be Dispatched After Submission
-  dispatchAuditEvent({
-    eventType: AUDIT_LOG_EVENT_DETAILS.STOP_MEDICATION
-      .eventType as AuditEventType,
-    patientUuid,
-    messageParams: {},
-  });
 
   return [
     createBundleEntry(

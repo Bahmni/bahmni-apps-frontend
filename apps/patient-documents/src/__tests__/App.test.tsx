@@ -8,7 +8,7 @@ import App from '../App';
 
 jest.mock('@bahmni/services', () => ({
   initAppI18n: jest.fn().mockResolvedValue(undefined),
-  initializeAuditListener: jest.fn(),
+  useAuditListenerInitialization: jest.fn(),
 }));
 
 jest.mock('@bahmni/design-system', () => ({
@@ -72,5 +72,18 @@ describe('App', () => {
     );
     await waitForElementToBeRemoved(() => screen.queryByTestId('loading'));
     expect(screen.queryByTestId('loading')).not.toBeInTheDocument();
+  });
+
+  it('registers the audit listener', () => {
+    const { useAuditListenerInitialization } =
+      jest.requireMock('@bahmni/services');
+
+    render(
+      <MemoryRouter initialEntries={['/']}>
+        <App />
+      </MemoryRouter>,
+    );
+
+    expect(useAuditListenerInitialization).toHaveBeenCalled();
   });
 });
