@@ -29,6 +29,11 @@ const PatientDocumentsApp = lazy(() =>
     default: module.PatientDocumentsApp,
   })),
 );
+const ReportsApp = lazy(() =>
+  import('@bahmni/reports-app').then((module) => ({
+    default: module.ReportsApp,
+  })),
+);
 
 export function App() {
   return (
@@ -44,6 +49,7 @@ export function App() {
             path="/patient-documents/*"
             element={<PatientDocumentsApp />}
           />
+          <Route path="/reports/*" element={<ReportsApp />} />
           <Route path="*" element={<NotFoundPage />} />
         </Routes>
       </Suspense>
