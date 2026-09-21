@@ -310,7 +310,6 @@ export {
   initializeAuditListener,
   type AuditEventType,
   logAuditEvent,
-  useAuditListenerInitialization,
 } from './auditLogService';
 
 export {

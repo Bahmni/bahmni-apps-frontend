@@ -1,5 +1,5 @@
 import { Content, Loading, initFontAwesome } from '@bahmni/design-system';
-import { initAppI18n, useAuditListenerInitialization } from '@bahmni/services';
+import { initAppI18n, initializeAuditListener } from '@bahmni/services';
 import {
   ActivePractitionerProvider,
   NotificationProvider,
@@ -20,7 +20,9 @@ const queryClient = new QueryClient(queryClientConfig);
 export function App() {
   const [isInitialized, setIsInitialized] = useState(false);
 
-  useAuditListenerInitialization();
+  useEffect(() => {
+    return initializeAuditListener();
+  }, []);
 
   useEffect(() => {
     const initializeApp = async () => {

@@ -5,7 +5,7 @@ import {
 } from '@testing-library/react';
 import { StrictMode } from 'react';
 import { MemoryRouter } from 'react-router-dom';
-import App from '../App';
+import { ClinicalApp } from '../App';
 
 jest.mock('@bahmni/services', () => ({
   initAppI18n: jest.fn().mockResolvedValue(undefined),
@@ -28,21 +28,29 @@ jest.mock('@bahmni/widgets', () => ({
     children,
   ActivePractitionerProvider: ({ children }: { children: React.ReactNode }) =>
     children,
+  UserActionProvider: ({ children }: { children: React.ReactNode }) => children,
 }));
 
-jest.mock('../providers/patientDocumentsConfig', () => ({
-  PatientDocumentsConfigProvider: ({
+jest.mock('@bahmni/command-palette-app', () => ({
+  CommandPaletteProvider: ({ children }: { children: React.ReactNode }) =>
     children,
-  }: {
-    children: React.ReactNode;
-  }) => children,
+}));
+
+jest.mock('../providers/clinicalConfig', () => ({
+  ClinicalConfigProvider: ({ children }: { children: React.ReactNode }) =>
+    children,
+}));
+
+jest.mock('../routes', () => ({
+  routes: [],
+  renderRoutes: () => null,
 }));
 
 jest.mock('@tanstack/react-query-devtools', () => ({
   ReactQueryDevtools: () => null,
 }));
 
-describe('App', () => {
+describe('ClinicalApp', () => {
   beforeEach(() => {
     jest.clearAllMocks();
   });
@@ -50,7 +58,7 @@ describe('App', () => {
   it('renders loading state before initialization', () => {
     render(
       <MemoryRouter>
-        <App />
+        <ClinicalApp />
       </MemoryRouter>,
     );
     expect(screen.getByTestId('loading')).toBeInTheDocument();
@@ -59,7 +67,7 @@ describe('App', () => {
   it('renders the app after initialization', async () => {
     render(
       <MemoryRouter initialEntries={['/']}>
-        <App />
+        <ClinicalApp />
       </MemoryRouter>,
     );
     await waitForElementToBeRemoved(() => screen.queryByTestId('loading'));
@@ -72,7 +80,7 @@ describe('App', () => {
 
     render(
       <MemoryRouter initialEntries={['/']}>
-        <App />
+        <ClinicalApp />
       </MemoryRouter>,
     );
     await waitForElementToBeRemoved(() => screen.queryByTestId('loading'));
@@ -86,7 +94,7 @@ describe('App', () => {
 
     const { unmount } = render(
       <MemoryRouter initialEntries={['/']}>
-        <App />
+        <ClinicalApp />
       </MemoryRouter>,
     );
 
@@ -110,11 +118,12 @@ describe('App', () => {
     render(
       <StrictMode>
         <MemoryRouter initialEntries={['/']}>
-          <App />
+          <ClinicalApp />
         </MemoryRouter>
       </StrictMode>,
     );
     await waitForElementToBeRemoved(() => screen.queryByTestId('loading'));
+
     expect(cleanups.length).toBeGreaterThan(1);
     const cleanedUpCount = cleanups.filter(
       (cleanup) => cleanup.mock.calls.length > 0,
