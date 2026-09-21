@@ -1,7 +1,7 @@
 import { BaseLayout, Header } from '@bahmni/design-system';
 import { BAHMNI_HOME_PATH, useTranslation } from '@bahmni/services';
 import { UserGlobalAction } from '@bahmni/widgets';
-import React, { ReactNode } from 'react';
+import React, { ReactNode, useMemo } from 'react';
 import styles from './styles/AdminLayout.module.scss';
 
 interface AdminLayoutProps {
@@ -11,10 +11,13 @@ interface AdminLayoutProps {
 export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
   const { t } = useTranslation();
 
-  const breadcrumbs = [
-    { id: 'home', label: t('BREADCRUMB_HOME'), href: BAHMNI_HOME_PATH },
-    { id: 'admin', label: t('BREADCRUMB_ADMIN'), isCurrentPage: true },
-  ];
+  const breadcrumbs = useMemo(
+    () => [
+      { id: 'home', label: t('BREADCRUMB_HOME'), href: BAHMNI_HOME_PATH },
+      { id: 'admin', label: t('BREADCRUMB_ADMIN'), isCurrentPage: true },
+    ],
+    [t],
+  );
 
   return (
     <BaseLayout
