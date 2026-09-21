@@ -24,11 +24,14 @@ const RegistrationApp: React.FC = () => {
   const [isInitialized, setIsInitialized] = useState(false);
 
   useEffect(() => {
+    return initializeAuditListener();
+  }, []);
+
+  useEffect(() => {
     const initializeApp = async () => {
       try {
         await initAppI18n(REGISTRATION_NAMESPACE);
         initFontAwesome();
-        initializeAuditListener();
         setIsInitialized(true);
       } catch (error) {
         // eslint-disable-next-line no-console
