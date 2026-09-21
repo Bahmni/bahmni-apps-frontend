@@ -8,19 +8,17 @@ import {
 import { useEncounterDetailsStore } from '../../stores/encounterDetailsStore';
 import { extractConceptsFromResponseBundle } from '../../utils/fhir/conceptExtractor';
 import { createEncounterResource } from '../../utils/fhir/encounterResourceCreator';
-import type { EncounterContext, InputControl } from '../forms';
+import type {
+  EncounterContext,
+  InputControl,
+  SubmissionResult,
+} from '../forms';
 
 interface SubmissionRequest {
   activeEncounter: Encounter | null;
   episodeOfCareUuids: string[];
   statDurationInMilliseconds?: number;
   activeEntries: InputControl[];
-}
-
-interface SubmissionResult {
-  updatedConcepts: Map<string, string>;
-  patientUUID: string;
-  encounterTypeName: string;
 }
 
 export async function submitConsultation(

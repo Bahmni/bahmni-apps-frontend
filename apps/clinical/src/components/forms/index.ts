@@ -7,7 +7,11 @@ import './immunization';
 import './observations';
 import './stopMedications';
 
-export type { InputControl, EncounterContext } from './models';
+export type {
+  InputControl,
+  EncounterContext,
+  SubmissionResult,
+} from './models';
 export { default as InputControlRenderer } from './renderer';
 
 export { getRegisteredInputControls } from './registry';

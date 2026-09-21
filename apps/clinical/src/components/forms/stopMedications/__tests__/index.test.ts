@@ -1,12 +1,22 @@
+import { dispatchAuditEvent } from '@bahmni/services';
 import { createStopMedicationEntry } from '../../../../services/stopMedicationService';
 import { useStopMedicationStore } from '../../../../stores/stopMedicationsStore';
 import { getRegisteredInputControls } from '../../registry';
+
+jest.mock('@bahmni/services', () => ({
+  ...jest.requireActual('@bahmni/services'),
+  dispatchAuditEvent: jest.fn(),
+}));
 
 jest.mock('../../../../services/stopMedicationService', () => ({
   createStopMedicationEntry: jest.fn(),
 }));
 
 jest.mock('../StopMedicationForm', () => () => null);
+
+const mockDispatchAuditEvent = dispatchAuditEvent as jest.MockedFunction<
+  typeof dispatchAuditEvent
+>;
 
 describe('stopMedications input control', () => {
   beforeEach(() => {
@@ -89,6 +99,21 @@ describe('stopMedications input control', () => {
     expect(getStopMedicationsControl()!.createBundleEntries).toBe(
       createStopMedicationEntry,
     );
+  });
+
+  it('onSubmitSuccess dispatches a STOP_MEDICATION audit event for the submitted patient', () => {
+    getStopMedicationsControl()!.onSubmitSuccess!({
+      patientUUID: 'patient-1',
+      encounterTypeName: 'Consultation',
+      updatedConcepts: new Map(),
+    });
+
+    expect(mockDispatchAuditEvent).toHaveBeenCalledTimes(1);
+    expect(mockDispatchAuditEvent).toHaveBeenCalledWith({
+      eventType: 'STOP_MEDICATION',
+      patientUuid: 'patient-1',
+      messageParams: {},
+    });
   });
 });
 
@@ -203,5 +228,20 @@ describe('cancelVaccination input control', () => {
     // Both entries read/write the same Zustand store, so hasData() agrees.
     expect(cancelVaccinationControl!.hasData()).toBe(true);
     expect(stopMedicationsControl!.hasData()).toBe(true);
+  });
+
+  it('onSubmitSuccess dispatches a STOP_MEDICATION audit event for the submitted patient', () => {
+    getCancelVaccinationControl()!.onSubmitSuccess!({
+      patientUUID: 'patient-2',
+      encounterTypeName: 'Consultation',
+      updatedConcepts: new Map(),
+    });
+
+    expect(mockDispatchAuditEvent).toHaveBeenCalledTimes(1);
+    expect(mockDispatchAuditEvent).toHaveBeenCalledWith({
+      eventType: 'STOP_MEDICATION',
+      patientUuid: 'patient-2',
+      messageParams: {},
+    });
   });
 });
