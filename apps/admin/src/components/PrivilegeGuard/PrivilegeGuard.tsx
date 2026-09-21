@@ -52,7 +52,7 @@ export const PrivilegeGuard: React.FC<PrivilegeGuardProps> = ({ children }) => {
         <div
           id="admin-privilege-check-failed"
           data-testid="admin-privilege-check-failed-test-id"
-          aria-label="admin-privilege-check-failed-aria-label"
+          aria-label="admin privilege check failed info"
           className={styles.accessDenied}
           role="alert"
         >
@@ -73,7 +73,7 @@ export const PrivilegeGuard: React.FC<PrivilegeGuardProps> = ({ children }) => {
         <div
           id="admin-access-denied"
           data-testid="admin-access-denied-test-id"
-          aria-label="admin-access-denied-aria-label"
+          aria-label="Admin access denied info"
           className={styles.accessDenied}
           role="alert"
         >

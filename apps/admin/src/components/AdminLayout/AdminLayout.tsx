@@ -25,7 +25,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
         <div
           id="admin-layout-main"
           data-testid="admin-layout-main-test-id"
-          aria-label="admin-layout-main-aria-label"
+          aria-label="Admin Main Area"
           className={styles.main}
         >
           {children}

@@ -11,7 +11,7 @@ export const CsvUpload: React.FC = () => {
       <div
         id="admin-csv-upload-page"
         data-testid="admin-csv-upload-page-test-id"
-        aria-label="admin-csv-upload-page-aria-label"
+        aria-label="CSV Upload Page"
         className={styles.page}
       >
         <h1>{t('ADMIN_CSV_UPLOAD_TITLE')}</h1>
