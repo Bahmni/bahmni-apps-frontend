@@ -27,6 +27,7 @@ export {
   fetchPatientPhotoFromUrl,
   getPatientProfile,
   getPersonAttributeTypes,
+  getTelecomAttributeTypeMap,
   getRelationshipTypes,
   type FormattedPatientData,
   type PatientSearchResult,
@@ -46,6 +47,7 @@ export {
   type PatientProfileResponse,
   type PersonAttributeType,
   type PersonAttributeTypesResponse,
+  type TelecomAttributeTypeMapping,
   type ConceptAnswer,
   type PersonAttributeConcept,
   type PatientSearchField,
@@ -99,8 +101,10 @@ export {
 } from './appointmentService';
 export {
   getFormattedError,
+  getErrorKind,
   PATIENT_NOT_FOUND_ERROR_KEY,
 } from './errorHandling';
+export type { ErrorKind } from './errorHandling';
 export {
   capitalize,
   generateId,
@@ -236,11 +240,12 @@ export {
   type UserLocation,
   BAHMNI_USER_LOCATION_COOKIE,
 } from './userService';
-export { logout } from './authService';
+export { logout, validateSessionUser } from './authService';
 export { USER_PINNED_PREFERENCE_URL } from './observationFormsService/constants';
 export {
   getPatientObservationsBundle,
   getPatientObservationsWithEncounterBundle,
+  getPatientLatestObservations,
   getPatientObservations,
   getObservationsBundleByEncounterUuid,
   groupObservationsByEncounter,

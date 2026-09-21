@@ -17,7 +17,7 @@ exports[`UserGlobalAction Snapshot matches snapshot in the avatar-only state (no
         aria-expanded="false"
         aria-haspopup="menu"
         aria-label="USER_GLOBAL_ACTION_BUTTON"
-        aria-labelledby="tooltip-_r_2h_"
+        aria-labelledby="tooltip-_r_2s_"
         class="userAction cds--header__action cds--btn cds--btn--lg cds--layout--size-lg cds--btn--ghost cds--btn--icon-only"
         data-testid="user-global-action-button-test-id"
         id="user-global-action-button"
@@ -47,7 +47,7 @@ exports[`UserGlobalAction Snapshot matches snapshot in the avatar-only state (no
     <span
       aria-hidden="true"
       class="cds--popover"
-      id="tooltip-_r_2h_"
+      id="tooltip-_r_2s_"
       role="tooltip"
     >
       <span
@@ -94,7 +94,7 @@ exports[`UserGlobalAction Snapshot matches snapshot with avatar and greeting 1`]
         aria-expanded="false"
         aria-haspopup="menu"
         aria-label="USER_GLOBAL_ACTION_BUTTON"
-        aria-labelledby="tooltip-_r_2d_"
+        aria-labelledby="tooltip-_r_2o_"
         class="userAction cds--header__action cds--btn cds--btn--lg cds--layout--size-lg cds--btn--ghost cds--btn--icon-only"
         data-testid="user-global-action-button-test-id"
         id="user-global-action-button"
@@ -130,7 +130,7 @@ exports[`UserGlobalAction Snapshot matches snapshot with avatar and greeting 1`]
     <span
       aria-hidden="true"
       class="cds--popover"
-      id="tooltip-_r_2d_"
+      id="tooltip-_r_2o_"
       role="tooltip"
     >
       <span

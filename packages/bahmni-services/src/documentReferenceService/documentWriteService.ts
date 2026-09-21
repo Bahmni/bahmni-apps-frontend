@@ -1,3 +1,4 @@
+import { isValid, isWithinInterval, parseISO } from 'date-fns';
 import {
   BundleEntry,
   DocumentReference,
@@ -70,8 +71,8 @@ const parseDate = (value?: string): Date | undefined => {
   if (!value) {
     return undefined;
   }
-  const date = new Date(value);
-  return Number.isNaN(date.getTime()) ? undefined : date;
+  const date = parseISO(value);
+  return isValid(date) ? date : undefined;
 };
 
 function encounterStartWithinVisit(visitPeriod?: Period): string {
@@ -82,7 +83,9 @@ function encounterStartWithinVisit(visitPeriod?: Period): string {
   }
   const visitEnd = parseDate(visitPeriod?.end);
   // Inclusive on both bounds, and open-ended for a visit still in progress, as OpenMRS is.
-  const withinVisit = now >= visitStart && (!visitEnd || now <= visitEnd);
+  const withinVisit = visitEnd
+    ? isWithinInterval(now, { start: visitStart, end: visitEnd })
+    : now >= visitStart;
   return (withinVisit ? now : visitStart).toISOString();
 }
 
