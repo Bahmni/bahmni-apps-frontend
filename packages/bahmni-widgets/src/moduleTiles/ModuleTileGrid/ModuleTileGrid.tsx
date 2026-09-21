@@ -113,7 +113,7 @@ export const ModuleTileGrid: React.FC<ModuleTileGridProps> = ({
   if (modules.length === 0) {
     return (
       <div
-        className={styles.emptyState}
+        className={[styles.emptyState, className].filter(Boolean).join(' ')}
         data-testid={`${testId}-empty-test-id`}
         role="status"
       >
