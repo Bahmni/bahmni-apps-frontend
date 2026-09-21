@@ -13,15 +13,19 @@ interface PrivilegeGuardProps {
 /**
  * Guards admin routes behind the `app:admin` privilege.
  *
- * `useUserPrivilege()` starts with `userPrivileges === null` while the
- * session is being fetched, and `hasPrivilege` treats `null` as "no
- * privileges". Gating on `isLoading` avoids denying every user access to
- * the admin app on first paint, before privileges have resolved.
+ * `useUserPrivilege()` starts with `isLoading === false` and
+ * `userPrivileges === null` on first render — `isLoading` only flips to
+ * `true` inside the provider's mount effect, which runs after the first
+ * paint. So on that first frame `isLoading` is false and `userPrivileges`
+ * is null; `hasPrivilege` treats `null` as "no privileges", so gating on
+ * `isLoading` alone would let every authorized admin hit the denial
+ * screen for that frame. The loading branch therefore also checks
+ * `userPrivileges === null` directly, independent of `isLoading`.
  *
  * A failed privilege fetch (network error, 500) also leaves
- * `userPrivileges` `null` with `isLoading` false, which `hasPrivilege`
- * would otherwise read as "no access". The `error` check is ordered before
- * the authorization check so that case renders a distinct "couldn't verify
+ * `userPrivileges` `null`, but with `error` set — the `!error` clause
+ * excludes that case from the loading branch so it falls through to the
+ * authorization check below, which renders a distinct "couldn't verify
  * access" message instead of the misleading access-denied copy.
  *
  * Denial renders in place rather than redirecting to home. Notification
@@ -38,7 +42,7 @@ export const PrivilegeGuard: React.FC<PrivilegeGuardProps> = ({ children }) => {
   const { userPrivileges, isLoading, error } = useUserPrivilege();
   const isAuthorized = hasPrivilege(userPrivileges, ADMIN_PRIVILEGE);
 
-  if (isLoading) {
+  if (isLoading || (userPrivileges === null && !error)) {
     return <Loading testId="admin-privilege-guard-loading-test-id" />;
   }
 

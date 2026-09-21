@@ -6,6 +6,8 @@
   "ADMIN_ERROR_FETCH_CONFIG": "Failed to load admin page configuration",
   "ADMIN_LOADING_MODULES": "Loading modules",
   "ADMIN_NO_MODULES": "No modules available",
+  "ADMIN_PRIVILEGE_CHECK_FAILED_MESSAGE": "Failed to verify your access, please retry.",
+  "ADMIN_PRIVILEGE_CHECK_FAILED_TITLE": "Unable to verify access",
   "BREADCRUMB_ADMIN": "Admin",
   "BREADCRUMB_HOME": "Home",
   "MODULE_LABEL_AUDIT_LOG_KEY": "Audit Log",

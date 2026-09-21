@@ -6,6 +6,8 @@
   "ADMIN_ERROR_FETCH_CONFIG": "No se pudo cargar la configuración de la página de Administración",
   "ADMIN_LOADING_MODULES": "Cargando módulos",
   "ADMIN_NO_MODULES": "No hay módulos disponibles",
+  "ADMIN_PRIVILEGE_CHECK_FAILED_MESSAGE": "No se pudo verificar su acceso, inténtelo de nuevo.",
+  "ADMIN_PRIVILEGE_CHECK_FAILED_TITLE": "No se pudo verificar el acceso",
   "BREADCRUMB_ADMIN": "Administración",
   "BREADCRUMB_HOME": "Inicio",
   "MODULE_LABEL_AUDIT_LOG_KEY": "Registro de auditoría",
