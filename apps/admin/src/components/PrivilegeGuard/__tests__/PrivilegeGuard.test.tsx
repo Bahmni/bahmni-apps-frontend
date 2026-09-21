@@ -81,6 +81,29 @@ describe('PrivilegeGuard', () => {
     ).not.toBeInTheDocument();
   });
 
+  it('shows a distinct error state instead of access denied when the privilege fetch fails', () => {
+    mockUseUserPrivilege.mockReturnValue(
+      privilegeState({ error: new Error('Network error') }),
+    );
+    mockHasPrivilege.mockReturnValue(false);
+
+    renderGuard();
+
+    expect(
+      screen.getByTestId('admin-privilege-check-failed-test-id'),
+    ).toBeInTheDocument();
+    expect(screen.getByText('Unable to verify access')).toBeInTheDocument();
+    expect(
+      screen.getByText('Failed to verify your access, please retry.'),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByTestId('admin-access-denied-test-id'),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByTestId('protected-content-test-id'),
+    ).not.toBeInTheDocument();
+  });
+
   describe('when the user lacks the app:admin privilege', () => {
     beforeEach(() => {
       mockUseUserPrivilege.mockReturnValue(
