@@ -1,0 +1,30 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`SaveAndCancelButtons Happy Paths should match snapshot 1`] = `
+<div>
+  <div
+    class="footer-class"
+  >
+    <button
+      class="cancelButton-class cds--btn cds--btn--lg cds--layout--size-lg cds--btn--secondary"
+      data-testid="cancel"
+      type="button"
+    >
+      <span>
+        <span>
+          Cancel
+        </span>
+      </span>
+    </button>
+    <button
+      class="saveButton-class cds--btn cds--btn--lg cds--layout--size-lg cds--btn--primary"
+      data-testid="save"
+      type="button"
+    >
+      <span>
+        Save
+      </span>
+    </button>
+  </div>
+</div>
+`;

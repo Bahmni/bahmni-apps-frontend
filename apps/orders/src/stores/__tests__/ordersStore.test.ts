@@ -1,0 +1,664 @@
+import { getCookieByName, getCurrentUser, User } from '@bahmni/services';
+import { renderHook, act } from '@testing-library/react';
+import { ORDERS_SELECTED_TAB_STORAGE_KEY } from '../../constants/app';
+import { PatientOrderRow } from '../../models/orderFulfillment';
+import { OrderTab } from '../../models/ordersConfig';
+import { fetchOrdersViaFhir } from '../../services/fhirOrdersService';
+import useOrdersStore from '../ordersStore';
+
+jest.mock('@bahmni/services', () => ({
+  getCookieByName: jest.fn(),
+  getCurrentUser: jest.fn(),
+  fetchProvidersByTab: jest.fn(),
+}));
+
+jest.mock('../../services/fhirOrdersService', () => ({
+  fetchOrdersViaFhir: jest.fn(),
+}));
+
+describe('ordersStore', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    localStorage.clear();
+    const { result } = renderHook(() => useOrdersStore());
+    act(() => {
+      result.current.setSelectedIndex(0);
+      result.current.setIsLoading(false);
+    });
+  });
+
+  describe('Initial State', () => {
+    it('should have correct initial values', () => {
+      const { result } = renderHook(() => useOrdersStore());
+
+      expect(result.current.selectedIndex).toBe(0);
+      expect(result.current.tabs).toEqual([]);
+      expect(result.current.tabCounts).toEqual({});
+      expect(result.current.isLoading).toBe(false);
+      expect(result.current.currentUser).toEqual({});
+      expect(result.current.currentLocation).toEqual({ name: '', uuid: '' });
+      expect(result.current.ordersData).toEqual([]);
+    });
+  });
+
+  describe('setSelectedIndex', () => {
+    it('should update selectedIndex', () => {
+      const { result } = renderHook(() => useOrdersStore());
+
+      act(() => {
+        result.current.setSelectedIndex(2);
+      });
+
+      expect(result.current.selectedIndex).toBe(2);
+    });
+  });
+
+  describe('setIsLoading', () => {
+    it('should update isLoading state', () => {
+      const { result } = renderHook(() => useOrdersStore());
+
+      act(() => {
+        result.current.setIsLoading(true);
+      });
+
+      expect(result.current.isLoading).toBe(true);
+
+      act(() => {
+        result.current.setIsLoading(false);
+      });
+
+      expect(result.current.isLoading).toBe(false);
+    });
+  });
+
+  describe('fetchCurrentUser', () => {
+    it('should fetch and set current user', async () => {
+      const mockUser: User = {
+        uuid: 'user-123',
+        username: 'johndoe',
+      };
+
+      (getCurrentUser as jest.Mock).mockResolvedValue(mockUser);
+
+      const { result } = renderHook(() => useOrdersStore());
+
+      await act(async () => {
+        await result.current.fetchCurrentUser();
+      });
+
+      expect(getCurrentUser).toHaveBeenCalledTimes(1);
+      expect(result.current.currentUser).toEqual(mockUser);
+    });
+
+    it('should not update state if getCurrentUser returns null', async () => {
+      (getCurrentUser as jest.Mock).mockResolvedValue(null);
+
+      act(() => {
+        useOrdersStore.setState({
+          currentUser: {} as User,
+        });
+      });
+
+      const { result } = renderHook(() => useOrdersStore());
+      const initialUser = result.current.currentUser;
+
+      await act(async () => {
+        await result.current.fetchCurrentUser();
+      });
+
+      expect(result.current.currentUser).toEqual(initialUser);
+    });
+  });
+
+  describe('setCurrentLocation', () => {
+    it('should decode cookie and set current location', () => {
+      const mockLocation = { name: 'Ward A', uuid: 'location-123' };
+      const encodedLocation = encodeURIComponent(JSON.stringify(mockLocation));
+
+      (getCookieByName as jest.Mock).mockReturnValue(encodedLocation);
+
+      const { result } = renderHook(() => useOrdersStore());
+
+      act(() => {
+        result.current.setCurrentLocation();
+      });
+
+      expect(getCookieByName).toHaveBeenCalledWith('bahmni.user.location');
+      expect(result.current.currentLocation).toEqual(mockLocation);
+    });
+  });
+
+  describe('fetchOrdersForTab', () => {
+    const mockTabs: OrderTab[] = [
+      {
+        id: 'tab1',
+        label: 'Pending',
+        display: 'Pending Orders',
+        searchHandler: 'pending',
+        translationKey: 'PENDING',
+        order: 1,
+        forwardUrl: '/url2',
+      },
+      {
+        id: 'tab2',
+        label: 'InProgress',
+        display: 'In Progress Orders',
+        searchHandler: 'inprogress',
+        translationKey: 'IN_PROGRESS',
+        order: 2,
+        forwardUrl: '/url2',
+      },
+    ];
+
+    const mockOrdersData: PatientOrderRow[] = [
+      {
+        id: 'patient-123',
+        patientName: 'John Doe',
+        identifier: 'PAT001',
+        recentOrdersCount: 1,
+        totalOrdersCount: 1,
+        urgentCount: 0,
+        isExpandable: true,
+        hasBeenAdmitted: false,
+        orders: [],
+      },
+    ];
+
+    beforeEach(() => {
+      (fetchOrdersViaFhir as jest.Mock).mockResolvedValue(mockOrdersData);
+    });
+
+    it('should fetch orders for a specific tab', async () => {
+      const { result } = renderHook(() => useOrdersStore());
+
+      act(() => {
+        useOrdersStore.setState({
+          tabs: mockTabs,
+          currentUser: { uuid: 'user-123' } as User,
+          currentLocation: { name: 'Ward A', uuid: 'location-123' },
+        });
+      });
+
+      await act(async () => {
+        await result.current.fetchOrdersForTab(0);
+      });
+
+      expect(fetchOrdersViaFhir).toHaveBeenCalledWith(
+        'pending',
+        'location-123',
+      );
+
+      expect(result.current.ordersData).toHaveLength(1);
+      expect(result.current.ordersData[0].patientName).toBe('John Doe');
+      expect(result.current.isLoading).toBe(false);
+    });
+
+    it('should not fetch if currentUser is not set', async () => {
+      const { result } = renderHook(() => useOrdersStore());
+
+      act(() => {
+        useOrdersStore.setState({
+          tabs: mockTabs,
+          currentUser: {} as User,
+          currentLocation: { name: 'Ward A', uuid: 'location-123' },
+        });
+      });
+
+      await act(async () => {
+        await result.current.fetchOrdersForTab(0);
+      });
+
+      expect(fetchOrdersViaFhir).not.toHaveBeenCalled();
+    });
+
+    it('should not fetch if tab index is invalid', async () => {
+      const { result } = renderHook(() => useOrdersStore());
+
+      act(() => {
+        useOrdersStore.setState({
+          tabs: mockTabs,
+          currentUser: { uuid: 'user-123' } as User,
+          currentLocation: { name: 'Ward A', uuid: 'location-123' },
+        });
+      });
+
+      await act(async () => {
+        await result.current.fetchOrdersForTab(999);
+      });
+
+      expect(fetchOrdersViaFhir).not.toHaveBeenCalled();
+    });
+
+    it('should set loading state during fetch', async () => {
+      const { result } = renderHook(() => useOrdersStore());
+
+      act(() => {
+        useOrdersStore.setState({
+          tabs: mockTabs,
+          currentUser: { uuid: 'user-123' } as User,
+          currentLocation: { name: 'Ward A', uuid: 'location-123' },
+        });
+      });
+
+      const loadingStateCaptures: boolean[] = [];
+
+      (fetchOrdersViaFhir as jest.Mock).mockImplementation(async () => {
+        await new Promise((resolve) => setTimeout(resolve, 10));
+        loadingStateCaptures.push(useOrdersStore.getState().isLoading);
+        return mockOrdersData;
+      });
+
+      await act(async () => {
+        await result.current.fetchOrdersForTab(0);
+      });
+
+      expect(loadingStateCaptures).toContain(true);
+      expect(result.current.isLoading).toBe(false);
+    });
+  });
+
+  describe('fetchAllPendingOrders', () => {
+    const mockTabs: OrderTab[] = [
+      {
+        id: 'tab1',
+        label: 'Pending',
+        display: 'Pending Orders',
+        searchHandler: 'pending',
+        translationKey: 'PENDING',
+        order: 1,
+        forwardUrl: '/url1',
+      },
+      {
+        id: 'tab2',
+        label: 'InProgress',
+        display: 'In Progress Orders',
+        searchHandler: 'inprogress',
+        translationKey: 'IN_PROGRESS',
+        order: 2,
+        forwardUrl: '/url2',
+      },
+    ];
+
+    const mockOrdersData: PatientOrderRow[] = [
+      {
+        id: 'patient-123',
+        patientName: 'John Doe',
+        identifier: 'PAT001',
+        recentOrdersCount: 1,
+        totalOrdersCount: 1,
+        urgentCount: 0,
+        isExpandable: true,
+        hasBeenAdmitted: false,
+        orders: [],
+      },
+    ];
+
+    it('should fetch orders for all tabs and update tab counts', async () => {
+      (fetchOrdersViaFhir as jest.Mock)
+        .mockResolvedValueOnce(mockOrdersData)
+        .mockResolvedValueOnce([mockOrdersData[0], mockOrdersData[0]]);
+
+      const { result } = renderHook(() => useOrdersStore());
+
+      act(() => {
+        useOrdersStore.setState({
+          currentUser: { uuid: 'user-123' } as User,
+          currentLocation: { name: 'Ward A', uuid: 'location-123' },
+        });
+      });
+
+      await act(async () => {
+        await result.current.fetchAllPendingOrders(mockTabs);
+      });
+
+      expect(fetchOrdersViaFhir).toHaveBeenCalledTimes(2);
+      expect(result.current.tabCounts).toEqual({
+        Pending: 1,
+        InProgress: 2,
+      });
+      expect(result.current.tabs).toEqual(mockTabs);
+      expect(result.current.ordersData).toHaveLength(1);
+    });
+
+    it('should handle failed requests gracefully', async () => {
+      (fetchOrdersViaFhir as jest.Mock)
+        .mockResolvedValueOnce(mockOrdersData)
+        .mockRejectedValueOnce(new Error('Network error'));
+
+      const { result } = renderHook(() => useOrdersStore());
+
+      act(() => {
+        useOrdersStore.setState({
+          currentUser: { uuid: 'user-123' } as User,
+          currentLocation: { name: 'Ward A', uuid: 'location-123' },
+        });
+      });
+
+      await act(async () => {
+        await result.current.fetchAllPendingOrders(mockTabs);
+      });
+
+      expect(result.current.tabCounts).toEqual({
+        Pending: 1,
+        InProgress: 0,
+      });
+      expect(result.current.isLoading).toBe(false);
+    });
+
+    it('should not fetch if location is not set', async () => {
+      const { result } = renderHook(() => useOrdersStore());
+
+      act(() => {
+        useOrdersStore.setState({
+          currentUser: { uuid: 'user-123' } as User,
+          currentLocation: { name: '', uuid: '' },
+        });
+      });
+
+      await act(async () => {
+        await result.current.fetchAllPendingOrders(mockTabs);
+      });
+
+      expect(fetchOrdersViaFhir).not.toHaveBeenCalled();
+      expect(result.current.isLoading).toBe(false);
+    });
+
+    it('should not fetch if user is not set', async () => {
+      const { result } = renderHook(() => useOrdersStore());
+
+      act(() => {
+        useOrdersStore.setState({
+          currentUser: {} as User,
+          currentLocation: { name: 'Ward A', uuid: 'location-123' },
+        });
+      });
+
+      await act(async () => {
+        await result.current.fetchAllPendingOrders(mockTabs);
+      });
+
+      expect(fetchOrdersViaFhir).not.toHaveBeenCalled();
+    });
+
+    it('should not fetch if tabs array is empty', async () => {
+      const { result } = renderHook(() => useOrdersStore());
+
+      act(() => {
+        useOrdersStore.setState({
+          currentUser: { uuid: 'user-123' } as User,
+          currentLocation: { name: 'Ward A', uuid: 'location-123' },
+        });
+      });
+
+      await act(async () => {
+        await result.current.fetchAllPendingOrders([]);
+      });
+
+      expect(fetchOrdersViaFhir).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('setSelectedIndex – localStorage persistence', () => {
+    beforeEach(() => {
+      localStorage.clear();
+      useOrdersStore.setState({ tabs: [], currentUser: {} as User });
+    });
+
+    const persistenceTabs: OrderTab[] = [
+      {
+        id: 'tab1',
+        label: 'Radiology Order',
+        display: 'Radiology Orders',
+        searchHandler: 'radiology',
+        translationKey: 'MODULE_LABEL_RADIOLOGY_ORDERS_KEY',
+        order: 1,
+        forwardUrl: '/url1',
+      },
+      {
+        id: 'tab2',
+        label: 'Lab Order',
+        display: 'Lab Orders',
+        searchHandler: 'lab',
+        translationKey: 'MODULE_LABEL_LAB_ORDERS_KEY',
+        order: 2,
+        forwardUrl: '/url2',
+      },
+      {
+        id: 'tab3',
+        label: 'Rehab Order',
+        display: 'Rehab Orders',
+        searchHandler: 'rehab',
+        translationKey: 'MODULE_LABEL_REHAB_ORDERS_KEY',
+        order: 3,
+        forwardUrl: '/url3',
+      },
+    ];
+
+    it('writes the tab label keyed by provider UUID when a tab is selected', () => {
+      act(() => {
+        useOrdersStore.setState({
+          tabs: persistenceTabs,
+          currentUser: { uuid: 'provider-abc' } as User,
+        });
+      });
+
+      const { result } = renderHook(() => useOrdersStore());
+
+      act(() => {
+        result.current.setSelectedIndex(2);
+      });
+
+      const stored = JSON.parse(
+        localStorage.getItem(ORDERS_SELECTED_TAB_STORAGE_KEY) ?? '{}',
+      );
+      expect(stored['provider-abc']).toBe('Rehab Order');
+      expect(result.current.selectedIndex).toBe(2);
+    });
+
+    it('overwrites the stored label when the user changes tabs', () => {
+      act(() => {
+        useOrdersStore.setState({
+          tabs: persistenceTabs,
+          currentUser: { uuid: 'provider-abc' } as User,
+        });
+      });
+
+      const { result } = renderHook(() => useOrdersStore());
+
+      act(() => {
+        result.current.setSelectedIndex(2);
+      });
+      act(() => {
+        result.current.setSelectedIndex(1);
+      });
+
+      const stored = JSON.parse(
+        localStorage.getItem(ORDERS_SELECTED_TAB_STORAGE_KEY) ?? '{}',
+      );
+      expect(stored['provider-abc']).toBe('Lab Order');
+    });
+
+    it('does not write to localStorage when tabs array is empty', () => {
+      act(() => {
+        useOrdersStore.setState({
+          tabs: [],
+          currentUser: { uuid: 'provider-abc' } as User,
+        });
+      });
+
+      const { result } = renderHook(() => useOrdersStore());
+
+      act(() => {
+        result.current.setSelectedIndex(0);
+      });
+
+      expect(localStorage.getItem(ORDERS_SELECTED_TAB_STORAGE_KEY)).toBeNull();
+    });
+
+    it('does not write to localStorage when currentUser has no UUID', () => {
+      act(() => {
+        useOrdersStore.setState({
+          tabs: persistenceTabs,
+          currentUser: {} as User,
+        });
+      });
+
+      const { result } = renderHook(() => useOrdersStore());
+
+      act(() => {
+        result.current.setSelectedIndex(0);
+      });
+
+      expect(localStorage.getItem(ORDERS_SELECTED_TAB_STORAGE_KEY)).toBeNull();
+    });
+  });
+
+  describe('fetchAllPendingOrders – localStorage restore', () => {
+    const restoreTabs: OrderTab[] = [
+      {
+        id: 'tab1',
+        label: 'Radiology Order',
+        display: 'Radiology Orders',
+        searchHandler: 'radiology',
+        translationKey: 'MODULE_LABEL_RADIOLOGY_ORDERS_KEY',
+        order: 1,
+        forwardUrl: '/url1',
+      },
+      {
+        id: 'tab2',
+        label: 'Lab Order',
+        display: 'Lab Orders',
+        searchHandler: 'lab',
+        translationKey: 'MODULE_LABEL_LAB_ORDERS_KEY',
+        order: 2,
+        forwardUrl: '/url2',
+      },
+      {
+        id: 'tab3',
+        label: 'Rehab Order',
+        display: 'Rehab Orders',
+        searchHandler: 'rehab',
+        translationKey: 'MODULE_LABEL_REHAB_ORDERS_KEY',
+        order: 3,
+        forwardUrl: '/url3',
+      },
+    ];
+
+    beforeEach(() => {
+      (fetchOrdersViaFhir as jest.Mock).mockResolvedValue([]);
+    });
+
+    it('restores the saved tab index for the current provider', async () => {
+      localStorage.setItem(
+        ORDERS_SELECTED_TAB_STORAGE_KEY,
+        JSON.stringify({ 'provider-abc': 'Rehab Order' }),
+      );
+
+      act(() => {
+        useOrdersStore.setState({
+          currentUser: { uuid: 'provider-abc' } as User,
+          currentLocation: { name: 'Ward A', uuid: 'location-123' },
+          selectedIndex: 0,
+        });
+      });
+
+      const { result } = renderHook(() => useOrdersStore());
+
+      await act(async () => {
+        await result.current.fetchAllPendingOrders(restoreTabs);
+      });
+
+      expect(result.current.selectedIndex).toBe(2);
+    });
+
+    it('leaves selectedIndex unchanged when no entry exists for the provider', async () => {
+      act(() => {
+        useOrdersStore.setState({
+          currentUser: { uuid: 'provider-abc' } as User,
+          currentLocation: { name: 'Ward A', uuid: 'location-123' },
+          selectedIndex: 0,
+        });
+      });
+
+      const { result } = renderHook(() => useOrdersStore());
+
+      await act(async () => {
+        await result.current.fetchAllPendingOrders(restoreTabs);
+      });
+
+      expect(result.current.selectedIndex).toBe(0);
+    });
+
+    it('falls back to current selectedIndex when the saved label is no longer in the tabs config', async () => {
+      localStorage.setItem(
+        ORDERS_SELECTED_TAB_STORAGE_KEY,
+        JSON.stringify({ 'provider-abc': 'Stale Order' }),
+      );
+
+      act(() => {
+        useOrdersStore.setState({
+          currentUser: { uuid: 'provider-abc' } as User,
+          currentLocation: { name: 'Ward A', uuid: 'location-123' },
+          selectedIndex: 1,
+        });
+      });
+
+      const { result } = renderHook(() => useOrdersStore());
+
+      await act(async () => {
+        await result.current.fetchAllPendingOrders(restoreTabs);
+      });
+
+      expect(result.current.selectedIndex).toBe(1);
+    });
+
+    it('correctly restores index 0 (boundary case)', async () => {
+      localStorage.setItem(
+        ORDERS_SELECTED_TAB_STORAGE_KEY,
+        JSON.stringify({ 'provider-abc': 'Radiology Order' }),
+      );
+
+      act(() => {
+        useOrdersStore.setState({
+          currentUser: { uuid: 'provider-abc' } as User,
+          currentLocation: { name: 'Ward A', uuid: 'location-123' },
+          selectedIndex: 2,
+        });
+      });
+
+      const { result } = renderHook(() => useOrdersStore());
+
+      await act(async () => {
+        await result.current.fetchAllPendingOrders(restoreTabs);
+      });
+
+      expect(result.current.selectedIndex).toBe(0);
+    });
+
+    it('uses only the current provider entry, not another provider entry', async () => {
+      localStorage.setItem(
+        ORDERS_SELECTED_TAB_STORAGE_KEY,
+        JSON.stringify({
+          'other-provider': 'Rehab Order',
+          'provider-abc': 'Lab Order',
+        }),
+      );
+
+      act(() => {
+        useOrdersStore.setState({
+          currentUser: { uuid: 'provider-abc' } as User,
+          currentLocation: { name: 'Ward A', uuid: 'location-123' },
+          selectedIndex: 0,
+        });
+      });
+
+      const { result } = renderHook(() => useOrdersStore());
+
+      await act(async () => {
+        await result.current.fetchAllPendingOrders(restoreTabs);
+      });
+
+      expect(result.current.selectedIndex).toBe(1);
+    });
+  });
+});
