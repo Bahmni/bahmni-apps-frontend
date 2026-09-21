@@ -34,6 +34,9 @@
       "path": "../apps/admin/tsconfig.lib.json"
     },
     {
+      "path": "../apps/reports/tsconfig.lib.json"
+    },
+    {
       "path": "../apps/patient-documents/tsconfig.lib.json"
     },
     {

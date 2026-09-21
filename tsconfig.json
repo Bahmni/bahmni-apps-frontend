@@ -38,6 +38,9 @@
     },
     {
       "path": "./apps/admin"
+    },
+    {
+      "path": "./apps/reports"
     }
   ]
 }
