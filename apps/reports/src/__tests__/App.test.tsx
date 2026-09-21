@@ -3,20 +3,6 @@ import { render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import App from '../App';
 
-// Regression guard for a bug found in browser testing: ReportsPage renders
-// `UserGlobalAction`, which calls `useUserActionRegistry()` and
-// `useActivePractitioner()`. Both throw outside their providers, so App must
-// supply `UserActionProvider` and `ActivePractitionerProvider` — it originally
-// did not, and the app crashed with
-// "useUserActionRegistry must be used within UserActionProvider".
-//
-// This asserts the provider composition rather than mounting the real
-// UserGlobalAction. `@bahmni/widgets` does not externalize `@bahmni/services`
-// (see packages/bahmni-widgets/vite.config.ts), so its prebuilt dist calls its
-// own inlined copy of the service layer; `jest.mock('@bahmni/services')` cannot
-// intercept that, and the real providers issue live XHRs under jsdom. Each
-// provider is therefore stubbed as a marker element, which still fails loudly
-// if one is removed from the tree or nested in the wrong order.
 jest.mock('@bahmni/services', () => ({
   ...jest.requireActual('@bahmni/services'),
   initAppI18n: jest.fn().mockResolvedValue(undefined),
