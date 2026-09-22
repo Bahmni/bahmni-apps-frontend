@@ -1,0 +1,17 @@
+{
+  "REPORTS_HOME_LABEL": "Inicio",
+  "REPORTS_LABEL": "Informes",
+  "REPORTS_MY_REPORTS_TAB_LABEL": "Mis Informes",
+  "REPORTS_MY_REPORTS_TAB_PLACEHOLDER": "El contenido de Mis Informes aparecerá aquí.",
+  "REPORTS_TAB_LABEL": "Informes",
+  "REPORTS_TAB_LIST_ARIA_LABEL": "Pestañas de Informes",
+  "REPORTS_TAB_PLACEHOLDER": "El contenido de Informes aparecerá aquí.",
+  "USER_CHANGE_PASSWORD_GLOBAL_ACTION": "Cambiar contraseña",
+  "USER_GLOBAL_ACTION_BUTTON": "Menú de usuario",
+  "USER_GLOBAL_ACTION_ERROR": "Algo salió mal. Por favor, inténtelo de nuevo.",
+  "USER_GLOBAL_ACTION_ERROR_TITLE": "Acción fallida",
+  "USER_GLOBAL_ACTION_GREETING": "Hola, {{name}}",
+  "USER_GLOBAL_ACTION_LOADING": "Cargando menú de usuario",
+  "USER_GLOBAL_ACTION_MENU": "Acciones de usuario",
+  "USER_LOGOUT_GLOBAL_ACTION": "Cerrar sesión"
+}

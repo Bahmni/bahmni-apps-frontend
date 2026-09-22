@@ -131,6 +131,7 @@
   "ERROR_LOADING_PATIENT_DETAILS": "Error al cargar los detalles del paciente",
   "ERROR_LOADING_PATIENT_PHOTO": "Error al cargar la foto del paciente",
   "ERROR_SAVING_PATIENT": "Error al guardar el paciente",
+  "ERROR_SAVING_RELATIONSHIPS": "Error al guardar las relaciones",
   "ERROR_UPDATING_PATIENT": "Error al actualizar el paciente",
   "EXTENSION_WIDGET_NOT_REGISTERED": "Widget de extensión no registrado",
   "GENDER_M": "Masculino",
