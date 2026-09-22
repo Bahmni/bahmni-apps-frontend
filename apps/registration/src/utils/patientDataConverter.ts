@@ -1,7 +1,14 @@
-import type { PatientProfileResponse } from '@bahmni/services';
+import type {
+  FhirRelatedPerson,
+  PatientProfileResponse,
+} from '@bahmni/services';
 import { calculateAge } from '@bahmni/services';
 import { format, isValid, parseISO } from 'date-fns';
 import type { RelationshipData } from '../components/forms/patientRelationships/PatientRelationships';
+import {
+  RELATED_PATIENT_EXT_URL,
+  RELATIONSHIP_TYPE_SYSTEM,
+} from '../constants/relatedPerson';
 import { AddressData } from '../hooks/useAddressFields';
 import type { BasicInfoData, PersonAttributesData } from '../models/patient';
 
@@ -118,6 +125,71 @@ export const convertToAdditionalIdentifiersData = (
 
   return Object.keys(identifiersData).length > 0 ? identifiersData : undefined;
 };
+
+export const convertFhirRelatedPersonsToRelationshipData = (
+  fhirRelatedPersons: FhirRelatedPerson[],
+): RelationshipData[] => {
+  return fhirRelatedPersons
+    .filter((rp) => rp.id)
+    .map((rp) => {
+      const relatedPatientExt = rp.extension?.find(
+        (ext) => ext.url === RELATED_PATIENT_EXT_URL,
+      );
+      const relatedPatientUuid = relatedPatientExt?.valueReference?.reference
+        ?.split('/')
+        .at(-1);
+
+      const nameObj = rp.name?.[0];
+      const givenNames = nameObj?.given?.join(' ') ?? '';
+      const patientName = [givenNames, nameObj?.family]
+        .filter(Boolean)
+        .join(' ')
+        .trim();
+
+      const coding = rp.relationship?.[0]?.coding?.[0];
+
+      let tillDate = '';
+      if (rp.period?.end) {
+        const date = parseISO(rp.period.end);
+        if (isValid(date)) {
+          tillDate = format(date, 'yyyy-MM-dd');
+        }
+      }
+
+      return {
+        id: rp.id!,
+        relationshipType: coding?.code ?? '',
+        relationshipTypeLabel: coding?.display,
+        patientId: '',
+        patientUuid: relatedPatientUuid,
+        patientName,
+        tillDate,
+        isExisting: true,
+      };
+    });
+};
+
+export const buildRelatedPersonPayload = (
+  patientUuid: string,
+  rel: RelationshipData,
+): FhirRelatedPerson => ({
+  resourceType: 'RelatedPerson',
+  patient: { reference: `Patient/${patientUuid}` },
+  relationship: [
+    {
+      coding: [
+        { system: RELATIONSHIP_TYPE_SYSTEM, code: rel.relationshipType },
+      ],
+    },
+  ],
+  extension: [
+    {
+      url: RELATED_PATIENT_EXT_URL,
+      valueReference: { reference: `Patient/${rel.patientUuid}` },
+    },
+  ],
+  ...(rel.tillDate && { period: { end: rel.tillDate } }),
+});
 
 export const convertToRelationshipsData = (
   patientData: PatientProfileResponse | undefined,

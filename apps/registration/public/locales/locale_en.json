@@ -131,6 +131,7 @@
   "ERROR_LOADING_PATIENT_DETAILS": "Error loading patient details",
   "ERROR_LOADING_PATIENT_PHOTO": "Error Loading Patient Photo",
   "ERROR_SAVING_PATIENT": "Error saving patient",
+  "ERROR_SAVING_RELATIONSHIPS": "Error saving relationships",
   "ERROR_UPDATING_PATIENT": "Error updating patient",
   "EXTENSION_WIDGET_NOT_REGISTERED": "Extension widget not registered",
   "GENDER_M": "Male",
