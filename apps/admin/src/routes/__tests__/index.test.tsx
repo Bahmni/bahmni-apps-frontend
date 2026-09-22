@@ -13,10 +13,16 @@ jest.mock('../../components/AdminLayout', () => ({
   ),
 }));
 
-// The dashboard renders the shared tile grid, which fetches config. Routing
-// only needs to know the right page resolved, so stub the grid out.
-jest.mock('@bahmni/widgets', () => ({
-  ModuleTileGrid: () => <div data-testid="admin-dashboard-grid-test-id" />,
+// Routing only needs to know the right page resolved, not how each page
+// renders internally, so stub the pages out. This also keeps the assertions
+// from racing the lazy-loaded pages' real dynamic import against
+// findByTestId's timeout under load.
+jest.mock('../../pages/AdminDashboard', () => ({
+  AdminDashboard: () => <div data-testid="admin-dashboard-page-test-id" />,
+}));
+
+jest.mock('../../pages/CsvUpload', () => ({
+  CsvUpload: () => <div data-testid="admin-csv-upload-page-test-id" />,
 }));
 
 const renderAt = (path: string) =>
@@ -33,7 +39,7 @@ describe('routes', () => {
     renderAt('/');
 
     expect(
-      await screen.findByTestId('admin-dashboard-grid-test-id'),
+      await screen.findByTestId('admin-dashboard-page-test-id'),
     ).toBeInTheDocument();
   });
 
@@ -56,7 +62,7 @@ describe('routes', () => {
     renderAt('/unknown-path');
 
     expect(
-      await screen.findByTestId('admin-dashboard-grid-test-id'),
+      await screen.findByTestId('admin-dashboard-page-test-id'),
     ).toBeInTheDocument();
   });
 });
