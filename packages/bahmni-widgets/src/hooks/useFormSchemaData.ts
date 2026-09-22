@@ -9,14 +9,6 @@ import { useQuery } from '@tanstack/react-query';
 import { useMemo } from 'react';
 import { deriveFormSchemaData } from '../utils/Observations';
 
-/**
- * Resolves a form name to its published schema and derives the data needed to
- * render its observations in form-builder order: control order, section
- * grouping and concept datatypes.
- *
- * Query keys mirror the ones used elsewhere for these endpoints so the cache is
- * shared rather than forked.
- */
 export const useFormSchemaData = (formName?: string) => {
   const { data: publishedForms = [], isLoading: isLoadingForms } = useQuery<
     ObservationForm[]
@@ -54,8 +46,6 @@ export const useFormSchemaData = (formName?: string) => {
     sectionMap,
     conceptDatatypeMap,
     isLoading: isLoadingForms || isLoadingMetadata,
-    // Only metadata failures surface as errors — a failing forms list leaves the
-    // maps undefined, which degrades to sortId ordering rather than an error.
     isError,
     errorMessage: error ? getFormattedError(error).message : undefined,
   };
