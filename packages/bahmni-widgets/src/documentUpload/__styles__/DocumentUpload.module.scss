@@ -12,6 +12,11 @@
   flex-direction: column;
 }
 
+.pendingDocument {
+  display: flex;
+  flex-direction: column;
+}
+
 // Grid matches the saved-docs table so tile, dropdown and actions line up under the headers.
 .pendingRow {
   display: grid;

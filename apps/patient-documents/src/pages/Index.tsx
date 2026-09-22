@@ -93,6 +93,7 @@ export const IndexPage: React.FC = () => {
             documentEncounterType={encounter.data}
             topLevelConcept={topLevelConcept}
             defaultOption={defaultOption}
+            searchHref={searchHref}
           />
         )}
       </main>
