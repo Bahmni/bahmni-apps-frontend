@@ -19,7 +19,7 @@ jest.mock('@bahmni/admin-app', () => ({
 
 jest.mock('@bahmni/reports-app', () => ({
   ReportsApp: () => <div data-testid="reports-page" />,
-  }));
+}));
 
 jest.mock('@bahmni/widgets', () => ({
   AppContextProvider: ({ children }: { children: React.ReactNode }) => children,
@@ -68,12 +68,12 @@ describe('App', () => {
     render(
       <MemoryRouter initialEntries={['/admin/']}>
         <App />
-         </MemoryRouter>,
+      </MemoryRouter>,
     );
     await act(async () => {});
     expect(screen.getByTestId('admin-page')).toBeInTheDocument();
-    });
-    
+  });
+
   it('renders the reports route', async () => {
     render(
       <MemoryRouter initialEntries={['/reports/']}>
