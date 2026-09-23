@@ -1,5 +1,5 @@
 import { hasPrivilege } from '@bahmni/services';
-import { useUserPrivilege } from '@bahmni/widgets';
+import { useNotification, useUserPrivilege } from '@bahmni/widgets';
 import { render, screen } from '@testing-library/react';
 import { axe, toHaveNoViolations } from 'jest-axe';
 import { PrivilegeGuard } from '../PrivilegeGuard';
@@ -14,6 +14,7 @@ jest.mock('@bahmni/services', () => ({
 jest.mock('@bahmni/widgets', () => ({
   ...jest.requireActual('@bahmni/widgets'),
   useUserPrivilege: jest.fn(),
+  useNotification: jest.fn(),
   UserGlobalAction: () => <div data-testid="user-global-action-test-id" />,
 }));
 
@@ -22,6 +23,9 @@ const mockUseUserPrivilege = useUserPrivilege as jest.MockedFunction<
 >;
 const mockHasPrivilege = hasPrivilege as jest.MockedFunction<
   typeof hasPrivilege
+>;
+const mockUseNotification = useNotification as jest.MockedFunction<
+  typeof useNotification
 >;
 
 const privilegeState = (
@@ -44,8 +48,16 @@ const renderGuard = () =>
   );
 
 describe('PrivilegeGuard', () => {
+  const addNotification = jest.fn();
+
   beforeEach(() => {
     jest.clearAllMocks();
+    mockUseNotification.mockReturnValue({
+      notifications: [],
+      addNotification,
+      removeNotification: jest.fn(),
+      clearAllNotifications: jest.fn(),
+    });
   });
 
   it('renders the children when the user has the app:admin privilege', () => {
@@ -62,6 +74,7 @@ describe('PrivilegeGuard', () => {
     expect(
       screen.queryByTestId('admin-access-denied-test-id'),
     ).not.toBeInTheDocument();
+    expect(addNotification).not.toHaveBeenCalled();
   });
 
   it('shows the loading indicator while privileges are resolving, without denying access or rendering children', () => {
@@ -79,9 +92,10 @@ describe('PrivilegeGuard', () => {
     expect(
       screen.queryByTestId('admin-access-denied-test-id'),
     ).not.toBeInTheDocument();
+    expect(addNotification).not.toHaveBeenCalled();
   });
 
-  it('shows a distinct error state instead of access denied when the privilege fetch fails', () => {
+  it('raises a distinct error toast instead of access denied when the privilege fetch fails', () => {
     mockUseUserPrivilege.mockReturnValue(
       privilegeState({ error: new Error('Network error') }),
     );
@@ -92,10 +106,11 @@ describe('PrivilegeGuard', () => {
     expect(
       screen.getByTestId('admin-privilege-check-failed-test-id'),
     ).toBeInTheDocument();
-    expect(screen.getByText('Unable to verify access')).toBeInTheDocument();
-    expect(
-      screen.getByText('Failed to verify your access, please retry.'),
-    ).toBeInTheDocument();
+    expect(addNotification).toHaveBeenCalledWith({
+      title: 'Unable to verify access',
+      message: 'Failed to verify your access, please retry.',
+      type: 'error',
+    });
     expect(
       screen.queryByTestId('admin-access-denied-test-id'),
     ).not.toBeInTheDocument();
@@ -114,28 +129,21 @@ describe('PrivilegeGuard', () => {
       mockHasPrivilege.mockReturnValue(false);
     });
 
-    it('renders the access denied message instead of the children', () => {
+    it('raises an access denied toast instead of rendering the children', () => {
       renderGuard();
 
       expect(
         screen.getByTestId('admin-access-denied-test-id'),
       ).toBeInTheDocument();
-      expect(screen.getByText('Access denied')).toBeInTheDocument();
-      expect(
-        screen.getByText(/You do not have permission to access the Admin/),
-      ).toBeInTheDocument();
+      expect(addNotification).toHaveBeenCalledWith({
+        title: 'Access denied',
+        message:
+          'You do not have permission to access the Admin module. Please contact your administrator if you believe this is a mistake. [Privileges required: app:admin]',
+        type: 'error',
+      });
       expect(
         screen.queryByTestId('protected-content-test-id'),
       ).not.toBeInTheDocument();
-    });
-
-    it('announces the denial to assistive technology', () => {
-      renderGuard();
-
-      expect(screen.getByRole('alert')).toHaveAttribute(
-        'data-testid',
-        'admin-access-denied-test-id',
-      );
     });
 
     // The denial renders in place rather than redirecting, so the header has
@@ -148,6 +156,17 @@ describe('PrivilegeGuard', () => {
         'href',
         '/bahmni-v2/home',
       );
+    });
+
+    it('does not raise the toast more than once for a stable resolved state', () => {
+      const { rerender } = renderGuard();
+      rerender(
+        <PrivilegeGuard>
+          <div data-testid="protected-content-test-id">Protected</div>
+        </PrivilegeGuard>,
+      );
+
+      expect(addNotification).toHaveBeenCalledTimes(1);
     });
 
     describe('Accessibility', () => {
