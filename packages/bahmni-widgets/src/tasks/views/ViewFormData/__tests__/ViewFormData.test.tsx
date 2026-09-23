@@ -29,7 +29,7 @@ jest.mock('@bahmni/services', () => ({
   formatDateTime: jest.fn(),
 }));
 
-jest.mock('../../../../hooks/useFormSchemaData', () => ({
+jest.mock('../../../../observationsRenderer/hooks/useFormSchemaData', () => ({
   useFormSchemaData: jest.fn(() => ({
     controlOrder: ['1', '2'],
     sectionMap: { '1': 'Section 1' },
@@ -517,7 +517,7 @@ describe('ViewFormData', () => {
     });
   });
 
-  describe('Form schema (resolved at ViewFormData level)', () => {
+  describe('Form schema (resolved at ObservationsRenderer level)', () => {
     beforeEach(() => {
       mockGetPatientObservationsBundle.mockResolvedValue(
         mockObservationAndEncounterBundle as Bundle<Observation>,
@@ -525,18 +525,15 @@ describe('ViewFormData', () => {
       mockGetEncounterByUuid.mockResolvedValue(mockEncounterWithProvider);
     });
 
-    // ViewFormData resolves the schema once at this level and passes derived props
-    // to each encounter group, avoiding duplicate derivation across groups.
-    it('should resolve form schema once and pass derived props to observations renderer', async () => {
+    // ObservationsRenderer now resolves the schema internally when formName is provided.
+    // ViewFormData passes formName to each encounter group's ObservationsRenderer.
+    it('should pass formName to observations renderer', async () => {
       renderComponent();
 
       await waitFor(() => {
         const lastCallProps = mockObservationsRenderer.mock.calls.at(-1)?.[0];
-        expect(lastCallProps.controlOrder).toEqual(['1', '2']);
-        expect(lastCallProps.sectionMap).toEqual({ '1': 'Section 1' });
-        expect(lastCallProps.conceptDatatypeMap).toEqual({
-          'concept-1': 'Datetime',
-        });
+        expect(lastCallProps.formName).toBeDefined();
+        expect(typeof lastCallProps.formName).toBe('string');
       });
     });
   });
