@@ -13,6 +13,10 @@ jest.mock('@bahmni/patient-documents-app', () => ({
   PatientDocumentsApp: () => <div data-testid="patient-documents-page" />,
 }));
 
+jest.mock('@bahmni/admin-app', () => ({
+  AdminApp: () => <div data-testid="admin-page" />,
+}));
+
 jest.mock('@bahmni/reports-app', () => ({
   ReportsApp: () => <div data-testid="reports-page" />,
 }));
@@ -60,6 +64,16 @@ describe('App', () => {
     expect(screen.getByTestId('patient-documents-page')).toBeInTheDocument();
   });
 
+  it('renders the admin route lazily', async () => {
+    render(
+      <MemoryRouter initialEntries={['/admin/']}>
+        <App />
+      </MemoryRouter>,
+    );
+    await act(async () => {});
+    expect(screen.getByTestId('admin-page')).toBeInTheDocument();
+  });
+
   it('renders the reports route', async () => {
     render(
       <MemoryRouter initialEntries={['/reports/']}>
@@ -68,7 +82,6 @@ describe('App', () => {
     );
 
     await act(async () => {});
-
     expect(screen.getByTestId('reports-page')).toBeInTheDocument();
   });
 });

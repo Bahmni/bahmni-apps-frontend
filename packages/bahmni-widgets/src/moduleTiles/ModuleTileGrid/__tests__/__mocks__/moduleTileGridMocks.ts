@@ -47,3 +47,24 @@ export const mockPublicModule: Module = {
   url: '/reports',
   order: 4,
 };
+
+export const mockAdminModules: Module[] = [
+  {
+    id: 'bahmni.admin.csv',
+    extensionPointId: 'org.bahmni.admin.dashboard',
+    type: 'link',
+    label: 'CSV Upload',
+    translationKey: 'MODULE_LABEL_CSV_UPLOAD_KEY',
+    icon: 'fa-upload',
+    url: '/bahmni-v2/admin/csv',
+    order: 1,
+    requiredPrivilege: 'app:admin',
+  },
+];
+
+export const defaultProps = {
+  extensionPointId: 'org.bahmni.home.dashboard',
+  loadingLabelKey: 'HOME_LOADING_MODULES',
+  errorMessageKey: 'HOME_ERROR_FETCH_CONFIG',
+  emptyMessageKey: 'HOME_NO_MODULES',
+};

@@ -3,6 +3,9 @@
   "include": [],
   "references": [
     {
+      "path": "../apps/admin"
+    },
+    {
       "path": "../apps/reports"
     },
     {
