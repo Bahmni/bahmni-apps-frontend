@@ -25,7 +25,9 @@ const renderWithQueryClient = (ui: React.ReactElement) => {
 describe('ObservationsRenderer', () => {
   describe('Loading, Error, and Empty States', () => {
     it('should render loading state', () => {
-      renderWithQueryClient(<ObservationsRenderer observations={[]} isLoading />);
+      renderWithQueryClient(
+        <ObservationsRenderer observations={[]} isLoading />,
+      );
 
       expect(
         screen.getByTestId('observations-table-skeleton'),
@@ -85,7 +87,9 @@ describe('ObservationsRenderer', () => {
         },
       };
 
-      renderWithQueryClient(<ObservationsRenderer observations={[mockObservation]} />);
+      renderWithQueryClient(
+        <ObservationsRenderer observations={[mockObservation]} />,
+      );
 
       expect(
         screen.getByTestId('observations-renderer-test-id'),
@@ -112,7 +116,9 @@ describe('ObservationsRenderer', () => {
         valueString: 'Positive',
       };
 
-      renderWithQueryClient(<ObservationsRenderer observations={[mockObservation]} />);
+      renderWithQueryClient(
+        <ObservationsRenderer observations={[mockObservation]} />,
+      );
 
       expect(
         screen.getByTestId('observation-value-Result-0'),
@@ -132,7 +138,9 @@ describe('ObservationsRenderer', () => {
         valueBoolean: true,
       };
 
-      renderWithQueryClient(<ObservationsRenderer observations={[mockObservation]} />);
+      renderWithQueryClient(
+        <ObservationsRenderer observations={[mockObservation]} />,
+      );
 
       expect(
         screen.getByTestId('observation-value-Is Smoker-0'),
@@ -150,7 +158,9 @@ describe('ObservationsRenderer', () => {
         valueBoolean: false,
       };
 
-      renderWithQueryClient(<ObservationsRenderer observations={[mockObservation]} />);
+      renderWithQueryClient(
+        <ObservationsRenderer observations={[mockObservation]} />,
+      );
 
       expect(
         screen.getByTestId('observation-value-Is Smoker-0'),
@@ -188,7 +198,9 @@ describe('ObservationsRenderer', () => {
         ],
       };
 
-      renderWithQueryClient(<ObservationsRenderer observations={[mockObservation]} />);
+      renderWithQueryClient(
+        <ObservationsRenderer observations={[mockObservation]} />,
+      );
 
       const label = screen.getByTestId('observation-label-Blood Glucose-0');
       expect(label).toHaveTextContent('Blood Glucose');
@@ -226,7 +238,9 @@ describe('ObservationsRenderer', () => {
         ],
       };
 
-      renderWithQueryClient(<ObservationsRenderer observations={[mockObservation]} />);
+      renderWithQueryClient(
+        <ObservationsRenderer observations={[mockObservation]} />,
+      );
 
       expect(
         screen.getByTestId('observation-label-Hemoglobin-0'),
@@ -261,7 +275,9 @@ describe('ObservationsRenderer', () => {
         ],
       };
 
-      renderWithQueryClient(<ObservationsRenderer observations={[mockObservation]} />);
+      renderWithQueryClient(
+        <ObservationsRenderer observations={[mockObservation]} />,
+      );
 
       expect(
         screen.getByTestId('observation-label-Blood Pressure-0'),
@@ -309,7 +325,9 @@ describe('ObservationsRenderer', () => {
         ],
       };
 
-      renderWithQueryClient(<ObservationsRenderer observations={[mockObservation]} />);
+      renderWithQueryClient(
+        <ObservationsRenderer observations={[mockObservation]} />,
+      );
 
       const label = screen.getByTestId('observation-label-High Temperature-0');
       const value = screen.getByTestId('observation-value-High Temperature-0');
@@ -525,7 +543,9 @@ describe('ObservationsRenderer', () => {
         },
       };
 
-      renderWithQueryClient(<ObservationsRenderer observations={[obs1, obs2]} />);
+      renderWithQueryClient(
+        <ObservationsRenderer observations={[obs1, obs2]} />,
+      );
 
       expect(
         screen.getByTestId('observation-item-Simple Test-0'),
@@ -553,7 +573,9 @@ describe('ObservationsRenderer', () => {
         note: [{ text: 'Patient has fever' }],
       };
 
-      renderWithQueryClient(<ObservationsRenderer observations={[mockObservation]} />);
+      renderWithQueryClient(
+        <ObservationsRenderer observations={[mockObservation]} />,
+      );
 
       expect(
         screen.getByTestId('observation-comment-Temperature-0'),
@@ -613,7 +635,9 @@ describe('ObservationsRenderer', () => {
         valueString: 'https://example.com/xray.jpg',
       };
 
-      renderWithQueryClient(<ObservationsRenderer observations={[mockObservation]} />);
+      renderWithQueryClient(
+        <ObservationsRenderer observations={[mockObservation]} />,
+      );
 
       const imageTile = screen.getByTestId(
         'https://example.com/xray.jpg-img-test-id',
@@ -632,7 +656,9 @@ describe('ObservationsRenderer', () => {
         valueString: 'https://example.com/procedure.mp4',
       };
 
-      renderWithQueryClient(<ObservationsRenderer observations={[mockObservation]} />);
+      renderWithQueryClient(
+        <ObservationsRenderer observations={[mockObservation]} />,
+      );
 
       const videoTile = screen.getByTestId(
         'https://example.com/procedure.mp4-video-test-id',
@@ -651,7 +677,9 @@ describe('ObservationsRenderer', () => {
         valueString: 'https://example.com/report.pdf',
       };
 
-      renderWithQueryClient(<ObservationsRenderer observations={[mockObservation]} />);
+      renderWithQueryClient(
+        <ObservationsRenderer observations={[mockObservation]} />,
+      );
 
       const fileTile = screen.getByTestId(
         'https://example.com/report.pdf-pdf-test-id',
@@ -682,7 +710,9 @@ describe('ObservationsRenderer', () => {
         valueString: 'https://example.com/photo2.jpg',
       };
 
-      renderWithQueryClient(<ObservationsRenderer observations={[obs1, obs2]} />);
+      renderWithQueryClient(
+        <ObservationsRenderer observations={[obs1, obs2]} />,
+      );
 
       expect(
         screen.getByTestId('https://example.com/photo1.jpg-img-test-id'),
