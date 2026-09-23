@@ -63,12 +63,19 @@ export interface CursorPaginationConfig<T> {
   startPage?: number;
   hasNext: boolean;
   hasPrevious: boolean;
+  disabled?: boolean;
   onSetChange: (
     direction: DataTableSetDirection,
     table: DataTableInstance<T>,
   ) => void;
   previousLabel?: string;
   nextLabel?: string;
+  // Renders previous/next as icon-only buttons; `previousLabel`/`nextLabel`
+  // still supply the accessible name (visually hidden) rather than visible text.
+  iconOnly?: boolean;
+  // Skips the numbered page-pill list, e.g. when the caller only supports
+  // prev/next stepping with no notion of a page index (legacy parity).
+  hidePageNumbers?: boolean;
 }
 
 export interface DataTableProps<T extends { id: string }> {

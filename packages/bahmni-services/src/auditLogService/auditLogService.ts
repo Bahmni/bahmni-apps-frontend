@@ -1,5 +1,5 @@
 import i18next from 'i18next';
-import { post } from '../api';
+import { get, post } from '../api';
 import { isAuditLogEnabled } from '../applicationConfigService';
 import {
   AUDIT_LOG_URL,
@@ -7,7 +7,14 @@ import {
   MODULE_LABELS,
   AUDIT_LOG_ERROR_MESSAGES,
 } from './constants';
-import { AuditLogEntry, AuditLogResponse, AuditEventType } from './models';
+import {
+  AuditLogEntry,
+  AuditLogResponse,
+  AuditEventType,
+  AuditLogQueryParams,
+  RawAuditLogEntry,
+} from './models';
+import { cleanAuditLogParams } from './utils';
 
 /**
  * Log an audit event
@@ -67,4 +74,20 @@ export const logAuditEvent = async (
   //         : i18next.t(AUDIT_LOG_ERROR_MESSAGES.UNKNOWN_ERROR),
   //   };
   // }
+};
+
+/**
+ * Fetches audit log entries (read-only browse/filter list) from the backend.
+ * Mirrors the legacy `auditLogService.getLogs` GET request, minus the
+ * per-entry date/message transforms which callers apply separately
+ * (see `parseAuditLogEntry` in `./utils`) so this stays a thin data-fetch.
+ * @param params - Query params (username/patientId/startFrom/cursor/etc).
+ * @returns Promise resolving to the raw audit log entries.
+ */
+export const fetchAuditLogs = async (
+  params: AuditLogQueryParams,
+): Promise<RawAuditLogEntry[]> => {
+  return get<RawAuditLogEntry[]>(AUDIT_LOG_URL, {
+    params: cleanAuditLogParams(params),
+  });
 };

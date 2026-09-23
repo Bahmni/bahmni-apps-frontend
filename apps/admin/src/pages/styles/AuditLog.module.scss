@@ -1,0 +1,16 @@
+@use '@carbon/react/scss/spacing' as *;
+
+.page {
+  padding-block: $spacing-05;
+}
+
+.filters {
+  margin-bottom: $spacing-06;
+}
+
+.filterRow {
+  display: flex;
+  align-items: flex-end;
+  gap: $spacing-05;
+  flex-wrap: wrap;
+}

@@ -36,6 +36,14 @@
     flex: 0 0 100%;
   }
 
+  // `div` type-selector matches the specificity of `> div:first-child` above
+  // (0,2,1) so this wins on source order when the toolbar renders null and
+  // `.cds--data-table-content` becomes the actual first div child.
+  :global(div.cds--data-table-content) {
+    flex: 0 0 100%;
+    width: 100%;
+  }
+
   table {
     table-layout: fixed;
     width: 100%;
@@ -108,6 +116,10 @@
   gap: $spacing-02;
   background-color: $layer-01;
   border-top: 1px solid $border-subtle;
+}
+
+.setPaginationCentered {
+  justify-content: center;
 }
 
 .setNavButton {

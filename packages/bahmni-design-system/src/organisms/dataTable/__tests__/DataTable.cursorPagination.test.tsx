@@ -195,4 +195,49 @@ describe('DataTable cursor-set pagination', () => {
     expect(screen.getAllByTestId(/^table-row-/)).toHaveLength(3);
     expect(pageButtonLabels()).toEqual(['1', '2']);
   });
+
+  it('should disable the next/previous-set buttons when disabled is true', () => {
+    renderTable(
+      cursorPaginationConfig({
+        hasNext: true,
+        hasPrevious: true,
+        disabled: true,
+      }),
+    );
+
+    expect(screen.getByTestId('data-table-next-set')).toBeDisabled();
+    expect(screen.getByTestId('data-table-previous-set')).toBeDisabled();
+  });
+
+  it('should hide the page-number pill list when hidePageNumbers is true', () => {
+    renderTable(
+      cursorPaginationConfig({
+        hasNext: true,
+        hasPrevious: true,
+        hidePageNumbers: true,
+      }),
+    );
+
+    expect(screen.queryByTestId('data-table-page-1')).not.toBeInTheDocument();
+    expect(screen.getByTestId('data-table-next-set')).toBeInTheDocument();
+    expect(screen.getByTestId('data-table-previous-set')).toBeInTheDocument();
+  });
+
+  it('should render previous/next labels as visually-hidden text when iconOnly is true', () => {
+    renderTable(
+      cursorPaginationConfig({
+        hasNext: true,
+        hasPrevious: true,
+        iconOnly: true,
+        previousLabel: 'Previous',
+        nextLabel: 'Next',
+      }),
+    );
+
+    const nextButton = screen.getByTestId('data-table-next-set');
+    expect(nextButton).toHaveTextContent('Next');
+    expect(nextButton.querySelector('span')?.className).toMatch(
+      /visuallyHidden/,
+    );
+  });
 });
