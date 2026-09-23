@@ -7,7 +7,7 @@ import {
 } from '@bahmni/services';
 import { useQuery } from '@tanstack/react-query';
 import { useMemo } from 'react';
-import { deriveFormSchemaData } from '../utils/Observations';
+import { deriveFormSchemaData } from './../../utils/Observations';
 
 export const useFormSchemaData = (formName?: string) => {
   const { data: publishedForms = [], isLoading: isLoadingForms } = useQuery<

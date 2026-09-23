@@ -8,7 +8,6 @@ import { useTranslation, getValueType } from '@bahmni/services';
 import classNames from 'classnames';
 import type { Observation } from 'fhir/r4';
 import React, { useMemo } from 'react';
-import { useFormSchemaData } from '../hooks/useFormSchemaData';
 import { ExtractedObservation } from '../observations/models';
 import { formatObservationValue } from '../observations/utils';
 import {
@@ -18,6 +17,7 @@ import {
   groupMultiSelectObservations,
   transformObservations,
 } from '../utils/Observations';
+import { useFormSchemaData } from './hooks/useFormSchemaData';
 import styles from './styles/ObservationsRenderer.module.scss';
 
 export interface ObservationsRendererProps {
@@ -30,11 +30,7 @@ export interface ObservationsRendererProps {
   testIdPrefix?: string;
   hideThumbnail?: boolean;
   formName?: string;
-  controlOrder?: string[];
-  sectionMap?: Record<string, string>;
-  conceptDatatypeMap?: Record<string, string>;
 }
-type ObservationsViewProps = Omit<ObservationsRendererProps, 'formName'>;
 
 interface ObservationMemberProps {
   member: ExtractedObservation;
@@ -280,7 +276,21 @@ const renderObservation = (
   );
 };
 
-const ObservationsView: React.FC<ObservationsViewProps> = ({
+interface ObservationsViewInternalProps {
+  observations: Observation[];
+  controlOrder?: string[];
+  sectionMap?: Record<string, string>;
+  conceptDatatypeMap?: Record<string, string>;
+  isLoading?: boolean;
+  isError?: boolean;
+  errorMessage?: string;
+  emptyStateMessage?: string;
+  className?: string;
+  testIdPrefix?: string;
+  hideThumbnail?: boolean;
+}
+
+const ObservationsView: React.FC<ObservationsViewInternalProps> = ({
   observations,
   isLoading = false,
   isError = false,
@@ -439,33 +449,34 @@ const ObservationsView: React.FC<ObservationsViewProps> = ({
   );
 };
 
-//Resolves the form schema before rendering. Kept as a separate component so
-// that the data-fetching hooks only run when `formName` is supplied
-const FormDrivenObservationsRenderer: React.FC<ObservationsRendererProps> = (
-  props,
-) => {
-  const schema = useFormSchemaData(props.formName);
+export const ObservationsRenderer: React.FC<ObservationsRendererProps> = ({
+  observations,
+  formName,
+  isLoading = false,
+  isError = false,
+  errorMessage,
+  emptyStateMessage,
+  className,
+  testIdPrefix = '',
+  hideThumbnail = false,
+}) => {
+  const schema = useFormSchemaData(formName);
 
   return (
     <ObservationsView
-      {...props}
-      isLoading={schema.isLoading || (props.isLoading ?? false)}
-      isError={schema.isError || (props.isError ?? false)}
-      errorMessage={schema.errorMessage ?? props.errorMessage}
-      controlOrder={props.controlOrder ?? schema.controlOrder}
-      sectionMap={props.sectionMap ?? schema.sectionMap}
-      conceptDatatypeMap={props.conceptDatatypeMap ?? schema.conceptDatatypeMap}
+      observations={observations}
+      isLoading={schema.isLoading || isLoading}
+      isError={schema.isError || isError}
+      errorMessage={schema.errorMessage ?? errorMessage}
+      emptyStateMessage={emptyStateMessage}
+      className={className}
+      testIdPrefix={testIdPrefix}
+      hideThumbnail={hideThumbnail}
+      controlOrder={schema.controlOrder}
+      sectionMap={schema.sectionMap}
+      conceptDatatypeMap={schema.conceptDatatypeMap}
     />
   );
 };
-
-export const ObservationsRenderer: React.FC<ObservationsRendererProps> = (
-  props,
-) =>
-  props.formName ? (
-    <FormDrivenObservationsRenderer {...props} />
-  ) : (
-    <ObservationsView {...props} />
-  );
 
 export default ObservationsRenderer;

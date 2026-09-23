@@ -813,11 +813,8 @@ describe('ObservationsRenderer', () => {
     });
   });
 
-  describe('controlOrder prop', () => {
-    it('should render observations in controlOrder sequence rather than sortId numeric order', () => {
-      // controlOrder puts id=25 before id=18, even though 18 < 25 numerically
-      const controlOrder = ['14', '15', '16', '25', '26', '18', '19'];
-
+  describe('default sorting behavior', () => {
+    it('should fall back to sortId numeric ordering when formName is not provided', () => {
       const makeObs = (
         id: string,
         display: string,
@@ -836,57 +833,7 @@ describe('ObservationsRenderer', () => {
         ],
       });
 
-      const pulse = makeObs('obs-pulse', 'Pulse', '14');
-      const lowBirthWeight = makeObs('obs-lbw', 'LowBirthWeight', '25');
-      const temperature = makeObs('obs-temp', 'Temperature', '18');
-
-      render(
-        <ObservationsRenderer
-          observations={[pulse, lowBirthWeight, temperature]}
-          controlOrder={controlOrder}
-        />,
-      );
-
-      const pulseItem = screen.getByTestId('observation-item-Pulse-0');
-      const lbwItem = screen.getByTestId('observation-item-LowBirthWeight-1');
-      const tempItem = screen.getByTestId('observation-item-Temperature-2');
-
-      // Confirm all three rendered with correct index positions
-      expect(pulseItem).toBeInTheDocument();
-      expect(lbwItem).toBeInTheDocument();
-      expect(tempItem).toBeInTheDocument();
-
-      // LowBirthWeight (id=25, pos=3) must appear before Temperature (id=18, pos=5)
-      expect(
-        pulseItem.compareDocumentPosition(lbwItem) &
-          Node.DOCUMENT_POSITION_FOLLOWING,
-      ).toBeTruthy();
-      expect(
-        lbwItem.compareDocumentPosition(tempItem) &
-          Node.DOCUMENT_POSITION_FOLLOWING,
-      ).toBeTruthy();
-    });
-
-    it('should fall back to sortId numeric ordering when controlOrder is not provided', () => {
-      const makeObs = (
-        id: string,
-        display: string,
-        controlId: string,
-      ): Observation => ({
-        resourceType: 'Observation',
-        id,
-        status: 'final',
-        code: { text: display },
-        valueString: display,
-        extension: [
-          {
-            url: 'http://fhir.bahmni.org/ext/observation/form-namespace-path',
-            valueString: `Bahmni^SecondVitals.1/${controlId}-0`,
-          },
-        ],
-      });
-
-      // Without controlOrder, sort is numeric: 14, 18, 25
+      // Without formName, sort is numeric: 14, 18, 25
       const pulse = makeObs('obs-pulse', 'Pulse', '14');
       const lowBirthWeight = makeObs('obs-lbw', 'LowBirthWeight', '25');
       const temperature = makeObs('obs-temp', 'Temperature', '18');
@@ -910,7 +857,7 @@ describe('ObservationsRenderer', () => {
     });
   });
 
-  describe('section headers', () => {
+  describe('section headers from form schema', () => {
     const makeObsWithSortId = (
       id: string,
       display: string,
@@ -929,68 +876,14 @@ describe('ObservationsRenderer', () => {
       ],
     });
 
-    it('should render section as a group with label and members when sectionMap maps control ID to a section name', () => {
-      const obs = makeObsWithSortId('obs-30', 'Sign/symptom name', '30');
-      const sectionMap = { '30': 'MySection' };
-
-      render(
-        <ObservationsRenderer observations={[obs]} sectionMap={sectionMap} />,
-      );
-
-      expect(screen.getByTestId('section-label-MySection')).toHaveTextContent(
-        'MySection',
-      );
-      // Section observations render as ObservationMember rows, not standalone items
-      expect(
-        screen.getByTestId('obs-member-row-Sign/symptom name-0'),
-      ).toBeInTheDocument();
-      // Not rendered as a standalone observation-item
-      expect(
-        screen.queryByTestId('observation-item-Sign/symptom name-0'),
-      ).not.toBeInTheDocument();
-    });
-
-    it('should not render any section labels when sectionMap is not provided', () => {
+    it('should not render any section labels when formName is not provided', () => {
       const obs = makeObsWithSortId('obs-30', 'Sign/symptom name', '30');
 
       render(<ObservationsRenderer observations={[obs]} />);
 
-      expect(
-        screen.queryByTestId('section-label-MySection'),
-      ).not.toBeInTheDocument();
-      // Renders as standalone row when no sectionMap
+      // Renders as standalone row when no formName
       expect(
         screen.getByTestId('observation-item-Sign/symptom name-0'),
-      ).toBeInTheDocument();
-    });
-
-    it('should render section group once for multiple observations in the same section', () => {
-      const obs30 = makeObsWithSortId('obs-30', 'Sign/symptom name', '30');
-      const obs31 = makeObsWithSortId(
-        'obs-31',
-        'Patient reported cryptococcal meningitis prophylaxis',
-        '31',
-      );
-      const sectionMap = { '30': 'Section', '31': 'Section' };
-
-      render(
-        <ObservationsRenderer
-          observations={[obs30, obs31]}
-          sectionMap={sectionMap}
-        />,
-      );
-
-      // Only one section label for the group
-      expect(screen.getAllByTestId('section-label-Section')).toHaveLength(1);
-
-      // Both observations render as members inside the group
-      expect(
-        screen.getByTestId('obs-member-row-Sign/symptom name-0'),
-      ).toBeInTheDocument();
-      expect(
-        screen.getByTestId(
-          'obs-member-row-Patient reported cryptococcal meningitis prophylaxis-1',
-        ),
       ).toBeInTheDocument();
     });
   });
@@ -1154,28 +1047,6 @@ describe('ObservationsRenderer', () => {
         ).toBeInTheDocument();
       });
       expect(mockFetchFormMetadata).not.toHaveBeenCalled();
-      expect(
-        screen.queryByTestId('section-label-Vitals Section'),
-      ).not.toBeInTheDocument();
-    });
-
-    it('should let an explicitly passed sectionMap override the derived one', async () => {
-      mockFetchObservationForms.mockResolvedValue([vitalsForm]);
-      mockFetchFormMetadata.mockResolvedValue(vitalsMetadata);
-
-      renderWithQueryClient(
-        <ObservationsRenderer
-          observations={[makeObs('obs-30', 'Pulse', '30')]}
-          formName="Vitals"
-          sectionMap={{ '30': 'Explicit Section' }}
-        />,
-      );
-
-      await waitFor(() => {
-        expect(
-          screen.getByTestId('section-label-Explicit Section'),
-        ).toBeInTheDocument();
-      });
       expect(
         screen.queryByTestId('section-label-Vitals Section'),
       ).not.toBeInTheDocument();

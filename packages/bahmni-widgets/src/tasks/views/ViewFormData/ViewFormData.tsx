@@ -11,7 +11,6 @@ import {
 import { useQueries, useQuery } from '@tanstack/react-query';
 import type { Bundle, Encounter, Observation } from 'fhir/r4';
 import React, { useMemo } from 'react';
-import { useFormSchemaData } from '../../../hooks/useFormSchemaData';
 import { extractFormFieldPath } from '../../../observations/utils';
 import { ObservationsRenderer } from '../../../observationsRenderer';
 import { extractId } from '../../../utils/Observations';
@@ -149,8 +148,6 @@ const ViewFormData: React.FC<ViewFormDataProps> = ({
   const isLoading = isLoadingObservations || isLoadingEncounters;
   const error = observationsError ?? encountersError;
 
-  const schema = useFormSchemaData(formName ?? undefined);
-
   const renderEncounterGroup = (group: EncounterGroup) => {
     return (
       <div key={group.encounterUuid} className={styles.encounterGroup}>
@@ -161,13 +158,8 @@ const ViewFormData: React.FC<ViewFormDataProps> = ({
         </div>
         <ObservationsRenderer
           observations={group.observations}
+          formName={formName ?? undefined}
           testIdPrefix={`encounter-${group.encounterUuid}-observations`}
-          controlOrder={schema.controlOrder}
-          sectionMap={schema.sectionMap}
-          conceptDatatypeMap={schema.conceptDatatypeMap}
-          isLoading={schema.isLoading}
-          isError={schema.isError}
-          errorMessage={schema.errorMessage}
         />
       </div>
     );
