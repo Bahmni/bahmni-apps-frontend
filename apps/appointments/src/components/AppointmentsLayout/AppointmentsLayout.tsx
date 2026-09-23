@@ -29,6 +29,8 @@ export const AppointmentsLayout: React.FC<AppointmentsLayoutProps> = ({
   breadcrumbItems,
 }) => {
   const { t } = useTranslation();
+  const pageCrumbId = pageBreadcrumb?.id;
+  const pageCrumbLabel = pageBreadcrumb?.label;
 
   const defaultBreadcrumbItems = useMemo<AppointmentsBreadcrumbItem[]>(() => {
     const homeCrumb = {
@@ -37,7 +39,7 @@ export const AppointmentsLayout: React.FC<AppointmentsLayoutProps> = ({
       href: BAHMNI_HOME_PATH,
     };
 
-    if (!pageBreadcrumb) {
+    if (pageCrumbId === undefined || pageCrumbLabel === undefined) {
       return [
         homeCrumb,
         {
@@ -55,9 +57,9 @@ export const AppointmentsLayout: React.FC<AppointmentsLayoutProps> = ({
         label: t('BREADCRUMB_APPOINTMENTS'),
         href: APPOINTMENTS_APP_HREF,
       },
-      { ...pageBreadcrumb, isCurrentPage: true },
+      { id: pageCrumbId, label: pageCrumbLabel, isCurrentPage: true },
     ];
-  }, [t, pageBreadcrumb]);
+  }, [t, pageCrumbId, pageCrumbLabel]);
 
   return (
     <BaseLayout

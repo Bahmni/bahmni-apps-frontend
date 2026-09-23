@@ -1,21 +1,18 @@
-import { useTranslation } from '@bahmni/services';
+import { type AccessDeniedRouteState, useTranslation } from '@bahmni/services';
 import { useNotification } from '@bahmni/widgets';
 import React, { useEffect, useRef } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { ACCESS_DENIED_NOTIFICATION_TIMEOUT_MS } from '../../constants/app';
 import { HomePageGrid } from '../HomePageGrid';
 import { HomePageHeader } from '../HomePageHeader';
 import styles from './styles/HomePage.module.scss';
 
-interface AccessDeniedState {
-  accessDenied?: { app?: string };
-}
-
 export const HomePage: React.FC = () => {
   const { t } = useTranslation();
   const { addNotification } = useNotification();
-  const { state } = useLocation();
-  const accessDenied = (state as AccessDeniedState | null)?.accessDenied;
+  const navigate = useNavigate();
+  const { pathname, search, hash, state } = useLocation();
+  const accessDenied = (state as AccessDeniedRouteState | null)?.accessDenied;
   const hasNotifiedRef = useRef(false);
 
   // An app's privilege guard redirects here and hands off the message, because
@@ -32,7 +29,10 @@ export const HomePage: React.FC = () => {
       type: 'error',
       timeout: ACCESS_DENIED_NOTIFICATION_TIMEOUT_MS,
     });
-  }, [accessDenied, addNotification, t]);
+    // Consume the state so revisiting this history entry (e.g. via Back)
+    // does not replay a denial that never happened again.
+    navigate({ pathname, search, hash }, { replace: true, state: null });
+  }, [accessDenied, addNotification, t, navigate, pathname, search, hash]);
 
   return (
     <>

@@ -1,7 +1,7 @@
 import { NotificationProvider } from '@bahmni/widgets';
 import { render, screen } from '@testing-library/react';
 import { axe, toHaveNoViolations } from 'jest-axe';
-import { MemoryRouter } from 'react-router-dom';
+import { MemoryRouter, useLocation } from 'react-router-dom';
 import { HomePage } from '../HomePage';
 
 expect.extend(toHaveNoViolations);
@@ -14,11 +14,18 @@ jest.mock('../../HomePageHeader', () => ({
   HomePageHeader: () => <div data-testid="home-page-header" />,
 }));
 
+// Reports the current router state so tests can assert it was consumed.
+const LocationStateProbe = () => {
+  const { state } = useLocation();
+  return <div data-testid="location-state">{JSON.stringify(state)}</div>;
+};
+
 const renderHomePage = (state?: unknown) =>
   render(
     <NotificationProvider>
       <MemoryRouter initialEntries={[{ pathname: '/', state }]}>
         <HomePage />
+        <LocationStateProbe />
       </MemoryRouter>
     </NotificationProvider>,
   );
@@ -46,6 +53,13 @@ describe('HomePage', () => {
     expect(
       screen.getByText('You do not have permission to access Appointments.'),
     ).toBeInTheDocument();
+  });
+
+  it('clears the access-denied state once the notification is shown', () => {
+    renderHomePage({ accessDenied: { app: 'Appointments' } });
+
+    expect(screen.getByText('Access Denied')).toBeInTheDocument();
+    expect(screen.getByTestId('location-state')).toHaveTextContent('null');
   });
 
   it('does not stack duplicate access-denied notifications on re-render', () => {

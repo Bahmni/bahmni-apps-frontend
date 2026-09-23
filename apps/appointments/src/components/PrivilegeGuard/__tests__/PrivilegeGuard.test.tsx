@@ -41,7 +41,7 @@ const renderGuard = () =>
             </PrivilegeGuard>
           }
         />
-        <Route path="/home/" element={<HomeProbe />} />
+        <Route path="/home" element={<HomeProbe />} />
       </Routes>
     </MemoryRouter>,
   );
@@ -64,6 +64,40 @@ describe('PrivilegeGuard', () => {
     expect(screen.queryByTestId('home-page')).not.toBeInTheDocument();
   });
 
+  it('renders a loading indicator before the privilege fetch has started', () => {
+    // The provider only sets isLoading inside its mount effect, so the first
+    // render sees isLoading=false with privileges still unresolved.
+    useUserPrivilege.mockReturnValue({
+      userPrivileges: null,
+      isLoading: false,
+      error: null,
+    });
+    hasPrivilege.mockReturnValue(false);
+
+    renderGuard();
+
+    expect(
+      screen.getByTestId('appointments-privilege-guard-loading-test-id'),
+    ).toBeInTheDocument();
+    expect(screen.queryByTestId('home-page')).not.toBeInTheDocument();
+  });
+
+  it('redirects to /home when the privilege fetch failed', () => {
+    useUserPrivilege.mockReturnValue({
+      userPrivileges: null,
+      isLoading: false,
+      error: new Error('Network error'),
+    });
+    hasPrivilege.mockReturnValue(false);
+
+    renderGuard();
+
+    expect(screen.getByTestId('home-page')).toBeInTheDocument();
+    expect(
+      screen.queryByTestId('appointments-privilege-guard-loading-test-id'),
+    ).not.toBeInTheDocument();
+  });
+
   it('renders children when the user has the privilege', () => {
     useUserPrivilege.mockReturnValue({
       userPrivileges: [{ name: APPOINTMENTS_PRIVILEGE }],
@@ -77,7 +111,7 @@ describe('PrivilegeGuard', () => {
     expect(screen.queryByTestId('home-page')).not.toBeInTheDocument();
   });
 
-  it('redirects straight to /home/ when the privilege is missing', () => {
+  it('redirects straight to /home when the privilege is missing', () => {
     useUserPrivilege.mockReturnValue({ userPrivileges: [], isLoading: false });
     hasPrivilege.mockReturnValue(false);
 

@@ -9,7 +9,10 @@ export const LOGOUT_COOKIES = [
   BAHMNI_USER_LOCATION_COOKIE,
 ];
 export const BAHMNI_APP_BASE_PATH = '/bahmni-v2';
-export const BAHMNI_HOME_PATH = BAHMNI_APP_BASE_PATH + '/home';
+// Router-relative home route, for in-app navigation under the distro
+// `BrowserRouter`, which already applies the `BAHMNI_APP_BASE_PATH` basename.
+export const HOME_ROUTE_PATH = '/home';
+export const BAHMNI_HOME_PATH = BAHMNI_APP_BASE_PATH + HOME_ROUTE_PATH;
 export const SESSION_URL = OPENMRS_REST_V1 + '/session';
 export const VISIT_LOCATION_UUID =
   OPENMRS_REST_V1 + '/bahmnicore/visitLocation/';
