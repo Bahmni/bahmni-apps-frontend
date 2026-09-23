@@ -11,6 +11,9 @@ export type { PrintOption } from './documentPrintButton';
 export { DocumentUpload, renderDocumentTile } from './documentUpload';
 export type {
   DocumentUploadProps,
+  DocumentUploadRef,
+  DocumentSaveSummary,
+  DocumentSaveFailure,
   DocumentSaveTarget,
   DocumentTileData,
 } from './documentUpload';
@@ -120,5 +123,12 @@ export {
   LocationProvider,
   LocationSelector,
 } from './location';
+
+// Module Tiles
+export {
+  AppTile,
+  ModuleTileGrid,
+  MODULE_TILES_SKELETON_COUNT,
+} from './moduleTiles';
 
 export { deriveFormSchemaData } from './utils/Observations';

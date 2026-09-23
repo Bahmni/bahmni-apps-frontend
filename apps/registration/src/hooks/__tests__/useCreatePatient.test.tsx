@@ -1,5 +1,6 @@
 import {
   createFhirPatient,
+  createRelatedPerson,
   dispatchAuditEvent,
   PersonAttributeType,
 } from '@bahmni/services';
@@ -19,6 +20,7 @@ jest.mock('../useRegistrationEncounterTypeUuid', () => ({
 jest.mock('@bahmni/services', () => ({
   ...jest.requireActual('@bahmni/services'),
   createFhirPatient: jest.fn(),
+  createRelatedPerson: jest.fn(),
   generateIdentifier: jest.fn(),
   dispatchAuditEvent: jest.fn(),
   getUserLoginLocation: () => ({ uuid: 'loc-uuid', name: 'Test Location' }),
@@ -54,6 +56,7 @@ jest.mock('../useAdditionalIdentifiers', () => ({
 }));
 
 const mockCreateFhirPatient = createFhirPatient as jest.Mock;
+const mockCreateRelatedPerson = createRelatedPerson as jest.Mock;
 const mockUseNotification = useNotification as jest.Mock;
 const mockAddNotification = jest.fn();
 
@@ -137,6 +140,7 @@ describe('useCreatePatient', () => {
     });
     mockUseRegistrationEncounterTypeUuid.mockReturnValue(undefined);
     mockCreateRegistrationEncounterForPatient.mockResolvedValue(undefined);
+    mockCreateRelatedPerson.mockResolvedValue({});
     window.history.replaceState = jest.fn();
   });
 
@@ -283,5 +287,135 @@ describe('useCreatePatient', () => {
     await new Promise((resolve) => setTimeout(resolve, 50));
 
     expect(mockCreateRegistrationEncounterForPatient).not.toHaveBeenCalled();
+  });
+
+  it('should call createRelatedPerson for each valid relationship after patient is created', async () => {
+    mockCreateFhirPatient.mockResolvedValue(mockFhirResponse);
+
+    const formDataWithRelationships = {
+      ...mockFormData,
+      relationships: [
+        {
+          id: '',
+          relationshipType: 'rel-type-uuid-1',
+          patientId: '',
+          patientUuid: 'related-patient-uuid-1',
+          patientName: 'Jane Smith',
+          tillDate: '2024-12-31',
+          isExisting: false,
+        },
+        {
+          id: '',
+          relationshipType: 'rel-type-uuid-2',
+          patientId: '',
+          patientUuid: 'related-patient-uuid-2',
+          patientName: 'Bob Jones',
+          tillDate: '',
+          isExisting: false,
+        },
+      ],
+    };
+
+    const { result } = renderHook(() => useCreatePatient(), {
+      wrapper: createWrapper(),
+    });
+    result.current.mutate(formDataWithRelationships);
+
+    await waitFor(() => {
+      expect(result.current.isSuccess).toBe(true);
+    });
+
+    expect(mockCreateRelatedPerson).toHaveBeenCalledTimes(2);
+    expect(mockCreateRelatedPerson).toHaveBeenCalledWith(
+      expect.objectContaining({
+        resourceType: 'RelatedPerson',
+        patient: { reference: 'Patient/patient-uuid-123' },
+        relationship: [
+          {
+            coding: [expect.objectContaining({ code: 'rel-type-uuid-1' })],
+          },
+        ],
+      }),
+    );
+  });
+
+  it('should skip relationships without a patientUuid', async () => {
+    mockCreateFhirPatient.mockResolvedValue(mockFhirResponse);
+
+    const formDataWithInvalidRelationship = {
+      ...mockFormData,
+      relationships: [
+        {
+          id: '',
+          relationshipType: 'rel-type-uuid-1',
+          patientId: '',
+          patientUuid: undefined,
+          patientName: '',
+          tillDate: '',
+          isExisting: false,
+        },
+      ],
+    };
+
+    const { result } = renderHook(() => useCreatePatient(), {
+      wrapper: createWrapper(),
+    });
+    result.current.mutate(formDataWithInvalidRelationship);
+
+    await waitFor(() => {
+      expect(result.current.isSuccess).toBe(true);
+    });
+
+    expect(mockCreateRelatedPerson).not.toHaveBeenCalled();
+  });
+
+  it('should not call createRelatedPerson when relationships array is empty', async () => {
+    mockCreateFhirPatient.mockResolvedValue(mockFhirResponse);
+
+    const { result } = renderHook(() => useCreatePatient(), {
+      wrapper: createWrapper(),
+    });
+    result.current.mutate(mockFormData);
+
+    await waitFor(() => {
+      expect(result.current.isSuccess).toBe(true);
+    });
+
+    expect(mockCreateRelatedPerson).not.toHaveBeenCalled();
+  });
+
+  it('should show error notification when createRelatedPerson rejects', async () => {
+    mockCreateFhirPatient.mockResolvedValue(mockFhirResponse);
+    mockCreateRelatedPerson.mockRejectedValue(
+      new Error('Related person API error'),
+    );
+
+    const formDataWithRelationships = {
+      ...mockFormData,
+      relationships: [
+        {
+          id: '',
+          relationshipType: 'rel-type-uuid-1',
+          patientId: '',
+          patientUuid: 'related-patient-uuid-1',
+          patientName: 'Jane Smith',
+          tillDate: '',
+          isExisting: false,
+        },
+      ],
+    };
+
+    const { result } = renderHook(() => useCreatePatient(), {
+      wrapper: createWrapper(),
+    });
+    result.current.mutate(formDataWithRelationships);
+
+    await waitFor(() => {
+      expect(result.current.isError).toBe(true);
+    });
+
+    expect(mockAddNotification).toHaveBeenCalledWith(
+      expect.objectContaining({ type: 'error' }),
+    );
   });
 });

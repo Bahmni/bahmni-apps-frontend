@@ -1,2 +1,2 @@
 export const HOME_NAMESPACE = 'home';
-export const HOMEPAGE_TILES_SKELETON_COUNT = 6;
+export const HOME_EXTENSION_POINT = 'org.bahmni.home.dashboard';
