@@ -19,6 +19,7 @@ import {
 } from '@bahmni/widgets';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import React, { useCallback, useMemo, useRef, useState } from 'react';
+import { APPOINTMENTS_APP_HREF } from '../../../constants/app';
 import UnavailabilityForm from './components/UnavailabilityForm';
 import {
   ADD_APPOINTMENT_UNAVAILABILITY_PRIVILEGE,
@@ -65,7 +66,7 @@ const AppointmentUnavailabilityPage: React.FC = () => {
     {
       id: 'appointments',
       label: t('BREADCRUMB_APPOINTMENTS'),
-      href: '/appointments',
+      href: APPOINTMENTS_APP_HREF,
     },
     { id: 'admin', label: t('BREADCRUMB_ADMIN'), isCurrentPage: true },
   ];
