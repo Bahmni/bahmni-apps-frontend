@@ -12,14 +12,14 @@ const createMockEncounter = (overrides: {
   id: overrides.id,
   status: 'unknown',
   class: {
-    system: 'http://terminology.hl7.org/CodeSystem/v3-ActCode',
+    system: 'https://terminology.hl7.org/CodeSystem/v3-ActCode',
     code: 'AMB',
   },
   type: [
     {
       coding: [
         {
-          system: 'http://fhir.openmrs.org/code-system/visit-type',
+          system: 'https://fhir.openmrs.org/code-system/visit-type',
           code: `${overrides.visitTypeDisplay}-code`,
           display: overrides.visitTypeDisplay,
         },
@@ -62,7 +62,7 @@ const createMockChildEncounter = (overrides: {
   id: overrides.id,
   status: 'unknown',
   class: {
-    system: 'http://terminology.hl7.org/CodeSystem/v3-ActCode',
+    system: 'https://terminology.hl7.org/CodeSystem/v3-ActCode',
     code: 'AMB',
   },
   subject: {
