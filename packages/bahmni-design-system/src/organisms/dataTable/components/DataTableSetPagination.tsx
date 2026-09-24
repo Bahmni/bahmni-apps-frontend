@@ -24,8 +24,6 @@ export const DataTableSetPagination = <T,>({
     onSetChange,
     previousLabel = 'Previous set',
     nextLabel = 'Next set',
-    iconOnly = false,
-    hidePageNumbers = false,
   } = pagination;
 
   const pageCount = table.getPageCount();
@@ -34,14 +32,9 @@ export const DataTableSetPagination = <T,>({
 
   const currentPage = startPage + table.getState().pagination.pageIndex;
 
-  const labelText = (label: string) =>
-    iconOnly ? <span className={styles.visuallyHidden}>{label}</span> : label;
-
   return (
     <nav
-      className={classnames(styles.setPagination, {
-        [styles.setPaginationCentered]: hidePageNumbers,
-      })}
+      className={styles.setPagination}
       data-testid={`${dataTestId}-set-pagination`}
       aria-label="pagination"
     >
@@ -55,33 +48,31 @@ export const DataTableSetPagination = <T,>({
           testId={`${dataTestId}-previous-set`}
         >
           <CaretLeft />
-          {labelText(previousLabel)}
+          {previousLabel}
         </Button>
       )}
 
-      {!hidePageNumbers && (
-        <ul className={styles.setPaginationPages}>
-          {Array.from({ length: pageCount }, (_, index) => {
-            const page = startPage + index;
-            const isActive = page === currentPage;
-            return (
-              <li key={page}>
-                <button
-                  type="button"
-                  className={classnames(styles.setPaginationPage, {
-                    [styles.setPaginationPageActive]: isActive,
-                  })}
-                  aria-current={isActive ? 'page' : undefined}
-                  onClick={() => table.setPageIndex(index)}
-                  data-testid={`${dataTestId}-page-${page}`}
-                >
-                  {page}
-                </button>
-              </li>
-            );
-          })}
-        </ul>
-      )}
+      <ul className={styles.setPaginationPages}>
+        {Array.from({ length: pageCount }, (_, index) => {
+          const page = startPage + index;
+          const isActive = page === currentPage;
+          return (
+            <li key={page}>
+              <button
+                type="button"
+                className={classnames(styles.setPaginationPage, {
+                  [styles.setPaginationPageActive]: isActive,
+                })}
+                aria-current={isActive ? 'page' : undefined}
+                onClick={() => table.setPageIndex(index)}
+                data-testid={`${dataTestId}-page-${page}`}
+              >
+                {page}
+              </button>
+            </li>
+          );
+        })}
+      </ul>
 
       {hasNext && (
         <Button
@@ -92,7 +83,7 @@ export const DataTableSetPagination = <T,>({
           disabled={disabled}
           testId={`${dataTestId}-next-set`}
         >
-          {labelText(nextLabel)}
+          {nextLabel}
           <CaretRight />
         </Button>
       )}

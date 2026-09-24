@@ -57,6 +57,8 @@ const baseHookState = {
   emptyMessageKey: null as string | null,
   firstIndex: 0,
   lastIndex: 0,
+  hasNext: false,
+  hasPrevious: false,
   next: jest.fn(),
   prev: jest.fn(),
   runReport: jest.fn(),
@@ -69,13 +71,12 @@ describe('AuditLog', () => {
     mockUseAuditLogs.mockReturnValue(baseHookState);
   });
 
-  it('renders inside the admin layout with the title and filters', () => {
+  it('renders inside the admin layout with the filters', () => {
     render(<AuditLog />);
 
     const layout = screen.getByTestId('admin-layout-test-id');
     const page = screen.getByTestId('admin-audit-log-page-test-id');
     expect(layout).toContainElement(page);
-    expect(screen.getByText('Audit Log')).toBeInTheDocument();
     expect(screen.getByTestId('audit-log-username-input')).toBeInTheDocument();
     expect(
       screen.getByTestId('audit-log-patient-id-input'),
@@ -127,6 +128,8 @@ describe('AuditLog', () => {
     expect(within(table).getByText('superman')).toBeInTheDocument();
     expect(within(table).getByText('PID-1')).toBeInTheDocument();
     expect(within(table).getByText('Opened a visit')).toBeInTheDocument();
+    // Module is translated from 'MODULE_LABEL_REGISTRATION_KEY' to its translated value
+    // In test environment, useTranslation returns 'MODULE_LABEL_REGISTRATION_KEY' as fallback
     expect(
       within(table).getByText('MODULE_LABEL_REGISTRATION_KEY'),
     ).toBeInTheDocument();
@@ -231,18 +234,35 @@ describe('AuditLog', () => {
     expect(baseHookState.reset).toHaveBeenCalledTimes(1);
   });
 
-  it('disables Apply, Reset, and cursor pagination buttons while fetching', () => {
+  it('disables Apply, Reset, and cursor pagination buttons while fetching', async () => {
     mockUseAuditLogs.mockReturnValue({
       ...baseHookState,
       isFetching: true,
+      hasNext: true,
+      hasPrevious: true,
     });
 
-    render(<AuditLog />);
+    const { rerender } = render(<AuditLog />);
 
     expect(screen.getByTestId('audit-log-apply-button')).toBeDisabled();
     expect(screen.getByTestId('audit-log-reset-button')).toBeDisabled();
     expect(screen.getByTestId('audit-log-table-next-set')).toBeDisabled();
     expect(screen.getByTestId('audit-log-table-previous-set')).toBeDisabled();
+
+    // Also verify buttons are re-enabled when fetching completes
+    mockUseAuditLogs.mockReturnValue({
+      ...baseHookState,
+      isFetching: false,
+      hasNext: true,
+      hasPrevious: true,
+    });
+
+    rerender(<AuditLog />);
+
+    expect(screen.getByTestId('audit-log-apply-button')).toBeEnabled();
+    expect(screen.getByTestId('audit-log-reset-button')).toBeEnabled();
+    expect(screen.getByTestId('audit-log-table-next-set')).toBeEnabled();
+    expect(screen.getByTestId('audit-log-table-previous-set')).toBeEnabled();
   });
 
   it('leaves the filter inputs enabled while fetching', () => {
@@ -259,6 +279,12 @@ describe('AuditLog', () => {
   });
 
   it('calls next/prev via the table cursor pagination controls', () => {
+    mockUseAuditLogs.mockReturnValue({
+      ...baseHookState,
+      hasNext: true,
+      hasPrevious: true,
+    });
+
     render(<AuditLog />);
 
     fireEvent.click(screen.getByTestId('audit-log-table-next-set'));

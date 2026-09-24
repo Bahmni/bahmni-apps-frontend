@@ -25,5 +25,7 @@
   align-items: flex-end;
   gap: $spacing-05;
   flex-wrap: wrap;
+  width: 100%;
+  justify-content: space-between;
 }
 

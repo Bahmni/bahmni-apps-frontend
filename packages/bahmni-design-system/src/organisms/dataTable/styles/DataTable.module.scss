@@ -56,6 +56,9 @@
     height: $spacing-10;
     align-content: start;
     border-block-end: 0 !important;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    word-break: break-word;
   }
 
   tr > td:first-child:has(button) {
@@ -116,10 +119,6 @@
   gap: $spacing-02;
   background-color: $layer-01;
   border-top: 1px solid $border-subtle;
-}
-
-.setPaginationCentered {
-  justify-content: center;
 }
 
 .setNavButton {

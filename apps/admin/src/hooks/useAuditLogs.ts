@@ -55,8 +55,13 @@ export const combineDateAndTime = (
       combined.setHours(hours, minutes, 0, 0);
     }
   }
+  if (Number.isNaN(combined.getTime())) {
+    return undefined;
+  }
   return combined.toISOString();
 };
+
+const AUDIT_LOG_PAGE_SIZE = 50;
 
 export const useAuditLogs = () => {
   const [filters, setFilters] = useState<AuditLogFilters>({
@@ -70,6 +75,8 @@ export const useAuditLogs = () => {
   const [lastIndex, setLastIndex] = useState(0);
   const [logs, setLogs] = useState<AuditLogListEntry[]>([]);
   const [emptyMessageKey, setEmptyMessageKey] = useState<string | null>(null);
+  const [hasNext, setHasNext] = useState(false);
+  const [hasPrevious, setHasPrevious] = useState(false);
 
   const requestIdRef = useRef(0);
   const [request, setRequest] = useState<AuditLogRequest | null>(null);
@@ -180,19 +187,17 @@ export const useAuditLogs = () => {
     );
   };
 
-  // Resets both the filter fields and the table to the page's initial-load
-  // state (`defaultView=true`, today's `startFrom`) — legacy `init()` behavior.
+  // Clears all filter fields and fetches audit log with default view (no filters).
   const reset = () => {
-    const today = getTodayDate();
     setFilters({
-      startDate: today,
+      startDate: null,
       startTime: '',
       username: '',
       patientId: '',
     });
     dispatchRequest(
       'init',
-      { startFrom: combineDateAndTime(today, ''), defaultView: true },
+      { defaultView: true },
       true,
       false,
       0,
@@ -218,8 +223,15 @@ export const useAuditLogs = () => {
     if (parsedLogs.length) {
       setLogs(parsedLogs);
       setEmptyMessageKey(null);
-      setFirstIndex(parsedLogs[0].auditLogId);
-      setLastIndex(parsedLogs[parsedLogs.length - 1].auditLogId);
+      const newFirstIndex = parsedLogs[0].auditLogId;
+      const newLastIndex = parsedLogs[parsedLogs.length - 1].auditLogId;
+      setFirstIndex(newFirstIndex);
+      setLastIndex(newLastIndex);
+
+      // If we got a full page of results, there might be more pages
+      setHasNext(parsedLogs.length === AUDIT_LOG_PAGE_SIZE);
+      // If we're not at the initial state (indices are 0), we can go back
+      setHasPrevious(request.action !== 'init');
     } else {
       if (request.alwaysReplace) {
         setLogs([]);
@@ -227,6 +239,8 @@ export const useAuditLogs = () => {
       setEmptyMessageKey(request.emptyMessageKey);
       setFirstIndex(request.defaultFirstIndex);
       setLastIndex(request.defaultLastIndex);
+      setHasNext(false);
+      setHasPrevious(request.action !== 'init');
     }
   }, [data, request]);
 
@@ -240,6 +254,8 @@ export const useAuditLogs = () => {
     emptyMessageKey,
     firstIndex,
     lastIndex,
+    hasNext,
+    hasPrevious,
     next,
     prev,
     runReport,

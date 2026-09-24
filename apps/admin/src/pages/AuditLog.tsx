@@ -31,6 +31,8 @@ export const AuditLog: React.FC = () => {
     isFetching,
     isError,
     emptyMessageKey,
+    hasNext,
+    hasPrevious,
     next,
     prev,
     runReport,
@@ -72,6 +74,8 @@ export const AuditLog: React.FC = () => {
           };
           return interpolateMessage(t(log.message, context), context);
         }
+        case 'module':
+          return t(log.module);
         default:
           return (log as unknown as Record<string, React.ReactNode>)[columnKey];
       }
@@ -80,19 +84,18 @@ export const AuditLog: React.FC = () => {
   );
 
   return (
-    <AdminLayout>
+    <AdminLayout breadcrumbLabel={t('MODULE_LABEL_AUDIT_LOG_KEY')}>
       <div
         id="admin-audit-log-page"
         data-testid="admin-audit-log-page-test-id"
         aria-label="admin-audit-log-page-aria-label"
         className={styles.page}
       >
-        <h1>{t('ADMIN_AUDIT_LOG_TITLE')}</h1>
-
         <Tile className={styles.filters} aria-label={t('FILTERS_HEADER_LABEL')}>
           <h2>{t('FILTERS_HEADER_LABEL')}</h2>
           <div className={styles.filterRow}>
             <DatePicker
+              key={filters.startDate?.getTime() ?? 'empty'}
               datePickerType="single"
               dateFormat="d/m/Y"
               maxDate={new Date()}
@@ -174,11 +177,9 @@ export const AuditLog: React.FC = () => {
             pagination={{
               mode: 'cursor',
               pageSize: AUDIT_LOG_PAGE_SIZE,
-              hasNext: true,
-              hasPrevious: true,
+              hasNext,
+              hasPrevious,
               disabled: isFetching,
-              iconOnly: true,
-              hidePageNumbers: true,
               previousLabel: t('AUDIT_LOG_PREV_BUTTON_LABEL'),
               nextLabel: t('AUDIT_LOG_NEXT_BUTTON_LABEL'),
               onSetChange: (direction) =>
