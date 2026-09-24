@@ -64,6 +64,7 @@ export {
 export { useDebounce } from './commandPalette/useDebounce';
 export { usePatientUUID } from './hooks/usePatientUUID';
 export { usePatientPhoto } from './hooks/usePatientPhoto';
+export { useFormSchemaData } from './observationsRenderer/hooks/useFormSchemaData';
 export { useUserPrivilege } from './userPrivileges/useUserPrivilege';
 export { useHasPrivilege } from './userPrivileges/useHasPrivilege';
 

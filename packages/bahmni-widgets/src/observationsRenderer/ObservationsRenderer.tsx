@@ -17,6 +17,7 @@ import {
   groupMultiSelectObservations,
   transformObservations,
 } from '../utils/Observations';
+import { useFormSchemaData } from './hooks/useFormSchemaData';
 import styles from './styles/ObservationsRenderer.module.scss';
 
 export interface ObservationsRendererProps {
@@ -28,9 +29,7 @@ export interface ObservationsRendererProps {
   className?: string;
   testIdPrefix?: string;
   hideThumbnail?: boolean;
-  controlOrder?: string[];
-  sectionMap?: Record<string, string>;
-  conceptDatatypeMap?: Record<string, string>;
+  formName?: string;
 }
 
 interface ObservationMemberProps {
@@ -277,7 +276,21 @@ const renderObservation = (
   );
 };
 
-export const ObservationsRenderer: React.FC<ObservationsRendererProps> = ({
+interface ObservationsViewInternalProps {
+  observations: Observation[];
+  controlOrder?: string[];
+  sectionMap?: Record<string, string>;
+  conceptDatatypeMap?: Record<string, string>;
+  isLoading?: boolean;
+  isError?: boolean;
+  errorMessage?: string;
+  emptyStateMessage?: string;
+  className?: string;
+  testIdPrefix?: string;
+  hideThumbnail?: boolean;
+}
+
+const ObservationsView: React.FC<ObservationsViewInternalProps> = ({
   observations,
   isLoading = false,
   isError = false,
@@ -433,6 +446,36 @@ export const ObservationsRenderer: React.FC<ObservationsRendererProps> = ({
     >
       {elements}
     </div>
+  );
+};
+
+export const ObservationsRenderer: React.FC<ObservationsRendererProps> = ({
+  observations,
+  formName,
+  isLoading = false,
+  isError = false,
+  errorMessage,
+  emptyStateMessage,
+  className,
+  testIdPrefix = '',
+  hideThumbnail = false,
+}) => {
+  const schema = useFormSchemaData(formName);
+
+  return (
+    <ObservationsView
+      observations={observations}
+      isLoading={schema.isLoading || isLoading}
+      isError={schema.isError || isError}
+      errorMessage={schema.errorMessage ?? errorMessage}
+      emptyStateMessage={emptyStateMessage}
+      className={className}
+      testIdPrefix={testIdPrefix}
+      hideThumbnail={hideThumbnail}
+      controlOrder={schema.controlOrder}
+      sectionMap={schema.sectionMap}
+      conceptDatatypeMap={schema.conceptDatatypeMap}
+    />
   );
 };
 
