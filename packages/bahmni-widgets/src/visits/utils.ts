@@ -1,4 +1,5 @@
 import { camelToScreamingSnakeCase, formatDateTime } from '@bahmni/services';
+import { isSameDay } from 'date-fns';
 import { Encounter } from 'fhir/r4';
 import { DEFAULT_MAXIMUM_NO_OF_VISITS } from './constants';
 import { VisitViewModel } from './model';
@@ -75,15 +76,6 @@ export function toVisitViewModels(
 }
 
 /**
- * True when two ISO date-time strings fall on the same calendar day (local
- * time). Used to decide whether a visit's end date should be suppressed
- * (AC 3) or shown as a range (AC 4).
- */
-export function isSameCalendarDay(start: string, end: string): boolean {
-  return new Date(start).toDateString() === new Date(end).toDateString();
-}
-
-/**
  * Formats a visit's date/time for display:
  * - Active visits (no end date): start date + time (per design, the active
  *   visit is the only row that shows a time).
@@ -100,7 +92,7 @@ export function formatVisitDateRange(
   }
 
   const start = formatDateTime(visit.startDate, t).formattedResult;
-  if (isSameCalendarDay(visit.startDate, visit.endDate)) {
+  if (isSameDay(visit.startDate, visit.endDate)) {
     return start;
   }
 

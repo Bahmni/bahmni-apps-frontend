@@ -3,7 +3,6 @@ import {
   buildVisitLocationMap,
   formatVisitDateRange,
   isIpdVisit,
-  isSameCalendarDay,
   toVisitViewModels,
   translateVisitType,
 } from '../utils';
@@ -134,26 +133,6 @@ describe('visits utils', () => {
         { ...mockOneDayOpdEncounter, period: undefined },
       ]);
       expect(result).toEqual([]);
-    });
-  });
-
-  describe('isSameCalendarDay', () => {
-    it('returns true for two timestamps on the same day', () => {
-      expect(
-        isSameCalendarDay(
-          '2025-03-24T06:00:00.000+00:00',
-          '2025-03-24T07:00:00.000+00:00',
-        ),
-      ).toBe(true);
-    });
-
-    it('returns false for timestamps on different days', () => {
-      expect(
-        isSameCalendarDay(
-          '2025-07-15T09:00:00.000+00:00',
-          '2025-07-18T10:00:00.000+00:00',
-        ),
-      ).toBe(false);
     });
   });
 

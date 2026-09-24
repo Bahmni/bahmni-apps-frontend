@@ -129,17 +129,20 @@ describe('VisitsTable', () => {
       ).toBeInTheDocument();
     });
 
-    it('shows an Active tag only for the visit with no end date (AC 2)', () => {
+    it('shows an Active tag for the visit with no end date (AC 2)', () => {
       renderWithClient();
       expect(
         screen.getByTestId(`${mockActiveIpdEncounter.id}-status-test-id`),
       ).toHaveTextContent('VISIT_STATUS_ACTIVE');
-      expect(
-        screen.queryByTestId(`${mockOneDayOpdEncounter.id}-status-test-id`),
-      ).not.toBeInTheDocument();
-      expect(
-        screen.queryByTestId(`${mockMultiDayIpdEncounter.id}-status-test-id`),
-      ).not.toBeInTheDocument();
+    });
+
+    it('shows a Completed tag for closed visits', () => {
+      renderWithClient();
+      [mockOneDayOpdEncounter, mockMultiDayIpdEncounter].forEach((encounter) =>
+        expect(
+          screen.getByTestId(`${encounter.id}-status-test-id`),
+        ).toHaveTextContent('VISIT_STATUS_COMPLETED'),
+      );
     });
 
     it('renders the three default columns and no Location column when config.fields is unset (AC 5)', () => {
@@ -199,14 +202,38 @@ describe('VisitsTable', () => {
       ).not.toBeInTheDocument();
     });
 
-    it('renders columns in the order given by config.fields', () => {
-      renderWithClient({ fields: ['status', 'location', 'visitDate'] });
-      const rendered = screen
+    const renderedHeaders = () =>
+      screen
         .getAllByRole('columnheader')
-        .map((th) => th.textContent?.trim());
-      expect(rendered).toEqual([
+        .map((th: HTMLElement) => th.textContent?.trim());
+
+    it('renders columns in the order given by config.fields', () => {
+      renderWithClient({
+        fields: ['status', 'visitType', 'location', 'visitDate'],
+      });
+      expect(renderedHeaders()).toEqual([
+        'VISIT_STATUS',
+        'VISIT_TYPE',
+        'VISIT_LOCATION',
+        'VISIT_DATE',
+      ]);
+    });
+
+    it('prepends Visit Date and Visit Type when config.fields leaves them out', () => {
+      renderWithClient({ fields: ['status', 'location'] });
+      expect(renderedHeaders()).toEqual([
+        'VISIT_DATE',
+        'VISIT_TYPE',
         'VISIT_STATUS',
         'VISIT_LOCATION',
+      ]);
+    });
+
+    it('prepends only the missing mandatory column, keeping the configured position of the other', () => {
+      renderWithClient({ fields: ['status', 'visitDate'] });
+      expect(renderedHeaders()).toEqual([
+        'VISIT_TYPE',
+        'VISIT_STATUS',
         'VISIT_DATE',
       ]);
     });
@@ -303,5 +330,18 @@ describe('VisitsTable', () => {
       const { container } = renderWithClient();
       expect(container.querySelectorAll('tbody tr')).toHaveLength(4);
     });
+
+    it.each([-1, -10, 0, 2.5, 'abc'])(
+      'falls back to 4 visits when maximumNoOfVisits is %p',
+      (maximumNoOfVisits) => {
+        (useQuery as jest.Mock).mockReturnValue({
+          data: manyEncounters,
+          isLoading: false,
+          isError: false,
+        });
+        const { container } = renderWithClient({ maximumNoOfVisits });
+        expect(container.querySelectorAll('tbody tr')).toHaveLength(4);
+      },
+    );
   });
 });

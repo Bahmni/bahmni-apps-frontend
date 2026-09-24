@@ -19,6 +19,7 @@ import {
   DEFAULT_IPD_VISIT_TYPES,
   DEFAULT_MAXIMUM_NO_OF_VISITS,
   DEFAULT_VISIT_FIELDS,
+  MANDATORY_VISIT_FIELDS,
   VISIT_FIELD_TRANSLATION_MAP,
 } from './constants';
 import { VisitViewModel } from './model';
@@ -32,7 +33,7 @@ import {
 } from './utils';
 
 /**
- * Displays a patient's visit history: date, type, and active status, with
+ * Displays a patient's visit history: date, type, and active/completed status, with
  * an optional Location column and config-driven navigation links to the
  * visit dashboard and, for IPD visits, the IPD dashboard.
  */
@@ -40,11 +41,22 @@ const VisitsTable: React.FC<WidgetProps> = ({ config }) => {
   const { t } = useTranslation();
   const patientUUID = usePatientUUID();
 
-  // Number() safely handles non-numeric config values (NaN → falsy → default)
+  // Only a positive integer is a usable cap: a negative value would reach
+  // slice(0, -n) and silently drop visits, so anything else uses the default.
+  const configuredMaximumNoOfVisits = Number(config?.maximumNoOfVisits);
   const maximumNoOfVisits =
-    Number(config?.maximumNoOfVisits) || DEFAULT_MAXIMUM_NO_OF_VISITS;
-  const configuredFields =
-    (config?.fields as string[] | undefined) ?? DEFAULT_VISIT_FIELDS;
+    Number.isInteger(configuredMaximumNoOfVisits) &&
+    configuredMaximumNoOfVisits > 0
+      ? configuredMaximumNoOfVisits
+      : DEFAULT_MAXIMUM_NO_OF_VISITS;
+  const fieldsFromConfig = config?.fields as string[] | undefined;
+  const configuredFields = useMemo(() => {
+    const fields = fieldsFromConfig ?? DEFAULT_VISIT_FIELDS;
+    const missingMandatory = MANDATORY_VISIT_FIELDS.filter(
+      (field) => !fields.includes(field),
+    );
+    return [...missingMandatory, ...fields];
+  }, [fieldsFromConfig]);
   const navigationURL = config?.navigationURL as string | undefined;
   const ipdDashboardUrl = config?.ipdDashboardUrl as string | undefined;
   const ipdVisitTypes =
@@ -156,8 +168,6 @@ const VisitsTable: React.FC<WidgetProps> = ({ config }) => {
     };
   }, [visits, encounterMap, ipdDashboardUrl, ipdVisitTypes, patientUUID]);
 
-  // Column set and order come straight from config.fields, so deployments can
-  // add, remove or reorder columns without a code change.
   const headers = useMemo(
     () =>
       configuredFields.map((fieldKey) => ({
@@ -215,13 +225,17 @@ const VisitsTable: React.FC<WidgetProps> = ({ config }) => {
         );
       }
       case 'status':
-        return visit.isActive ? (
+        return (
           <StatusTag
-            label={t('VISIT_STATUS_ACTIVE')}
-            dotClassName={styles.activeStatus}
+            label={t(
+              visit.isActive ? 'VISIT_STATUS_ACTIVE' : 'VISIT_STATUS_COMPLETED',
+            )}
+            dotClassName={
+              visit.isActive ? styles.activeStatus : styles.completedStatus
+            }
             testId={`${visit.id}-status-test-id`}
           />
-        ) : null;
+        );
       case 'location':
         return (
           <span data-testid={`${visit.id}-location-test-id`}>

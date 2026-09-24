@@ -21,3 +21,9 @@ export const VISIT_FIELD_TRANSLATION_MAP: Record<string, string> = {
  * is deliberately excluded so it stays opt-in.
  */
 export const DEFAULT_VISIT_FIELDS = ['visitDate', 'visitType', 'status'];
+
+/**
+ * Columns that are always rendered. `config.fields` may reorder them, but any
+ * it leaves out are prepended so a deployment cannot remove them.
+ */
+export const MANDATORY_VISIT_FIELDS = ['visitDate', 'visitType'];
