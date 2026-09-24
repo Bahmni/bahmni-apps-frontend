@@ -5,6 +5,7 @@ import {
   DatePicker,
   DatePickerInput,
   TextInput,
+  Tile,
   TimePicker,
 } from '@bahmni/design-system';
 import {
@@ -88,10 +89,7 @@ export const AuditLog: React.FC = () => {
       >
         <h1>{t('ADMIN_AUDIT_LOG_TITLE')}</h1>
 
-        <section
-          className={styles.filters}
-          aria-label={t('FILTERS_HEADER_LABEL')}
-        >
+        <Tile className={styles.filters} aria-label={t('FILTERS_HEADER_LABEL')}>
           <h2>{t('FILTERS_HEADER_LABEL')}</h2>
           <div className={styles.filterRow}>
             <DatePicker
@@ -144,7 +142,7 @@ export const AuditLog: React.FC = () => {
               testId="audit-log-patient-id-input"
             />
             <Button
-              kind="secondary"
+              kind="tertiary"
               onClick={reset}
               disabled={isFetching}
               testId="audit-log-reset-button"
@@ -160,14 +158,14 @@ export const AuditLog: React.FC = () => {
               {t('AUDIT_LOG_APPLY_BUTTON_LABEL')}
             </Button>
           </div>
-        </section>
+        </Tile>
 
-        <section aria-label={t('AUDIT_LOG_TABLE_HEADER_LABEL')}>
-          <h2>{t('AUDIT_LOG_TABLE_HEADER_LABEL')}</h2>
+        <div>
           <DataTable
             columns={columns}
             rows={logs}
             ariaLabel={t('AUDIT_LOG_TABLE_HEADER_LABEL')}
+            title={t('AUDIT_LOG_TABLE_HEADER_LABEL')}
             dataTestId="audit-log-table"
             loading={isLoading}
             renderCell={renderCell}
@@ -187,7 +185,7 @@ export const AuditLog: React.FC = () => {
                 direction === 'next' ? next() : prev(),
             }}
           />
-        </section>
+        </div>
       </div>
     </AdminLayout>
   );

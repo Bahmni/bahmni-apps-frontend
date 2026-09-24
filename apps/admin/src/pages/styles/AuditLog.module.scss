@@ -2,10 +2,22 @@
 
 .page {
   padding-block: $spacing-05;
+  // Pinned to the mockup's literal gray-page/white-card look rather than
+  // `--cds-background`/`--cds-layer`, which resolve inverted in this app's
+  // theme (background renders white, layer renders gray).
+  background-color: #f4f4f4;
 }
 
 .filters {
   margin-bottom: $spacing-06;
+  background-color: #fff !important;
+}
+
+// Carbon's DataTable title band uses `--cds-layer`, which resolves gray in
+// this app's theme — override to white so it reads as part of the same
+// card as the table body beneath it, matching the mockup.
+.page :global(.cds--data-table-header) {
+  background-color: #fff !important;
 }
 
 .filterRow {
@@ -14,3 +26,4 @@
   gap: $spacing-05;
   flex-wrap: wrap;
 }
+
