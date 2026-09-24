@@ -1,4 +1,6 @@
-import { render, screen } from '@testing-library/react';
+import { fetchFormMetadata, fetchObservationForms } from '@bahmni/services';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { render, screen, waitFor } from '@testing-library/react';
 import { Observation } from 'fhir/r4';
 import { ObservationsRenderer } from '../ObservationsRenderer';
 
@@ -7,12 +9,25 @@ jest.mock('@bahmni/services', () => ({
   useTranslation: () => ({
     t: (key: string) => key,
   }),
+  fetchObservationForms: jest.fn(),
+  fetchFormMetadata: jest.fn(),
 }));
+
+const renderWithQueryClient = (ui: React.ReactElement) => {
+  const queryClient = new QueryClient({
+    defaultOptions: { queries: { retry: false } },
+  });
+  return render(
+    <QueryClientProvider client={queryClient}>{ui}</QueryClientProvider>,
+  );
+};
 
 describe('ObservationsRenderer', () => {
   describe('Loading, Error, and Empty States', () => {
     it('should render loading state', () => {
-      render(<ObservationsRenderer observations={[]} isLoading />);
+      renderWithQueryClient(
+        <ObservationsRenderer observations={[]} isLoading />,
+      );
 
       expect(
         screen.getByTestId('observations-table-skeleton'),
@@ -20,7 +35,7 @@ describe('ObservationsRenderer', () => {
     });
 
     it('should render error state with custom message', () => {
-      render(
+      renderWithQueryClient(
         <ObservationsRenderer
           observations={[]}
           isError
@@ -32,7 +47,7 @@ describe('ObservationsRenderer', () => {
     });
 
     it('should render error state with default message', () => {
-      render(<ObservationsRenderer observations={[]} isError />);
+      renderWithQueryClient(<ObservationsRenderer observations={[]} isError />);
 
       expect(
         screen.getByText('ERROR_LOADING_OBSERVATIONS'),
@@ -40,7 +55,7 @@ describe('ObservationsRenderer', () => {
     });
 
     it('should render empty state with custom message', () => {
-      render(
+      renderWithQueryClient(
         <ObservationsRenderer
           observations={[]}
           emptyStateMessage="No data found"
@@ -51,7 +66,7 @@ describe('ObservationsRenderer', () => {
     });
 
     it('should render empty state with default message', () => {
-      render(<ObservationsRenderer observations={[]} />);
+      renderWithQueryClient(<ObservationsRenderer observations={[]} />);
 
       expect(screen.getByText('NO_OBSERVATIONS_AVAILABLE')).toBeInTheDocument();
     });
@@ -72,7 +87,9 @@ describe('ObservationsRenderer', () => {
         },
       };
 
-      render(<ObservationsRenderer observations={[mockObservation]} />);
+      renderWithQueryClient(
+        <ObservationsRenderer observations={[mockObservation]} />,
+      );
 
       expect(
         screen.getByTestId('observations-renderer-test-id'),
@@ -99,7 +116,9 @@ describe('ObservationsRenderer', () => {
         valueString: 'Positive',
       };
 
-      render(<ObservationsRenderer observations={[mockObservation]} />);
+      renderWithQueryClient(
+        <ObservationsRenderer observations={[mockObservation]} />,
+      );
 
       expect(
         screen.getByTestId('observation-value-Result-0'),
@@ -119,7 +138,9 @@ describe('ObservationsRenderer', () => {
         valueBoolean: true,
       };
 
-      render(<ObservationsRenderer observations={[mockObservation]} />);
+      renderWithQueryClient(
+        <ObservationsRenderer observations={[mockObservation]} />,
+      );
 
       expect(
         screen.getByTestId('observation-value-Is Smoker-0'),
@@ -137,7 +158,9 @@ describe('ObservationsRenderer', () => {
         valueBoolean: false,
       };
 
-      render(<ObservationsRenderer observations={[mockObservation]} />);
+      renderWithQueryClient(
+        <ObservationsRenderer observations={[mockObservation]} />,
+      );
 
       expect(
         screen.getByTestId('observation-value-Is Smoker-0'),
@@ -175,7 +198,9 @@ describe('ObservationsRenderer', () => {
         ],
       };
 
-      render(<ObservationsRenderer observations={[mockObservation]} />);
+      renderWithQueryClient(
+        <ObservationsRenderer observations={[mockObservation]} />,
+      );
 
       const label = screen.getByTestId('observation-label-Blood Glucose-0');
       expect(label).toHaveTextContent('Blood Glucose');
@@ -213,7 +238,9 @@ describe('ObservationsRenderer', () => {
         ],
       };
 
-      render(<ObservationsRenderer observations={[mockObservation]} />);
+      renderWithQueryClient(
+        <ObservationsRenderer observations={[mockObservation]} />,
+      );
 
       expect(
         screen.getByTestId('observation-label-Hemoglobin-0'),
@@ -248,7 +275,9 @@ describe('ObservationsRenderer', () => {
         ],
       };
 
-      render(<ObservationsRenderer observations={[mockObservation]} />);
+      renderWithQueryClient(
+        <ObservationsRenderer observations={[mockObservation]} />,
+      );
 
       expect(
         screen.getByTestId('observation-label-Blood Pressure-0'),
@@ -296,7 +325,9 @@ describe('ObservationsRenderer', () => {
         ],
       };
 
-      render(<ObservationsRenderer observations={[mockObservation]} />);
+      renderWithQueryClient(
+        <ObservationsRenderer observations={[mockObservation]} />,
+      );
 
       const label = screen.getByTestId('observation-label-High Temperature-0');
       const value = screen.getByTestId('observation-value-High Temperature-0');
@@ -354,7 +385,7 @@ describe('ObservationsRenderer', () => {
         ],
       };
 
-      render(
+      renderWithQueryClient(
         <ObservationsRenderer observations={[groupObservation, altMember]} />,
       );
 
@@ -408,7 +439,7 @@ describe('ObservationsRenderer', () => {
         },
       };
 
-      render(
+      renderWithQueryClient(
         <ObservationsRenderer
           observations={[groupObservation, member1, member2]}
         />,
@@ -464,7 +495,7 @@ describe('ObservationsRenderer', () => {
         },
       };
 
-      render(
+      renderWithQueryClient(
         <ObservationsRenderer
           observations={[panelObservation, subPanelObservation, nestedValue]}
         />,
@@ -512,7 +543,9 @@ describe('ObservationsRenderer', () => {
         },
       };
 
-      render(<ObservationsRenderer observations={[obs1, obs2]} />);
+      renderWithQueryClient(
+        <ObservationsRenderer observations={[obs1, obs2]} />,
+      );
 
       expect(
         screen.getByTestId('observation-item-Simple Test-0'),
@@ -540,7 +573,9 @@ describe('ObservationsRenderer', () => {
         note: [{ text: 'Patient has fever' }],
       };
 
-      render(<ObservationsRenderer observations={[mockObservation]} />);
+      renderWithQueryClient(
+        <ObservationsRenderer observations={[mockObservation]} />,
+      );
 
       expect(
         screen.getByTestId('observation-comment-Temperature-0'),
@@ -575,7 +610,7 @@ describe('ObservationsRenderer', () => {
         note: [{ text: 'Slightly elevated' }],
       };
 
-      render(
+      renderWithQueryClient(
         <ObservationsRenderer observations={[groupObservation, member]} />,
       );
 
@@ -600,7 +635,9 @@ describe('ObservationsRenderer', () => {
         valueString: 'https://example.com/xray.jpg',
       };
 
-      render(<ObservationsRenderer observations={[mockObservation]} />);
+      renderWithQueryClient(
+        <ObservationsRenderer observations={[mockObservation]} />,
+      );
 
       const imageTile = screen.getByTestId(
         'https://example.com/xray.jpg-img-test-id',
@@ -619,7 +656,9 @@ describe('ObservationsRenderer', () => {
         valueString: 'https://example.com/procedure.mp4',
       };
 
-      render(<ObservationsRenderer observations={[mockObservation]} />);
+      renderWithQueryClient(
+        <ObservationsRenderer observations={[mockObservation]} />,
+      );
 
       const videoTile = screen.getByTestId(
         'https://example.com/procedure.mp4-video-test-id',
@@ -638,7 +677,9 @@ describe('ObservationsRenderer', () => {
         valueString: 'https://example.com/report.pdf',
       };
 
-      render(<ObservationsRenderer observations={[mockObservation]} />);
+      renderWithQueryClient(
+        <ObservationsRenderer observations={[mockObservation]} />,
+      );
 
       const fileTile = screen.getByTestId(
         'https://example.com/report.pdf-pdf-test-id',
@@ -669,7 +710,9 @@ describe('ObservationsRenderer', () => {
         valueString: 'https://example.com/photo2.jpg',
       };
 
-      render(<ObservationsRenderer observations={[obs1, obs2]} />);
+      renderWithQueryClient(
+        <ObservationsRenderer observations={[obs1, obs2]} />,
+      );
 
       expect(
         screen.getByTestId('https://example.com/photo1.jpg-img-test-id'),
@@ -715,7 +758,7 @@ describe('ObservationsRenderer', () => {
         valueString: 'https://example.com/scan2.png',
       };
 
-      render(
+      renderWithQueryClient(
         <ObservationsRenderer
           observations={[groupObservation, imgMember1, imgMember2]}
         />,
@@ -745,7 +788,7 @@ describe('ObservationsRenderer', () => {
         },
       };
 
-      render(
+      renderWithQueryClient(
         <ObservationsRenderer
           observations={[mockObservation]}
           testIdPrefix="MyForm"
@@ -787,7 +830,7 @@ describe('ObservationsRenderer', () => {
         },
       };
 
-      render(
+      renderWithQueryClient(
         <ObservationsRenderer
           observations={[groupObservation, member]}
           testIdPrefix="FormName"
@@ -809,11 +852,8 @@ describe('ObservationsRenderer', () => {
     });
   });
 
-  describe('controlOrder prop', () => {
-    it('should render observations in controlOrder sequence rather than sortId numeric order', () => {
-      // controlOrder puts id=25 before id=18, even though 18 < 25 numerically
-      const controlOrder = ['14', '15', '16', '25', '26', '18', '19'];
-
+  describe('default sorting behavior', () => {
+    it('should fall back to sortId numeric ordering when formName is not provided', () => {
       const makeObs = (
         id: string,
         display: string,
@@ -832,62 +872,12 @@ describe('ObservationsRenderer', () => {
         ],
       });
 
+      // Without formName, sort is numeric: 14, 18, 25
       const pulse = makeObs('obs-pulse', 'Pulse', '14');
       const lowBirthWeight = makeObs('obs-lbw', 'LowBirthWeight', '25');
       const temperature = makeObs('obs-temp', 'Temperature', '18');
 
-      render(
-        <ObservationsRenderer
-          observations={[pulse, lowBirthWeight, temperature]}
-          controlOrder={controlOrder}
-        />,
-      );
-
-      const pulseItem = screen.getByTestId('observation-item-Pulse-0');
-      const lbwItem = screen.getByTestId('observation-item-LowBirthWeight-1');
-      const tempItem = screen.getByTestId('observation-item-Temperature-2');
-
-      // Confirm all three rendered with correct index positions
-      expect(pulseItem).toBeInTheDocument();
-      expect(lbwItem).toBeInTheDocument();
-      expect(tempItem).toBeInTheDocument();
-
-      // LowBirthWeight (id=25, pos=3) must appear before Temperature (id=18, pos=5)
-      expect(
-        pulseItem.compareDocumentPosition(lbwItem) &
-          Node.DOCUMENT_POSITION_FOLLOWING,
-      ).toBeTruthy();
-      expect(
-        lbwItem.compareDocumentPosition(tempItem) &
-          Node.DOCUMENT_POSITION_FOLLOWING,
-      ).toBeTruthy();
-    });
-
-    it('should fall back to sortId numeric ordering when controlOrder is not provided', () => {
-      const makeObs = (
-        id: string,
-        display: string,
-        controlId: string,
-      ): Observation => ({
-        resourceType: 'Observation',
-        id,
-        status: 'final',
-        code: { text: display },
-        valueString: display,
-        extension: [
-          {
-            url: 'http://fhir.bahmni.org/ext/observation/form-namespace-path',
-            valueString: `Bahmni^SecondVitals.1/${controlId}-0`,
-          },
-        ],
-      });
-
-      // Without controlOrder, sort is numeric: 14, 18, 25
-      const pulse = makeObs('obs-pulse', 'Pulse', '14');
-      const lowBirthWeight = makeObs('obs-lbw', 'LowBirthWeight', '25');
-      const temperature = makeObs('obs-temp', 'Temperature', '18');
-
-      render(
+      renderWithQueryClient(
         <ObservationsRenderer
           observations={[pulse, lowBirthWeight, temperature]}
         />,
@@ -906,7 +896,7 @@ describe('ObservationsRenderer', () => {
     });
   });
 
-  describe('section headers', () => {
+  describe('section headers from form schema', () => {
     const makeObsWithSortId = (
       id: string,
       display: string,
@@ -925,68 +915,14 @@ describe('ObservationsRenderer', () => {
       ],
     });
 
-    it('should render section as a group with label and members when sectionMap maps control ID to a section name', () => {
-      const obs = makeObsWithSortId('obs-30', 'Sign/symptom name', '30');
-      const sectionMap = { '30': 'MySection' };
-
-      render(
-        <ObservationsRenderer observations={[obs]} sectionMap={sectionMap} />,
-      );
-
-      expect(screen.getByTestId('section-label-MySection')).toHaveTextContent(
-        'MySection',
-      );
-      // Section observations render as ObservationMember rows, not standalone items
-      expect(
-        screen.getByTestId('obs-member-row-Sign/symptom name-0'),
-      ).toBeInTheDocument();
-      // Not rendered as a standalone observation-item
-      expect(
-        screen.queryByTestId('observation-item-Sign/symptom name-0'),
-      ).not.toBeInTheDocument();
-    });
-
-    it('should not render any section labels when sectionMap is not provided', () => {
+    it('should not render any section labels when formName is not provided', () => {
       const obs = makeObsWithSortId('obs-30', 'Sign/symptom name', '30');
 
-      render(<ObservationsRenderer observations={[obs]} />);
+      renderWithQueryClient(<ObservationsRenderer observations={[obs]} />);
 
-      expect(
-        screen.queryByTestId('section-label-MySection'),
-      ).not.toBeInTheDocument();
-      // Renders as standalone row when no sectionMap
+      // Renders as standalone row when no formName
       expect(
         screen.getByTestId('observation-item-Sign/symptom name-0'),
-      ).toBeInTheDocument();
-    });
-
-    it('should render section group once for multiple observations in the same section', () => {
-      const obs30 = makeObsWithSortId('obs-30', 'Sign/symptom name', '30');
-      const obs31 = makeObsWithSortId(
-        'obs-31',
-        'Patient reported cryptococcal meningitis prophylaxis',
-        '31',
-      );
-      const sectionMap = { '30': 'Section', '31': 'Section' };
-
-      render(
-        <ObservationsRenderer
-          observations={[obs30, obs31]}
-          sectionMap={sectionMap}
-        />,
-      );
-
-      // Only one section label for the group
-      expect(screen.getAllByTestId('section-label-Section')).toHaveLength(1);
-
-      // Both observations render as members inside the group
-      expect(
-        screen.getByTestId('obs-member-row-Sign/symptom name-0'),
-      ).toBeInTheDocument();
-      expect(
-        screen.getByTestId(
-          'obs-member-row-Patient reported cryptococcal meningitis prophylaxis-1',
-        ),
       ).toBeInTheDocument();
     });
   });
@@ -1003,7 +939,7 @@ describe('ObservationsRenderer', () => {
         valueString: 'Result',
       };
 
-      const { container } = render(
+      const { container } = renderWithQueryClient(
         <ObservationsRenderer
           observations={[mockObservation]}
           className="custom-class"
@@ -1012,6 +948,138 @@ describe('ObservationsRenderer', () => {
 
       const renderer = container.querySelector('.custom-class');
       expect(renderer).toBeInTheDocument();
+    });
+  });
+
+  describe('formName prop', () => {
+    const mockFetchObservationForms =
+      fetchObservationForms as jest.MockedFunction<
+        typeof fetchObservationForms
+      >;
+    const mockFetchFormMetadata = fetchFormMetadata as jest.MockedFunction<
+      typeof fetchFormMetadata
+    >;
+
+    const makeObs = (
+      id: string,
+      display: string,
+      controlId: string,
+    ): Observation => ({
+      resourceType: 'Observation',
+      id,
+      status: 'final',
+      code: { text: display },
+      valueString: display,
+      extension: [
+        {
+          url: 'http://fhir.bahmni.org/ext/observation/form-namespace-path',
+          valueString: `Bahmni^Vitals.1/${controlId}-0`,
+        },
+      ],
+    });
+
+    const vitalsForm = {
+      uuid: 'form-uuid-1',
+      name: 'Vitals',
+      id: 1,
+      privileges: [],
+    };
+
+    const vitalsMetadata = {
+      uuid: 'form-uuid-1',
+      name: 'Vitals',
+      version: '1',
+      published: true,
+      schema: {
+        controls: [
+          {
+            id: 100,
+            type: 'section',
+            label: { value: 'Vitals Section' },
+            controls: [{ id: 31 }, { id: 30 }],
+          },
+        ],
+      },
+    };
+
+    beforeEach(() => {
+      jest.clearAllMocks();
+    });
+
+    it('should derive control order and section grouping from the named form schema', async () => {
+      mockFetchObservationForms.mockResolvedValue([vitalsForm]);
+      mockFetchFormMetadata.mockResolvedValue(vitalsMetadata);
+
+      renderWithQueryClient(
+        <ObservationsRenderer
+          observations={[makeObs('obs-30', 'Pulse', '30')]}
+          formName="Vitals"
+        />,
+      );
+
+      await waitFor(() => {
+        expect(
+          screen.getByTestId('section-label-Vitals Section'),
+        ).toHaveTextContent('Vitals Section');
+      });
+      expect(mockFetchFormMetadata).toHaveBeenCalledWith('form-uuid-1');
+      expect(screen.getByTestId('obs-member-row-Pulse-0')).toBeInTheDocument();
+    });
+
+    it('should show the loading skeleton while the form schema is being fetched', () => {
+      mockFetchObservationForms.mockReturnValue(new Promise(() => {}));
+      mockFetchFormMetadata.mockReturnValue(new Promise(() => {}));
+
+      renderWithQueryClient(
+        <ObservationsRenderer
+          observations={[makeObs('obs-30', 'Pulse', '30')]}
+          formName="Vitals"
+        />,
+      );
+
+      expect(
+        screen.getByTestId('observations-table-skeleton'),
+      ).toBeInTheDocument();
+    });
+
+    it('should render the error state when the form metadata fetch fails', async () => {
+      mockFetchObservationForms.mockResolvedValue([vitalsForm]);
+      mockFetchFormMetadata.mockRejectedValue(new Error('metadata boom'));
+
+      renderWithQueryClient(
+        <ObservationsRenderer
+          observations={[makeObs('obs-30', 'Pulse', '30')]}
+          formName="Vitals"
+        />,
+      );
+
+      await waitFor(() => {
+        expect(screen.getByText('metadata boom')).toBeInTheDocument();
+      });
+      expect(screen.queryByText('Pulse')).not.toBeInTheDocument();
+    });
+
+    it('should fall back to sortId ordering when no published form matches the name', async () => {
+      mockFetchObservationForms.mockResolvedValue([
+        { uuid: 'other-uuid', name: 'Some Other Form', id: 2, privileges: [] },
+      ]);
+
+      renderWithQueryClient(
+        <ObservationsRenderer
+          observations={[makeObs('obs-30', 'Pulse', '30')]}
+          formName="Vitals"
+        />,
+      );
+
+      await waitFor(() => {
+        expect(
+          screen.getByTestId('observation-item-Pulse-0'),
+        ).toBeInTheDocument();
+      });
+      expect(mockFetchFormMetadata).not.toHaveBeenCalled();
+      expect(
+        screen.queryByTestId('section-label-Vitals Section'),
+      ).not.toBeInTheDocument();
     });
   });
 });
