@@ -2,7 +2,10 @@ import type { AdditionalIdentifiersRef } from '../../components/forms/additional
 import type { AdditionalInfoRef } from '../../components/forms/additionalInfo/AdditionalInfo';
 import type { AddressInfoRef } from '../../components/forms/addressInfo/AddressInfo';
 import type { ContactInfoRef } from '../../components/forms/contactInfo/ContactInfo';
-import type { PatientRelationshipsRef } from '../../components/forms/patientRelationships/PatientRelationships';
+import type {
+  PatientRelationshipsRef,
+  RelationshipData,
+} from '../../components/forms/patientRelationships/PatientRelationships';
 import type { RelationshipType } from '../../components/forms/patientRelationships/RelationshipRow';
 import type { ProfileRef } from '../../components/forms/profile/Profile';
 import type { AddressData } from '../../hooks/useAddressFields';
@@ -28,6 +31,7 @@ export interface FormControlData {
   additionalIdentifiersInitialData: AdditionalIdentifiersData | undefined;
   initialDobEstimated: boolean;
   patientPhoto: string | undefined;
+  relationshipsInitialData: RelationshipData[] | undefined;
 }
 
 export interface FormControlGuards {
