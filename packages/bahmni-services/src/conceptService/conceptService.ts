@@ -7,12 +7,15 @@ import {
   CONCEPT_SEARCH_URL,
   CONCEPT_NAME_TYPE_SHORT,
   CONCEPT_NAME_TYPE_FULLY_SPECIFIED,
+  CONCEPT_QUERY_URL,
   FHIR_VALUESET_FILTER_EXPAND_URL,
   FHIR_VALUESET_URL,
 } from './constants';
 import {
   ConceptData,
   ConceptSearch,
+  type ConceptQueryResponse,
+  type ConceptQueryResult,
   type ConceptSearchByNameResponse,
 } from './models';
 
@@ -34,6 +37,13 @@ export const searchConcepts = async (
   const locale = getUserPreferredLocale();
   const url = CONCEPT_SEARCH_URL(term, limit, locale);
   return get<ConceptSearch[]>(url);
+};
+
+export const searchConceptsByQuery = async (
+  term: string,
+): Promise<ConceptQueryResult[]> => {
+  const response = await get<ConceptQueryResponse>(CONCEPT_QUERY_URL(term));
+  return response.results ?? [];
 };
 
 /**

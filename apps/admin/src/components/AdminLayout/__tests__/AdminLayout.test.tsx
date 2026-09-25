@@ -51,6 +51,26 @@ describe('AdminLayout', () => {
     expect(main).toContainElement(children);
   });
 
+  it('renders custom breadcrumbs when provided', () => {
+    render(
+      <AdminLayout
+        breadcrumbs={[
+          { id: 'home', label: 'Home', href: services.BAHMNI_HOME_PATH },
+          { id: 'admin', label: 'Admin', href: '/bahmni-v2/admin' },
+          { id: 'csv-export', label: 'CSV Export', isCurrentPage: true },
+        ]}
+      >
+        <div />
+      </AdminLayout>,
+    );
+
+    expect(screen.getByRole('link', { name: 'Admin' })).toHaveAttribute(
+      'href',
+      '/bahmni-v2/admin',
+    );
+    expect(screen.getByText('CSV Export')).toBeInTheDocument();
+  });
+
   describe('Accessibility', () => {
     it('has no accessibility violations', async () => {
       const { container } = renderLayout();

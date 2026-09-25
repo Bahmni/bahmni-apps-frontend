@@ -15,6 +15,12 @@ const CsvUpload = lazy(() =>
   })),
 );
 
+const CsvExport = lazy(() =>
+  import('../pages/CsvExport').then((module) => ({
+    default: module.CsvExport,
+  })),
+);
+
 export const routes: Routes = [
   {
     path: '/',
@@ -25,6 +31,11 @@ export const routes: Routes = [
     path: '/csv',
     component: CsvUpload,
     name: 'CsvUpload',
+  },
+  {
+    path: '/csvExport',
+    component: CsvExport,
+    name: 'CsvExport',
   },
 ];
 

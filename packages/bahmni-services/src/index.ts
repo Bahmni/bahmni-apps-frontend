@@ -187,10 +187,13 @@ export {
   searchFHIRConceptsByName,
   getConceptById,
   searchConceptByName,
+  searchConceptsByQuery,
   type ConceptSearch,
   type ConceptClass,
   type ConceptData,
+  type ConceptQueryResult,
 } from './conceptService';
+export { exportConceptSet, downloadBlob } from './conceptSetExportService';
 export {
   getPatientMedications,
   getPatientMedicationBundle,

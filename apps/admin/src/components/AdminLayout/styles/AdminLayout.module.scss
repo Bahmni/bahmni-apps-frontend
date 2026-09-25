@@ -5,7 +5,6 @@
   // Tiles are $layer-02 and are designed to read against $layer, the same
   // way the home dashboard body does.
   background-color: $layer;
-  min-height: 100vh;
-  padding-top: $spacing-07;
-  padding-inline: calc($spacing-12 + $spacing-05);
+  padding-block: $spacing-10;
+  padding-inline: calc($spacing-12 + $spacing-09);
 }
