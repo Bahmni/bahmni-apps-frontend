@@ -20,6 +20,7 @@ export const DataTableSetPagination = <T,>({
     startPage = 1,
     hasNext,
     hasPrevious,
+    disabled = false,
     onSetChange,
     previousLabel = 'Previous set',
     nextLabel = 'Next set',
@@ -43,6 +44,7 @@ export const DataTableSetPagination = <T,>({
           size="sm"
           className={styles.setNavButton}
           onClick={() => onSetChange('prev', table)}
+          disabled={disabled}
           testId={`${dataTestId}-previous-set`}
         >
           <CaretLeft />
@@ -78,6 +80,7 @@ export const DataTableSetPagination = <T,>({
           size="sm"
           className={styles.setNavButton}
           onClick={() => onSetChange('next', table)}
+          disabled={disabled}
           testId={`${dataTestId}-next-set`}
         >
           {nextLabel}

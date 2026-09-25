@@ -25,6 +25,24 @@ jest.mock('../../pages/CsvUpload', () => ({
   CsvUpload: () => <div data-testid="admin-csv-upload-page-test-id" />,
 }));
 
+// Routing only needs to know the right page resolved; the AuditLog page's own
+// data fetching/filtering behaviour is covered by its own tests.
+jest.mock('../../hooks/useAuditLogs', () => ({
+  useAuditLogs: () => ({
+    filters: { startDate: null, startTime: '', username: '', patientId: '' },
+    setFilters: jest.fn(),
+    logs: [],
+    isLoading: false,
+    isError: false,
+    emptyMessageKey: null,
+    firstIndex: 0,
+    lastIndex: 0,
+    next: jest.fn(),
+    prev: jest.fn(),
+    runReport: jest.fn(),
+  }),
+}));
+
 const renderAt = (path: string) =>
   render(
     <MemoryRouter initialEntries={[path]}>
@@ -48,6 +66,14 @@ describe('routes', () => {
 
     expect(
       await screen.findByTestId('admin-csv-upload-page-test-id'),
+    ).toBeInTheDocument();
+  });
+
+  it('resolves /auditlog to the audit log page without a 404', async () => {
+    renderAt('/auditlog');
+
+    expect(
+      await screen.findByTestId('admin-audit-log-page-test-id'),
     ).toBeInTheDocument();
   });
 
