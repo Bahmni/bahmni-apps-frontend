@@ -1,7 +1,6 @@
 {
   "ADMIN_ACCESS_DENIED_MESSAGE": "You do not have permission to access the Admin module. Please contact your administrator if you believe this is a mistake. [Privileges required: app:admin]",
   "ADMIN_ACCESS_DENIED_TITLE": "Access denied",
-  "ADMIN_AUDIT_LOG_TITLE": "Audit Log",
   "ADMIN_CSV_UPLOAD_DESCRIPTION": "CSV bulk upload is coming soon.",
   "ADMIN_CSV_UPLOAD_TITLE": "CSV Upload",
   "ADMIN_ERROR_FETCH_CONFIG": "Failed to load admin page configuration",

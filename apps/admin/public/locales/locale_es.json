@@ -1,7 +1,6 @@
 {
   "ADMIN_ACCESS_DENIED_MESSAGE": "No tiene permiso para acceder al módulo de Administración. Póngase en contacto con su administrador si cree que se trata de un error. [Privilegios necesarios: app:admin]",
   "ADMIN_ACCESS_DENIED_TITLE": "Acceso denegado",
-  "ADMIN_AUDIT_LOG_TITLE": "Registro de auditoría",
   "ADMIN_CSV_UPLOAD_DESCRIPTION": "La carga masiva de CSV estará disponible próximamente.",
   "ADMIN_CSV_UPLOAD_TITLE": "Carga de CSV",
   "ADMIN_ERROR_FETCH_CONFIG": "No se pudo cargar la configuración de la página de Administración",
