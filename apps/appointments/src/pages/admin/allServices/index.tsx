@@ -19,13 +19,15 @@ import {
 } from '@bahmni/widgets';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import React, { useMemo, useState } from 'react';
-import { useAppointmentsConfig } from '../../../providers/appointmentsConfig';
-import DeleteServiceModal from './components/DeleteServiceModal';
+import { useNavigate } from 'react-router-dom';
 import {
   ADMIN_TAB_PRIVILEGE,
-  KNOWN_FIELDS,
-  MANAGE_APPOINTMENT_SERVICES_PRIVILEGE,
-} from './constants';
+  MANAGE_APPOINTMENT_SERVICES_PRIVILEGE_ALIASES,
+  PATHS,
+} from '../../../constants/app';
+import { useAppointmentsConfig } from '../../../providers/appointmentsConfig';
+import DeleteServiceModal from './components/DeleteServiceModal';
+import { KNOWN_FIELDS } from './constants';
 import { AppointmentServiceViewModel } from './model';
 import styles from './styles/index.module.scss';
 import {
@@ -36,6 +38,7 @@ import {
 
 const AllServicesPage: React.FC = () => {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { addNotification } = useNotification();
   const { userPrivileges } = useUserPrivilege();
@@ -50,7 +53,7 @@ const AllServicesPage: React.FC = () => {
   const canViewServices = hasPrivilege(userPrivileges, ADMIN_TAB_PRIVILEGE);
   const canManageServices = hasPrivilege(
     userPrivileges,
-    MANAGE_APPOINTMENT_SERVICES_PRIVILEGE,
+    MANAGE_APPOINTMENT_SERVICES_PRIVILEGE_ALIASES,
   );
 
   const attributeNames = useMemo(
@@ -154,6 +157,11 @@ const AllServicesPage: React.FC = () => {
               emptyStateMessage={t('ADMIN_ALL_SERVICES_EMPTY_MESSAGE')}
               renderCell={renderCell}
               className={styles.table}
+              actionButton={{
+                label: t('ADMIN_ALL_SERVICES_ADD_BUTTON'),
+                disabled: !canManageServices,
+                onClick: () => navigate(PATHS.ADMIN_ADD_SERVICE),
+              }}
             />
             {serviceToDelete && (
               <DeleteServiceModal

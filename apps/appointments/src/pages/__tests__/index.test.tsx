@@ -1,6 +1,6 @@
 import { render, screen } from '@testing-library/react';
 import { axe } from 'jest-axe';
-import { IndexPage } from '..';
+import IndexPage from '..';
 
 describe('IndexPage', () => {
   it('renders the welcome heading', () => {
