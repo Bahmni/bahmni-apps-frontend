@@ -330,6 +330,7 @@ describe('ConditionsTable', () => {
 
   describe('Actions column — Mark as inactive ghost button and ConfirmationModal', () => {
     const actionsConfig = {
+      encounterType: 'Consultation',
       actions: [
         {
           label: 'Actions',
@@ -464,7 +465,7 @@ describe('ConditionsTable', () => {
         rawFhirResource,
         activeEncounterObj,
         true,
-        undefined,
+        'Consultation',
         'test-patient-uuid',
         'test-practitioner-uuid',
       );
@@ -585,6 +586,7 @@ describe('ConditionsTable', () => {
             patientUuid: 'test-patient-uuid',
             messageParams: expect.objectContaining({
               encounterUuid: mockReturnedEnc.id,
+              encounterType: 'Consultation',
             }),
           }),
         );

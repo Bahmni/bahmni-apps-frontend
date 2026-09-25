@@ -13,7 +13,7 @@ import {
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import React from 'react';
+import React, { StrictMode } from 'react';
 import { useClinicalAppData } from '../../../hooks/useClinicalAppData';
 import { useEncounterConcepts } from '../../../hooks/useEncounterConcepts';
 import { useClinicalConfig } from '../../../providers/clinicalConfig';
@@ -347,6 +347,65 @@ describe('ConsultationPadContainer', () => {
       }),
     );
     expect(mockReset).toHaveBeenCalled();
+  });
+
+  it('does not call createVisitWithFhirR4 twice under React StrictMode double-invocation of the auto-create effect', async () => {
+    jest.mocked(useClinicalConfig).mockReturnValue(buildConfig(['OPD']) as any);
+    jest.mocked(useEncounterConcepts).mockReturnValue({
+      ...defaultEncounterConceptsResult,
+      encounterConcepts: {
+        ...defaultEncounterConceptsResult.encounterConcepts,
+        visitTypes: [VISIT_TYPE_OPD],
+      },
+    } as any);
+
+    render(
+      <StrictMode>
+        <ConsultationPadContainer
+          encounterSessionStartContext={ENCOUNTER_SESSION_CONTEXT}
+          onClose={jest.fn()}
+        />
+      </StrictMode>,
+    );
+
+    await waitFor(() => {
+      expect(createVisitWithFhirR4).toHaveBeenCalledTimes(1);
+    });
+    expect(dispatchAuditEvent).toHaveBeenCalledTimes(1);
+  });
+
+  it('auto-creates a visit again for a new patient when the same instance is reused across a patient change', async () => {
+    jest.mocked(useClinicalConfig).mockReturnValue(buildConfig(['OPD']) as any);
+    jest.mocked(useEncounterConcepts).mockReturnValue({
+      ...defaultEncounterConceptsResult,
+      encounterConcepts: {
+        ...defaultEncounterConceptsResult.encounterConcepts,
+        visitTypes: [VISIT_TYPE_OPD],
+      },
+    } as any);
+
+    const { rerender } = renderComponent();
+    await waitFor(() => {
+      expect(createVisitWithFhirR4).toHaveBeenCalledTimes(1);
+    });
+
+    jest.mocked(usePatientUUID).mockReturnValue('patient-uuid-2');
+    rerender(
+      <ConsultationPadContainer
+        encounterSessionStartContext={ENCOUNTER_SESSION_CONTEXT}
+        onClose={jest.fn()}
+      />,
+    );
+
+    await waitFor(() => {
+      expect(createVisitWithFhirR4).toHaveBeenCalledTimes(2);
+    });
+    expect(createVisitWithFhirR4).toHaveBeenLastCalledWith(
+      'patient-uuid-2',
+      MOCK_VISIT_LOCATION.uuid,
+      VISIT_TYPE_OPD.uuid,
+      undefined,
+    );
   });
 
   it('shows error notification when visit creation fails', async () => {

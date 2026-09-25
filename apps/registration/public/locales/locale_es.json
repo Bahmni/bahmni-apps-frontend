@@ -124,6 +124,7 @@
   "DATE_ERROR_PARSE": "Error al analizar la fecha",
   "DAYS_one": " día",
   "DAYS_other": " días",
+  "EDIT_ENCOUNTER_MESSAGE": "Editó un encuentro para el paciente",
   "ENTER_VISIT_DETAILS": "Ingrese los Detalles de la Visita",
   "ERROR_CONFIG_GENERIC_MESSAGE": "No se pudo cargar {{config}}. Por favor, intente actualizar la página.",
   "ERROR_CONFIG_TITLE": "Error de {{config}}",
