@@ -11,6 +11,14 @@ on:
     branches: [main]
   workflow_dispatch:
 
+# Supersede in-flight pull request runs when a branch is pushed again.
+# Non-pull-request events get a run-unique group so that pushes to main,
+# release-* and tags are never cancelled or queued behind each other; those
+# runs publish images and commit the Helm chart.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event_name == 'pull_request' && github.ref || github.run_id }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 env:
   IMAGE_NAME: bahmni/bahmni-apps-frontend
   NODE_VERSION: "22"
