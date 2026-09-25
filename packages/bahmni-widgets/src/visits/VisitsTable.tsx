@@ -33,7 +33,7 @@ import {
 } from './utils';
 
 /**
- * Displays a patient's visit history: date, type, and active/completed status, with
+ * Displays a patient's visit history: date, type, and active/inactive status, with
  * an optional Location column and config-driven navigation links to the
  * visit dashboard and, for IPD visits, the IPD dashboard.
  */
@@ -228,10 +228,10 @@ const VisitsTable: React.FC<WidgetProps> = ({ config }) => {
         return (
           <StatusTag
             label={t(
-              visit.isActive ? 'VISIT_STATUS_ACTIVE' : 'VISIT_STATUS_COMPLETED',
+              visit.isActive ? 'VISIT_STATUS_ACTIVE' : 'VISIT_STATUS_INACTIVE',
             )}
             dotClassName={
-              visit.isActive ? styles.activeStatus : styles.completedStatus
+              visit.isActive ? styles.activeStatus : styles.inactiveStatus
             }
             testId={`${visit.id}-status-test-id`}
           />

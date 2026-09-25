@@ -136,12 +136,12 @@ describe('VisitsTable', () => {
       ).toHaveTextContent('VISIT_STATUS_ACTIVE');
     });
 
-    it('shows a Completed tag for closed visits', () => {
+    it('shows an Inactive tag for closed visits', () => {
       renderWithClient();
       [mockOneDayOpdEncounter, mockMultiDayIpdEncounter].forEach((encounter) =>
         expect(
           screen.getByTestId(`${encounter.id}-status-test-id`),
-        ).toHaveTextContent('VISIT_STATUS_COMPLETED'),
+        ).toHaveTextContent('VISIT_STATUS_INACTIVE'),
       );
     });
 

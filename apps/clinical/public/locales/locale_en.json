@@ -631,7 +631,7 @@
   "VISIT_LOCATION": "Location",
   "VISIT_STATUS": "Status",
   "VISIT_STATUS_ACTIVE": "Active",
-  "VISIT_STATUS_COMPLETED": "Completed",
+  "VISIT_STATUS_INACTIVE": "Inactive",
   "VISITS_TABLE_ARIA_LABEL": "Visits table",
   "VISIT_TYPE": "Visit Type",
   "VISIT_TYPE_EMERGENCY": "EMERGENCY",
