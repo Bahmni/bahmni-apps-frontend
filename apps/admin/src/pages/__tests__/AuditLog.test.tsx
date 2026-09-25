@@ -59,6 +59,7 @@ const baseHookState = {
   lastIndex: 0,
   hasNext: false,
   hasPrevious: false,
+  currentPageNumber: 1,
   next: jest.fn(),
   prev: jest.fn(),
   runReport: jest.fn(),

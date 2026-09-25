@@ -39,9 +39,10 @@ export const NO_MORE_EVENTS_FOUND = 'NO_MORE_EVENTS_FOUND';
 export const MATCHING_EVENTS_NOT_FOUND = 'MATCHING_EVENTS_NOT_FOUND';
 
 /**
- * Combines a date and an (optional) `HH:mm` time into a single ISO
- * `startFrom` value, mirroring the legacy screen's two separate
- * date/time inputs feeding a single `startDate` scope value.
+ * Combines a date and an (optional) `HH:mm` time (24-hour, the native
+ * `<input type="time">` value format) into a single ISO `startFrom` value,
+ * mirroring the legacy screen's two separate date/time inputs feeding a
+ * single `startDate` scope value.
  */
 export const combineDateAndTime = (
   date: Date | null,
@@ -49,7 +50,7 @@ export const combineDateAndTime = (
 ): string | undefined => {
   if (!date) return undefined;
   const combined = new Date(date);
-  if (time) {
+  if (time?.trim()) {
     const [hours, minutes] = time.split(':').map(Number);
     if (!Number.isNaN(hours) && !Number.isNaN(minutes)) {
       combined.setHours(hours, minutes, 0, 0);
@@ -66,7 +67,7 @@ const AUDIT_LOG_PAGE_SIZE = 50;
 export const useAuditLogs = () => {
   const [filters, setFilters] = useState<AuditLogFilters>({
     startDate: getTodayDate(),
-    startTime: '',
+    startTime: '00:00',
     username: '',
     patientId: '',
   });
@@ -77,6 +78,7 @@ export const useAuditLogs = () => {
   const [emptyMessageKey, setEmptyMessageKey] = useState<string | null>(null);
   const [hasNext, setHasNext] = useState(false);
   const [hasPrevious, setHasPrevious] = useState(false);
+  const [currentPageNumber, setCurrentPageNumber] = useState(1);
 
   const requestIdRef = useRef(0);
   const [request, setRequest] = useState<AuditLogRequest | null>(null);
@@ -113,6 +115,7 @@ export const useAuditLogs = () => {
   const startFrom = combineDateAndTime(filters.startDate, filters.startTime);
 
   const init = () => {
+    setCurrentPageNumber(1);
     dispatchRequest(
       'init',
       { startFrom, defaultView: true },
@@ -125,6 +128,7 @@ export const useAuditLogs = () => {
   };
 
   const next = () => {
+    setCurrentPageNumber((prev) => prev + 1);
     dispatchRequest(
       'next',
       {
@@ -143,6 +147,7 @@ export const useAuditLogs = () => {
 
   const prev = () => {
     if (!firstIndex && !lastIndex) {
+      setCurrentPageNumber(1);
       dispatchRequest(
         'prev',
         { defaultView: true, startFrom },
@@ -154,6 +159,7 @@ export const useAuditLogs = () => {
       );
       return;
     }
+    setCurrentPageNumber((prev) => Math.max(1, prev - 1));
     dispatchRequest(
       'prev',
       {
@@ -189,6 +195,7 @@ export const useAuditLogs = () => {
 
   // Clears all filter fields and fetches audit log with default view (no filters).
   const reset = () => {
+    setCurrentPageNumber(1);
     setFilters({
       startDate: null,
       startTime: '',
@@ -229,9 +236,15 @@ export const useAuditLogs = () => {
       setLastIndex(newLastIndex);
 
       // If we got a full page of results, there might be more pages
-      setHasNext(parsedLogs.length === AUDIT_LOG_PAGE_SIZE);
-      // If we're not at the initial state (indices are 0), we can go back
-      setHasPrevious(request.action !== 'init');
+      const hasMorePages = parsedLogs.length === AUDIT_LOG_PAGE_SIZE;
+      setHasNext(hasMorePages);
+      // Only show previous if we have a full page (and action is not init)
+      // or if we're already navigating (action is next/prev)
+      setHasPrevious(
+        request.action !== 'init' && request.action !== 'runReport'
+          ? true
+          : hasMorePages,
+      );
     } else {
       if (request.alwaysReplace) {
         setLogs([]);
@@ -240,7 +253,9 @@ export const useAuditLogs = () => {
       setFirstIndex(request.defaultFirstIndex);
       setLastIndex(request.defaultLastIndex);
       setHasNext(false);
-      setHasPrevious(request.action !== 'init');
+      setHasPrevious(
+        request.action !== 'init' && request.action !== 'runReport',
+      );
     }
   }, [data, request]);
 
@@ -256,6 +271,7 @@ export const useAuditLogs = () => {
     lastIndex,
     hasNext,
     hasPrevious,
+    currentPageNumber,
     next,
     prev,
     runReport,

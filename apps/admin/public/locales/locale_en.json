@@ -37,6 +37,7 @@
   "PATIENT_ID": "Patient ID",
   "PATIENT_ID_FILTER_LABEL": "Patient ID",
   "START_FROM_FILTER_LABEL": "Start From",
+  "START_TIME_FILTER_LABEL": "Start time",
   "USERNAME": "Username",
   "USERNAME_FILTER_LABEL": "Username",
   "USER_CHANGE_PASSWORD_GLOBAL_ACTION": "Change Password",

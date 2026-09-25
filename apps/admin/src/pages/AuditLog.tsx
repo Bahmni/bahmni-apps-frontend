@@ -6,7 +6,6 @@ import {
   DatePickerInput,
   TextInput,
   Tile,
-  TimePicker,
 } from '@bahmni/design-system';
 import {
   AuditLogListEntry,
@@ -33,6 +32,7 @@ export const AuditLog: React.FC = () => {
     emptyMessageKey,
     hasNext,
     hasPrevious,
+    currentPageNumber,
     next,
     prev,
     runReport,
@@ -111,10 +111,10 @@ export const AuditLog: React.FC = () => {
                 testId="audit-log-start-date-input"
               />
             </DatePicker>
-            <TimePicker
+            <TextInput
               id="audit-log-start-time"
-              labelText={t('START_FROM_FILTER_LABEL')}
-              hideLabel
+              type="time"
+              labelText={t('START_TIME_FILTER_LABEL')}
               value={filters.startTime}
               onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
                 const value = event.target.value;
@@ -177,6 +177,7 @@ export const AuditLog: React.FC = () => {
             pagination={{
               mode: 'cursor',
               pageSize: AUDIT_LOG_PAGE_SIZE,
+              startPage: currentPageNumber,
               hasNext,
               hasPrevious,
               disabled: isFetching,
