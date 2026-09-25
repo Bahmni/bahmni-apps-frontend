@@ -61,13 +61,11 @@ export const TimePicker: React.FC<TimePickerProps> = ({
     let minutes = limitedDigits.slice(2);
 
     // Validate and auto-correct hours (0-23 for 24-hour format, 1-12 for 12-hour format)
-    let hoursNum = parseInt(hours, 10);
+    const hoursNum = parseInt(hours, 10);
     const maxHour = use24HourFormat ? 23 : 12;
     if (hoursNum > maxHour) {
-      hoursNum = maxHour;
       hours = String(maxHour).padStart(2, '0');
     } else if (!use24HourFormat && hoursNum === 0) {
-      hoursNum = 1;
       hours = '01';
     } else if (hoursNum < 10 && hours.length === 1) {
       hours = '0' + hours;
@@ -75,9 +73,8 @@ export const TimePicker: React.FC<TimePickerProps> = ({
 
     // Validate and auto-correct minutes (0-59)
     if (minutes.length > 0) {
-      let minutesNum = parseInt(minutes, 10);
+      const minutesNum = parseInt(minutes, 10);
       if (minutesNum > 59) {
-        minutesNum = 59;
         minutes = '59';
       } else if (minutesNum < 10 && minutes.length === 1) {
         minutes = '0' + minutes;
