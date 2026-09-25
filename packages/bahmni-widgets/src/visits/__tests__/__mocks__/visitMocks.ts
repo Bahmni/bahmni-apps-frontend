@@ -57,6 +57,7 @@ const createMockChildEncounter = (overrides: {
   id: string;
   visitId: string;
   locationDisplay: string;
+  start: string;
 }): Encounter => ({
   resourceType: 'Encounter',
   id: overrides.id,
@@ -70,6 +71,7 @@ const createMockChildEncounter = (overrides: {
     type: 'Patient',
   },
   partOf: { reference: `Encounter/${overrides.visitId}`, type: 'Encounter' },
+  period: { start: overrides.start },
   location: [
     {
       location: {
@@ -113,26 +115,33 @@ export const mockEncounters: Encounter[] = [
 ];
 
 // Child encounters carrying login locations. The active visit has two, at
-// different locations, to pin the "first hit wins" rule in
-// buildVisitLocationMap. The one-day OPD visit deliberately has none, so its
-// Location cell stays blank rather than falling back to the facility.
+// different locations: OPD-1 when the visit was started, and a later OPD-2
+// listed first — as getPatientEncounters' -_lastUpdated order would — to pin the
+// "visit was created at" rule in buildVisitLocationMap. The one-day OPD visit
+// deliberately has none, so its Location cell stays blank rather than falling
+// back to the facility.
 export const mockActiveVisitChildEncounter = createMockChildEncounter({
   id: 'enc-active-1',
   visitId: 'visit-active-ipd',
   locationDisplay: 'OPD-1',
+  start: '2026-08-12T21:21:00.000+00:00',
+});
+
+export const mockLaterActiveVisitChildEncounter = createMockChildEncounter({
+  id: 'enc-active-2',
+  visitId: 'visit-active-ipd',
+  locationDisplay: 'OPD-2',
+  start: '2026-08-13T10:00:00.000+00:00',
 });
 
 export const mockChildEncounters: Encounter[] = [
+  mockLaterActiveVisitChildEncounter,
   mockActiveVisitChildEncounter,
-  createMockChildEncounter({
-    id: 'enc-active-2',
-    visitId: 'visit-active-ipd',
-    locationDisplay: 'OPD-2',
-  }),
   createMockChildEncounter({
     id: 'enc-multi-1',
     visitId: 'visit-multi-day-ipd',
     locationDisplay: 'Pediatric Ward',
+    start: '2025-07-15T09:00:00.000+00:00',
   }),
 ];
 

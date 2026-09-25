@@ -8,8 +8,10 @@ import {
 } from '../utils';
 import {
   mockActiveIpdEncounter,
+  mockActiveVisitChildEncounter,
   mockAllPatientEncounters,
   mockEncounters,
+  mockLaterActiveVisitChildEncounter,
   mockMultiDayIpdEncounter,
   mockOneDayOpdEncounter,
   mockVisitViewModel,
@@ -39,12 +41,33 @@ describe('visits utils', () => {
       expect(map.get('visit-multi-day-ipd')).toBe('Pediatric Ward');
     });
 
-    it('keeps the first child encounter per visit when several exist', () => {
-      // mockAllPatientEncounters has OPD-1 before OPD-2 for the active visit;
-      // getPatientEncounters returns -_lastUpdated order, so first = most recent.
+    it('uses the location the visit was created at when its encounters span several', () => {
+      // The later OPD-2 encounter comes first, as in -_lastUpdated order; the
+      // earliest encounter (OPD-1) is where the visit was started.
       expect(
         buildVisitLocationMap(mockAllPatientEncounters).get('visit-active-ipd'),
       ).toBe('OPD-1');
+    });
+
+    it('picks the earliest encounter regardless of input order', () => {
+      const children = [
+        mockActiveVisitChildEncounter,
+        mockLaterActiveVisitChildEncounter,
+      ];
+      expect(buildVisitLocationMap(children).get('visit-active-ipd')).toBe(
+        'OPD-1',
+      );
+      expect(
+        buildVisitLocationMap([...children].reverse()).get('visit-active-ipd'),
+      ).toBe('OPD-1');
+    });
+
+    it('falls back to the next earliest encounter when the earliest has no location', () => {
+      const map = buildVisitLocationMap([
+        { ...mockActiveVisitChildEncounter, location: undefined },
+        mockLaterActiveVisitChildEncounter,
+      ]);
+      expect(map.get('visit-active-ipd')).toBe('OPD-2');
     });
 
     it('omits visits that have no child encounter', () => {
@@ -62,7 +85,7 @@ describe('visits utils', () => {
 
     it('skips child encounters missing a location', () => {
       const map = buildVisitLocationMap([
-        { ...mockAllPatientEncounters[3], location: undefined },
+        { ...mockActiveVisitChildEncounter, location: undefined },
       ]);
       expect(map.size).toBe(0);
     });

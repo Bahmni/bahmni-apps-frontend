@@ -5,7 +5,7 @@ import { DEFAULT_MAXIMUM_NO_OF_VISITS } from './constants';
 import { VisitViewModel } from './model';
 
 /**
- * Maps each visit UUID to the login location its clinical work was recorded at.
+ * Maps each visit UUID to the login location the visit was created at.
  *
  * A visit's own `location` is the OpenMRS **Visit Location** (the facility, e.g.
  * "Bahmni Hospital") — never the location chosen at login. The login location is
@@ -13,10 +13,11 @@ import { VisitViewModel } from './model';
  * `partOf` (`Encounter/<visitUuid>`). So the per-visit login location has to be
  * derived from those children rather than read off the visit.
  *
- * Child encounters are visited in the order supplied; `getPatientEncounters()`
- * returns them sorted by `-_lastUpdated`, so the first hit per visit is its most
- * recently updated encounter. Later hits are ignored rather than overwriting, to
- * keep that "most recent wins" behaviour independent of Map insertion order.
+ * A visit can span several locations (e.g. registered in one ward, transferred
+ * to another), so the child encounter with the earliest `period.start` — the one
+ * recorded when the visit was started — is used. Encounters without a location
+ * are skipped. Input order is irrelevant: `getPatientEncounters()` sorts by
+ * `-_lastUpdated`, which changes whenever an old encounter is edited.
  *
  * @param encounters - All encounters for the patient (visits and their children)
  * @returns Map of visit UUID to login location display name
@@ -24,17 +25,31 @@ import { VisitViewModel } from './model';
 export function buildVisitLocationMap(
   encounters: Encounter[],
 ): Map<string, string> {
-  const locationByVisitId = new Map<string, string>();
+  const earliestByVisitId = new Map<
+    string,
+    { start: number; location: string }
+  >();
 
   encounters.forEach((encounter) => {
     const visitId = encounter.partOf?.reference?.split('/')[1];
     const location = encounter.location?.[0]?.location?.display;
-    if (visitId && location && !locationByVisitId.has(visitId)) {
-      locationByVisitId.set(visitId, location);
+    if (!visitId || !location) return;
+
+    const start = encounter.period?.start
+      ? new Date(encounter.period.start).getTime()
+      : Infinity;
+    const current = earliestByVisitId.get(visitId);
+    if (!current || start < current.start) {
+      earliestByVisitId.set(visitId, { start, location });
     }
   });
 
-  return locationByVisitId;
+  return new Map(
+    [...earliestByVisitId].map(([visitId, { location }]) => [
+      visitId,
+      location,
+    ]),
+  );
 }
 
 /**
