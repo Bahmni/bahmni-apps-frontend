@@ -24,15 +24,25 @@ interface PrivilegeGuardProps {
  *
  * A failed privilege fetch (network error, 500) also leaves
  * `userPrivileges` `null`, but with `error` set — the `|| error` clause
- * marks that case resolved too, so it falls through to the authorization
- * check below, which raises a distinct "couldn't verify access" toast
- * instead of the misleading access-denied copy.
+ * marks that case resolved too, so it falls through to a distinct
+ * "couldn't verify access" fallback instead of the misleading
+ * access-denied copy. That case doesn't raise a toast here:
+ * `UserPrivilegeProvider`'s catch block already surfaces one for the
+ * same failure, and stacking a second, differently-worded toast on top
+ * would be redundant.
  *
  * Denial is surfaced as a top-right error toast — the same notification
  * design used elsewhere in the app suite (e.g. registration's
  * mandatory-field validation, clinical's dashboard load errors) — rather
  * than a redirect, so the page stays mounted and the `Home` breadcrumb
  * inside `AdminLayout` remains available as the way back.
+ *
+ * The toast has no timeout, so it can be dismissed manually; once it is,
+ * the visually-hidden fallback rendered alongside `AdminLayout` is the only
+ * remaining explanation. It therefore carries the full title and message
+ * (not just the title) and `role="status"`/`aria-live="polite"`, so it
+ * still functions — and gets announced to assistive tech — independent of
+ * whether the toast is still visible.
  */
 export const PrivilegeGuard: React.FC<PrivilegeGuardProps> = ({ children }) => {
   const { t } = useTranslation();
@@ -44,14 +54,9 @@ export const PrivilegeGuard: React.FC<PrivilegeGuardProps> = ({ children }) => {
   useEffect(() => {
     if (!isResolved) return;
 
-    if (error) {
-      addNotification({
-        title: t('ADMIN_PRIVILEGE_CHECK_FAILED_TITLE'),
-        message: t('ADMIN_PRIVILEGE_CHECK_FAILED_MESSAGE'),
-        type: 'error',
-      });
-      return;
-    }
+    // A fetch failure already gets its own toast from
+    // `UserPrivilegeProvider`'s catch block — don't stack a second one here.
+    if (error) return;
 
     if (!isAuthorized) {
       addNotification({
@@ -73,8 +78,11 @@ export const PrivilegeGuard: React.FC<PrivilegeGuardProps> = ({ children }) => {
           id="admin-privilege-check-failed"
           data-testid="admin-privilege-check-failed-test-id"
           className={styles.visuallyHidden}
+          role="status"
+          aria-live="polite"
         >
-          {t('ADMIN_PRIVILEGE_CHECK_FAILED_TITLE')}
+          <p>{t('ADMIN_PRIVILEGE_CHECK_FAILED_TITLE')}</p>
+          <p>{t('ADMIN_PRIVILEGE_CHECK_FAILED_MESSAGE')}</p>
         </div>
       </AdminLayout>
     );
@@ -87,8 +95,11 @@ export const PrivilegeGuard: React.FC<PrivilegeGuardProps> = ({ children }) => {
           id="admin-access-denied"
           data-testid="admin-access-denied-test-id"
           className={styles.visuallyHidden}
+          role="status"
+          aria-live="polite"
         >
-          {t('ADMIN_ACCESS_DENIED_TITLE')}
+          <p>{t('ADMIN_ACCESS_DENIED_TITLE')}</p>
+          <p>{t('ADMIN_ACCESS_DENIED_MESSAGE')}</p>
         </div>
       </AdminLayout>
     );

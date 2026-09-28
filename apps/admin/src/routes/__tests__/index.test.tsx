@@ -3,10 +3,6 @@ import { Suspense } from 'react';
 import { MemoryRouter, Routes } from 'react-router-dom';
 import { renderRoutes, routes } from '../index';
 
-jest.mock('../../components/PrivilegeGuard', () => ({
-  PrivilegeGuard: ({ children }: { children: React.ReactNode }) => children,
-}));
-
 jest.mock('../../components/AdminLayout', () => ({
   AdminLayout: ({ children }: { children: React.ReactNode }) => (
     <div data-testid="admin-layout-test-id">{children}</div>

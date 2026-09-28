@@ -1,7 +1,8 @@
-import { hasPrivilege } from '@bahmni/services';
+import { hasPrivilege, useTranslation } from '@bahmni/services';
 import { useNotification, useUserPrivilege } from '@bahmni/widgets';
 import { render, screen } from '@testing-library/react';
 import { axe, toHaveNoViolations } from 'jest-axe';
+import enTranslations from '../../../../public/locales/locale_en.json';
 import { PrivilegeGuard } from '../PrivilegeGuard';
 
 expect.extend(toHaveNoViolations);
@@ -9,7 +10,16 @@ expect.extend(toHaveNoViolations);
 jest.mock('@bahmni/services', () => ({
   ...jest.requireActual('@bahmni/services'),
   hasPrivilege: jest.fn(),
+  useTranslation: jest.fn(),
 }));
+
+// Looks up the real bundled strings so existing assertions on translated
+// text keep working, while still letting tests hand back a `t` with a
+// different function identity to simulate a locale switch.
+const realT = ((key: string) =>
+  (enTranslations as Record<string, string>)[key] ?? key) as ReturnType<
+  typeof useTranslation
+>['t'];
 
 jest.mock('@bahmni/widgets', () => ({
   ...jest.requireActual('@bahmni/widgets'),
@@ -26,6 +36,9 @@ const mockHasPrivilege = hasPrivilege as jest.MockedFunction<
 >;
 const mockUseNotification = useNotification as jest.MockedFunction<
   typeof useNotification
+>;
+const mockUseTranslation = useTranslation as jest.MockedFunction<
+  typeof useTranslation
 >;
 
 const privilegeState = (
@@ -58,6 +71,9 @@ describe('PrivilegeGuard', () => {
       removeNotification: jest.fn(),
       clearAllNotifications: jest.fn(),
     });
+    mockUseTranslation.mockReturnValue({ t: realT } as ReturnType<
+      typeof useTranslation
+    >);
   });
 
   it('renders the children when the user has the app:admin privilege', () => {
@@ -95,7 +111,7 @@ describe('PrivilegeGuard', () => {
     expect(addNotification).not.toHaveBeenCalled();
   });
 
-  it('raises a distinct error toast instead of access denied when the privilege fetch fails', () => {
+  it('renders a distinct fallback instead of access denied when the privilege fetch fails, without raising its own toast', () => {
     mockUseUserPrivilege.mockReturnValue(
       privilegeState({ error: new Error('Network error') }),
     );
@@ -103,14 +119,20 @@ describe('PrivilegeGuard', () => {
 
     renderGuard();
 
-    expect(
-      screen.getByTestId('admin-privilege-check-failed-test-id'),
-    ).toBeInTheDocument();
-    expect(addNotification).toHaveBeenCalledWith({
-      title: 'Unable to verify access',
-      message: 'Failed to verify your access, please retry.',
-      type: 'error',
-    });
+    const fallback = screen.getByTestId('admin-privilege-check-failed-test-id');
+    expect(fallback).toBeInTheDocument();
+    // Once the toast is dismissed, this is the only remaining explanation —
+    // it needs the full message, not just the title, and a live-region role
+    // so assistive tech announces it independently of the toast.
+    expect(fallback).toHaveTextContent('Unable to verify access');
+    expect(fallback).toHaveTextContent(
+      'Failed to verify your access, please retry.',
+    );
+    expect(fallback).toHaveAttribute('role', 'status');
+    expect(fallback).toHaveAttribute('aria-live', 'polite');
+    // UserPrivilegeProvider's catch block already raises a toast for this
+    // failure, so PrivilegeGuard must not stack a second one on top of it.
+    expect(addNotification).not.toHaveBeenCalled();
     expect(
       screen.queryByTestId('admin-access-denied-test-id'),
     ).not.toBeInTheDocument();
@@ -132,15 +154,21 @@ describe('PrivilegeGuard', () => {
     it('raises an access denied toast instead of rendering the children', () => {
       renderGuard();
 
-      expect(
-        screen.getByTestId('admin-access-denied-test-id'),
-      ).toBeInTheDocument();
+      const fallback = screen.getByTestId('admin-access-denied-test-id');
+      expect(fallback).toBeInTheDocument();
       expect(addNotification).toHaveBeenCalledWith({
         title: 'Access denied',
         message:
           'You do not have permission to access the Admin module. Please contact your administrator if you believe this is a mistake. [Privileges required: app:admin]',
         type: 'error',
       });
+      // Same recoverability guarantee as the fetch-failure fallback: full
+      // message plus a live-region role, independent of the toast.
+      expect(fallback).toHaveTextContent(
+        'You do not have permission to access the Admin module. Please contact your administrator if you believe this is a mistake. [Privileges required: app:admin]',
+      );
+      expect(fallback).toHaveAttribute('role', 'status');
+      expect(fallback).toHaveAttribute('aria-live', 'polite');
       expect(
         screen.queryByTestId('protected-content-test-id'),
       ).not.toBeInTheDocument();
@@ -167,6 +195,32 @@ describe('PrivilegeGuard', () => {
       );
 
       expect(addNotification).toHaveBeenCalledTimes(1);
+    });
+
+    it('raises the toast again when `t` gets a genuinely new reference (e.g. a locale switch), even though the resolved/denied state itself is unchanged', () => {
+      const { rerender } = renderGuard();
+      expect(addNotification).toHaveBeenCalledTimes(1);
+
+      // `t` is a dependency of the toast effect. A real locale switch hands
+      // back a new `t` function from `useTranslation()` — a fresh reference,
+      // not the memoized one from the first render — even though the
+      // underlying resolved/denied booleans never change. Reusing the same
+      // mock for every render (as the previous test does) can't observe
+      // this: it never proves the effect keys off `t`'s identity rather
+      // than coincidentally-stable mocks.
+      mockUseTranslation.mockReturnValueOnce({
+        t: ((key: string) => realT(key)) as ReturnType<
+          typeof useTranslation
+        >['t'],
+      } as ReturnType<typeof useTranslation>);
+
+      rerender(
+        <PrivilegeGuard>
+          <div data-testid="protected-content-test-id">Protected</div>
+        </PrivilegeGuard>,
+      );
+
+      expect(addNotification).toHaveBeenCalledTimes(2);
     });
 
     describe('Accessibility', () => {
