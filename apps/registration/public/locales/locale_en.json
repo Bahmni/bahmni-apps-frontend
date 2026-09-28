@@ -124,6 +124,7 @@
   "DATE_ERROR_PARSE": "Date Parse Error",
   "DAYS_one": " day",
   "DAYS_other": " days",
+  "EDIT_ENCOUNTER_MESSAGE": "Edited an encounter for patient",
   "ENTER_VISIT_DETAILS": "Enter Visit Details",
   "ERROR_CONFIG_GENERIC_MESSAGE": "Unable to load {{config}}. Please try refreshing the page.",
   "ERROR_CONFIG_TITLE": "{{config}} Error",
