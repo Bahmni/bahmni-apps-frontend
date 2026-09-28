@@ -1,9 +1,4 @@
-import {
-  get,
-  createBundleEntry,
-  dispatchAuditEvent,
-  MedicationStatus,
-} from '@bahmni/services';
+import { get, createBundleEntry, MedicationStatus } from '@bahmni/services';
 import { Bundle, ValueSet } from 'fhir/r4';
 import { useStopMedicationStore } from '../../stores/stopMedicationsStore';
 import {
@@ -14,7 +9,6 @@ import {
 jest.mock('@bahmni/services', () => ({
   ...jest.requireActual('@bahmni/services'),
   get: jest.fn(),
-  dispatchAuditEvent: jest.fn(),
   createBundleEntry: jest.fn((fullUrl, resource, method) => ({
     fullUrl,
     resource,
@@ -23,9 +17,6 @@ jest.mock('@bahmni/services', () => ({
 }));
 
 const mockGet = get as jest.MockedFunction<typeof get>;
-const mockDispatchAuditEvent = dispatchAuditEvent as jest.MockedFunction<
-  typeof dispatchAuditEvent
->;
 
 const baseCtx = {
   encounterReference: 'enc-uuid-1',
@@ -261,24 +252,11 @@ describe('stopMedicationService', () => {
       );
     });
 
-    it('should dispatch a STOP_MEDICATION audit event', () => {
-      setUpMedicationToStop();
-
-      createStopMedicationEntry(baseCtx);
-
-      expect(mockDispatchAuditEvent).toHaveBeenCalledWith({
-        eventType: 'STOP_MEDICATION',
-        patientUuid: 'patient-1',
-        messageParams: {},
-      });
-    });
-
-    it('should return an empty array and not dispatch an audit event when medicationToStop is null', () => {
+    it('should return an empty array when medicationToStop is null', () => {
       const entries = createStopMedicationEntry(baseCtx);
 
       expect(entries).toEqual([]);
       expect(createBundleEntry).not.toHaveBeenCalled();
-      expect(mockDispatchAuditEvent).not.toHaveBeenCalled();
     });
 
     it('should return an empty array when medicationToStop has no id', () => {

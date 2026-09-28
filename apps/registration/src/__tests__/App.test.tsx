@@ -1,0 +1,138 @@
+import {
+  render,
+  screen,
+  waitForElementToBeRemoved,
+} from '@testing-library/react';
+import { StrictMode } from 'react';
+import { MemoryRouter } from 'react-router-dom';
+import { RegistrationApp } from '../App';
+
+jest.mock('@bahmni/services', () => ({
+  initAppI18n: jest.fn().mockResolvedValue(undefined),
+  initializeAuditListener: jest.fn(),
+}));
+
+jest.mock('@bahmni/design-system', () => ({
+  Content: ({ children }: { children: React.ReactNode }) => (
+    <div>{children}</div>
+  ),
+  Loading: () => <div data-testid="loading" />,
+  initFontAwesome: jest.fn(),
+}));
+
+jest.mock('@bahmni/widgets', () => ({
+  NotificationProvider: ({ children }: { children: React.ReactNode }) =>
+    children,
+  NotificationServiceComponent: () => null,
+  UserPrivilegeProvider: ({ children }: { children: React.ReactNode }) =>
+    children,
+  ActivePractitionerProvider: ({ children }: { children: React.ReactNode }) =>
+    children,
+  UserActionProvider: ({ children }: { children: React.ReactNode }) => children,
+}));
+
+jest.mock('@bahmni/command-palette-app', () => ({
+  CommandPaletteProvider: ({ children }: { children: React.ReactNode }) =>
+    children,
+}));
+
+jest.mock('../providers/PersonAttributesProvider', () => ({
+  PersonAttributesProvider: ({ children }: { children: React.ReactNode }) =>
+    children,
+}));
+
+jest.mock('../providers/registrationConfig', () => ({
+  RegistrationConfigProvider: ({ children }: { children: React.ReactNode }) =>
+    children,
+}));
+
+jest.mock('../routes', () => ({
+  routes: [],
+  renderRoutes: () => null,
+}));
+
+jest.mock('@tanstack/react-query-devtools', () => ({
+  ReactQueryDevtools: () => null,
+}));
+
+describe('RegistrationApp', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  it('renders loading state before initialization', () => {
+    render(
+      <MemoryRouter>
+        <RegistrationApp />
+      </MemoryRouter>,
+    );
+    expect(screen.getByTestId('loading')).toBeInTheDocument();
+  });
+
+  it('renders the app after initialization', async () => {
+    render(
+      <MemoryRouter initialEntries={['/']}>
+        <RegistrationApp />
+      </MemoryRouter>,
+    );
+    await waitForElementToBeRemoved(() => screen.queryByTestId('loading'));
+    expect(screen.queryByTestId('loading')).not.toBeInTheDocument();
+  });
+
+  it('renders the app even when initialization fails', async () => {
+    const { initAppI18n } = jest.requireMock('@bahmni/services');
+    initAppI18n.mockRejectedValueOnce(new Error('i18n failed'));
+
+    render(
+      <MemoryRouter initialEntries={['/']}>
+        <RegistrationApp />
+      </MemoryRouter>,
+    );
+    await waitForElementToBeRemoved(() => screen.queryByTestId('loading'));
+    expect(screen.queryByTestId('loading')).not.toBeInTheDocument();
+  });
+
+  it('registers the audit listener on mount and removes it on unmount', () => {
+    const { initializeAuditListener } = jest.requireMock('@bahmni/services');
+    const cleanup = jest.fn();
+    initializeAuditListener.mockReturnValue(cleanup);
+
+    const { unmount } = render(
+      <MemoryRouter initialEntries={['/']}>
+        <RegistrationApp />
+      </MemoryRouter>,
+    );
+
+    expect(initializeAuditListener).toHaveBeenCalledTimes(1);
+    expect(cleanup).not.toHaveBeenCalled();
+
+    unmount();
+
+    expect(cleanup).toHaveBeenCalledTimes(1);
+  });
+
+  it('does not leak an audit-log listener when StrictMode double-invokes the mount effect', async () => {
+    const { initializeAuditListener } = jest.requireMock('@bahmni/services');
+    const cleanups: jest.Mock[] = [];
+    initializeAuditListener.mockImplementation(() => {
+      const cleanup = jest.fn();
+      cleanups.push(cleanup);
+      return cleanup;
+    });
+
+    render(
+      <StrictMode>
+        <MemoryRouter initialEntries={['/']}>
+          <RegistrationApp />
+        </MemoryRouter>
+      </StrictMode>,
+    );
+    await waitForElementToBeRemoved(() => screen.queryByTestId('loading'));
+
+    expect(cleanups.length).toBeGreaterThan(1);
+    const cleanedUpCount = cleanups.filter(
+      (cleanup) => cleanup.mock.calls.length > 0,
+    ).length;
+    expect(cleanedUpCount).toBe(cleanups.length - 1);
+  });
+});

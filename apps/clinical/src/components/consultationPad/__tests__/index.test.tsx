@@ -682,6 +682,49 @@ describe('ConsultationPad', () => {
       });
     });
 
+    it('calls onSubmitSuccess with the submission result for entries that have data', async () => {
+      enableSubmit();
+      const onSubmitSuccess = jest.fn();
+      const entryWithHook = {
+        ...makeMockEntry('stopMedications'),
+        hasData: jest.fn().mockReturnValue(true),
+        onSubmitSuccess,
+      };
+      jest
+        .mocked(getActiveEntries)
+        .mockReturnValue([...mockRegistry, entryWithHook] as any);
+
+      renderComponent();
+      await userEvent.click(screen.getByTestId('primary-button'));
+
+      await waitFor(() => {
+        expect(onSubmitSuccess).toHaveBeenCalledTimes(1);
+        expect(onSubmitSuccess).toHaveBeenCalledWith(mockSubmitResult);
+      });
+    });
+
+    it('does not call onSubmitSuccess for entries without data', async () => {
+      enableSubmit();
+      const onSubmitSuccess = jest.fn();
+      const entryWithHook = {
+        ...makeMockEntry('stopMedications'),
+        hasData: jest.fn().mockReturnValue(false),
+        onSubmitSuccess,
+      };
+      jest
+        .mocked(getActiveEntries)
+        .mockReturnValue([...mockRegistry, entryWithHook] as any);
+
+      renderComponent();
+      await userEvent.click(screen.getByTestId('primary-button'));
+
+      await waitFor(() => {
+        expect(submitConsultation).toHaveBeenCalled();
+      });
+
+      expect(onSubmitSuccess).not.toHaveBeenCalled();
+    });
+
     it('shows observation forms validation error and does not submit when observationForms entry is invalid', async () => {
       const obsEntry = mockRegistry.find((e) => e.key === 'observationForms')!;
       (obsEntry.hasData as jest.Mock).mockReturnValue(true);

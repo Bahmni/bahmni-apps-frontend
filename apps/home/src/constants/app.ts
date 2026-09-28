@@ -1,3 +1,3 @@
 export const HOME_NAMESPACE = 'home';
-export const HOMEPAGE_TILES_SKELETON_COUNT = 6;
+export const HOME_EXTENSION_POINT = 'org.bahmni.home.dashboard';
 export const ACCESS_DENIED_NOTIFICATION_TIMEOUT_MS = 5000;

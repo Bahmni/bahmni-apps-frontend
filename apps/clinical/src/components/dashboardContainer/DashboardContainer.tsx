@@ -37,6 +37,7 @@ const DashboardContainer: React.FC<DashboardContainerProps> = ({
   const sectionRefs = useRef<{
     [key: string]: React.RefObject<HTMLDivElement | null>;
   }>({});
+  const dashboardViewedAuditPatientUuidRef = useRef<string | null>(null);
 
   const { episodeOfCare, visit, encounter } = useClinicalAppData();
 
@@ -59,12 +60,16 @@ const DashboardContainer: React.FC<DashboardContainerProps> = ({
 
   // Dispatch dashboard view event when component mounts
   useEffect(() => {
-    if (patientUuid) {
+    if (
+      patientUuid &&
+      dashboardViewedAuditPatientUuidRef.current !== patientUuid
+    ) {
       dispatchAuditEvent({
         eventType: AUDIT_LOG_EVENT_DETAILS.VIEWED_CLINICAL_DASHBOARD
           .eventType as AuditEventType,
         patientUuid,
       });
+      dashboardViewedAuditPatientUuidRef.current = patientUuid;
     }
   }, [patientUuid]);
 

@@ -4,7 +4,7 @@ import {
   getPatientEncounters,
 } from '@bahmni/services';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { renderHook, waitFor } from '@testing-library/react';
+import { act, renderHook, waitFor } from '@testing-library/react';
 import { Encounter } from 'fhir/r4';
 import React from 'react';
 import { useVisitDocuments } from '../useVisitDocuments';
@@ -80,6 +80,100 @@ describe('useVisitDocuments', () => {
     jest.clearAllMocks();
   });
 
+  it('keeps isLoading false once loaded, even when a save re-keys the documents query', async () => {
+    mockedGetPatientEncounters.mockResolvedValue([
+      visit(NEWER_VISIT_UUID, '2026-06-29T09:15:00+00:00'),
+      visit(OLDER_VISIT_UUID, '2026-06-20T08:00:00+00:00'),
+    ]);
+    mockedGetFormattedDocumentReferences.mockResolvedValue([]);
+
+    const { result } = renderHook(
+      () => useVisitDocuments(PATIENT_UUID, [DOC_ENCOUNTER_TYPE_UUID]),
+      { wrapper },
+    );
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+    expect(result.current.visitGroups).toHaveLength(2);
+
+    mockedGetPatientEncounters.mockResolvedValue([
+      visit(NEWER_VISIT_UUID, '2026-06-29T09:15:00+00:00'),
+      visit(OLDER_VISIT_UUID, '2026-06-20T08:00:00+00:00'),
+      childEncounter(
+        NEWER_DOC_ENCOUNTER_UUID,
+        NEWER_VISIT_UUID,
+        DOC_ENCOUNTER_TYPE_UUID,
+      ),
+    ]);
+    // Held open so the re-keyed query is mid-flight while we assert.
+    let releaseDocuments: (documents: DocumentViewModel[]) => void = () => {};
+    mockedGetFormattedDocumentReferences.mockImplementation(
+      () =>
+        new Promise<DocumentViewModel[]>((resolve) => {
+          releaseDocuments = resolve;
+        }),
+    );
+
+    void result.current.refetch();
+
+    await waitFor(() =>
+      expect(result.current.visitGroups[0].documentEncounter?.id).toBe(
+        NEWER_DOC_ENCOUNTER_UUID,
+      ),
+    );
+    expect(result.current.isLoading).toBe(false);
+
+    await act(async () => {
+      releaseDocuments([document('doc-newer', NEWER_DOC_ENCOUNTER_UUID)]);
+    });
+    expect(result.current.isLoading).toBe(false);
+  });
+
+  it('reports isLoading again when the patient changes without a remount', async () => {
+    // The route reuses IndexPage across a :patientUuid change, so this hook instance survives.
+    // The latch is per-patient; leaking it would suppress the skeleton during the next load.
+    mockedGetPatientEncounters.mockResolvedValue([
+      visit(NEWER_VISIT_UUID, '2026-06-29T09:15:00+00:00'),
+    ]);
+    mockedGetFormattedDocumentReferences.mockResolvedValue([]);
+
+    const { result, rerender } = renderHook(
+      ({ patient }: { patient: string }) =>
+        useVisitDocuments(patient, [DOC_ENCOUNTER_TYPE_UUID]),
+      { wrapper, initialProps: { patient: PATIENT_UUID } },
+    );
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+
+    rerender({ patient: 'a-different-patient-uuid' });
+
+    expect(result.current.isLoading).toBe(true);
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+  });
+
+  it('still reports isLoading for the very first load', async () => {
+    mockedGetPatientEncounters.mockResolvedValue([
+      visit(NEWER_VISIT_UUID, '2026-06-29T09:15:00+00:00'),
+      childEncounter(
+        NEWER_DOC_ENCOUNTER_UUID,
+        NEWER_VISIT_UUID,
+        DOC_ENCOUNTER_TYPE_UUID,
+      ),
+    ]);
+    mockedGetFormattedDocumentReferences.mockResolvedValue([
+      document('doc-newer', NEWER_DOC_ENCOUNTER_UUID),
+    ]);
+
+    const { result } = renderHook(
+      () => useVisitDocuments(PATIENT_UUID, [DOC_ENCOUNTER_TYPE_UUID]),
+      { wrapper },
+    );
+
+    // The skeleton must still cover the first load; only later refetches are background work.
+    expect(result.current.isLoading).toBe(true);
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+    expect(result.current.visitGroups[0].documents.map((d) => d.id)).toEqual([
+      'doc-newer',
+    ]);
+  });
+
   it('groups documents under their visit via partOf, sorted latest visit first, and resolves the reusable document encounter', async () => {
     mockedGetPatientEncounters.mockResolvedValue([
       // deliberately out of order to prove the hook sorts
@@ -135,11 +229,19 @@ describe('useVisitDocuments', () => {
     expect(groups[1].documents.map((d) => d.id)).toEqual(['doc-older']);
 
     // reusable document encounter resolved per visit (not the consultation encounter)
-    expect(groups[0].documentEncounterUuid).toBe(NEWER_DOC_ENCOUNTER_UUID);
-    expect(groups[1].documentEncounterUuid).toBe(OLDER_DOC_ENCOUNTER_UUID);
+    expect(groups[0].documentEncounter?.id).toBe(NEWER_DOC_ENCOUNTER_UUID);
+    expect(groups[1].documentEncounter?.id).toBe(OLDER_DOC_ENCOUNTER_UUID);
+    // The whole resource is carried, not just the uuid — saving re-sends it as a PUT.
+    expect(groups[0].documentEncounter).toEqual(
+      childEncounter(
+        NEWER_DOC_ENCOUNTER_UUID,
+        NEWER_VISIT_UUID,
+        DOC_ENCOUNTER_TYPE_UUID,
+      ),
+    );
   });
 
-  it('leaves documentEncounterUuid undefined and documents empty for a visit with no document encounter', async () => {
+  it('leaves documentEncounter undefined and documents empty for a visit with no document encounter', async () => {
     mockedGetPatientEncounters.mockResolvedValue([
       visit(NEWER_VISIT_UUID, '2026-06-29T09:15:00+00:00'),
     ]);
@@ -155,7 +257,7 @@ describe('useVisitDocuments', () => {
     expect(mockedGetFormattedDocumentReferences).not.toHaveBeenCalled();
     expect(result.current.visitGroups).toHaveLength(1);
     expect(result.current.visitGroups[0].documents).toEqual([]);
-    expect(result.current.visitGroups[0].documentEncounterUuid).toBeUndefined();
+    expect(result.current.visitGroups[0].documentEncounter).toBeUndefined();
   });
 
   it('ignores documents without an encounter and malformed child encounters, and refetches both queries', async () => {
@@ -182,7 +284,7 @@ describe('useVisitDocuments', () => {
 
     expect(result.current.visitGroups).toHaveLength(1);
     expect(result.current.visitGroups[0].documents).toEqual([]);
-    expect(result.current.visitGroups[0].documentEncounterUuid).toBeUndefined();
+    expect(result.current.visitGroups[0].documentEncounter).toBeUndefined();
 
     result.current.refetch();
 

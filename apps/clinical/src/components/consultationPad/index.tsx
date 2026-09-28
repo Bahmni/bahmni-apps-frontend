@@ -498,6 +498,8 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
         messageParams: { encounterType: result.encounterTypeName },
       });
 
+      bundleEntries.forEach((entry) => entry.onSubmitSuccess?.(result));
+
       const updatedResources = captureUpdatedResources(activeEntries);
       dispatchConsultationSaved({
         patientUUID: result.patientUUID,

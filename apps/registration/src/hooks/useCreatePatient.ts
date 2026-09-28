@@ -1,5 +1,6 @@
 import {
   createFhirPatient,
+  createRelatedPerson,
   generateIdentifier,
   PatientIdentifier,
   PatientAddress,
@@ -20,6 +21,7 @@ import {
   AdditionalIdentifiersData,
 } from '../models/patient';
 import { buildFhirPatient } from '../utils/fhirPatientMapper';
+import { buildRelatedPersonPayload } from '../utils/patientDataConverter';
 import { useIdentifierTypes } from './useAdditionalIdentifiers';
 import { usePersonAttributes } from './usePersonAttributes';
 
@@ -81,7 +83,24 @@ export const useCreatePatient = () => {
         loginLocationUuid: getUserLoginLocation()?.uuid,
         personAttributes,
       });
-      return createFhirPatient<Patient>(payload);
+      const patient = await createFhirPatient<Patient>(payload);
+
+      const patientUuid = patient?.id;
+      if (patientUuid && formData.relationships?.length) {
+        const newRelationships = formData.relationships.filter(
+          (rel) => rel.patientUuid && rel.relationshipType,
+        );
+        const results = await Promise.allSettled(
+          newRelationships.map((rel) =>
+            createRelatedPerson(buildRelatedPersonPayload(patientUuid, rel)),
+          ),
+        );
+        if (results.some((r) => r.status === 'rejected')) {
+          throw new Error(t('ERROR_SAVING_RELATIONSHIPS'));
+        }
+      }
+
+      return patient;
     },
     onSuccess: async (response) => {
       addNotification({
