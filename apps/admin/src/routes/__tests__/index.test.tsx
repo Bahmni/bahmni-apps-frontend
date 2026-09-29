@@ -25,6 +25,10 @@ jest.mock('../../pages/CsvUpload', () => ({
   CsvUpload: () => <div data-testid="admin-csv-upload-page-test-id" />,
 }));
 
+jest.mock('../../pages/CsvExport', () => ({
+  CsvExport: () => <div data-testid="admin-csv-export-page-test-id" />,
+}));
+
 const renderAt = (path: string) =>
   render(
     <MemoryRouter initialEntries={[path]}>
@@ -48,6 +52,14 @@ describe('routes', () => {
 
     expect(
       await screen.findByTestId('admin-csv-upload-page-test-id'),
+    ).toBeInTheDocument();
+  });
+
+  it('resolves /csvExport to the CSV export page', async () => {
+    renderAt('/csvExport');
+
+    expect(
+      await screen.findByTestId('admin-csv-export-page-test-id'),
     ).toBeInTheDocument();
   });
 

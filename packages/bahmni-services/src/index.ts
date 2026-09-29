@@ -124,6 +124,7 @@ export {
   refreshQueries,
   parseQueryParams,
   formatUrl,
+  downloadBlob,
   getValueType,
   camelToScreamingSnakeCase,
   convertToSentenceCase,
@@ -187,10 +188,13 @@ export {
   searchFHIRConceptsByName,
   getConceptById,
   searchConceptByName,
+  searchConceptsByQuery,
   type ConceptSearch,
   type ConceptClass,
   type ConceptData,
+  type ConceptQueryResult,
 } from './conceptService';
+export { exportConceptSet } from './conceptSetExportService';
 export {
   getPatientMedications,
   getPatientMedicationBundle,

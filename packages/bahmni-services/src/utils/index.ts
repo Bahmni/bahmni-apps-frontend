@@ -14,6 +14,7 @@ export {
   parseQueryParams,
   formatUrl,
   blobToDataUrl,
+  downloadBlob,
   getValueType,
   camelToScreamingSnakeCase,
   convertToSentenceCase,

@@ -5,6 +5,7 @@ import {
   generateUUID,
   getCookieByName,
   deleteCookie,
+  downloadBlob,
   isStringEmpty,
   getPriorityByOrder,
   groupByDate,
@@ -930,6 +931,45 @@ describe('common utility functions', () => {
 
       expect(result).toContain('data:');
       expect(typeof result).toBe('string');
+    });
+  });
+
+  describe('downloadBlob', () => {
+    const originalCreate = URL.createObjectURL;
+    const originalRevoke = URL.revokeObjectURL;
+
+    beforeEach(() => {
+      jest.useFakeTimers();
+      URL.createObjectURL = jest.fn(() => 'blob:mock-url');
+      URL.revokeObjectURL = jest.fn();
+    });
+
+    afterEach(() => {
+      jest.useRealTimers();
+      URL.createObjectURL = originalCreate;
+      URL.revokeObjectURL = originalRevoke;
+    });
+
+    it('clicks a temporary anchor with the filename and revokes the url after the click', () => {
+      const clickSpy = jest
+        .spyOn(HTMLAnchorElement.prototype, 'click')
+        .mockImplementation(function (this: HTMLAnchorElement) {
+          expect(this.download).toBe('Vital signs.zip');
+          expect(this.href).toBe('blob:mock-url');
+        });
+      const blob = new Blob(['zip-bytes']);
+
+      downloadBlob(blob, 'Vital signs.zip');
+
+      expect(URL.createObjectURL).toHaveBeenCalledWith(blob);
+      expect(clickSpy).toHaveBeenCalledTimes(1);
+      expect(document.querySelector('a[download]')).toBeNull();
+      expect(URL.revokeObjectURL).not.toHaveBeenCalled();
+
+      jest.runAllTimers();
+
+      expect(URL.revokeObjectURL).toHaveBeenCalledWith('blob:mock-url');
+      clickSpy.mockRestore();
     });
   });
 
