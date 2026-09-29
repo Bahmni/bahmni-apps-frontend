@@ -1,22 +1,16 @@
-import {
-  formatDateTime,
-  getPatientEncounters,
-  getVisits,
-} from '@bahmni/services';
+import { formatDateTime, getRecentVisitEncounters } from '@bahmni/services';
 import type { Encounter } from 'fhir/r4';
 import { prescriptionEncounterPicker } from '../prescriptionEncounterPicker';
 
 const DEFAULT_TIME_FORMAT = 'h:mm a';
 
 jest.mock('@bahmni/services', () => ({
-  getPatientEncounters: jest.fn(),
-  getVisits: jest.fn(),
+  getRecentVisitEncounters: jest.fn(),
   formatDateTime: jest.fn(),
   DEFAULT_TIME_FORMAT: 'h:mm a',
 }));
 
-const mockGetPatientEncounters = getPatientEncounters as jest.Mock;
-const mockGetVisits = getVisits as jest.Mock;
+const mockGetRecent = getRecentVisitEncounters as jest.Mock;
 const mockFormatDateTime = formatDateTime as jest.Mock;
 
 const buildEncounter = (
@@ -43,19 +37,9 @@ const buildVisit = (id: string, start: string, end?: string): Encounter => ({
   period: { start, ...(end && { end }) },
 });
 
-const buildChildEncounter = (
-  id: string,
-  start: string,
-  visitId: string,
-): Encounter => ({
-  ...buildEncounter(id, start),
-  partOf: { reference: `Encounter/${visitId}` },
-});
-
 beforeEach(() => {
   jest.clearAllMocks();
   mockFormatDateTime.mockReturnValue({ formattedResult: '01-Jan-2024' });
-  mockGetVisits.mockResolvedValue([]);
 });
 
 describe('prescriptionEncounterPicker', () => {
@@ -63,112 +47,28 @@ describe('prescriptionEncounterPicker', () => {
     it('returns [] when no patient identifier is present in context', async () => {
       const result = await prescriptionEncounterPicker.fetchItems({});
       expect(result).toEqual([]);
-      expect(mockGetPatientEncounters).not.toHaveBeenCalled();
+      expect(mockGetRecent).not.toHaveBeenCalled();
     });
 
-    it('resolves the patient UUID from the patientUUID key', async () => {
-      mockGetPatientEncounters.mockResolvedValue([]);
+    it('resolves the patient UUID from the patientUUID key, scoped to 2 visits', async () => {
+      mockGetRecent.mockResolvedValue([]);
       await prescriptionEncounterPicker.fetchItems({ patientUUID: 'p-1' });
-      expect(mockGetPatientEncounters).toHaveBeenCalledWith('p-1', undefined);
+      expect(mockGetRecent).toHaveBeenCalledWith('p-1', 2);
     });
 
     it('falls back to the patientUuid key when patientUUID is absent', async () => {
-      mockGetPatientEncounters.mockResolvedValue([]);
+      mockGetRecent.mockResolvedValue([]);
       await prescriptionEncounterPicker.fetchItems({ patientUuid: 'p-2' });
-      expect(mockGetPatientEncounters).toHaveBeenCalledWith('p-2', undefined);
+      expect(mockGetRecent).toHaveBeenCalledWith('p-2', 2);
     });
 
-    it('sorts encounters by period.start descending (most recent first)', async () => {
-      mockGetPatientEncounters.mockResolvedValue([
-        buildEncounter('older', '2024-01-01T00:00:00Z'),
-        buildEncounter('newer', '2024-06-01T00:00:00Z'),
-        buildEncounter('no-date'),
-      ]);
-
+    it('returns the service result unchanged', async () => {
+      const encounters = [buildEncounter('e1', '2024-01-01T00:00:00Z')];
+      mockGetRecent.mockResolvedValue(encounters);
       const result = await prescriptionEncounterPicker.fetchItems({
         patientUUID: 'p-1',
       });
-
-      expect(result.map((e) => e.id)).toEqual(['newer', 'older', 'no-date']);
-    });
-
-    it('bounds the visits lookup to the 2 most recent visits', async () => {
-      mockGetVisits.mockResolvedValue([]);
-      mockGetPatientEncounters.mockResolvedValue([]);
-
-      await prescriptionEncounterPicker.fetchItems({ patientUUID: 'p-1' });
-
-      expect(mockGetVisits).toHaveBeenCalledWith('p-1', undefined, 2);
-    });
-
-    it('fetches without a date filter when the patient has fewer than 2 visits', async () => {
-      mockGetVisits.mockResolvedValue([
-        buildEncounter('visit-1', '2024-06-01T00:00:00Z'),
-      ]);
-      mockGetPatientEncounters.mockResolvedValue([]);
-
-      await prescriptionEncounterPicker.fetchItems({ patientUUID: 'p-1' });
-
-      expect(mockGetPatientEncounters).toHaveBeenCalledWith('p-1', undefined);
-    });
-
-    it('scopes the fetch to the second-most-recent visit start when 2+ visits exist', async () => {
-      mockGetVisits.mockResolvedValue([
-        buildEncounter('visit-older', '2024-01-01T00:00:00Z'),
-        buildEncounter('visit-newest', '2024-06-01T00:00:00Z'),
-        buildEncounter('visit-oldest', '2023-01-01T00:00:00Z'),
-      ]);
-      mockGetPatientEncounters.mockResolvedValue([]);
-
-      await prescriptionEncounterPicker.fetchItems({ patientUUID: 'p-1' });
-
-      expect(mockGetPatientEncounters).toHaveBeenCalledWith(
-        'p-1',
-        new Date('2024-01-01T00:00:00Z').toISOString(),
-      );
-    });
-
-    it('attaches the parent visit to a child encounter via its partOf reference', async () => {
-      const visit = buildVisit(
-        'visit-1',
-        '2024-01-01T00:00:00Z',
-        '2024-01-02T00:00:00Z',
-      );
-      mockGetVisits.mockResolvedValue([visit]);
-      mockGetPatientEncounters.mockResolvedValue([
-        buildChildEncounter('enc-1', '2024-01-01T10:00:00Z', 'visit-1'),
-      ]);
-
-      const [result] = await prescriptionEncounterPicker.fetchItems({
-        patientUUID: 'p-1',
-      });
-
-      expect(result.visit).toEqual(visit);
-    });
-
-    it('attaches itself as the visit when the returned encounter is a visit-tagged encounter', async () => {
-      const visit = buildVisit('visit-1', '2024-01-01T00:00:00Z');
-      mockGetVisits.mockResolvedValue([visit]);
-      mockGetPatientEncounters.mockResolvedValue([visit]);
-
-      const [result] = await prescriptionEncounterPicker.fetchItems({
-        patientUUID: 'p-1',
-      });
-
-      expect(result.visit).toEqual(visit);
-    });
-
-    it('leaves visit undefined when the encounter has no partOf reference to a known visit', async () => {
-      mockGetVisits.mockResolvedValue([]);
-      mockGetPatientEncounters.mockResolvedValue([
-        buildEncounter('enc-1', '2024-01-01T10:00:00Z'),
-      ]);
-
-      const [result] = await prescriptionEncounterPicker.fetchItems({
-        patientUUID: 'p-1',
-      });
-
-      expect(result.visit).toBeUndefined();
+      expect(result).toBe(encounters);
     });
   });
 

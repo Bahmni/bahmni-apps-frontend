@@ -45,8 +45,7 @@ jest.mock('@bahmni/services', () => ({
   getUserLoginLocation: jest.fn(() => {
     throw new Error('no login location cookie');
   }),
-  getPatientEncounters: jest.fn(),
-  getVisits: jest.fn(),
+  getRecentVisitEncounters: jest.fn(),
   formatDateTime: jest.fn().mockReturnValue({ formattedResult: '01-Jan-2024' }),
 }));
 
@@ -64,8 +63,7 @@ const mockUseActivePractitioner = useActivePractitioner as jest.Mock;
 const mockGetUserLoginLocation =
   jest.requireMock('@bahmni/services').getUserLoginLocation;
 const mockGetPatientEncounters =
-  jest.requireMock('@bahmni/services').getPatientEncounters;
-const mockGetVisits = jest.requireMock('@bahmni/services').getVisits;
+  jest.requireMock('@bahmni/services').getRecentVisitEncounters;
 
 const singleOption = [
   { translationKey: 'PRINT_SUMMARY', templateId: 'summary' },
@@ -100,7 +98,6 @@ beforeEach(() => {
     throw new Error('no login location cookie');
   });
   mockGetPatientEncounters.mockResolvedValue([]);
-  mockGetVisits.mockResolvedValue([]);
 });
 
 describe('DocumentPrintButton', () => {

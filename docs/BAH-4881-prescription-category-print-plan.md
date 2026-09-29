@@ -25,7 +25,7 @@ If a clinician wants to reprint the prescription from Visit 2 specifically, "pri
 A print option (a button/menu-item in the print widget) can now optionally be tagged with `"category": "PRESCRIPTION"` in config.
 
 - **Print options with no `category`** → behave exactly like before. Click → print immediately. Nothing changed for these.
-- **Print options with `category: "PRESCRIPTION"`** → click opens a **modal** listing the patient's encounters (most recent first). The clinician picks one, and the same template is printed with that encounter's UUID (`encounterUuid`) merged into the print context — so the template can render data scoped to that specific visit.
+- **Print options with `category: "PRESCRIPTION"`** → click opens a **modal** listing the patient's encounters from their **2 most recent visits** (the active visit, if any, plus the latest ended one; most recent encounter first). The clinician picks one, and the same template is printed with that encounter's UUID (`encounterUuid`) — plus its parent visit's `visitUuid`, `visitStartDate` and `visitEndDate` — merged into the print context, so the template can render data scoped to that specific encounter/visit.
 
 Two other small additions apply to **every** print (categorized or not):
 - `providerUuid` — the UUID of the currently logged-in practitioner
@@ -153,67 +153,56 @@ Why `renderItem` returns plain `{primary, secondary}` strings instead of JSX: it
 
 ### 5.2 `categoryPickers/prescriptionEncounterPicker.ts` — the PRESCRIPTION picker
 
-This is the concrete, working example for `PRESCRIPTION`. If you ever add a new category, this file is the template to copy.
+This is the concrete, working example for `PRESCRIPTION`. If you ever add a new category, this file is the template to copy. The picker is deliberately thin: the data composition (which visits, which encounters, which visit an encounter belongs to) lives in `getRecentVisitEncounters` in `@bahmni/services` (`encounterService.ts`).
 
 ```ts
-import { DEFAULT_TIME_FORMAT, formatDateTime, getPatientEncounters } from '@bahmni/services';
+import { DEFAULT_TIME_FORMAT, formatDateTime, getRecentVisitEncounters, type EncounterWithVisit } from '@bahmni/services';
 import type { Encounter } from 'fhir/r4';
 import type { CategoryPicker } from './types';
 
 const ENCOUNTER_DATE_TIME_FORMAT = `dd-MMM-yyyy ${DEFAULT_TIME_FORMAT}`; // "dd-MMM-yyyy h:mm a"
+const RECENT_VISITS_COUNT = 2;
 
-function encounterLabel(encounter: Encounter): string {
-  return (
-    encounter.type?.[0]?.coding?.[0]?.display ??   // 1st choice: coded display
-    encounter.type?.[0]?.text ??                   // 2nd: free text
-    encounter.class?.display ??                    // 3rd: encounter class
-    encounter.id ??                                // last resort: raw id
-    ''
-  );
-}
-
-export const prescriptionEncounterPicker: CategoryPicker<Encounter> = {
+export const prescriptionEncounterPicker: CategoryPicker<EncounterWithVisit> = {
   heading: 'SELECT_ENCOUNTER_FOR_PRESCRIPTION_PRINT',
   emptyStateMessage: 'NO_ENCOUNTERS_FOUND',
 
   fetchItems: async (context) => {
     const patientUUID = context.patientUUID ?? context.patientUuid; // both casings, defensively
     if (!patientUUID) return [];
-
-    const encounters = await getPatientEncounters(patientUUID);
-    return [...encounters].sort((a, b) =>
-      (b.period?.start ?? '').localeCompare(a.period?.start ?? ''),  // newest first
-    );
+    return getRecentVisitEncounters(patientUUID, RECENT_VISITS_COUNT);
   },
 
   getItemKey: (encounter) => encounter.id ?? '',
 
-  renderItem: (encounter, t) => {
-    const start = encounter.period?.start;
-    const providerName = encounter.participant?.[0]?.individual?.display;
-    const dateTime = start
-      ? formatDateTime(start, t, true, ENCOUNTER_DATE_TIME_FORMAT).formattedResult
-      : '';
-    return {
-      primary: encounterLabel(encounter),
-      secondary: [dateTime, providerName].filter(Boolean).join(' | '),
-    };
-  },
+  renderItem: (encounter, t) => { /* primary: type label; secondary: "<date> | <provider>" */ },
 
-  resolveSelection: (encounter, context) => ({
-    context: { ...context, encounterUuid: encounter.id ?? '' },
-    data: { encounter },
-  }),
+  resolveSelection: (encounter, context) => {
+    const { visit } = encounter;
+    const visitContext: Record<string, string> = {};
+    if (visit?.id) visitContext.visitUuid = visit.id;
+    if (visit?.period?.start) {
+      visitContext.visitStartDate = visit.period.start;
+      // An in-progress visit has no period.end; treat it as covering up to now.
+      visitContext.visitEndDate = visit.period.end ?? new Date().toISOString();
+    }
+    return { context: { ...context, encounterUuid: encounter.id ?? '', ...visitContext } };
+  },
 };
 ```
 
+#### `getRecentVisitEncounters(patientUUID, visitCount)` (in `@bahmni/services`)
+1. Fetches the patient's visits (`getVisits`, no server-side cap) and selects the recent ones **by visit period, not by `_lastUpdated`**: the active visit (no `period.end`) first, then the most recently ended visits by `period.end`, up to `visitCount` in total. If there is no active visit, that is simply the last two ended visits.
+2. Uses the `period.start` of the oldest selected visit as `sinceDate` (only when `visitCount` visits were found; otherwise no date filter) and calls `getPatientEncounters(patientUUID, sinceDate)` (FHIR `date=ge`).
+3. Sorts encounters by `period.start`, newest first, and attaches a `visit` to each (`EncounterWithVisit`): resolved through the encounter's `partOf` reference (`visitIdOf`), or the encounter itself if it is one of the selected visits.
+
 Behavior worth knowing:
-- **No patient identifier → empty list, no API call.** `fetchItems` returns `[]` immediately if neither `patientUUID` nor `patientUuid` is present on the render context.
-- **`getPatientEncounters` fetches *all* encounters for the patient**, paginated internally (100 at a time) from the FHIR API — there is no server-side filtering by encounter type or "has a prescription." Every encounter the patient has is shown; the clinician relies on the type/date/provider labels to pick the right one.
-- **No visit-type filtering.** An earlier iteration tried filtering out "visit"-tagged FHIR resources, but that was deliberately removed — a visit tag can't reliably tell you whether an encounter is prescription-relevant (e.g. a discharge note carries no such tag either). The team's decision: "start simple, show everything."
-- **Date format is fixed**: `dd-MMM-yyyy h:mm a` (e.g. `15-Aug-2024 2:30 PM`), built from the shared `DEFAULT_TIME_FORMAT` constant (`'h:mm a'`) rather than hard-coded, so it stays in sync if that constant ever changes.
-- **Provider name is appended only if present** — `"15-Aug-2024 2:30 PM | Dr. Super Man"` vs. just `"15-Aug-2024 2:30 PM"` if no participant is recorded.
-- **`resolveSelection` doesn't mutate the input context** — it returns a new object with `encounterUuid` added, leaving the caller's `context` untouched.
+- **No patient identifier → empty list, no API call.**
+- **Scoped to the last 2 visits.** Encounters older than the oldest selected visit are not offered. There is still no filtering by encounter type or "has a prescription" — the clinician relies on the type/date/provider labels.
+- **An encounter that doesn't belong to a selected visit** (no/unknown `partOf`) is still listed, with `visit` undefined; the visit context keys are then simply omitted.
+- **Date format is fixed**: `dd-MMM-yyyy h:mm a` (e.g. `15-Aug-2024 2:30 PM`), built from the shared `DEFAULT_TIME_FORMAT` constant rather than hard-coded.
+- **Provider name is appended only if present** — `"15-Aug-2024 2:30 PM | Dr. Super Man"` vs. just `"15-Aug-2024 2:30 PM"`.
+- **`resolveSelection` doesn't mutate the input context** — it returns a new object.
 
 ### 5.3 `printOptionHandlers.ts` — deciding what a click does
 
@@ -400,7 +389,7 @@ For anyone comparing this to an earlier design/plan doc for this same story, her
 
 - **`category` is a plain `string`, not a `'PRESCRIPTION'` literal union.** The original plan proposed `PrintOptionCategory = 'PRESCRIPTION'` and an `enum` restriction in the JSON schema. What's actually in the code is `category?: string`, matched at runtime against the `categoryPickers` registry, with an explicit `unrecognizedCategoryHandler` for anything unregistered (originally the plan just silently fell back to direct-print for unrecognized categories — that changed to a visible error instead).
 - **Modal heading text changed** from `SELECT_PRESCRIPTION_TO_PRINT` ("Select prescription to print") to `SELECT_ENCOUNTER_FOR_PRESCRIPTION_PRINT` ("Select encounter for prescription print"), per later stakeholder feedback on the JIRA ticket.
-- **Visit-type filtering was added, then removed.** An interim version filtered out FHIR resources tagged as "visit" so only child encounters showed. This was deliberately reverted — see section 5.2 above — because the tag isn't a reliable signal for "has a prescription."
+- **Scoped to the last 2 visits, with visit context.** The original plan listed every encounter. The shipped picker lists only encounters from the active visit plus the latest ended one (chosen by visit period, not last-updated), attaches each encounter's parent visit, and adds `visitUuid`/`visitStartDate`/`visitEndDate` to the print context alongside `encounterUuid`. Encounters are not filtered by type or by the `visit` tag — see section 5.2.
 - **Explicit date/time format added.** The original plan called `formatDateTime(start, t, true)` (auto format). The shipped version passes an explicit 4th argument, `` `dd-MMM-yyyy ${DEFAULT_TIME_FORMAT}` ``, to guarantee the exact display format regardless of locale/browser settings.
 - **Row bold styling and keyboard/accessibility support** (`role="button"`, `aria-label`, Enter/Space-to-select) were added after the initial implementation, closing gaps found during acceptance-criteria review — see `.itemPrimary` in the SCSS file and `onKeyDown` in `CategorySelectionModal.tsx`.
-- **`PrintPayload` shape.** `resolveSelection` returns `{ context, data }` (a `data.encounter` payload alongside the context) rather than just a flat context object as in the original plan — this lets a picker pass the full selected item back to the print call, not just derived context keys.
+- **`PrintPayload` shape.** `resolveSelection` returns a `PrintPayload` (`{ context, data? }`) rather than a flat context object as in the original plan. The `data` field is optional; the prescription picker returns only `context` and passes everything through the derived keys (`encounterUuid`, visit fields).

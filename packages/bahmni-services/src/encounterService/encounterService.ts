@@ -159,6 +159,80 @@ export async function getPatientEncounters(
   return encounters;
 }
 
+export interface EncounterWithVisit extends Encounter {
+  visit?: Encounter;
+}
+
+/**
+ * Extracts the parent visit id from an encounter's partOf reference ("Encounter/<id>").
+ */
+export function visitIdOf(encounter: Encounter): string | undefined {
+  return encounter.partOf?.reference?.split('/').pop();
+}
+
+/**
+ * Picks the visits that count as "recent": the active visit (no period.end) first, then the most
+ * recently ended visits by period.end, up to `count` in total. Ordering by period rather than by
+ * server `_lastUpdated` keeps an old visit that was edited recently from displacing a newer one.
+ */
+function selectRecentVisits(visits: Encounter[], count: number): Encounter[] {
+  const endTime = (visit: Encounter) =>
+    new Date(visit.period?.end ?? 0).getTime();
+  const active = visits.filter((visit) => !visit.period?.end);
+  const ended = visits
+    .filter((visit) => visit.period?.end)
+    .sort((a, b) => endTime(b) - endTime(a));
+  return [...active, ...ended].slice(0, count);
+}
+
+/**
+ * Fetches a patient's encounters scoped to their most recent visits (the active visit plus the
+ * latest ended ones, `visitCount` in total), newest first. Each encounter carries its parent
+ * `visit` (resolved via partOf, or itself when it is the visit-level encounter).
+ * @param patientUUID - The UUID of the patient
+ * @param visitCount - How many recent visits to scope to
+ */
+export async function getRecentVisitEncounters(
+  patientUUID: string,
+  visitCount: number,
+): Promise<EncounterWithVisit[]> {
+  const recentVisits = selectRecentVisits(
+    await getVisits(patientUUID),
+    visitCount,
+  );
+
+  const visitById = new Map<string, Encounter>();
+  recentVisits.forEach((visit) => {
+    if (visit.id) visitById.set(visit.id, visit);
+  });
+
+  // Encounters are fetched from the start of the oldest selected visit onwards.
+  const oldestStart = recentVisits
+    .map((visit) => visit.period?.start)
+    .filter((start): start is string => !!start)
+    .sort((a, b) => a.localeCompare(b))[0];
+  const sinceDate =
+    recentVisits.length >= visitCount && oldestStart
+      ? new Date(oldestStart).toISOString()
+      : undefined;
+
+  const encounters = await getPatientEncounters(patientUUID, sinceDate);
+  return [...encounters]
+    .sort((a, b) =>
+      (b.period?.start ?? '').localeCompare(a.period?.start ?? ''),
+    )
+    .map((encounter) => {
+      const visitId =
+        encounter.id && visitById.has(encounter.id)
+          ? encounter.id
+          : visitIdOf(encounter);
+      return {
+        ...encounter,
+        visit: visitId ? visitById.get(visitId) : undefined,
+      };
+    });
+}
+
 /**
  * Resolves an encounter type by its name via the OpenMRS REST API. `q=` is a fuzzy search, so only
  * an exact-name match is returned; null otherwise (a wrong pick would corrupt grouping/creation).

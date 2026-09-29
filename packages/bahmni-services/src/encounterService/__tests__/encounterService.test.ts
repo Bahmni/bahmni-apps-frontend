@@ -1,3 +1,4 @@
+import { Encounter } from 'fhir/r4';
 import { get, post, put } from '../../api';
 import {
   getPatientVisits,
@@ -8,6 +9,8 @@ import {
   createFhirEncounter,
   updateFhirEncounter,
   getPatientEncounters,
+  getRecentVisitEncounters,
+  visitIdOf,
   getEncounterTypeByName,
 } from '../../encounterService';
 import { mockVisitBundle, mockActiveVisit } from '../__mocks__/mocks';
@@ -355,6 +358,112 @@ describe('encounterService', () => {
         PATIENT_ENCOUNTERS_URL(patientUUID, 100, 0, sinceDate),
       );
       expect(calledUrl).toContain(`&date=ge${encodeURIComponent(sinceDate)}`);
+    });
+  });
+
+  describe('getRecentVisitEncounters', () => {
+    const bundle = (resources: Encounter[]) => ({
+      resourceType: 'Bundle' as const,
+      type: 'searchset' as const,
+      entry: resources.map((resource) => ({ resource })),
+    });
+    const visit = (id: string, start: string, end?: string): Encounter => ({
+      resourceType: 'Encounter',
+      id,
+      status: 'finished',
+      class: { code: 'AMB' },
+      period: { start, ...(end && { end }) },
+    });
+    const child = (id: string, start: string, visitId: string): Encounter => ({
+      resourceType: 'Encounter',
+      id,
+      status: 'finished',
+      class: { code: 'AMB' },
+      period: { start },
+      partOf: { reference: `Encounter/${visitId}` },
+    });
+    const sinceOfLastCall = () => {
+      const url = mockedGet.mock.calls[1][0] as string;
+      return decodeURIComponent(url.split('date=ge')[1] ?? '');
+    };
+
+    it('keeps the active visit and the most recently ended one', async () => {
+      mockedGet
+        .mockResolvedValueOnce(
+          bundle([
+            visit('ended-old', '2024-01-01T00:00:00Z', '2024-01-02T00:00:00Z'),
+            visit('active', '2024-06-01T00:00:00Z'),
+            visit('ended-new', '2024-03-01T00:00:00Z', '2024-03-02T00:00:00Z'),
+          ]),
+        )
+        .mockResolvedValueOnce(
+          bundle([child('e1', '2024-01-01T10:00:00Z', 'ended-old')]),
+        );
+
+      const [result] = await getRecentVisitEncounters(patientUUID, 2);
+
+      expect(sinceOfLastCall()).toBe('2024-03-01T00:00:00.000Z');
+      expect(result.visit).toBeUndefined();
+    });
+
+    it('takes the 2 most recently ended visits by period.end when none is active', async () => {
+      mockedGet
+        .mockResolvedValueOnce(
+          bundle([
+            // older visit, but edited last so the server returns it first
+            visit('v1', '2024-01-01T00:00:00Z', '2024-01-02T00:00:00Z'),
+            visit('v2', '2024-05-01T00:00:00Z', '2024-05-02T00:00:00Z'),
+            visit('v3', '2024-03-01T00:00:00Z', '2024-03-02T00:00:00Z'),
+          ]),
+        )
+        .mockResolvedValueOnce(bundle([]));
+
+      await getRecentVisitEncounters(patientUUID, 2);
+
+      expect(sinceOfLastCall()).toBe('2024-03-01T00:00:00.000Z');
+    });
+
+    it('does not filter by date when fewer visits than requested exist', async () => {
+      mockedGet
+        .mockResolvedValueOnce(bundle([visit('v1', '2024-01-01T00:00:00Z')]))
+        .mockResolvedValueOnce(bundle([]));
+
+      await getRecentVisitEncounters(patientUUID, 2);
+
+      expect(mockedGet).toHaveBeenLastCalledWith(
+        PATIENT_ENCOUNTERS_URL(patientUUID, 100, 0, undefined),
+      );
+    });
+
+    it('sorts newest first and attaches the visit via partOf or itself', async () => {
+      const v1 = visit('v1', '2024-01-01T00:00:00Z', '2024-01-02T00:00:00Z');
+      mockedGet
+        .mockResolvedValueOnce(bundle([v1]))
+        .mockResolvedValueOnce(
+          bundle([
+            child('e1', '2024-01-01T10:00:00Z', 'v1'),
+            v1,
+            child('orphan', '2024-01-01T12:00:00Z', 'unknown'),
+          ]),
+        );
+
+      const result = await getRecentVisitEncounters(patientUUID, 2);
+
+      expect(result.map((e) => e.id)).toEqual(['orphan', 'e1', 'v1']);
+      expect(result.map((e) => e.visit?.id)).toEqual([undefined, 'v1', 'v1']);
+    });
+  });
+
+  describe('visitIdOf', () => {
+    it('extracts the id from the partOf reference', () => {
+      expect(
+        visitIdOf({
+          resourceType: 'Encounter',
+          status: 'finished',
+          class: { code: 'AMB' },
+          partOf: { reference: 'Encounter/v9' },
+        }),
+      ).toBe('v9');
     });
   });
 
