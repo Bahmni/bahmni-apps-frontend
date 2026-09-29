@@ -55,28 +55,27 @@ export const usePatientRelationship = ({
     setSearchTerms,
   } = usePatientSearch();
 
-  // Returns patient suggestions for a row, excluding patients already selected
-  // in other non-deleted rows and the current patient. A uuid selected in the
-  // current row is re-allowed only when it is the sole holder of that uuid, so
-  // duplicates stay excluded everywhere.
+  // Returns patient suggestions for a row, excluding:
+  // 1. The current patient (self-relationship not allowed)
+  // 2. Patients already paired with the SAME relationship type in another row
+  //    (same patient + different type is valid; period check on save)
   const getPatientSuggestions = useCallback(
     (rowId: string): PatientSuggestion[] => {
-      const uuidCounts = relationships
-        .filter((rel) => !rel.isDeleted && rel.patientUuid)
-        .reduce((acc, rel) => {
-          acc.set(rel.patientUuid!, (acc.get(rel.patientUuid!) ?? 0) + 1);
-          return acc;
-        }, new Map<string, number>());
-
       const currentRow = relationships.find((rel) => rel.id === rowId);
-      const excludedUuids = new Set(uuidCounts.keys());
 
-      if (
-        currentRow?.patientUuid &&
-        uuidCounts.get(currentRow.patientUuid) === 1
-      ) {
-        excludedUuids.delete(currentRow.patientUuid);
-      }
+      const excludedUuids = new Set<string>();
+
+      relationships
+        .filter((rel) => !rel.isDeleted && rel.patientUuid && rel.id !== rowId)
+        .forEach((rel) => {
+          if (
+            currentRow?.relationshipType &&
+            rel.relationshipType === currentRow.relationshipType
+          ) {
+            excludedUuids.add(rel.patientUuid!);
+          }
+        });
+
       if (currentPatientUuid) {
         excludedUuids.add(currentPatientUuid);
       }

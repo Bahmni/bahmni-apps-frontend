@@ -42,6 +42,17 @@ export const useRelationshipValidation = () => {
     {},
   );
 
+  const periodsOverlap = (a: RelationshipData, b: RelationshipData) => {
+    // Two relationships overlap when at least one has no end date (active),
+    // or both have end dates that haven't definitively separated them.
+    // Without a start date we treat "no end date" as perpetually active.
+    const aEnded = !!a.tillDate;
+    const bEnded = !!b.tillDate;
+    if (!aEnded || !bEnded) return true;
+    // Both ended — treat as historical, allow coexistence.
+    return false;
+  };
+
   const getDuplicateIds = (relationships: RelationshipData[]) => {
     const duplicateIds = new Set<string>();
 
@@ -49,15 +60,16 @@ export const useRelationshipValidation = () => {
       if (!rel.relationshipType) return;
       if (!rel.patientUuid && !rel.patientId) return;
 
-      const firstIndex = relationships.findIndex((r) => {
+      const firstIndex = relationships.findIndex((r, idx) => {
+        if (idx >= currentIndex) return false;
         const sameRelationType = r.relationshipType === rel.relationshipType;
         const samePatient = rel.patientUuid
           ? r.patientUuid === rel.patientUuid
           : r.patientId === rel.patientId;
-        return sameRelationType && samePatient;
+        return sameRelationType && samePatient && periodsOverlap(r, rel);
       });
 
-      if (firstIndex !== -1 && currentIndex > firstIndex) {
+      if (firstIndex !== -1) {
         duplicateIds.add(rel.id);
       }
     });
