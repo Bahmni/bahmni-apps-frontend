@@ -3,12 +3,22 @@
   "title": "Reports App Configuration",
   "type": "object",
   "properties": {
-    "supportedFormats": {
-      "type": "array",
-      "items": {
-        "type": "string"
+    "config": {
+      "type": "object",
+      "properties": {
+        "supportedFormats": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "List of supported report formats"
+        },
+        "paperSize": {
+          "type": "string",
+          "description": "Default paper size for generated reports (e.g., A4)"
+        }
       },
-      "description": "List of supported report formats"
+      "additionalProperties": true
     }
   },
   "additionalProperties": true

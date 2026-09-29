@@ -1,5 +1,5 @@
 import { useNotification, useUserPrivilege } from '@bahmni/widgets';
-import { render, screen } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { useReportsAppConfig } from '../hooks/useReportsAppConfig';
 import { useReportsConfig } from '../hooks/useReportsConfig';
@@ -62,6 +62,7 @@ jest.mock('../ReportsTable', () => ({
       format: string | null;
     };
     availableFormats: string[];
+    defaultPaperSize?: string;
   }) => (
     <div data-testid="reports-table-stub">
       <span data-testid="rt-count">{props.reports.length}</span>
@@ -71,9 +72,15 @@ jest.mock('../ReportsTable', () => ({
       </span>
       <span data-testid="rt-format">{props.appliedFilters.format ?? ''}</span>
       <span data-testid="rt-formats">{props.availableFormats.join(',')}</span>
+      <span data-testid="rt-paper-size">{props.defaultPaperSize ?? ''}</span>
     </div>
   ),
 }));
+
+const getDateRangeSection = () =>
+  screen.getByTestId('reports-date-range-section');
+const getNoDateRangeSection = () =>
+  screen.getByTestId('reports-no-date-range-section');
 
 const mockUseUserPrivilege = useUserPrivilege as jest.MockedFunction<
   typeof useUserPrivilege
@@ -123,7 +130,7 @@ describe('ReportList', () => {
       clearAllNotifications: jest.fn(),
     });
     mockUseReportsAppConfig.mockReturnValue({
-      data: { supportedFormats: ['pdf', 'csv'] },
+      data: { config: { supportedFormats: ['pdf', 'csv'], paperSize: 'A3' } },
     } as ReturnType<typeof useReportsAppConfig>);
   });
 
@@ -193,7 +200,7 @@ describe('ReportList', () => {
     );
   });
 
-  it('filters reports by privilege and resolves supported formats for the filters and table', () => {
+  it('groups reports by date-range requirement across the two accordion sections', () => {
     mockUseReportsConfig.mockReturnValue({
       data: reportsConfig,
       isLoading: false,
@@ -202,9 +209,22 @@ describe('ReportList', () => {
 
     render(<ReportList />);
 
-    expect(screen.getByTestId('rt-count')).toHaveTextContent('1');
+    expect(
+      within(getDateRangeSection()).getByTestId('rt-count'),
+    ).toHaveTextContent('1');
+    expect(
+      within(getNoDateRangeSection()).getByTestId('rt-count'),
+    ).toHaveTextContent('0');
     expect(screen.getByTestId('tf-formats')).toHaveTextContent('PDF,CSV');
-    expect(screen.getByTestId('rt-formats')).toHaveTextContent('PDF,CSV');
+    expect(
+      within(getDateRangeSection()).getByTestId('rt-formats'),
+    ).toHaveTextContent('PDF,CSV');
+    expect(
+      within(getDateRangeSection()).getByTestId('rt-paper-size'),
+    ).toHaveTextContent('A3');
+    expect(
+      within(getNoDateRangeSection()).getByTestId('rt-paper-size'),
+    ).toHaveTextContent('A3');
   });
 
   it('applies filter changes and bumps the applied-filters version on Apply', async () => {
@@ -222,11 +242,16 @@ describe('ReportList', () => {
     await user.click(screen.getByText('set-format'));
     await user.click(screen.getByText('apply'));
 
-    expect(screen.getByTestId('rt-version')).toHaveTextContent('1');
-    expect(screen.getByTestId('rt-start')).toHaveTextContent(
+    const dateRangeSection = getDateRangeSection();
+    expect(
+      within(dateRangeSection).getByTestId('rt-version'),
+    ).toHaveTextContent('1');
+    expect(within(dateRangeSection).getByTestId('rt-start')).toHaveTextContent(
       new Date('2024-03-01').toISOString(),
     );
-    expect(screen.getByTestId('rt-format')).toHaveTextContent('PDF');
+    expect(within(dateRangeSection).getByTestId('rt-format')).toHaveTextContent(
+      'PDF',
+    );
   });
 
   it('clears filters and bumps the applied-filters version on Reset', async () => {
@@ -241,12 +266,21 @@ describe('ReportList', () => {
 
     await user.click(screen.getByText('set-start'));
     await user.click(screen.getByText('apply'));
-    expect(screen.getByTestId('rt-version')).toHaveTextContent('1');
+    const dateRangeSection = getDateRangeSection();
+    expect(
+      within(dateRangeSection).getByTestId('rt-version'),
+    ).toHaveTextContent('1');
 
     await user.click(screen.getByText('reset'));
 
-    expect(screen.getByTestId('rt-version')).toHaveTextContent('2');
-    expect(screen.getByTestId('rt-start')).toHaveTextContent('');
-    expect(screen.getByTestId('rt-format')).toHaveTextContent('');
+    expect(
+      within(dateRangeSection).getByTestId('rt-version'),
+    ).toHaveTextContent('2');
+    expect(within(dateRangeSection).getByTestId('rt-start')).toHaveTextContent(
+      '',
+    );
+    expect(within(dateRangeSection).getByTestId('rt-format')).toHaveTextContent(
+      '',
+    );
   });
 });

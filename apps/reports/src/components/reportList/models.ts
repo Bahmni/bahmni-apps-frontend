@@ -15,7 +15,10 @@ export interface ReportDefinition {
 export type ReportsConfig = Record<string, ReportDefinition>;
 
 export interface ReportsAppConfig {
-  supportedFormats?: string[];
+  config?: {
+    supportedFormats?: string[];
+    paperSize?: string;
+  };
 }
 
 export type FormatKey =

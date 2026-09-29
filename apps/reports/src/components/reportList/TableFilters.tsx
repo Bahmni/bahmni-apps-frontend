@@ -6,7 +6,12 @@ import {
 } from '@bahmni/design-system';
 import { useTranslation } from '@bahmni/services';
 import React from 'react';
-import { FORMAT_I18N_KEYS } from './constants';
+import {
+  DATE_PRESET_I18N_KEYS,
+  DATE_PRESETS,
+  FORMAT_I18N_KEYS,
+  type DatePreset,
+} from './constants';
 import type { FormatKey } from './models';
 import styles from './styles/TableFilters.module.scss';
 
@@ -22,14 +27,12 @@ interface TableFiltersProps {
   onApply: () => void;
 }
 
-const DATE_PRESETS: string[] = ['Today', 'This Month', 'Last 7 Days'];
-
-const presetToRange = (preset: string): [Date, Date] => {
+const presetToRange = (preset: DatePreset): [Date, Date] => {
   const today = new Date();
   switch (preset) {
-    case 'This Month':
+    case 'THIS_MONTH':
       return [new Date(today.getFullYear(), today.getMonth(), 1), today];
-    case 'Last 7 Days': {
+    case 'LAST_7_DAYS': {
       const from = new Date();
       from.setDate(today.getDate() - 7);
       return [from, today];
@@ -62,7 +65,9 @@ export const TableFilters: React.FC<TableFiltersProps> = ({
           titleText={t('REPORTS_SELECT_DATE_RANGE')}
           label=""
           items={DATE_PRESETS}
-          itemToString={(preset) => preset ?? ''}
+          itemToString={(preset) =>
+            preset ? t(DATE_PRESET_I18N_KEYS[preset]) : ''
+          }
           onChange={({ selectedItem }) => {
             if (!selectedItem) return;
             const [from, to] = presetToRange(selectedItem);
