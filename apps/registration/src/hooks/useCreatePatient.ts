@@ -25,6 +25,8 @@ import { buildRelatedPersonPayload } from '../utils/patientDataConverter';
 import { useIdentifierTypes } from './useAdditionalIdentifiers';
 import { usePersonAttributes } from './usePersonAttributes';
 
+class RelationshipError extends Error {}
+
 interface CreatePatientFormData {
   profile: BasicInfoData & {
     dobEstimated: boolean;
@@ -96,7 +98,7 @@ export const useCreatePatient = () => {
           ),
         );
         if (results.some((r) => r.status === 'rejected')) {
-          throw new Error(t('ERROR_SAVING_RELATIONSHIPS'));
+          throw new RelationshipError(t('ERROR_SAVING_RELATIONSHIPS_MESSAGE'));
         }
       }
 
@@ -136,7 +138,11 @@ export const useCreatePatient = () => {
     onError: (error) => {
       addNotification({
         type: 'error',
-        title: t('ERROR_SAVING_PATIENT'),
+        title: t(
+          error instanceof RelationshipError
+            ? 'ERROR_SAVING_RELATIONSHIPS'
+            : 'ERROR_SAVING_PATIENT',
+        ),
         message: error instanceof Error ? error.message : String(error),
       });
     },

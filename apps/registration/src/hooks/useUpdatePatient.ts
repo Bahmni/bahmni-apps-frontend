@@ -26,6 +26,8 @@ import { usePersonAttributes } from './usePersonAttributes';
 
 const TRAILING_BRACKETED_SUFFIX = /\s\[.*\]$/;
 
+class RelationshipError extends Error {}
+
 interface UpdatePatientFormData {
   patientUuid: string;
   profile: BasicInfoData & {
@@ -99,7 +101,7 @@ export const useUpdatePatient = () => {
           ...deletedRels.map((rel) => deleteRelatedPerson(rel.id)),
         ]);
         if (results.some((r) => r.status === 'rejected')) {
-          throw new Error(t('ERROR_SAVING_RELATIONSHIPS'));
+          throw new RelationshipError(t('ERROR_SAVING_RELATIONSHIPS_MESSAGE'));
         }
       }
 
@@ -147,7 +149,11 @@ export const useUpdatePatient = () => {
       ).replace(TRAILING_BRACKETED_SUFFIX, '');
       addNotification({
         type: 'error',
-        title: t('ERROR_UPDATING_PATIENT'),
+        title: t(
+          error instanceof RelationshipError
+            ? 'ERROR_SAVING_RELATIONSHIPS'
+            : 'ERROR_UPDATING_PATIENT',
+        ),
         message,
       });
     },
