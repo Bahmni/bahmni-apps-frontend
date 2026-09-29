@@ -1,6 +1,5 @@
 import { lazy } from 'react';
 import { Navigate, Route } from 'react-router-dom';
-import { PrivilegeGuard } from '../components/PrivilegeGuard';
 import { Routes, RouteConfig } from './model';
 
 const AdminDashboard = lazy(() =>
@@ -31,15 +30,7 @@ export const routes: Routes = [
 export const renderRoutes = (routeConfigs: Routes) => {
   return [
     ...routeConfigs.map((route: RouteConfig) => (
-      <Route
-        key={route.path}
-        path={route.path}
-        element={
-          <PrivilegeGuard>
-            <route.component />
-          </PrivilegeGuard>
-        }
-      />
+      <Route key={route.path} path={route.path} element={<route.component />} />
     )),
     <Route key="not-found" path="*" element={<Navigate to="/" replace />} />,
   ];
