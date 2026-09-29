@@ -138,7 +138,6 @@ export const useCreatePatient = () => {
         type: 'error',
         title: t('ERROR_SAVING_PATIENT'),
         message: error instanceof Error ? error.message : String(error),
-        timeout: 5000,
       });
     },
   });

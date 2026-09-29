@@ -149,7 +149,6 @@ export const useUpdatePatient = () => {
         type: 'error',
         title: t('ERROR_UPDATING_PATIENT'),
         message,
-        timeout: 5000,
       });
     },
   });
