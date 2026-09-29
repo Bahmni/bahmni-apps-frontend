@@ -181,6 +181,7 @@ describe('ReportsTable', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+    mockRunReport.mockReturnValue(true);
     mockUseNotification.mockReturnValue({
       notifications: [],
       addNotification,
@@ -230,6 +231,34 @@ describe('ReportsTable', () => {
     expect(
       screen.queryByLabelText(`row-start-date-${reportNoDates.id}`),
     ).not.toBeInTheDocument();
+  });
+
+  it('omits the Start Date/End Date columns entirely for a no-date-range-only section', () => {
+    render(
+      <ReportsTable
+        reports={[reportNoDates]}
+        appliedFilters={NO_FILTERS}
+        availableFormats={availableFormats}
+      />,
+    );
+
+    expect(
+      screen.queryByText('REPORTS_START_DATE_LABEL'),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByText('REPORTS_END_DATE_LABEL'),
+    ).not.toBeInTheDocument();
+
+    const headerCells = screen.getAllByRole('columnheader');
+    expect(headerCells).toHaveLength(3);
+    expect(headerCells.map((cell) => cell.textContent)).toEqual([
+      'REPORTS_NAME_HEADER',
+      'REPORTS_FORMAT_LABEL',
+      'REPORTS_ACTIONS_HEADER',
+    ]);
+
+    const row = screen.getByText('Patient List').closest('tr')!;
+    expect(within(row).getAllByRole('cell')).toHaveLength(3);
   });
 
   it('clears a row date override to null when its date picker is cleared', async () => {
@@ -344,6 +373,7 @@ describe('ReportsTable', () => {
       'PDF',
       new Date('2024-03-10'),
       new Date('2024-03-10'),
+      undefined,
     );
     expect(
       screen.queryByTestId(`error-row-format-${reportWithDates.id}`),
@@ -535,6 +565,7 @@ describe('ReportsTable', () => {
       'PDF',
       new Date('2024-03-10'),
       new Date('2024-03-10'),
+      undefined,
     );
     expect(addNotification).not.toHaveBeenCalled();
     expect(
@@ -556,5 +587,63 @@ describe('ReportsTable', () => {
     ).toBeInTheDocument();
 
     jest.useRealTimers();
+  });
+
+  it('passes the app-level default paper size through to runReport', async () => {
+    const user = userEvent.setup();
+    render(
+      <ReportsTable
+        reports={[reportWithDates]}
+        appliedFilters={NO_FILTERS}
+        availableFormats={availableFormats}
+        defaultPaperSize="A3"
+      />,
+    );
+    await setRowFormat(user, `row-format-${reportWithDates.id}`, 'PDF');
+    await setRowDate(user, `row-start-date-${reportWithDates.id}`);
+    await setRowDate(user, `row-end-date-${reportWithDates.id}`);
+
+    const row = screen.getByText('Diagnosis Summary').closest('tr')!;
+    await runRow(user, row);
+
+    expect(mockRunReport).toHaveBeenCalledWith(
+      reportWithDates,
+      'PDF',
+      new Date('2024-03-10'),
+      new Date('2024-03-10'),
+      'A3',
+    );
+  });
+
+  it('shows a pop-up-blocked error and clears the loading state immediately when runReport reports failure', async () => {
+    mockRunReport.mockReturnValue(false);
+    const user = userEvent.setup();
+
+    render(
+      <ReportsTable
+        reports={[reportWithDates]}
+        appliedFilters={NO_FILTERS}
+        availableFormats={availableFormats}
+      />,
+    );
+    await setRowFormat(user, `row-format-${reportWithDates.id}`, 'PDF');
+    await setRowDate(user, `row-start-date-${reportWithDates.id}`);
+    await setRowDate(user, `row-end-date-${reportWithDates.id}`);
+
+    const row = screen.getByText('Diagnosis Summary').closest('tr')!;
+    await runRow(user, row);
+
+    expect(mockRunReport).toHaveBeenCalled();
+    expect(addNotification).toHaveBeenCalledWith({
+      title: 'REPORTS_ERROR_TITLE',
+      message: 'REPORTS_POPUP_BLOCKED_ERROR',
+      type: 'error',
+    });
+    expect(
+      screen.queryByText('REPORTS_RUNNING_LOADING_LABEL'),
+    ).not.toBeInTheDocument();
+    expect(
+      within(row).getByRole('button', { name: 'Options' }),
+    ).toBeInTheDocument();
   });
 });

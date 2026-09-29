@@ -1,4 +1,8 @@
-import { CodeSnippetSkeleton } from '@bahmni/design-system';
+import {
+  Accordion,
+  AccordionItem,
+  CodeSnippetSkeleton,
+} from '@bahmni/design-system';
 import { useTranslation } from '@bahmni/services';
 import { useNotification, useUserPrivilege } from '@bahmni/widgets';
 import React, { useEffect, useMemo, useState } from 'react';
@@ -10,6 +14,7 @@ import styles from './styles/ReportList.module.scss';
 import TableFilters from './TableFilters';
 import {
   filterReportsByPrivilege,
+  groupReportsByDateRequirement,
   reportsConfigToArray,
   resolveSupportedFormats,
 } from './utils';
@@ -57,8 +62,14 @@ export const ReportList: React.FC = () => {
   }, [reportsConfig, userPrivileges]);
 
   const supportedFormats = useMemo(
-    () => resolveSupportedFormats(appConfig?.supportedFormats),
+    () => resolveSupportedFormats(appConfig?.config?.supportedFormats),
     [appConfig],
+  );
+  const defaultPaperSize = appConfig?.config?.paperSize;
+
+  const { dateRangeReports, noDateRangeReports } = useMemo(
+    () => groupReportsByDateRequirement(visibleReports),
+    [visibleReports],
   );
 
   const handleApply = () => {
@@ -121,11 +132,32 @@ export const ReportList: React.FC = () => {
         onReset={handleReset}
         onApply={handleApply}
       />
-      <ReportsTable
-        reports={visibleReports}
-        appliedFilters={appliedFilters}
-        availableFormats={supportedFormats}
-      />
+      <Accordion align="start">
+        <AccordionItem
+          title={t('REPORTS_DATE_RANGE_SECTION_TITLE')}
+          testId="reports-date-range-section"
+          open
+        >
+          <ReportsTable
+            reports={dateRangeReports}
+            appliedFilters={appliedFilters}
+            availableFormats={supportedFormats}
+            defaultPaperSize={defaultPaperSize}
+          />
+        </AccordionItem>
+        <AccordionItem
+          title={t('REPORTS_NO_DATE_RANGE_SECTION_TITLE')}
+          testId="reports-no-date-range-section"
+          open
+        >
+          <ReportsTable
+            reports={noDateRangeReports}
+            appliedFilters={appliedFilters}
+            availableFormats={supportedFormats}
+            defaultPaperSize={defaultPaperSize}
+          />
+        </AccordionItem>
+      </Accordion>
     </div>
   );
 };

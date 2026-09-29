@@ -1,8 +1,13 @@
 import { Loading } from '@bahmni/design-system';
-import { hasPrivilege, useTranslation } from '@bahmni/services';
+import {
+  BAHMNI_HOME_PATH,
+  hasPrivilege,
+  useTranslation,
+} from '@bahmni/services';
 import { useNotification, useUserPrivilege } from '@bahmni/widgets';
 import React, { ReactNode, useEffect } from 'react';
 import { REPORTS_PRIVILEGE } from '../../constants/app';
+import styles from './styles/PrivilegeGuard.module.scss';
 
 interface PrivilegeGuardProps {
   children: ReactNode;
@@ -17,20 +22,14 @@ export const PrivilegeGuard: React.FC<PrivilegeGuardProps> = ({ children }) => {
     userPrivileges !== null && !hasPrivilege(userPrivileges, REPORTS_PRIVILEGE);
 
   useEffect(() => {
-    if (error) {
-      addNotification({
-        title: t('REPORTS_ERROR_TITLE'),
-        message: t('REPORTS_PRIVILEGE_LOAD_ERROR'),
-        type: 'error',
-      });
-    } else if (isDenied) {
+    if (isDenied) {
       addNotification({
         title: t('REPORTS_ERROR_TITLE'),
         message: t('REPORTS_PRIVILEGE_DENIED_ERROR'),
         type: 'error',
       });
     }
-  }, [error, isDenied, addNotification, t]);
+  }, [isDenied, addNotification, t]);
 
   // null = provider hasn't settled yet; [] = user has no privileges
   if (userPrivileges === null && !error) {
@@ -38,7 +37,20 @@ export const PrivilegeGuard: React.FC<PrivilegeGuardProps> = ({ children }) => {
   }
 
   if (error || isDenied) {
-    return null;
+    return (
+      <div
+        role="alert"
+        className={styles.accessMessage}
+        data-testid="privilege-guard-denied"
+      >
+        <p>
+          {error
+            ? t('REPORTS_PRIVILEGE_LOAD_ERROR')
+            : t('REPORTS_PRIVILEGE_DENIED_ERROR')}
+        </p>
+        <a href={BAHMNI_HOME_PATH}>{t('REPORTS_BACK_TO_HOME_LINK')}</a>
+      </div>
+    );
   }
 
   return children;

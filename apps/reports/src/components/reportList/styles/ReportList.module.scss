@@ -1,5 +1,10 @@
 .reportList {
   padding: 1rem;
+
+  :global(.cds--accordion__content) {
+    margin-inline-start: 0 !important;
+    padding-inline: 0 !important;
+  }
 }
 
 .fullWidth {

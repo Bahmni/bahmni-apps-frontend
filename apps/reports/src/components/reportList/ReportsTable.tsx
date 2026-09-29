@@ -30,12 +30,14 @@ interface ReportsTableProps {
   reports: Array<ReportDefinition & { id: string }>;
   appliedFilters: AppliedFilters;
   availableFormats: FormatKey[];
+  defaultPaperSize?: string;
 }
 
 export const ReportsTable: React.FC<ReportsTableProps> = ({
   reports,
   appliedFilters,
   availableFormats,
+  defaultPaperSize,
 }) => {
   const { t } = useTranslation();
   const { addNotification } = useNotification();
@@ -125,12 +127,24 @@ export const ReportsTable: React.FC<ReportsTableProps> = ({
     });
 
     setRunningReportId(report.id);
-    runReport(
+    const opened = runReport(
       report,
       filters.format as FormatKey,
       filters.startDate,
       filters.endDate,
+      defaultPaperSize,
     );
+
+    if (!opened) {
+      setRunningReportId(null);
+      addNotification({
+        title: t('REPORTS_ERROR_TITLE'),
+        message: t('REPORTS_POPUP_BLOCKED_ERROR'),
+        type: 'error',
+      });
+      return;
+    }
+
     setTimeout(() => setRunningReportId(null), 300);
   };
 
@@ -142,16 +156,33 @@ export const ReportsTable: React.FC<ReportsTableProps> = ({
     );
   }
 
+  // Grouped homogeneously by ReportList (one table per date-requirement
+  // section), so this holds for every row — but derive it from the data
+  // rather than assume, so a mixed list still degrades sensibly.
+  const showDateColumns = reports.some(requiresDateRange);
+
   return (
     <div className={styles.tableContainer}>
       <table className={styles.table} data-testid="reports-table">
         <thead>
           <tr>
-            <th className={styles.nameColumn}>{t('REPORTS_NAME_HEADER')}</th>
-            <th className={styles.dateColumn}>
-              {t('REPORTS_START_DATE_LABEL')}
+            <th
+              className={
+                showDateColumns ? styles.nameColumn : styles.nameColumnWide
+              }
+            >
+              {t('REPORTS_NAME_HEADER')}
             </th>
-            <th className={styles.dateColumn}>{t('REPORTS_END_DATE_LABEL')}</th>
+            {showDateColumns && (
+              <>
+                <th className={styles.dateColumn}>
+                  {t('REPORTS_START_DATE_LABEL')}
+                </th>
+                <th className={styles.dateColumn}>
+                  {t('REPORTS_END_DATE_LABEL')}
+                </th>
+              </>
+            )}
             <th className={styles.formatColumn}>{t('REPORTS_FORMAT_LABEL')}</th>
             <th className={styles.actionsColumn}>
               {t('REPORTS_ACTIONS_HEADER')}
@@ -167,54 +198,64 @@ export const ReportsTable: React.FC<ReportsTableProps> = ({
 
             return (
               <tr key={report.id}>
-                <td className={styles.nameColumn}>
+                <td
+                  className={
+                    showDateColumns ? styles.nameColumn : styles.nameColumnWide
+                  }
+                >
                   {t(report.name, { defaultValue: report.name })}
                 </td>
-                <td>
-                  {needsDates && (
-                    <DatePicker
-                      datePickerType="single"
-                      dateFormat="d/m/Y"
-                      value={filters.startDate ?? undefined}
-                      onChange={(dates) => {
-                        updateRow(report.id, { startDate: dates[0] ?? null });
-                        clearRowFieldError(report.id, 'startDate');
-                      }}
-                    >
-                      <DatePickerInput
-                        id={`row-start-date-${report.id}`}
-                        labelText={t('REPORTS_START_DATE_LABEL')}
-                        hideLabel
-                        placeholder={t('REPORTS_DATE_PLACEHOLDER')}
-                        invalid={!!errors?.startDate}
-                        invalidText={errors?.startDate}
-                      />
-                    </DatePicker>
-                  )}
-                </td>
-                <td>
-                  {needsDates && (
-                    <DatePicker
-                      datePickerType="single"
-                      dateFormat="d/m/Y"
-                      minDate={filters.startDate ?? undefined}
-                      value={filters.endDate ?? undefined}
-                      onChange={(dates) => {
-                        updateRow(report.id, { endDate: dates[0] ?? null });
-                        clearRowFieldError(report.id, 'endDate');
-                      }}
-                    >
-                      <DatePickerInput
-                        id={`row-end-date-${report.id}`}
-                        labelText={t('REPORTS_END_DATE_LABEL')}
-                        hideLabel
-                        placeholder={t('REPORTS_DATE_PLACEHOLDER')}
-                        invalid={!!errors?.endDate}
-                        invalidText={errors?.endDate}
-                      />
-                    </DatePicker>
-                  )}
-                </td>
+                {showDateColumns && (
+                  <>
+                    <td>
+                      {needsDates && (
+                        <DatePicker
+                          datePickerType="single"
+                          dateFormat="d/m/Y"
+                          value={filters.startDate ?? undefined}
+                          onChange={(dates) => {
+                            updateRow(report.id, {
+                              startDate: dates[0] ?? null,
+                            });
+                            clearRowFieldError(report.id, 'startDate');
+                          }}
+                        >
+                          <DatePickerInput
+                            id={`row-start-date-${report.id}`}
+                            labelText={t('REPORTS_START_DATE_LABEL')}
+                            hideLabel
+                            placeholder={t('REPORTS_DATE_PLACEHOLDER')}
+                            invalid={!!errors?.startDate}
+                            invalidText={errors?.startDate}
+                          />
+                        </DatePicker>
+                      )}
+                    </td>
+                    <td>
+                      {needsDates && (
+                        <DatePicker
+                          datePickerType="single"
+                          dateFormat="d/m/Y"
+                          minDate={filters.startDate ?? undefined}
+                          value={filters.endDate ?? undefined}
+                          onChange={(dates) => {
+                            updateRow(report.id, { endDate: dates[0] ?? null });
+                            clearRowFieldError(report.id, 'endDate');
+                          }}
+                        >
+                          <DatePickerInput
+                            id={`row-end-date-${report.id}`}
+                            labelText={t('REPORTS_END_DATE_LABEL')}
+                            hideLabel
+                            placeholder={t('REPORTS_DATE_PLACEHOLDER')}
+                            invalid={!!errors?.endDate}
+                            invalidText={errors?.endDate}
+                          />
+                        </DatePicker>
+                      )}
+                    </td>
+                  </>
+                )}
                 <td>
                   <Dropdown
                     id={`row-format-${report.id}`}

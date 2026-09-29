@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import type { FormatKey } from '../models';
 import TableFilters from '../TableFilters';
@@ -122,7 +122,7 @@ describe('TableFilters', () => {
     render(<TableFilters {...defaultProps} />);
     await userEvent.selectOptions(
       screen.getByLabelText('REPORTS_SELECT_DATE_RANGE'),
-      'Today',
+      'TODAY',
     );
 
     expect(defaultProps.onStartDateChange).toHaveBeenCalledTimes(1);
@@ -136,7 +136,7 @@ describe('TableFilters', () => {
     render(<TableFilters {...defaultProps} />);
     await userEvent.selectOptions(
       screen.getByLabelText('REPORTS_SELECT_DATE_RANGE'),
-      'This Month',
+      'THIS_MONTH',
     );
 
     const [start] = defaultProps.onStartDateChange.mock.calls[0];
@@ -149,13 +149,27 @@ describe('TableFilters', () => {
     render(<TableFilters {...defaultProps} />);
     await userEvent.selectOptions(
       screen.getByLabelText('REPORTS_SELECT_DATE_RANGE'),
-      'Last 7 Days',
+      'LAST_7_DAYS',
     );
 
     const [start] = defaultProps.onStartDateChange.mock.calls[0];
     const expectedStart = new Date();
     expectedStart.setDate(expectedStart.getDate() - 7);
     expect(start.toDateString()).toBe(expectedStart.toDateString());
+  });
+
+  it('translates the date range presets via the format i18n keys', () => {
+    render(<TableFilters {...defaultProps} />);
+    const select = screen.getByLabelText('REPORTS_SELECT_DATE_RANGE');
+    expect(
+      within(select).getByText('REPORTS_PRESET_TODAY'),
+    ).toBeInTheDocument();
+    expect(
+      within(select).getByText('REPORTS_PRESET_THIS_MONTH'),
+    ).toBeInTheDocument();
+    expect(
+      within(select).getByText('REPORTS_PRESET_LAST_7_DAYS'),
+    ).toBeInTheDocument();
   });
 
   it('does not update dates when the preset selection is cleared', async () => {

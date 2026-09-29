@@ -65,7 +65,7 @@ describe('PrivilegeGuard', () => {
     expect(screen.queryByTestId('home-page-test-id')).not.toBeInTheDocument();
   });
 
-  it('shows a privilege-denied global notification and does not redirect or render children when the user lacks the app:reports privilege', () => {
+  it('shows a privilege-denied global notification and a persistent fallback message, without redirecting or rendering children, when the user lacks the app:reports privilege', () => {
     mockUseUserPrivilege.mockReturnValue({
       userPrivileges: [{ uuid: 'priv-1', name: 'app:clinical' }],
       isLoading: false,
@@ -82,6 +82,14 @@ describe('PrivilegeGuard', () => {
       message: 'You do not have permission to access reports',
       type: 'error',
     });
+    expect(screen.getByTestId('privilege-guard-denied')).toHaveTextContent(
+      'You do not have permission to access reports',
+    );
+    expect(screen.getByRole('alert')).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Back to Home' })).toHaveAttribute(
+      'href',
+      '/bahmni-v2/home',
+    );
     expect(screen.queryByTestId('home-page-test-id')).not.toBeInTheDocument();
     expect(
       screen.queryByTestId('guarded-child-test-id'),
@@ -109,7 +117,7 @@ describe('PrivilegeGuard', () => {
     ).not.toBeInTheDocument();
   });
 
-  it('shows an error global notification and does not redirect or render children when the privilege fetch fails', () => {
+  it('shows a persistent fallback message but no duplicate toast (the provider already toasts the fetch failure), and does not redirect or render children, when the privilege fetch fails', () => {
     mockUseUserPrivilege.mockReturnValue({
       userPrivileges: null,
       isLoading: false,
@@ -121,11 +129,11 @@ describe('PrivilegeGuard', () => {
 
     renderGuard();
 
-    expect(mockAddNotification).toHaveBeenCalledWith({
-      title: 'Error',
-      message: 'Unable to verify your access to reports',
-      type: 'error',
-    });
+    expect(mockAddNotification).not.toHaveBeenCalled();
+    expect(screen.getByTestId('privilege-guard-denied')).toHaveTextContent(
+      'Unable to verify your access to reports',
+    );
+    expect(screen.getByRole('alert')).toBeInTheDocument();
     expect(screen.queryByTestId('home-page-test-id')).not.toBeInTheDocument();
     expect(
       screen.queryByTestId('guarded-child-test-id'),
