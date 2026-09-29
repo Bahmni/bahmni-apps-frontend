@@ -39,8 +39,6 @@ import {
   getRelatedPersonsByPatient,
   createRelatedPerson,
   deleteRelatedPerson,
-  calculateDaysSinceLmp,
-  getPatientLmpData,
   calculateDaysSince,
   getObservationByConceptName,
 } from '../patientService';
@@ -1660,7 +1658,6 @@ describe('Patient Service', () => {
     });
   });
 
-<<<<<<< HEAD
   describe('getRelatedPersonsByPatient', () => {
     const PATIENT_UUID = 'patient-uuid-123';
 

@@ -1,7 +1,7 @@
 import { ServiceRequest, Bundle } from 'fhir/r4';
 
 import { get } from '../../api';
-import { SERVICE_REQUEST_COUNT } from '../../orderRequestService/constants';
+import { SERVICE_REQUEST_QUERY_PARAMS } from '../../orderRequestService/constants';
 import { getLabInvestigationsBundle } from '../labInvestigationService';
 
 jest.mock('../../api');
@@ -88,7 +88,7 @@ describe('labInvestigationService', () => {
       );
 
       expect(get).toHaveBeenCalledWith(
-        `/openmrs/ws/fhir2/R4/ServiceRequest?_count=${SERVICE_REQUEST_COUNT}&_sort=-_lastUpdated&category=category-uuid-123&patient=58493859-63f7-48b6-bd0b-698d5a119a21`,
+        `/openmrs/ws/fhir2/R4/ServiceRequest?${SERVICE_REQUEST_QUERY_PARAMS.SORT}&category=category-uuid-123&patient=58493859-63f7-48b6-bd0b-698d5a119a21&${SERVICE_REQUEST_QUERY_PARAMS.COUNT}`,
       );
       expect(result).toEqual(mockBundle);
       expect(result.entry).toHaveLength(2);
@@ -106,7 +106,7 @@ describe('labInvestigationService', () => {
       await setupMockAndCall(encounterUuids);
 
       expect(get).toHaveBeenCalledWith(
-        `/openmrs/ws/fhir2/R4/ServiceRequest?_count=${SERVICE_REQUEST_COUNT}&_sort=-_lastUpdated&category=category-uuid-123&patient=58493859-63f7-48b6-bd0b-698d5a119a21&encounter=encounter-1,encounter-2`,
+        `/openmrs/ws/fhir2/R4/ServiceRequest?${SERVICE_REQUEST_QUERY_PARAMS.SORT}&category=category-uuid-123&patient=58493859-63f7-48b6-bd0b-698d5a119a21&${SERVICE_REQUEST_QUERY_PARAMS.COUNT}&encounter=encounter-1,encounter-2`,
       );
     });
 
@@ -116,7 +116,7 @@ describe('labInvestigationService', () => {
       await setupMockAndCall(undefined, numberOfVisits);
 
       expect(get).toHaveBeenCalledWith(
-        `/openmrs/ws/fhir2/R4/ServiceRequest?_count=${SERVICE_REQUEST_COUNT}&_sort=-_lastUpdated&category=category-uuid-123&patient=58493859-63f7-48b6-bd0b-698d5a119a21&numberOfVisits=5`,
+        `/openmrs/ws/fhir2/R4/ServiceRequest?${SERVICE_REQUEST_QUERY_PARAMS.SORT}&category=category-uuid-123&patient=58493859-63f7-48b6-bd0b-698d5a119a21&${SERVICE_REQUEST_QUERY_PARAMS.COUNT}&numberOfVisits=5`,
       );
     });
 

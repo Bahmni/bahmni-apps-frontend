@@ -12,6 +12,8 @@ export const MEDICATION_REQUEST_QUERY_PARAMS = {
   // Trade-off: Larger payload but avoids redundant API calls
   // Use only when medication details are needed immediately
   INCLUDE_MEDICATION: '_include=MedicationRequest:medication',
+  INCLUDE_PATIENT: '_include=MedicationRequest:patient',
+  INCLUDE_REQUESTER: '_include=MedicationRequest:requester',
 } as const;
 
 export const PATIENT_MEDICATION_RESOURCE_URL = (
@@ -76,7 +78,7 @@ export const MEDICATION_ORDERS_METADATA_URL =
  */
 export const MEDICATIONS_SEARCH_URL = (searchTerm: string, count: number) =>
   OPENMRS_FHIR_R4 +
-  `/Medication?name=${encodeURIComponent(searchTerm)}&_count=${count}&_sort=-_lastUpdated`;
+  `/Medication?name=${encodeURIComponent(searchTerm)}&_count=${count}&${MEDICATION_REQUEST_QUERY_PARAMS.SORT}`;
 
 export const VACCINES_URL =
   OPENMRS_FHIR_R4 + '/Medication?code=http://hl7.org/fhir/sid/cvx|&_count=100';
@@ -91,7 +93,7 @@ export const MEDICATION_REQUESTS_WORKLIST_URL = (
   // FhirMedicationRequestDaoImpl#setupSearchParams's STATUS_SEARCH_HANDLER case falls through
   // into handleCommonSearchParameters, which NPEs on a null property name) turns any status
   // filter into a 500.
-  let url = `${OPENMRS_FHIR_R4}/MedicationRequest?_sort=-_lastUpdated&location=${locationUuid}&_include=MedicationRequest:patient&_include=MedicationRequest:requester`;
+  let url = `${OPENMRS_FHIR_R4}/MedicationRequest?${MEDICATION_REQUEST_QUERY_PARAMS.SORT}&location=${locationUuid}&${MEDICATION_REQUEST_QUERY_PARAMS.INCLUDE_PATIENT}&${MEDICATION_REQUEST_QUERY_PARAMS.INCLUDE_REQUESTER}&${MEDICATION_REQUEST_QUERY_PARAMS.COUNT}`;
   if (revinclude) {
     url += `&_revinclude=${revinclude}`;
   }

@@ -1,10 +1,10 @@
-import { del, get, post, put } from '../api';
 import { differenceInDays, parseISO } from 'date-fns';
+import { Patient } from 'fhir/r4';
+import { del, get, post, put } from '../api';
 import { APP_PROPERTY_URL } from '../applicationConfigService/constants';
+import { OPENMRS_REST_V1 } from '../constants/app';
 import { BIRTH_TIME_EXT_URL } from '../constants/fhir';
 import { PATIENT_NOT_FOUND_ERROR_KEY } from '../errorHandling';
-import { Patient } from 'fhir/r4';
-import { OPENMRS_REST_V1 } from '../constants/app';
 import { getUserLoginLocation } from '../userService';
 import { blobToDataUrl } from '../utils';
 import {
@@ -30,8 +30,6 @@ import {
   RELATED_PERSONS_BY_PATIENT_URL,
   RELATED_PERSON_URL,
   RELATED_PERSON_BY_ID_URL,
-  LMP_OBSERVATION_URL,
-  LMP_CONCEPT_UUID,
 } from './constants';
 import {
   PatientSearchField,
@@ -49,7 +47,6 @@ import {
   TelecomAttributeTypeMapping,
   FhirRelatedPerson,
   FhirRelatedPersonBundle,
-  LmpData,
 } from './models';
 
 export const mapGenderFromFhir = (fhirGender: string): string => {
@@ -506,8 +503,6 @@ export const getPersonAttributeTypes =
   };
 
 /**
-<<<<<<< HEAD
-<<<<<<< HEAD
  * Parses the fhir2Extension.telecomAttributeTypeMap global property value into structured
  * mappings. Mirrors the backend's own parsing (OpenmrsAppContext#parseTelecomAttributeTypeMappings):
  * `;`-separated entries of the form `attributeTypeUuid:SYSTEM:USE:RANK`, where USE and RANK are
@@ -566,15 +561,13 @@ export const createRelatedPerson = async (
 export const deleteRelatedPerson = async (uuid: string): Promise<void> =>
   del<void>(RELATED_PERSON_BY_ID_URL(uuid));
 /*
-* Calculate the number of days between an LMP date and today
+ * Calculate the number of days between an LMP date and today
  * Build FHIR R4 URL to fetch the most recent LMP observation for a patient
  * @param patientUuid - The UUID of the patient
  * @returns URL string for FHIR Observation query
-=======
  * Calculate the number of days between a date and today using date-fns
  * @param dateStr - ISO date string (e.g. "2024-03-15")
  * @returns Number of days since the date, or null if the date is invalid
->>>>>>> fd738b71 (Banti | Hive-105552 | Refactored lmp days eligibility and cleanup the code (#39))
  */
 export const calculateDaysSince = (dateStr: string): number | null => {
   if (!dateStr) return null;

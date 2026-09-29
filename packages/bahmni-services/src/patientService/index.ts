@@ -23,8 +23,6 @@ export {
   getRelatedPersonsByPatient,
   createRelatedPerson,
   deleteRelatedPerson,
-  getPatientLmpData,
-  calculateDaysSinceLmp,
   getObservationByConceptName,
   calculateDaysSince,
 } from './patientService';
@@ -57,7 +55,6 @@ export {
   type SearchActionConfig,
   type FhirRelatedPerson,
   type FhirRelatedPersonBundle,
-  type LmpData,
   type ObservationData,
 } from './models';
 export {

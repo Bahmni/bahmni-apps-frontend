@@ -34,8 +34,6 @@ export {
   deleteRelatedPerson,
   type FhirRelatedPerson,
   type FhirRelatedPersonBundle,
-  getPatientLmpData,
-  calculateDaysSinceLmp,
   getObservationByConceptName,
   calculateDaysSince,
   type FormattedPatientData,
