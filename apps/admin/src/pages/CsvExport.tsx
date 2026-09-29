@@ -69,6 +69,7 @@ export const CsvExport: React.FC = () => {
   const exportMutation = useMutation({
     mutationFn: async (option: ConceptOption) => {
       const concept = await getConceptById(option.uuid);
+      // Leaf concepts and empty sets export a header-only concepts.csv, so treat them as no data
       if (!concept.setMembers?.length) return null;
       return exportConceptSet(option.name);
     },
@@ -144,9 +145,14 @@ export const CsvExport: React.FC = () => {
               itemToString={(item) => item?.name ?? ''}
               selectedItem={selectedConcept}
               onChange={({ selectedItem }) =>
-                setSelectedConcept(selectedItem ?? null)
+                setSelectedConcept(
+                  typeof selectedItem === 'object'
+                    ? (selectedItem ?? null)
+                    : null,
+                )
               }
               onInputChange={handleInputChange}
+              allowCustomValue
               disabled={exportMutation.isPending}
               size="md"
             />

@@ -323,6 +323,22 @@ export const blobToDataUrl = (blob: Blob): Promise<string> => {
 };
 
 /**
+ * Triggers a browser download of the given blob
+ * @param blob - The file contents
+ * @param filename - The name to save the file as
+ */
+export const downloadBlob = (blob: Blob, filename: string): void => {
+  const url = URL.createObjectURL(blob);
+  const anchor = document.createElement('a');
+  anchor.href = url;
+  anchor.download = filename;
+  document.body.appendChild(anchor);
+  anchor.click();
+  anchor.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 0);
+};
+
+/**
  * Return the data type of the given value
  * @param value - Value for which the type is to be found
  * @returns string of what is the type of the input

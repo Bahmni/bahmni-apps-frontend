@@ -1,1 +1,1 @@
-export { exportConceptSet, downloadBlob } from './conceptSetExportService';
+export { exportConceptSet } from './conceptSetExportService';

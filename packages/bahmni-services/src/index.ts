@@ -124,6 +124,7 @@ export {
   refreshQueries,
   parseQueryParams,
   formatUrl,
+  downloadBlob,
   getValueType,
   camelToScreamingSnakeCase,
   convertToSentenceCase,
@@ -193,7 +194,7 @@ export {
   type ConceptData,
   type ConceptQueryResult,
 } from './conceptService';
-export { exportConceptSet, downloadBlob } from './conceptSetExportService';
+export { exportConceptSet } from './conceptSetExportService';
 export {
   getPatientMedications,
   getPatientMedicationBundle,

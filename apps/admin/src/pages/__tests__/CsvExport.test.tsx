@@ -188,6 +188,21 @@ describe('CsvExport', () => {
     );
   });
 
+  it('keeps the typed text when the search box loses focus', async () => {
+    renderPage();
+
+    await typeSearch('Vital');
+    fireEvent.blur(getInput());
+
+    expect(getInput()).toHaveValue('Vital');
+
+    fireEvent.click(getExportButton());
+    expect(mockGetConcept).not.toHaveBeenCalled();
+    expect(mockAddNotification).toHaveBeenCalledWith(
+      expect.objectContaining({ title: 'No concept selected' }),
+    );
+  });
+
   it('downloads the zip and shows a success notification when the export has data', async () => {
     const blob = new Blob(['zip-bytes'], { type: 'application/zip' });
     mockExport.mockResolvedValue(blob);

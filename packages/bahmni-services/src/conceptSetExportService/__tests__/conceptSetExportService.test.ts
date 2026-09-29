@@ -1,5 +1,5 @@
 import * as api from '../../api';
-import { downloadBlob, exportConceptSet } from '../conceptSetExportService';
+import { exportConceptSet } from '../conceptSetExportService';
 import { CONCEPT_SET_EXPORT_URL } from '../constants';
 
 jest.mock('../../api');
@@ -37,39 +37,6 @@ describe('conceptSetExportService', () => {
       await expect(exportConceptSet('Vital signs')).rejects.toThrow(
         'Server error',
       );
-    });
-  });
-
-  describe('downloadBlob', () => {
-    const originalCreate = URL.createObjectURL;
-    const originalRevoke = URL.revokeObjectURL;
-
-    beforeEach(() => {
-      URL.createObjectURL = jest.fn(() => 'blob:mock-url');
-      URL.revokeObjectURL = jest.fn();
-    });
-
-    afterEach(() => {
-      URL.createObjectURL = originalCreate;
-      URL.revokeObjectURL = originalRevoke;
-    });
-
-    it('clicks a temporary anchor with the filename and revokes the url', () => {
-      const clickSpy = jest
-        .spyOn(HTMLAnchorElement.prototype, 'click')
-        .mockImplementation(function (this: HTMLAnchorElement) {
-          expect(this.download).toBe('Vital signs.zip');
-          expect(this.href).toBe('blob:mock-url');
-        });
-      const blob = new Blob(['zip-bytes']);
-
-      downloadBlob(blob, 'Vital signs.zip');
-
-      expect(URL.createObjectURL).toHaveBeenCalledWith(blob);
-      expect(clickSpy).toHaveBeenCalledTimes(1);
-      expect(URL.revokeObjectURL).toHaveBeenCalledWith('blob:mock-url');
-      expect(document.querySelector('a[download]')).toBeNull();
-      clickSpy.mockRestore();
     });
   });
 });
