@@ -42,15 +42,13 @@ export const useRelationshipValidation = () => {
     {},
   );
 
+  const isExpired = (tillDate: string) =>
+    !!tillDate && new Date(tillDate) < new Date();
+
   const periodsOverlap = (a: RelationshipData, b: RelationshipData) => {
-    // Two relationships overlap when at least one has no end date (active),
-    // or both have end dates that haven't definitively separated them.
-    // Without a start date we treat "no end date" as perpetually active.
-    const aEnded = !!a.tillDate;
-    const bEnded = !!b.tillDate;
-    if (!aEnded || !bEnded) return true;
-    // Both ended — treat as historical, allow coexistence.
-    return false;
+    // A relationship with a past end date is historical — no conflict with a new one
+    if (isExpired(a.tillDate) || isExpired(b.tillDate)) return false;
+    return true;
   };
 
   const getDuplicateIds = (relationships: RelationshipData[]) => {
