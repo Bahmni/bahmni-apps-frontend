@@ -3,6 +3,7 @@ export {
   generateId,
   generateUUID,
   getCookieByName,
+  decodeCookieValue,
   deleteCookie,
   setCookie,
   isStringEmpty,

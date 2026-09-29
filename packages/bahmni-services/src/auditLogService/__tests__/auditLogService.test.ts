@@ -13,8 +13,14 @@ const mockIsAuditLogEnabled = isAuditLogEnabled as jest.MockedFunction<
 >;
 const mockPost = post as jest.MockedFunction<typeof post>;
 
+const TRANSLATIONS: Record<string, string> = {
+  VIEWED_CLINICAL_DASHBOARD_MESSAGE: 'Viewed clinical dashboard',
+  EDIT_ENCOUNTER_MESSAGE: 'Edited encounter',
+  VIEWED_RADIOLOGY_RESULTS_MESSAGE: 'Viewed radiology results',
+};
+
 jest.mock('i18next', () => ({
-  t: (key: string) => key,
+  t: (key: string) => TRANSLATIONS[key] ?? key,
 }));
 
 describe('auditLogService', () => {
@@ -48,7 +54,7 @@ describe('auditLogService', () => {
       expect(mockPost).toHaveBeenCalledWith(AUDIT_LOG_URL, {
         patientUuid: 'patient-456',
         eventType: 'VIEWED_CLINICAL_DASHBOARD',
-        message: 'VIEWED_CLINICAL_DASHBOARD_MESSAGE',
+        message: 'Viewed clinical dashboard',
         module: MODULE_LABELS.CLINICAL,
       });
     });
@@ -71,9 +77,23 @@ describe('auditLogService', () => {
       expect(mockPost).toHaveBeenCalledWith(AUDIT_LOG_URL, {
         patientUuid: 'patient-789',
         eventType: 'EDIT_ENCOUNTER',
-        message: `EDIT_ENCOUNTER_MESSAGE~${JSON.stringify(messageParams)}`,
+        message: `Edited encounter~${JSON.stringify(messageParams)}`,
         module: MODULE_LABELS.CLINICAL,
       });
+    });
+
+    it('should send the translated message instead of the raw i18n key', async () => {
+      mockIsAuditLogEnabled.mockResolvedValue(true);
+      mockPost.mockResolvedValue({});
+
+      await logAuditEvent('patient-radiology', 'VIEWED_RADIOLOGY_RESULTS');
+
+      expect(mockPost).toHaveBeenCalledWith(
+        AUDIT_LOG_URL,
+        expect.objectContaining({ message: 'Viewed radiology results' }),
+      );
+      const postedMessage = mockPost.mock.calls[0][1].message;
+      expect(postedMessage).not.toContain('_MESSAGE');
     });
 
     it('should handle unknown event types', async () => {
@@ -106,7 +126,7 @@ describe('auditLogService', () => {
       expect(mockPost).toHaveBeenCalledWith(AUDIT_LOG_URL, {
         patientUuid: 'patient-custom',
         eventType: 'VIEWED_CLINICAL_DASHBOARD',
-        message: 'VIEWED_CLINICAL_DASHBOARD_MESSAGE',
+        message: 'Viewed clinical dashboard',
         module: 'CUSTOM_MODULE',
       });
     });
@@ -125,7 +145,7 @@ describe('auditLogService', () => {
       expect(mockPost).toHaveBeenCalledWith(AUDIT_LOG_URL, {
         patientUuid: 'patient-undefined-params',
         eventType: 'VIEWED_CLINICAL_DASHBOARD',
-        message: 'VIEWED_CLINICAL_DASHBOARD_MESSAGE',
+        message: 'Viewed clinical dashboard',
         module: MODULE_LABELS.CLINICAL,
       });
     });

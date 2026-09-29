@@ -32,6 +32,16 @@ exports[`AllServicesPage Snapshot should match snapshot with services data 1`] =
             </a>
           </li>
           <li
+            class="cds--breadcrumb-item"
+          >
+            <a
+              class="cds--link"
+              href="/bahmni-v2/appointments/"
+            >
+              Appointments
+            </a>
+          </li>
+          <li
             class="cds--breadcrumb-item cds--breadcrumb-item--current"
           >
             <span

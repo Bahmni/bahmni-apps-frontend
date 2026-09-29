@@ -1,5 +1,5 @@
 import { Patient } from 'fhir/r4';
-import { get, post } from '../../api';
+import { del, get, post } from '../../api';
 import { APP_PROPERTY_URL } from '../../applicationConfigService/constants';
 import { PATIENT_NOT_FOUND_ERROR_KEY } from '../../errorHandling';
 import { getUserLoginLocation } from '../../userService';
@@ -13,6 +13,10 @@ import {
   PRIMARY_IDENTIFIER_TYPE_PROPERTY,
   CREATE_PATIENT_URL,
   ADDRESS_HIERARCHY_URL,
+  TELECOM_ATTRIBUTE_TYPE_MAP_PROPERTY,
+  RELATED_PERSON_URL,
+  RELATED_PERSONS_BY_PATIENT_URL,
+  RELATED_PERSON_BY_ID_URL,
 } from '../constants';
 import {
   getPatientById,
@@ -30,11 +34,17 @@ import {
   getAddressHierarchyEntries,
   getPatientProfile,
   fetchPatientPhotoFromUrl,
+  getTelecomAttributeTypeMap,
+  parseTelecomAttributeTypeMap,
+  getRelatedPersonsByPatient,
+  createRelatedPerson,
+  deleteRelatedPerson,
 } from '../patientService';
 
 jest.mock('../../api');
 const mockedGet = get as jest.MockedFunction<typeof get>;
 const mockedPost = post as jest.MockedFunction<typeof post>;
+const mockedDel = del as jest.MockedFunction<typeof del>;
 jest.mock('../../userService');
 jest.mock('../../utils');
 const mockedBlobToDataUrl = blobToDataUrl as jest.MockedFunction<
@@ -1441,6 +1451,71 @@ describe('Patient Service', () => {
     });
   });
 
+  describe('parseTelecomAttributeTypeMap', () => {
+    it('should parse full entries with system, use and rank', () => {
+      const result = parseTelecomAttributeTypeMap(
+        'uuid-1:PHONE:MOBILE:1;uuid-2:EMAIL',
+      );
+      expect(result).toEqual([
+        {
+          attributeTypeUuid: 'uuid-1',
+          system: 'phone',
+          use: 'mobile',
+          rank: 1,
+        },
+        {
+          attributeTypeUuid: 'uuid-2',
+          system: 'email',
+          use: undefined,
+          rank: undefined,
+        },
+      ]);
+    });
+
+    it('should skip malformed entries', () => {
+      expect(parseTelecomAttributeTypeMap(':PHONE;uuid-1:')).toEqual([]);
+    });
+
+    it('should return an empty array for null/empty input', () => {
+      expect(parseTelecomAttributeTypeMap(null)).toEqual([]);
+      expect(parseTelecomAttributeTypeMap('')).toEqual([]);
+    });
+  });
+
+  describe('getTelecomAttributeTypeMap', () => {
+    it('should fetch and parse the global property', async () => {
+      mockedGet.mockResolvedValueOnce('uuid-1:PHONE:MOBILE:1;uuid-2:EMAIL');
+
+      const result = await getTelecomAttributeTypeMap();
+
+      expect(mockedGet).toHaveBeenCalledWith(
+        APP_PROPERTY_URL(TELECOM_ATTRIBUTE_TYPE_MAP_PROPERTY),
+      );
+      expect(result).toEqual([
+        {
+          attributeTypeUuid: 'uuid-1',
+          system: 'phone',
+          use: 'mobile',
+          rank: 1,
+        },
+        {
+          attributeTypeUuid: 'uuid-2',
+          system: 'email',
+          use: undefined,
+          rank: undefined,
+        },
+      ]);
+    });
+
+    it('should return an empty array when the property is unset', async () => {
+      mockedGet.mockResolvedValueOnce(null);
+
+      const result = await getTelecomAttributeTypeMap();
+
+      expect(result).toEqual([]);
+    });
+  });
+
   describe('getAddressHierarchyEntries', () => {
     it('should fetch address hierarchy entries', async () => {
       const mockEntries = [
@@ -1577,6 +1652,72 @@ describe('Patient Service', () => {
 
       await expect(fetchPatientPhotoFromUrl(PHOTO_URL)).rejects.toThrow(
         'Network error',
+      );
+    });
+  });
+
+  describe('getRelatedPersonsByPatient', () => {
+    const PATIENT_UUID = 'patient-uuid-123';
+
+    it('calls GET with the correct patient-scoped URL', async () => {
+      const mockBundle = { resourceType: 'Bundle', entry: [] };
+      mockedGet.mockResolvedValueOnce(mockBundle as any);
+
+      await getRelatedPersonsByPatient(PATIENT_UUID);
+
+      expect(mockedGet).toHaveBeenCalledWith(
+        RELATED_PERSONS_BY_PATIENT_URL(PATIENT_UUID),
+      );
+    });
+
+    it('returns the bundle from the API', async () => {
+      const mockBundle = {
+        resourceType: 'Bundle',
+        entry: [{ resource: { resourceType: 'RelatedPerson', id: 'rp-1' } }],
+      };
+      mockedGet.mockResolvedValueOnce(mockBundle as any);
+
+      const result = await getRelatedPersonsByPatient(PATIENT_UUID);
+
+      expect(result).toEqual(mockBundle);
+    });
+  });
+
+  describe('createRelatedPerson', () => {
+    const mockPayload = {
+      resourceType: 'RelatedPerson' as const,
+      patient: { reference: 'Patient/patient-uuid-123' },
+    };
+
+    it('calls POST to the RelatedPerson URL with the payload', async () => {
+      const mockResponse = { ...mockPayload, id: 'rp-uuid-456' };
+      mockedPost.mockResolvedValueOnce(mockResponse as any);
+
+      await createRelatedPerson(mockPayload);
+
+      expect(mockedPost).toHaveBeenCalledWith(RELATED_PERSON_URL, mockPayload);
+    });
+
+    it('returns the created RelatedPerson from the API', async () => {
+      const mockResponse = { ...mockPayload, id: 'rp-uuid-456' };
+      mockedPost.mockResolvedValueOnce(mockResponse as any);
+
+      const result = await createRelatedPerson(mockPayload);
+
+      expect(result).toEqual(mockResponse);
+    });
+  });
+
+  describe('deleteRelatedPerson', () => {
+    const RELATED_PERSON_UUID = 'rp-uuid-789';
+
+    it('calls DELETE on the correct RelatedPerson URL', async () => {
+      mockedDel.mockResolvedValueOnce(undefined as any);
+
+      await deleteRelatedPerson(RELATED_PERSON_UUID);
+
+      expect(mockedDel).toHaveBeenCalledWith(
+        RELATED_PERSON_BY_ID_URL(RELATED_PERSON_UUID),
       );
     });
   });

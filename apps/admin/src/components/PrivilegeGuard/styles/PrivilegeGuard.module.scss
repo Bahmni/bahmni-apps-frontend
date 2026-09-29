@@ -1,0 +1,19 @@
+@use '@carbon/react/scss/spacing' as *;
+@use '@carbon/react/scss/theme' as *;
+@use '@carbon/react/scss/type' as *;
+
+.accessDenied {
+  padding: $spacing-07;
+  text-align: center;
+}
+
+.title {
+  @include type-style('heading-03');
+  color: $text-primary;
+}
+
+.message {
+  @include type-style('body-compact-01');
+  margin-block-start: $spacing-05;
+  color: $text-secondary;
+}

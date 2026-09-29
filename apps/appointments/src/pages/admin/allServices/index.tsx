@@ -22,6 +22,7 @@ import React, { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   ADMIN_TAB_PRIVILEGE,
+  APPOINTMENTS_APP_HREF,
   MANAGE_APPOINTMENT_SERVICES_PRIVILEGE_ALIASES,
   PATHS,
 } from '../../../constants/app';
@@ -128,6 +129,11 @@ const AllServicesPage: React.FC = () => {
 
   const breadcrumbs = [
     { id: 'home', label: t('BREADCRUMB_HOME'), href: BAHMNI_HOME_PATH },
+    {
+      id: 'appointments',
+      label: t('BREADCRUMB_APPOINTMENTS'),
+      href: APPOINTMENTS_APP_HREF,
+    },
     { id: 'admin', label: t('BREADCRUMB_ADMIN'), isCurrentPage: true },
   ];
 

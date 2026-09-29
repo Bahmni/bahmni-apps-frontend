@@ -27,7 +27,13 @@ export {
   fetchPatientPhotoFromUrl,
   getPatientProfile,
   getPersonAttributeTypes,
+  getTelecomAttributeTypeMap,
   getRelationshipTypes,
+  getRelatedPersonsByPatient,
+  createRelatedPerson,
+  deleteRelatedPerson,
+  type FhirRelatedPerson,
+  type FhirRelatedPersonBundle,
   type FormattedPatientData,
   type PatientSearchResult,
   type PatientSearchResultBundle,
@@ -46,6 +52,7 @@ export {
   type PatientProfileResponse,
   type PersonAttributeType,
   type PersonAttributeTypesResponse,
+  type TelecomAttributeTypeMapping,
   type ConceptAnswer,
   type PersonAttributeConcept,
   type PatientSearchField,
@@ -249,7 +256,7 @@ export {
   type UserLocation,
   BAHMNI_USER_LOCATION_COOKIE,
 } from './userService';
-export { logout } from './authService';
+export { logout, validateSessionUser } from './authService';
 export { USER_PINNED_PREFERENCE_URL } from './observationFormsService/constants';
 export {
   getPatientObservationsBundle,
@@ -352,12 +359,14 @@ export {
   OPENMRS_FHIR_R4,
   BAHMNI_HOME_PATH,
   BAHMNI_APP_BASE_PATH,
+  HOME_ROUTE_PATH,
 } from './constants/app';
 export {
   getCurrentUserPrivileges,
   hasPrivilege,
   type UserPrivilege,
   type SessionResponse,
+  type AccessDeniedRouteState,
 } from './privilegeService';
 export {
   fetchObservationForms,
@@ -425,15 +434,15 @@ export {
   getDocumentReferencePage,
   getDocumentTypes,
   getDocumentUploadMaxSizeMb,
-  createDocumentReference,
-  saveDocument,
+  saveDocuments,
   type DocumentReferencePage,
   type DocumentViewModel,
   type DocumentType,
   type DocumentSaveTarget,
   type CreateEncounterInVisit,
-  type CreateDocumentReferenceInput,
-  type SaveDocumentInput,
+  type DocumentPayload,
+  type SaveDocumentsInput,
+  type AttachToExistingEncounter,
   type DocumentReference,
 } from './documentReferenceService';
 

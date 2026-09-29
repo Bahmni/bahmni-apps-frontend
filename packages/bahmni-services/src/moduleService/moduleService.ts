@@ -88,8 +88,9 @@ export const sortByOrder = (modules: Module[]): Module[] => {
 export const getVisibleModules = async (
   extensionPointId: string = EXTENSION_POINT_HOME,
   userPrivileges?: string[],
+  appName: string = 'home',
 ): Promise<Module[]> => {
-  const allExtensions = await fetchModuleExtensions('home');
+  const allExtensions = await fetchModuleExtensions(appName);
   const byPoint = getExtensionsByPoint(allExtensions, extensionPointId);
   const byPrivilege = filterByPrivilege(byPoint, userPrivileges);
   const byStatus = filterByOnlineStatus(byPrivilege);

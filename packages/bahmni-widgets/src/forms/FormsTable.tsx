@@ -12,8 +12,6 @@ import {
   getPatientFormData,
   FormResponseData,
   useTranslation,
-  fetchFormMetadata,
-  FormMetadata,
   getFormattedError,
   fetchObservationForms,
   ObservationForm,
@@ -32,7 +30,6 @@ import { WidgetProps } from '../registry/model';
 import { CONSULTATION_PAD_PRIVILEGES } from '../userPrivileges/consultationPadPrivileges';
 import { useHasPrivilege } from '../userPrivileges/useHasPrivilege';
 import { useUserPrivilege } from '../userPrivileges/useUserPrivilege';
-import { deriveFormSchemaData } from '../utils/Observations';
 import { FormRecordViewModel, GroupedFormRecords } from './models';
 import styles from './styles/FormsTable.module.scss';
 
@@ -116,7 +113,9 @@ const FormsTable: React.FC<WidgetProps> = ({
   // AND that privilege must be marked editable. Forms with no privileges are open to all.
   const canEditForm = useCallback(
     (formName: string): boolean => {
-      const form = publishedForms.find((f) => f.name === formName);
+      const form = publishedForms.find(
+        (f) => f.name.toLowerCase() === formName.toLowerCase(),
+      );
       if (!form?.privileges || form.privileges.length === 0) return true;
       if (!userPrivileges || userPrivileges.length === 0) return false;
       const userPrivilegeNames = new Set(userPrivileges.map((p) => p.name));
@@ -135,33 +134,6 @@ const FormsTable: React.FC<WidgetProps> = ({
     },
     [activeEncounterUuid, canEditForm],
   );
-
-  // Get form UUID by matching form name
-  const getFormUuidByName = useCallback(
-    (formName: string): string | undefined => {
-      const form = publishedForms.find((f) => f.name === formName);
-      return form?.uuid;
-    },
-    [publishedForms],
-  );
-
-  // Get the UUID for the selected form
-  const selectedFormUuid = useMemo(() => {
-    if (!selectedRecord) return undefined;
-    return getFormUuidByName(selectedRecord.formName);
-  }, [selectedRecord, getFormUuidByName]);
-
-  // Fetch form metadata when a record is selected
-  const {
-    data: formMetadata,
-    isLoading: isLoadingMetadata,
-    isError: isMetadataError,
-    error: metadataError,
-  } = useQuery<FormMetadata>({
-    queryKey: ['formMetadata', selectedFormUuid],
-    queryFn: () => fetchFormMetadata(selectedFormUuid!),
-    enabled: !!selectedFormUuid && isModalOpen,
-  });
 
   const {
     data: fhirObservationBundle,
@@ -211,20 +183,12 @@ const FormsTable: React.FC<WidgetProps> = ({
     });
   }, [fhirObservationBundle, selectedRecord?.formName]);
 
-  const { controlOrder, sectionMap, conceptDatatypeMap } = useMemo(
-    () => deriveFormSchemaData(formMetadata?.schema),
-    [formMetadata],
-  );
-
   const modalErrorMessage = useMemo(() => {
-    if (metadataError) {
-      return getFormattedError(metadataError).message;
-    }
     if (formDataError) {
       return getFormattedError(formDataError).message;
     }
     return undefined;
-  }, [metadataError, formDataError]);
+  }, [formDataError]);
 
   // Base headers without Actions — shared across all groups.
   const baseHeaders = useMemo(
@@ -439,15 +403,13 @@ const FormsTable: React.FC<WidgetProps> = ({
         >
           <ObservationsRenderer
             observations={filteredObservations}
-            isLoading={isLoadingMetadata || isLoadingEncounterData}
-            isError={isMetadataError || isFormDataError}
+            isLoading={isLoadingEncounterData}
+            isError={isFormDataError}
             errorMessage={modalErrorMessage}
             emptyStateMessage={t('NO_FORM_DATA_AVAILABLE')}
             testIdPrefix={selectedRecord.formName}
             hideThumbnail={hideThumbnail}
-            controlOrder={controlOrder}
-            sectionMap={sectionMap}
-            conceptDatatypeMap={conceptDatatypeMap}
+            formName={selectedRecord.formName}
           />
         </Modal>
       )}

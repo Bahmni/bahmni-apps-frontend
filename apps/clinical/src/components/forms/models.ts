@@ -3,6 +3,12 @@ import type { BundleEntry, Reference } from 'fhir/r4';
 import type { EncounterSessionStartContext } from '../../events/startConsultation';
 import type { InputControl as ClinicalInputControlConfig } from '../../providers/clinicalConfig/models';
 
+export interface SubmissionResult {
+  updatedConcepts: Map<string, string>;
+  patientUUID: string;
+  encounterTypeName: string;
+}
+
 export interface InputControl {
   key: string;
   encounterTypes?: string[];
@@ -21,6 +27,7 @@ export interface InputControl {
   updateItemCDSCards?: (itemId: string, cards: CDSCard[]) => void;
   hasCriticalCDSCards?: () => boolean;
   onDirectSubmit?: () => Promise<void>;
+  onSubmitSuccess?: (result: SubmissionResult) => void;
 }
 
 export interface EncounterContext {

@@ -1,7 +1,5 @@
 import { DataTable, Modal } from '@bahmni/design-system';
 import {
-  fetchFormMetadata,
-  fetchObservationForms,
   formatDateTime,
   getEncounterByUuid,
   getObservationsBundleByEncounterUuid,
@@ -9,15 +7,13 @@ import {
   groupObservationsByEncounter,
   useTranslation,
   type EncounterGroup,
-  type FormMetadata,
-  type ObservationForm,
 } from '@bahmni/services';
 import { useQueries, useQuery } from '@tanstack/react-query';
 import type { Bundle, Encounter, Observation } from 'fhir/r4';
 import React, { useMemo } from 'react';
 import { extractFormFieldPath } from '../../../observations/utils';
 import { ObservationsRenderer } from '../../../observationsRenderer';
-import { deriveFormSchemaData, extractId } from '../../../utils/Observations';
+import { extractId } from '../../../utils/Observations';
 import type { TaskView, TaskViewModel } from '../../models';
 import { extractFormNameFromTask } from '../../utils';
 import styles from './ViewFormData.module.scss';
@@ -152,30 +148,6 @@ const ViewFormData: React.FC<ViewFormDataProps> = ({
   const isLoading = isLoadingObservations || isLoadingEncounters;
   const error = observationsError ?? encountersError;
 
-  const { data: publishedForms = [] } = useQuery<ObservationForm[]>({
-    queryKey: ['observationForms'],
-    queryFn: () => fetchObservationForms(),
-    enabled: open && !!formName,
-  });
-
-  const formUuid = useMemo(() => {
-    if (!formName) return undefined;
-    return publishedForms.find(
-      (form) => form.name.toLowerCase() === formName.toLowerCase(),
-    )?.uuid;
-  }, [publishedForms, formName]);
-
-  const { data: formMetadata } = useQuery<FormMetadata>({
-    queryKey: ['formMetadata', formUuid],
-    queryFn: () => fetchFormMetadata(formUuid!),
-    enabled: open && !!formUuid,
-  });
-
-  const { controlOrder, sectionMap, conceptDatatypeMap } = useMemo(
-    () => deriveFormSchemaData(formMetadata?.schema),
-    [formMetadata],
-  );
-
   const renderEncounterGroup = (group: EncounterGroup) => {
     return (
       <div key={group.encounterUuid} className={styles.encounterGroup}>
@@ -186,10 +158,8 @@ const ViewFormData: React.FC<ViewFormDataProps> = ({
         </div>
         <ObservationsRenderer
           observations={group.observations}
+          formName={formName ?? undefined}
           testIdPrefix={`encounter-${group.encounterUuid}-observations`}
-          controlOrder={controlOrder}
-          sectionMap={sectionMap}
-          conceptDatatypeMap={conceptDatatypeMap}
         />
       </div>
     );

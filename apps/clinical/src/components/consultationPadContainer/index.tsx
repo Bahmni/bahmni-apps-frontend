@@ -15,7 +15,13 @@ import {
   usePatientUUID,
 } from '@bahmni/widgets';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import type { EncounterSessionStartContext } from '../../events/startConsultation';
 import { useActionAreaExpandProps } from '../../hooks/useActionAreaExpandProps';
 import { useClinicalAppData } from '../../hooks/useClinicalAppData';
@@ -56,6 +62,8 @@ const ConsultationPadContainer: React.FC<ConsultationPadContainerProps> = ({
   });
 
   const queryClient = useQueryClient();
+
+  const autoCreatedForPatientUuidRef = useRef<string | null>(null);
 
   const [visitCreated, setVisitCreated] = useState(false);
   const [creating, setCreating] = useState(false);
@@ -163,9 +171,16 @@ const ConsultationPadContainer: React.FC<ConsultationPadContainerProps> = ({
 
   useEffect(() => {
     if (!shouldAutoCreate) return;
+    if (autoCreatedForPatientUuidRef.current === patientUuid) return;
+    autoCreatedForPatientUuidRef.current = patientUuid ?? null;
     const visitType = allowedVisitTypeObjects[0];
     createVisitAndProceed(visitType.uuid, visitType.name);
-  }, [shouldAutoCreate, allowedVisitTypeObjects, createVisitAndProceed]);
+  }, [
+    shouldAutoCreate,
+    allowedVisitTypeObjects,
+    createVisitAndProceed,
+    patientUuid,
+  ]);
 
   useEffect(() => {
     if (!creationError && !queryError) return;

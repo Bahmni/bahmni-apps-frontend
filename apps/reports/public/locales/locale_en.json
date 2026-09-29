@@ -1,0 +1,17 @@
+{
+  "REPORTS_HOME_LABEL": "Home",
+  "REPORTS_LABEL": "Reports",
+  "REPORTS_MY_REPORTS_TAB_LABEL": "My Reports",
+  "REPORTS_MY_REPORTS_TAB_PLACEHOLDER": "My Reports content will appear here.",
+  "REPORTS_TAB_LABEL": "Reports",
+  "REPORTS_TAB_LIST_ARIA_LABEL": "Reports Tabs",
+  "REPORTS_TAB_PLACEHOLDER": "Reports content will appear here.",
+  "USER_CHANGE_PASSWORD_GLOBAL_ACTION": "Change Password",
+  "USER_GLOBAL_ACTION_BUTTON": "User menu",
+  "USER_GLOBAL_ACTION_ERROR": "Something went wrong. Please try again.",
+  "USER_GLOBAL_ACTION_ERROR_TITLE": "Action failed",
+  "USER_GLOBAL_ACTION_GREETING": "Hi, {{name}}",
+  "USER_GLOBAL_ACTION_LOADING": "Loading user menu",
+  "USER_GLOBAL_ACTION_MENU": "User actions",
+  "USER_LOGOUT_GLOBAL_ACTION": "Logout"
+}

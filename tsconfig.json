@@ -35,6 +35,12 @@
     },
     {
       "path": "./apps/patient-documents"
+    },
+    {
+      "path": "./apps/admin"
+    },
+    {
+      "path": "./apps/reports"
     }
   ]
 }
