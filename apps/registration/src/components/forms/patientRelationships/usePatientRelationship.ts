@@ -65,8 +65,17 @@ export const usePatientRelationship = ({
 
       const excludedUuids = new Set<string>();
 
+      const isExpired = (tillDate: string) =>
+        !!tillDate && new Date(tillDate) < new Date();
+
       relationships
-        .filter((rel) => !rel.isDeleted && rel.patientUuid && rel.id !== rowId)
+        .filter(
+          (rel) =>
+            !rel.isDeleted &&
+            !isExpired(rel.tillDate) &&
+            rel.patientUuid &&
+            rel.id !== rowId,
+        )
         .forEach((rel) => {
           if (
             currentRow?.relationshipType &&
