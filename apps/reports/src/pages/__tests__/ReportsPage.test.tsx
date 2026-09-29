@@ -1,4 +1,5 @@
 import * as services from '@bahmni/services';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { axe, toHaveNoViolations } from 'jest-axe';
 import { MemoryRouter } from 'react-router-dom';
@@ -11,10 +12,20 @@ jest.mock('@bahmni/services', () => ({
   useTranslation: () => ({ t: (key: string) => key }),
 }));
 
-jest.mock('@bahmni/widgets', () => ({
-  ...jest.requireActual('@bahmni/widgets'),
-  UserGlobalAction: () => <div data-testid="user-global-action-test-id" />,
-}));
+jest.mock('@bahmni/widgets', () => {
+  const actual = jest.requireActual('@bahmni/widgets');
+  return {
+    ...actual,
+    UserGlobalAction: () => <div data-testid="user-global-action-test-id" />,
+    UserPrivilegeProvider: ({ children }: { children: React.ReactNode }) =>
+      children,
+    useUserPrivilege: () => ({
+      userPrivileges: [],
+      isLoading: false,
+    }),
+    useNotification: () => ({ addNotification: jest.fn() }),
+  };
+});
 
 const mockNavigate = jest.fn();
 jest.mock('react-router-dom', () => ({
@@ -23,11 +34,15 @@ jest.mock('react-router-dom', () => ({
 }));
 
 describe('ReportsPage', () => {
+  const queryClient = new QueryClient();
+
   const renderPage = (initialPath = '/reports/') =>
     render(
-      <MemoryRouter initialEntries={[initialPath]}>
-        <ReportsPage />
-      </MemoryRouter>,
+      <QueryClientProvider client={queryClient}>
+        <MemoryRouter initialEntries={[initialPath]}>
+          <ReportsPage />
+        </MemoryRouter>
+      </QueryClientProvider>,
     );
 
   beforeEach(() => {

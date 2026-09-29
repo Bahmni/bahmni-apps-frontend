@@ -30,6 +30,7 @@ jest.mock('@bahmni/widgets', () => ({
     isLoading: false,
     error: null,
   }),
+  useNotification: () => ({ addNotification: jest.fn() }),
 }));
 
 jest.mock('@tanstack/react-query-devtools', () => ({
