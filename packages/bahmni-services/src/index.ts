@@ -359,6 +359,8 @@ export {
   BAHMNI_HOME_PATH,
   BAHMNI_APP_BASE_PATH,
   HOME_ROUTE_PATH,
+  BAHMNI_REPORTS_URL,
+  BASE_PATH,
 } from './constants/app';
 export {
   getCurrentUserPrivileges,

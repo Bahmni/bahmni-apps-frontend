@@ -1,0 +1,40 @@
+.filtersContainer {
+  background: #ffffff;
+  border: 1px solid #e0e0e0;
+  padding: 1.75rem;
+  margin-bottom: 2rem;
+}
+
+.filtersTitle {
+  margin: 0 0 1.5rem 0;
+  font-size: 1rem;
+  font-weight: 400;
+  color: #161616;
+}
+
+.filtersRow {
+  display: grid;
+  grid-template-columns: 1.29fr 1fr 1fr auto 1.16fr;
+  gap: 2.25rem;
+  align-items: end;
+}
+
+.divider {
+  width: 1px;
+  align-self: stretch;
+  margin: 0 1.25rem;
+  background: #e0e0e0;
+}
+
+.buttonsRow {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  margin-top: 2rem;
+
+  button {
+    min-width: 8rem;
+    justify-content: center;
+    padding-inline-end: 1rem;
+  }
+}

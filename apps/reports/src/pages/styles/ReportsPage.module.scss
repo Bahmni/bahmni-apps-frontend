@@ -4,7 +4,7 @@
 @use '@carbon/react/scss/breakpoint' as *;
 
 .page {
-  padding-top: $spacing-10;
+  padding-top: $spacing-05;
   padding-inline: calc($spacing-12 + $spacing-05);
 }
 
@@ -17,5 +17,5 @@
 
 .panel {
   @include type-style('body-compact-01');
-  padding-block: $spacing-07;
+  padding-block: $spacing-05;
 }
