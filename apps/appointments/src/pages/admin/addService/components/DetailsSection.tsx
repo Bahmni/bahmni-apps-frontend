@@ -16,6 +16,7 @@ import { useQuery } from '@tanstack/react-query';
 import React, { useMemo } from 'react';
 import { useServiceStore } from '../../stores';
 import styles from '../styles/index.module.scss';
+import RequiredLabel from './RequiredLabel';
 
 const DetailsSection: React.FC = () => {
   const { t } = useTranslation();
@@ -111,7 +112,9 @@ const DetailsSection: React.FC = () => {
           id="add-appointment-details-service-name"
           data-testid="add-appointment-details-service-name-test-id"
           aria-label="add-appointment-details-service-name-aria-label"
-          labelText={t('ADMIN_ADD_SERVICE_FIELD_SERVICE_NAME')}
+          labelText={
+            <RequiredLabel label={t('ADMIN_ADD_SERVICE_FIELD_SERVICE_NAME')} />
+          }
           placeholder={t('ADMIN_ADD_SERVICE_FIELD_SERVICE_NAME_PLACEHOLDER')}
           value={name}
           required

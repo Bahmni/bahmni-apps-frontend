@@ -51,6 +51,18 @@ describe('ServiceAvailabilitySection', () => {
     expect(screen.getByText('Days Of The Week')).toBeInTheDocument();
   });
 
+  it('should mark only mandatory column headers with an asterisk', () => {
+    render(<AvailabilitySection />);
+
+    const hasAsterisk = (key: string) =>
+      screen.getByTestId(`table-header-${key}`).textContent?.includes('*');
+
+    expect(hasAsterisk('startTime')).toBe(true);
+    expect(hasAsterisk('endTime')).toBe(true);
+    expect(hasAsterisk('daysOfWeek')).toBe(true);
+    expect(hasAsterisk('maxLoad')).toBe(false);
+  });
+
   it('should render Add Row button', () => {
     render(<AvailabilitySection />);
 

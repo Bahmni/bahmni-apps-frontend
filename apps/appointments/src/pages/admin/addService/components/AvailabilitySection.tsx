@@ -11,6 +11,7 @@ import React, { useCallback, useMemo } from 'react';
 import { DAYS_OF_WEEK } from '../../constants';
 import { AvailabilityRow, useServiceStore } from '../../stores';
 import styles from '../styles/index.module.scss';
+import RequiredLabel from './RequiredLabel';
 
 const AvailabilitySection: React.FC = () => {
   const { t } = useTranslation();
@@ -27,13 +28,26 @@ const AvailabilitySection: React.FC = () => {
     () => [
       {
         key: 'startTime',
-        header: t('ADMIN_ADD_SERVICE_TABLE_HEADER_START_TIME'),
+        header: (
+          <RequiredLabel
+            label={t('ADMIN_ADD_SERVICE_TABLE_HEADER_START_TIME')}
+          />
+        ),
       },
-      { key: 'endTime', header: t('ADMIN_ADD_SERVICE_TABLE_HEADER_END_TIME') },
+      {
+        key: 'endTime',
+        header: (
+          <RequiredLabel label={t('ADMIN_ADD_SERVICE_TABLE_HEADER_END_TIME')} />
+        ),
+      },
       { key: 'maxLoad', header: t('ADMIN_ADD_SERVICE_TABLE_HEADER_MAX_LOAD') },
       {
         key: 'daysOfWeek',
-        header: t('ADMIN_ADD_SERVICE_TABLE_HEADER_DAYS_OF_WEEK'),
+        header: (
+          <RequiredLabel
+            label={t('ADMIN_ADD_SERVICE_TABLE_HEADER_DAYS_OF_WEEK')}
+          />
+        ),
       },
       {
         key: 'actions',

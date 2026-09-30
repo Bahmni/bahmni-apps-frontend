@@ -255,6 +255,13 @@ describe('DetailsSection', () => {
     },
   );
 
+  it('should mark only the service name label with an asterisk', () => {
+    render(wrapper);
+
+    expect(screen.getByText('Service Name')).toHaveTextContent('Service Name*');
+    expect(screen.getByText('Description')).not.toHaveTextContent('*');
+  });
+
   it('should show validation error on service name field when nameError is set', () => {
     jest.mocked(useServiceStore).mockReturnValue({
       ...defaultStoreState,

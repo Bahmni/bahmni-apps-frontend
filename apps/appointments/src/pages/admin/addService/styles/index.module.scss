@@ -27,7 +27,7 @@
     background: $layer-01;
   }
 
-  >div[id$="add-appointment-details-section"] {
+  > div[id$="add-appointment-details-section"] {
     padding-top: $spacing-06 !important;
   }
 }
@@ -84,6 +84,11 @@
   }
 }
 
+.requiredAsterisk {
+  color: $support-error;
+  margin-left: $spacing-01;
+}
+
 .errorText {
   @include type-style("label-01");
   color: $support-error;
@@ -93,21 +98,21 @@
   p[data-testid$="service-availability-table-test-id-empty"] {
     display: none;
   }
-  :is(td, th):is(
-    [data-testid$="-startTime"],
-    [data-testid$="-endTime"]
-  ) {
+  th .requiredAsterisk {
+    color: $support-error;
+  }
+  :is(td, th):is([data-testid$="-startTime"], [data-testid$="-endTime"]) {
     inline-size: $spacing-13;
     padding-inline-end: 0;
   }
-  th[data-testid$="-startTime"]{
+  th[data-testid$="-startTime"] {
     padding-inline-start: $spacing-03;
   }
-  td[data-testid$="-startTime"]{
+  td[data-testid$="-startTime"] {
     padding-inline-start: $spacing-06;
   }
 
-  td[data-testid$="-endTime"]{
+  td[data-testid$="-endTime"] {
     padding-inline-start: $spacing-05;
   }
   :is(td, th):is([data-testid$="-maxLoad"]) {
