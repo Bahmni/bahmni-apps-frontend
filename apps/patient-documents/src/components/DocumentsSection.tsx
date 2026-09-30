@@ -172,6 +172,7 @@ export const DocumentsSection: React.FC<DocumentsSectionProps> = ({
                 count: savedCount,
               }),
         type: 'success',
+        timeout: 5000,
       });
       return;
     }
@@ -185,6 +186,7 @@ export const DocumentsSection: React.FC<DocumentsSectionProps> = ({
           failed: failures.length,
         }),
         type: 'warning',
+        timeout: 5000,
       });
       return;
     }
@@ -198,6 +200,7 @@ export const DocumentsSection: React.FC<DocumentsSectionProps> = ({
               count: failures.length,
             }),
       type: 'error',
+      timeout: 5000,
     });
   };
 

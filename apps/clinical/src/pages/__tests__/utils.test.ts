@@ -139,6 +139,36 @@ describe('ConsultationPageService', () => {
         'View Allergies',
       ]);
     });
+
+    // BAH-4988 AC 13: the visits control is not itself privilege-aware — it
+    // relies entirely on this generic filtering, driven by the deployment
+    // config declaring "requiredPrivileges": ["View Visits"] on the control.
+    it('excludes the visits control when the user lacks the "View Visits" privilege (AC 13)', () => {
+      mockedUseHasPrivilege.mockReturnValue(false);
+      const controls = [
+        {
+          type: 'visits',
+          name: 'visits',
+          requiredPrivileges: ['View Visits'],
+        },
+      ];
+      const result = filterControlsByPrivileges(controls);
+      expect(result).toHaveLength(0);
+      expect(mockedUseHasPrivilege).toHaveBeenCalledWith(['View Visits']);
+    });
+
+    it('includes the visits control when the user has the "View Visits" privilege (AC 13)', () => {
+      mockedUseHasPrivilege.mockReturnValue(true);
+      const controls = [
+        {
+          type: 'visits',
+          name: 'visits',
+          requiredPrivileges: ['View Visits'],
+        },
+      ];
+      const result = filterControlsByPrivileges(controls);
+      expect(result).toHaveLength(1);
+    });
   });
 
   describe('filterSectionsByPrivileges', () => {

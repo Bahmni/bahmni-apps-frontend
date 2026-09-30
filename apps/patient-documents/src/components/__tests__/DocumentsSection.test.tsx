@@ -390,6 +390,7 @@ describe('DocumentsSection', () => {
         title: 'Document saved',
         message: 'The document was saved successfully.',
         type: 'success',
+        timeout: 5000,
       });
     });
 
@@ -404,6 +405,7 @@ describe('DocumentsSection', () => {
         title: 'Document saved',
         message: '3 documents were saved successfully.',
         type: 'success',
+        timeout: 5000,
       });
     });
 
@@ -422,6 +424,7 @@ describe('DocumentsSection', () => {
         message:
           '2 of 3 documents saved; 1 failed. The failed documents are still listed so you can try again.',
         type: 'warning',
+        timeout: 5000,
       });
     });
 
@@ -443,6 +446,7 @@ describe('DocumentsSection', () => {
         message:
           '2 files could not be saved. They are still listed so you can try again.',
         type: 'error',
+        timeout: 5000,
       });
     });
 
@@ -457,6 +461,7 @@ describe('DocumentsSection', () => {
         title: 'Save failed',
         message: 'File too large',
         type: 'error',
+        timeout: 5000,
       });
     });
 
