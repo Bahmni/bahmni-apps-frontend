@@ -1,6 +1,6 @@
-import { parseISO, startOfDay } from 'date-fns';
 import { useTranslation, getRelationshipTypes } from '@bahmni/services';
 import { useQuery } from '@tanstack/react-query';
+import { parseISO, startOfDay } from 'date-fns';
 import { useState, useEffect } from 'react';
 import type { RelationshipData } from '../components/forms/patientRelationships/PatientRelationships';
 import {
