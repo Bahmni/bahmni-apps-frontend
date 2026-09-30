@@ -1,5 +1,6 @@
 import { useTranslation, getRelationshipTypes } from '@bahmni/services';
 import { useQuery } from '@tanstack/react-query';
+import { parseISO, startOfDay } from 'date-fns';
 import { useState, useEffect } from 'react';
 import type { RelationshipData } from '../components/forms/patientRelationships/PatientRelationships';
 import {
@@ -42,6 +43,15 @@ export const useRelationshipValidation = () => {
     {},
   );
 
+  const isExpired = (tillDate: string) =>
+    !!tillDate && parseISO(tillDate) < startOfDay(new Date());
+
+  const periodsOverlap = (a: RelationshipData, b: RelationshipData) => {
+    // A relationship with a past end date is historical — no conflict with a new one
+    if (isExpired(a.tillDate) || isExpired(b.tillDate)) return false;
+    return true;
+  };
+
   const getDuplicateIds = (relationships: RelationshipData[]) => {
     const duplicateIds = new Set<string>();
 
@@ -49,15 +59,16 @@ export const useRelationshipValidation = () => {
       if (!rel.relationshipType) return;
       if (!rel.patientUuid && !rel.patientId) return;
 
-      const firstIndex = relationships.findIndex((r) => {
+      const firstIndex = relationships.findIndex((r, idx) => {
+        if (idx >= currentIndex) return false;
         const sameRelationType = r.relationshipType === rel.relationshipType;
         const samePatient = rel.patientUuid
           ? r.patientUuid === rel.patientUuid
           : r.patientId === rel.patientId;
-        return sameRelationType && samePatient;
+        return sameRelationType && samePatient && periodsOverlap(r, rel);
       });
 
-      if (firstIndex !== -1 && currentIndex > firstIndex) {
+      if (firstIndex !== -1) {
         duplicateIds.add(rel.id);
       }
     });

@@ -125,6 +125,42 @@ describe('useRelationshipValidation', () => {
       });
     });
 
+    it('should allow re-adding same relationship when existing one is expired', () => {
+      const { result } = renderHook(() => useRelationshipValidation(), {
+        wrapper,
+      });
+
+      const yesterday = new Date();
+      yesterday.setDate(yesterday.getDate() - 1);
+      const yesterdayStr = yesterday.toISOString().split('T')[0];
+
+      const relationships: RelationshipData[] = [
+        {
+          id: 'rel-1',
+          relationshipType: 'parent-child-uuid',
+          patientId: 'P001',
+          patientUuid: 'uuid-1',
+          tillDate: yesterdayStr,
+          isExisting: true,
+        },
+        {
+          id: 'rel-2',
+          relationshipType: 'parent-child-uuid',
+          patientId: 'P001',
+          patientUuid: 'uuid-1',
+          tillDate: '',
+        },
+      ];
+
+      let isValid = false;
+      act(() => {
+        isValid = result.current.validateRelationships(relationships);
+      });
+
+      expect(isValid).toBe(true);
+      expect(result.current.validationErrors).toEqual({});
+    });
+
     it('should not flag duplicates if relationship types are different', () => {
       const { result } = renderHook(() => useRelationshipValidation(), {
         wrapper,
