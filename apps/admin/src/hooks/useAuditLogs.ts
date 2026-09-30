@@ -7,6 +7,7 @@ import {
 } from '@bahmni/services';
 import { useQuery } from '@tanstack/react-query';
 import { useEffect, useRef, useState } from 'react';
+import { combineDateAndTime } from './utils';
 
 export interface AuditLogFilters {
   startDate: Date | null;
@@ -17,15 +18,15 @@ export interface AuditLogFilters {
 
 type AuditLogAction = 'init' | 'next' | 'prev' | 'runReport';
 
+// The list is shown newest-first. The backend's default view returns the
+// newest page (already newest-first); cursor requests return ascending rows,
+// which are reversed for display. "Next" therefore means older events and
+// "Previous" means newer events.
 interface AuditLogRequest {
   action: AuditLogAction;
   params: AuditLogQueryParams;
-  // Only the initial/default view (init, or prev when already at the initial
-  // default view) reverses the returned rows, mirroring the legacy
-  // `defaultView()` helper in auditLogController.js.
-  reverseRows: boolean;
-  // runReport always replaces the table (even with an empty result); every
-  // other action keeps the previously shown rows when the result is empty.
+  // init, runReport and reset always replace the table (even with an empty
+  // result); next/prev keep the previously shown rows when the result is empty.
   alwaysReplace: boolean;
   // Fallback first/last index to fall back to when the result is empty.
   defaultFirstIndex: number;
@@ -37,30 +38,6 @@ interface AuditLogRequest {
 export const NO_EVENTS_FOUND = 'NO_EVENTS_FOUND';
 export const NO_MORE_EVENTS_FOUND = 'NO_MORE_EVENTS_FOUND';
 export const MATCHING_EVENTS_NOT_FOUND = 'MATCHING_EVENTS_NOT_FOUND';
-
-/**
- * Combines a date and an (optional) `HH:mm` time (24-hour, the native
- * `<input type="time">` value format) into a single ISO `startFrom` value,
- * mirroring the legacy screen's two separate date/time inputs feeding a
- * single `startDate` scope value.
- */
-export const combineDateAndTime = (
-  date: Date | null,
-  time: string,
-): string | undefined => {
-  if (!date) return undefined;
-  const combined = new Date(date);
-  if (time?.trim()) {
-    const [hours, minutes] = time.split(':').map(Number);
-    if (!Number.isNaN(hours) && !Number.isNaN(minutes)) {
-      combined.setHours(hours, minutes, 0, 0);
-    }
-  }
-  if (Number.isNaN(combined.getTime())) {
-    return undefined;
-  }
-  return combined.toISOString();
-};
 
 const AUDIT_LOG_PAGE_SIZE = 50;
 
@@ -78,7 +55,14 @@ export const useAuditLogs = () => {
   const [emptyMessageKey, setEmptyMessageKey] = useState<string | null>(null);
   const [hasNext, setHasNext] = useState(false);
   const [hasPrevious, setHasPrevious] = useState(false);
-  const [currentPageNumber, setCurrentPageNumber] = useState(1);
+  const [currentPageNumber, setPageNumberState] = useState(1);
+  // Mirrors currentPageNumber so the result-processing effect can read the
+  // latest page without re-running whenever the page changes.
+  const pageNumberRef = useRef(1);
+  const setCurrentPageNumber = (page: number) => {
+    pageNumberRef.current = page;
+    setPageNumberState(page);
+  };
 
   const requestIdRef = useRef(0);
   const [request, setRequest] = useState<AuditLogRequest | null>(null);
@@ -88,12 +72,15 @@ export const useAuditLogs = () => {
     queryKey: ['auditLogs', request?.requestId],
     queryFn: () => fetchAuditLogs(request!.params),
     enabled: !!request,
+    // requestId is unique per dispatch, so a cached entry can never be reused
+    // (and audit logs must always be fetched fresh). Drop entries as soon as
+    // they become inactive instead of retaining them for the default gcTime.
+    gcTime: 0,
   });
 
   const dispatchRequest = (
     action: AuditLogAction,
     params: AuditLogQueryParams,
-    reverseRows: boolean,
     alwaysReplace: boolean,
     defaultFirstIndex: number,
     defaultLastIndex: number,
@@ -103,7 +90,6 @@ export const useAuditLogs = () => {
     setRequest({
       action,
       params,
-      reverseRows,
       alwaysReplace,
       defaultFirstIndex,
       defaultLastIndex,
@@ -115,29 +101,35 @@ export const useAuditLogs = () => {
   const startFrom = combineDateAndTime(filters.startDate, filters.startTime);
 
   const init = () => {
-    setCurrentPageNumber(1);
     dispatchRequest(
       'init',
       { startFrom, defaultView: true },
       true,
-      false,
       0,
       0,
       NO_EVENTS_FOUND,
     );
   };
 
+  // firstIndex is the newest row on screen and lastIndex the oldest, so
+  // "next" (older) pages from lastIndex and "prev" (newer) from firstIndex.
+  const hasCursor = () => !!firstIndex || !!lastIndex;
+
   const next = () => {
-    setCurrentPageNumber((prev) => prev + 1);
+    if (isFetching) return;
+    if (!hasCursor()) {
+      runReport();
+      return;
+    }
     dispatchRequest(
       'next',
       {
         lastAuditLogId: lastIndex,
+        prev: true,
         username: filters.username,
         patientId: filters.patientId,
         startFrom,
       },
-      false,
       false,
       firstIndex,
       lastIndex,
@@ -146,30 +138,19 @@ export const useAuditLogs = () => {
   };
 
   const prev = () => {
-    if (!firstIndex && !lastIndex) {
-      setCurrentPageNumber(1);
-      dispatchRequest(
-        'prev',
-        { defaultView: true, startFrom },
-        true,
-        false,
-        0,
-        0,
-        NO_MORE_EVENTS_FOUND,
-      );
+    if (isFetching) return;
+    if (!hasCursor()) {
+      runReport();
       return;
     }
-    setCurrentPageNumber((prev) => Math.max(1, prev - 1));
     dispatchRequest(
       'prev',
       {
         lastAuditLogId: firstIndex,
         username: filters.username,
         patientId: filters.patientId,
-        prev: true,
         startFrom,
       },
-      false,
       false,
       firstIndex,
       lastIndex,
@@ -178,14 +159,15 @@ export const useAuditLogs = () => {
   };
 
   const runReport = () => {
+    if (isFetching) return;
     dispatchRequest(
       'runReport',
       {
+        defaultView: true,
         username: filters.username,
         patientId: filters.patientId,
         startFrom,
       },
-      false,
       true,
       0,
       0,
@@ -195,27 +177,21 @@ export const useAuditLogs = () => {
 
   // Clears all filter fields and fetches audit log with default view (no filters).
   const reset = () => {
-    setCurrentPageNumber(1);
+    if (isFetching) return;
     setFilters({
       startDate: null,
       startTime: '',
       username: '',
       patientId: '',
     });
-    dispatchRequest(
-      'init',
-      { defaultView: true },
-      true,
-      false,
-      0,
-      0,
-      NO_EVENTS_FOUND,
-    );
+    dispatchRequest('init', { defaultView: true }, true, 0, 0, NO_EVENTS_FOUND);
   };
 
   useEffect(() => {
     // Kick off the initial default view once, on mount.
     init();
+    // `init` is intentionally omitted from the deps: it is recreated on every
+    // render, so including it would refetch continuously instead of only once.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -224,27 +200,34 @@ export const useAuditLogs = () => {
     if (processedRequestId.current === request.requestId) return;
     processedRequestId.current = request.requestId;
 
-    const rawLogs = request.reverseRows ? [...data].reverse() : data;
+    const isDefaultView = !!request.params.defaultView;
+    const rawLogs = isDefaultView ? data : [...data].reverse();
     const parsedLogs = rawLogs.map(parseAuditLogEntry);
+    const isFullPage = parsedLogs.length === AUDIT_LOG_PAGE_SIZE;
 
     if (parsedLogs.length) {
       setLogs(parsedLogs);
       setEmptyMessageKey(null);
-      const newFirstIndex = parsedLogs[0].auditLogId;
-      const newLastIndex = parsedLogs[parsedLogs.length - 1].auditLogId;
-      setFirstIndex(newFirstIndex);
-      setLastIndex(newLastIndex);
+      setFirstIndex(parsedLogs[0].auditLogId);
+      setLastIndex(parsedLogs[parsedLogs.length - 1].auditLogId);
 
-      // If we got a full page of results, there might be more pages
-      const hasMorePages = parsedLogs.length === AUDIT_LOG_PAGE_SIZE;
-      setHasNext(hasMorePages);
-      // Only show previous if we have a full page (and action is not init)
-      // or if we're already navigating (action is next/prev)
-      setHasPrevious(
-        request.action !== 'init' && request.action !== 'runReport'
-          ? true
-          : hasMorePages,
-      );
+      if (isDefaultView) {
+        // Newest page: nothing newer to go back to.
+        setHasPrevious(false);
+        setHasNext(isFullPage);
+        setCurrentPageNumber(1);
+      } else if (request.action === 'next') {
+        setHasPrevious(true);
+        setHasNext(isFullPage);
+        setCurrentPageNumber(pageNumberRef.current + 1);
+      } else {
+        // Going back always lands on an earlier page; a full page can't tell
+        // us if more newer events exist, so rely on the page number instead.
+        setHasNext(true);
+        const newPage = Math.max(1, pageNumberRef.current - 1);
+        setHasPrevious(newPage > 1);
+        setCurrentPageNumber(newPage);
+      }
     } else {
       if (request.alwaysReplace) {
         setLogs([]);
@@ -252,10 +235,16 @@ export const useAuditLogs = () => {
       setEmptyMessageKey(request.emptyMessageKey);
       setFirstIndex(request.defaultFirstIndex);
       setLastIndex(request.defaultLastIndex);
-      setHasNext(false);
-      setHasPrevious(
-        request.action !== 'init' && request.action !== 'runReport',
-      );
+
+      if (isDefaultView) {
+        setHasNext(false);
+        setHasPrevious(false);
+        setCurrentPageNumber(1);
+      } else if (request.action === 'next') {
+        setHasNext(false);
+      } else {
+        setHasPrevious(false);
+      }
     }
   }, [data, request]);
 
