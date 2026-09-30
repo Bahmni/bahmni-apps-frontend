@@ -1,3 +1,4 @@
+import { parseISO, startOfDay } from 'date-fns';
 import { useTranslation, getRelationshipTypes } from '@bahmni/services';
 import { useQuery } from '@tanstack/react-query';
 import { useState, useEffect } from 'react';
@@ -43,7 +44,7 @@ export const useRelationshipValidation = () => {
   );
 
   const isExpired = (tillDate: string) =>
-    !!tillDate && new Date(tillDate) < new Date();
+    !!tillDate && parseISO(tillDate) < startOfDay(new Date());
 
   const periodsOverlap = (a: RelationshipData, b: RelationshipData) => {
     // A relationship with a past end date is historical — no conflict with a new one

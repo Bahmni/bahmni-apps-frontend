@@ -1,3 +1,4 @@
+import { parseISO, startOfDay } from 'date-fns';
 import { useState, useEffect, useCallback } from 'react';
 import type { PatientSuggestion } from '../../../hooks/usePatientSearch';
 import { usePatientSearch } from '../../../hooks/usePatientSearch';
@@ -66,7 +67,7 @@ export const usePatientRelationship = ({
       const excludedUuids = new Set<string>();
 
       const isExpired = (tillDate: string) =>
-        !!tillDate && new Date(tillDate) < new Date();
+        !!tillDate && parseISO(tillDate) < startOfDay(new Date());
 
       relationships
         .filter(
