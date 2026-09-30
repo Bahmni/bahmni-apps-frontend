@@ -12,6 +12,8 @@ import { useVisitDocuments } from '../useVisitDocuments';
 jest.mock('@bahmni/services', () => ({
   getPatientEncounters: jest.fn(),
   getFormattedDocumentReferences: jest.fn(),
+  visitIdOf: (encounter: { partOf?: { reference?: string } }) =>
+    encounter.partOf?.reference?.split('/').pop(),
 }));
 
 const mockedGetPatientEncounters = getPatientEncounters as jest.MockedFunction<

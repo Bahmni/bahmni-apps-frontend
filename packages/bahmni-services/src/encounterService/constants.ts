@@ -6,17 +6,21 @@ export const ENCOUNTER_TYPE_BY_NAME_URL = (name: string) =>
 export const PATIENT_VISITS_URL = (
   patientUUID: string,
   locationUuid?: string,
+  count?: number,
 ) =>
   OPENMRS_FHIR_R4 +
   `/Encounter?subject:Patient=${patientUUID}&_tag=visit&_sort=-_lastUpdated` +
-  (locationUuid ? `&location=${locationUuid}` : '');
+  (locationUuid ? `&location=${locationUuid}` : '') +
+  (count ? `&_count=${count}` : '');
 
 export const PATIENT_ENCOUNTERS_URL = (
   patientUUID: string,
   count: number = 100,
   offset: number = 0,
+  sinceDate?: string,
 ) =>
   OPENMRS_FHIR_R4 +
-  `/Encounter?subject:Patient=${patientUUID}&_sort=-_lastUpdated&_count=${count}&_getpagesoffset=${offset}`;
+  `/Encounter?subject:Patient=${patientUUID}&_sort=-_lastUpdated&_count=${count}&_getpagesoffset=${offset}` +
+  (sinceDate ? `&date=ge${encodeURIComponent(sinceDate)}` : '');
 
 export const FHIR_ENCOUNTER_URL = OPENMRS_FHIR_R4 + '/Encounter';
