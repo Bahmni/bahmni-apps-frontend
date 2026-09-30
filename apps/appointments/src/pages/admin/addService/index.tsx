@@ -9,7 +9,7 @@ import { useNotification, useUserPrivilege } from '@bahmni/widgets';
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
-  MANAGE_APPOINTMENT_SERVICES_PRIVILEGE_ALIASES,
+  MANAGE_APPOINTMENT_SERVICES_PRIVILEGE,
   PATHS,
 } from '../../../constants/app';
 import { useServiceStore } from '../stores';
@@ -28,7 +28,7 @@ const AddServicePage: React.FC = () => {
 
   const canManageServices = hasPrivilege(
     userPrivileges,
-    MANAGE_APPOINTMENT_SERVICES_PRIVILEGE_ALIASES,
+    MANAGE_APPOINTMENT_SERVICES_PRIVILEGE,
   );
 
   const { validate } = useServiceStore();

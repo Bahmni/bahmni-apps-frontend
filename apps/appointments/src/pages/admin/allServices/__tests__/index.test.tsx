@@ -9,7 +9,6 @@ import { axe, toHaveNoViolations } from 'jest-axe';
 import {
   ADMIN_TAB_PRIVILEGE,
   MANAGE_APPOINTMENT_SERVICES_PRIVILEGE,
-  MANAGE_APPOINTMENT_SERVICES_PRIVILEGE_LEGACY,
   PATHS,
 } from '../../../../constants/app';
 import { useAppointmentsConfig } from '../../../../providers/appointmentsConfig';
@@ -260,12 +259,12 @@ describe('AllServicesPage', () => {
         assertButton: (btn: HTMLElement) => expect(btn).not.toBeDisabled(),
       },
       {
-        scenario: 'enabled when user has only the legacy manage privilege',
+        scenario: 'disabled when user has only the legacy manage privilege',
         userPrivileges: [
           { name: ADMIN_TAB_PRIVILEGE },
-          { name: MANAGE_APPOINTMENT_SERVICES_PRIVILEGE_LEGACY },
+          { name: 'Manage Appointment Services' },
         ],
-        assertButton: (btn: HTMLElement) => expect(btn).not.toBeDisabled(),
+        assertButton: (btn: HTMLElement) => expect(btn).toBeDisabled(),
       },
     ])(
       'should render delete button $scenario',
@@ -300,12 +299,12 @@ describe('AllServicesPage', () => {
         assertButton: (btn: HTMLElement) => expect(btn).not.toBeDisabled(),
       },
       {
-        scenario: 'enabled when user has only the legacy manage privilege',
+        scenario: 'disabled when user has only the legacy manage privilege',
         userPrivileges: [
           { name: ADMIN_TAB_PRIVILEGE },
-          { name: MANAGE_APPOINTMENT_SERVICES_PRIVILEGE_LEGACY },
+          { name: 'Manage Appointment Services' },
         ],
-        assertButton: (btn: HTMLElement) => expect(btn).not.toBeDisabled(),
+        assertButton: (btn: HTMLElement) => expect(btn).toBeDisabled(),
       },
     ])(
       'should render add button $scenario',
