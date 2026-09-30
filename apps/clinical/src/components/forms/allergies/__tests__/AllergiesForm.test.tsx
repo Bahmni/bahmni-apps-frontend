@@ -1,3 +1,4 @@
+import { OTHER_NON_CODED_ALLERGEN_UUID } from '@bahmni/services';
 import { useHasPrivilege } from '@bahmni/widgets';
 import {
   QueryClient,
@@ -101,6 +102,7 @@ const mockReactions: Coding[] = [
 
 const mockSelectedAllergy = {
   id: mockAllergen.uuid,
+  entryId: mockAllergen.uuid,
   display: mockAllergen.display,
   selectedSeverity: null,
   selectedReactions: [],
@@ -123,6 +125,7 @@ const mockAllergyStore = {
   updateSeverity: jest.fn(),
   updateReactions: jest.fn(),
   updateNote: jest.fn(),
+  updateNonCodedAllergen: jest.fn(),
   validateAllAllergies: jest.fn(),
   reset: jest.fn(),
   getState: jest.fn(),
@@ -551,13 +554,16 @@ describe('AllergiesForm', () => {
       const removeButton = screen.getByRole('button', { name: /close/i });
       removeButton.click();
 
-      expect(mockRemoveAllergy).toHaveBeenCalledWith(mockSelectedAllergy.id);
+      expect(mockRemoveAllergy).toHaveBeenCalledWith(
+        mockSelectedAllergy.entryId,
+      );
     });
 
     it('should handle multiple selected allergies', () => {
       const secondAllergy = {
         ...mockSelectedAllergy,
         id: 'test-allergy-2',
+        entryId: 'test-allergy-2',
         display: 'Shellfish Allergy',
       };
 
@@ -567,6 +573,83 @@ describe('AllergiesForm', () => {
 
       expect(screen.getByText(/Peanut Allergy/)).toBeInTheDocument();
       expect(screen.getByText(/Shellfish Allergy/)).toBeInTheDocument();
+    });
+  });
+
+  describe('Multiple Other, Non-Coded allergies (ID collision regression)', () => {
+    // Both entries share the same allergen concept id — only entryId tells them
+    // apart. Real seed data can already contain two such records for one patient.
+    const otherEntryOne = {
+      id: OTHER_NON_CODED_ALLERGEN_UUID,
+      entryId: 'other-entry-1',
+      display: 'you',
+      type: 'medication',
+      nonCodedAllergen: 'you',
+      selectedSeverity: null,
+      selectedReactions: [],
+      errors: {},
+      hasBeenValidated: false,
+    };
+    const otherEntryTwo = {
+      id: OTHER_NON_CODED_ALLERGEN_UUID,
+      entryId: 'other-entry-2',
+      display: 'jj',
+      type: 'medication',
+      nonCodedAllergen: 'jj',
+      selectedSeverity: null,
+      selectedReactions: [],
+      errors: {},
+      hasBeenValidated: false,
+    };
+
+    it('renders both free-text inputs with distinct DOM ids', () => {
+      renderAllergiesForm({
+        selectedAllergies: [otherEntryOne, otherEntryTwo],
+      });
+
+      expect(
+        screen.getByTestId('allergy-non-coded-name-other-entry-1'),
+      ).toBeInTheDocument();
+      expect(
+        screen.getByTestId('allergy-non-coded-name-other-entry-2'),
+      ).toBeInTheDocument();
+    });
+
+    it('edits the free-text value on one entry without affecting the other', async () => {
+      const user = userEvent.setup();
+      const mockUpdateNonCodedAllergen = jest.fn();
+      renderAllergiesForm({
+        selectedAllergies: [otherEntryOne, otherEntryTwo],
+        updateNonCodedAllergen: mockUpdateNonCodedAllergen,
+      });
+
+      const firstInput = screen.getByTestId(
+        'allergy-non-coded-name-other-entry-1',
+      );
+      await user.type(firstInput, '!');
+
+      // Every call must target entry #1's entryId, never entry #2's.
+      expect(mockUpdateNonCodedAllergen.mock.calls.length).toBeGreaterThan(0);
+      mockUpdateNonCodedAllergen.mock.calls.forEach((call) => {
+        expect(call[0]).toBe('other-entry-1');
+      });
+    });
+
+    it('removing one Other allergy only calls removeAllergy with its own entryId', () => {
+      const mockRemoveAllergy = jest.fn();
+      renderAllergiesForm({
+        selectedAllergies: [otherEntryOne, otherEntryTwo],
+        removeAllergy: mockRemoveAllergy,
+      });
+
+      const closeButtons = screen.getAllByRole('button', { name: /close/i });
+      expect(closeButtons).toHaveLength(2);
+
+      closeButtons[0].click();
+
+      expect(mockRemoveAllergy).toHaveBeenCalledTimes(1);
+      expect(mockRemoveAllergy).toHaveBeenCalledWith('other-entry-1');
+      expect(mockRemoveAllergy).not.toHaveBeenCalledWith('other-entry-2');
     });
   });
 
@@ -828,6 +911,7 @@ describe('AllergiesForm', () => {
     const preloadedAllergies = [
       {
         id: 'pre-allergy-1',
+        entryId: 'pre-allergy-1',
         display: 'Shellfish',
         type: 'food',
         selectedSeverity: null,

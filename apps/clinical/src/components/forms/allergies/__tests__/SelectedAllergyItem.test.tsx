@@ -25,6 +25,7 @@ const mockReactionConcepts: Coding[] = [
 
 const mockAllergy = {
   id: 'test-allergy-1',
+  entryId: 'test-allergy-1',
   display: 'Peanut Allergy',
   type: 'food' as AllergenType,
   selectedSeverity: ALLERGY_SEVERITY_CONCEPTS[0],
@@ -39,6 +40,7 @@ const defaultProps = {
   updateSeverity: jest.fn(),
   updateReactions: jest.fn(),
   updateNote: jest.fn(),
+  updateNonCodedAllergen: jest.fn(),
 };
 
 describe('SelectedAllergyItem', () => {
@@ -293,6 +295,7 @@ describe('SelectedAllergyItem', () => {
           updateSeverity={defaultProps.updateSeverity}
           updateReactions={defaultProps.updateReactions}
           updateNote={defaultProps.updateNote}
+          updateNonCodedAllergen={defaultProps.updateNonCodedAllergen}
         />,
       );
 
@@ -318,6 +321,7 @@ describe('SelectedAllergyItem', () => {
           updateSeverity={defaultProps.updateSeverity}
           updateReactions={defaultProps.updateReactions}
           updateNote={defaultProps.updateNote}
+          updateNonCodedAllergen={defaultProps.updateNonCodedAllergen}
         />,
       );
 
@@ -343,6 +347,7 @@ describe('SelectedAllergyItem', () => {
           updateSeverity={defaultProps.updateSeverity}
           updateReactions={defaultProps.updateReactions}
           updateNote={defaultProps.updateNote}
+          updateNonCodedAllergen={defaultProps.updateNonCodedAllergen}
         />,
       );
 
@@ -372,6 +377,7 @@ describe('SelectedAllergyItem', () => {
           updateSeverity={defaultProps.updateSeverity}
           updateReactions={defaultProps.updateReactions}
           updateNote={defaultProps.updateNote}
+          updateNonCodedAllergen={defaultProps.updateNonCodedAllergen}
         />,
       );
 
@@ -394,6 +400,7 @@ describe('SelectedAllergyItem', () => {
           updateSeverity={defaultProps.updateSeverity}
           updateReactions={defaultProps.updateReactions}
           updateNote={defaultProps.updateNote}
+          updateNonCodedAllergen={defaultProps.updateNonCodedAllergen}
         />,
       );
 
@@ -416,6 +423,7 @@ describe('SelectedAllergyItem', () => {
           updateSeverity={defaultProps.updateSeverity}
           updateReactions={defaultProps.updateReactions}
           updateNote={defaultProps.updateNote}
+          updateNonCodedAllergen={defaultProps.updateNonCodedAllergen}
         />,
       );
 
@@ -467,6 +475,7 @@ describe('SelectedAllergyItem', () => {
           updateSeverity={defaultProps.updateSeverity}
           updateReactions={defaultProps.updateReactions}
           updateNote={defaultProps.updateNote}
+          updateNonCodedAllergen={defaultProps.updateNonCodedAllergen}
         />,
       );
 
@@ -747,6 +756,72 @@ describe('SelectedAllergyItem', () => {
   });
 
   // SNAPSHOT TESTS
+  // ENTRY IDENTITY TESTS (ID collision regression)
+  // The allergen concept id (`id`) is shared by every "Other" allergy, so the
+  // component must key its DOM ids and update callbacks off `entryId`.
+  describe('Entry identity (entryId vs concept id)', () => {
+    const OTHER_UUID = '5622AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA';
+
+    const otherAllergy = {
+      ...mockAllergy,
+      id: OTHER_UUID,
+      entryId: 'distinct-entry-id',
+      nonCodedAllergen: 'Ibuprofen gel',
+    };
+
+    test('free-text input DOM id and testid use entryId, not the shared concept id', () => {
+      render(<SelectedAllergyItem {...defaultProps} allergy={otherAllergy} />);
+
+      expect(
+        screen.getByTestId('allergy-non-coded-name-distinct-entry-id'),
+      ).toBeInTheDocument();
+      expect(
+        screen.queryByTestId(`allergy-non-coded-name-${OTHER_UUID}`),
+      ).not.toBeInTheDocument();
+    });
+
+    test('updateNonCodedAllergen is called with entryId, not the concept id', async () => {
+      const user = userEvent.setup();
+      const mockUpdateNonCodedAllergen = jest.fn();
+      render(
+        <SelectedAllergyItem
+          {...defaultProps}
+          allergy={otherAllergy}
+          updateNonCodedAllergen={mockUpdateNonCodedAllergen}
+        />,
+      );
+
+      const input = screen.getByTestId(
+        'allergy-non-coded-name-distinct-entry-id',
+      );
+      await user.type(input, '!');
+
+      expect(mockUpdateNonCodedAllergen).toHaveBeenCalled();
+      mockUpdateNonCodedAllergen.mock.calls.forEach((call) => {
+        expect(call[0]).toBe('distinct-entry-id');
+      });
+    });
+
+    test('updateSeverity and updateReactions are called with entryId when it differs from id', async () => {
+      const user = userEvent.setup();
+      render(<SelectedAllergyItem {...defaultProps} allergy={otherAllergy} />);
+
+      const dropdownButton = screen.getByRole('combobox', {
+        name: /Select severity for this allergy/i,
+      });
+      await user.click(dropdownButton);
+      const moderateOption = await screen.findByRole('option', {
+        name: 'Moderate',
+      });
+      await user.click(moderateOption);
+
+      expect(defaultProps.updateSeverity).toHaveBeenCalledWith(
+        'distinct-entry-id',
+        ALLERGY_SEVERITY_CONCEPTS[1],
+      );
+    });
+  });
+
   describe('Snapshot Tests', () => {
     test('default rendering matches snapshot', () => {
       const { container } = render(<SelectedAllergyItem {...defaultProps} />);
@@ -768,6 +843,7 @@ describe('SelectedAllergyItem', () => {
           updateSeverity={defaultProps.updateSeverity}
           updateReactions={defaultProps.updateReactions}
           updateNote={defaultProps.updateNote}
+          updateNonCodedAllergen={defaultProps.updateNonCodedAllergen}
         />,
       );
       expect(container).toMatchSnapshot();

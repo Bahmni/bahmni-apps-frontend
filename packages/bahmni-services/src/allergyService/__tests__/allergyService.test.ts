@@ -1,5 +1,6 @@
 import { AllergyIntolerance, ValueSet } from 'fhir/r4';
-import { get } from '../../api';
+import { get, post } from '../../api';
+import { APP_PROPERTY_URL } from '../../applicationConfigService/constants';
 import { searchFHIRConcepts } from '../../conceptService';
 import {
   mockAllergyIntolerance,
@@ -27,6 +28,8 @@ import {
   formatAllergies,
   fetchAndFormatAllergenConcepts,
   fetchReactionConcepts,
+  fetchAllergySeverityConceptUUIDs,
+  saveAllergy,
 } from '../allergyService';
 import { ALLERGEN_TYPES, ALLERGY_REACTION } from '../constants';
 
@@ -150,7 +153,7 @@ describe('allergyService', () => {
 
       expect(result).toHaveLength(1);
       expect(result[0]).toEqual({
-        id: mockAllergyIntolerance.code.coding[0].code,
+        id: mockAllergyIntolerance.id,
         resourceId: mockAllergyIntolerance.id,
         display: mockAllergyIntolerance.code.text,
         category: mockAllergyIntolerance.category,
@@ -172,6 +175,45 @@ describe('allergyService', () => {
         severity: mockAllergyIntolerance.reaction?.[0].severity,
         note: mockAllergyIntolerance.note?.map((note) => note.text),
       });
+    });
+
+    it('gives each Other, Non-Coded allergy a distinct id even though they share the same allergen concept code', () => {
+      // Every "Other, Non-Coded" allergy is coded against the same shared
+      // concept uuid. `id` must come from the FHIR resource, not the concept
+      // code, or every such row collapses onto one entry wherever `id` is
+      // used as a table/React key (e.g. SortableDataTable).
+      const otherNonCoded = (
+        resourceId: string,
+        freeTextName: string,
+      ): AllergyIntolerance =>
+        ({
+          resourceType: 'AllergyIntolerance',
+          id: resourceId,
+          code: {
+            coding: [
+              {
+                code: '5622AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
+                display: 'Other',
+              },
+            ],
+            text: freeTextName,
+          },
+          clinicalStatus: { coding: [{ display: 'Active' }] },
+          recordedDate: '2024-01-01T00:00:00+00:00',
+        }) as unknown as AllergyIntolerance;
+
+      const result = formatAllergies([
+        otherNonCoded('allergy-1', 'ABC'),
+        otherNonCoded('allergy-2', 'BCG'),
+        otherNonCoded('allergy-3', 'XYZ'),
+      ]);
+
+      expect(result.map((a) => a.id)).toEqual([
+        'allergy-1',
+        'allergy-2',
+        'allergy-3',
+      ]);
+      expect(result.map((a) => a.display)).toEqual(['ABC', 'BCG', 'XYZ']);
     });
 
     it('should handle missing optional fields', () => {
@@ -259,9 +301,7 @@ describe('allergyService', () => {
       const result = formatAllergies([mockAllergyWithType]);
 
       expect(result).toHaveLength(1);
-      expect(result[0].id).toBe(
-        mockAllergyWithType.code?.coding?.[0]?.code ?? mockAllergyWithType.id,
-      );
+      expect(result[0].id).toBe(mockAllergyWithType.id);
       expect(result[0].display).toBe(mockAllergyWithType.code?.text);
     });
 
@@ -269,10 +309,7 @@ describe('allergyService', () => {
       const result = formatAllergies([mockIntoleranceWithType]);
 
       expect(result).toHaveLength(1);
-      expect(result[0].id).toBe(
-        mockIntoleranceWithType.code?.coding?.[0]?.code ??
-          mockIntoleranceWithType.id,
-      );
+      expect(result[0].id).toBe(mockIntoleranceWithType.id);
       expect(result[0].display).toBe(mockIntoleranceWithType.code?.text);
     });
 
@@ -727,6 +764,103 @@ describe('allergyService', () => {
       (searchFHIRConcepts as jest.Mock).mockRejectedValue(mockError);
 
       await expect(fetchAndFormatAllergenConcepts()).rejects.toThrow(mockError);
+    });
+  });
+
+  // NOTE: fetchAllergySeverityConceptUUIDs caches its result at module scope
+  // once it succeeds, so the "missing property" case must run first — a
+  // failed fetch deliberately never populates the cache (so a transient
+  // backend issue doesn't poison every save for the rest of the session).
+  describe('fetchAllergySeverityConceptUUIDs', () => {
+    beforeEach(() => jest.clearAllMocks());
+
+    it('throws instead of falling back to a hardcoded uuid when a global property is missing, and does not cache the failure', async () => {
+      (get as jest.Mock).mockResolvedValue(null);
+
+      await expect(fetchAllergySeverityConceptUUIDs()).rejects.toThrow(
+        'ALLERGY_SEVERITY_CONCEPT_MISSING',
+      );
+    });
+
+    it('reads each severity concept uuid from its own global property', async () => {
+      (get as jest.Mock).mockImplementation((url: string) => {
+        if (url === APP_PROPERTY_URL('allergy.concept.severity.mild'))
+          return Promise.resolve('1498AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA');
+        if (url === APP_PROPERTY_URL('allergy.concept.severity.moderate'))
+          return Promise.resolve('1499AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA');
+        if (url === APP_PROPERTY_URL('allergy.concept.severity.severe'))
+          return Promise.resolve('1500AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA');
+        return Promise.reject(new Error(`Unexpected url: ${url}`));
+      });
+
+      const result = await fetchAllergySeverityConceptUUIDs();
+
+      expect(result).toEqual({
+        mild: '1498AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
+        moderate: '1499AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
+        severe: '1500AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
+      });
+    });
+
+    it('caches the result so a repeated call does not refetch the global properties', async () => {
+      (get as jest.Mock).mockResolvedValue('should-not-be-used');
+
+      const result = await fetchAllergySeverityConceptUUIDs();
+
+      // Still the values resolved by the previous test — proves this call
+      // was served from the cache instead of the mock configured just above.
+      expect(result).toEqual({
+        mild: '1498AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
+        moderate: '1499AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
+        severe: '1500AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
+      });
+      expect(get).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('saveAllergy', () => {
+    const nonCodedPayload = {
+      allergen: {
+        allergenType: 'DRUG',
+        codedAllergen: { uuid: '5622AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA' },
+        nonCodedAllergen: 'Ibuprofen gel',
+      },
+      reactions: [
+        { reaction: { uuid: '512AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA' } },
+      ],
+      severity: { uuid: '1498AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA' },
+    };
+
+    beforeEach(() => jest.clearAllMocks());
+
+    it('posts to the OpenMRS REST allergy endpoint', async () => {
+      (post as jest.Mock).mockResolvedValue({ uuid: 'new-allergy-uuid' });
+
+      await saveAllergy('patient-123', nonCodedPayload);
+
+      expect(post).toHaveBeenCalledWith(
+        '/openmrs/ws/rest/v1/patient/patient-123/allergy',
+        nonCodedPayload,
+      );
+    });
+
+    it('addresses the existing record when an allergy UUID is given', async () => {
+      (post as jest.Mock).mockResolvedValue({});
+
+      await saveAllergy('patient-123', nonCodedPayload, 'allergy-uuid');
+
+      expect(post).toHaveBeenCalledWith(
+        '/openmrs/ws/rest/v1/patient/patient-123/allergy/allergy-uuid',
+        nonCodedPayload,
+      );
+    });
+
+    it('propagates backend failures to the caller', async () => {
+      (post as jest.Mock).mockRejectedValue(new Error('500'));
+
+      await expect(saveAllergy('patient-123', nonCodedPayload)).rejects.toThrow(
+        '500',
+      );
     });
   });
 });

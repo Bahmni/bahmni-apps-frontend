@@ -216,3 +216,23 @@ describe('mapAllergyToInputEntry', () => {
     });
   });
 });
+
+describe('mapAllergyToInputEntry - Other, Non-Coded allergen', () => {
+  const nonCodedFhir: AllergyIntolerance = {
+    ...baseFhir,
+    code: {
+      coding: [{ code: '5622AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA' }],
+      text: 'Ibuprofen gel',
+    },
+  };
+
+  it('round-trips the free-text allergen name from code.text', () => {
+    expect(mapAllergyToInputEntry(nonCodedFhir).nonCodedAllergen).toBe(
+      'Ibuprofen gel',
+    );
+  });
+
+  it('leaves nonCodedAllergen unset for a normal coded allergen', () => {
+    expect(mapAllergyToInputEntry(baseFhir).nonCodedAllergen).toBeUndefined();
+  });
+});

@@ -4,6 +4,7 @@ import {
   calculateOnsetDate,
   createBundleEntry,
   ENCOUNTER_BUNDLE_URL,
+  isNonCodedAllergen,
   post,
   Form2Observation,
   type EncounterBundle,
@@ -196,6 +197,11 @@ export function createAllergiesBundleEntries({
     ) {
       throw new Error(CONSULTATION_ERROR_MESSAGES.INVALID_ALLERGY_PARAMS);
     }
+
+    // A non-coded allergen needs a free-text name, which fhir2 never reads
+    // from the FHIR resource. Saved over the REST allergy API instead — see
+    // onDirectSubmit in the allergies control.
+    if (isNonCodedAllergen(allergy.id)) continue;
 
     const isExisting = !!allergy.resourceId && !!allergy.rawFhirResource;
 

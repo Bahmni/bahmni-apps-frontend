@@ -927,6 +927,48 @@ describe('ConsultationPad', () => {
       });
     });
 
+    it('still submits the bundle when a direct-submit entry has bundle data', async () => {
+      // Allergies split their data: "other" goes through onDirectSubmit, the
+      // rest must still travel in the encounter bundle.
+      const mockDirectSubmit = jest.fn().mockResolvedValue(undefined);
+      const splitEntry = {
+        ...makeMockEntry('allergies'),
+        hasData: jest.fn().mockReturnValue(true),
+        hasBundleData: jest.fn().mockReturnValue(true),
+        onDirectSubmit: mockDirectSubmit,
+      };
+
+      jest.mocked(getActiveEntries).mockReturnValue([splitEntry] as any);
+
+      renderComponent();
+      await userEvent.click(screen.getByTestId('primary-button'));
+
+      await waitFor(() => {
+        expect(mockDirectSubmit).toHaveBeenCalled();
+        expect(submitConsultation).toHaveBeenCalled();
+      });
+    });
+
+    it('skips the bundle when a direct-submit entry has no bundle data', async () => {
+      const mockDirectSubmit = jest.fn().mockResolvedValue(undefined);
+      const splitEntry = {
+        ...makeMockEntry('allergies'),
+        hasData: jest.fn().mockReturnValue(true),
+        hasBundleData: jest.fn().mockReturnValue(false),
+        onDirectSubmit: mockDirectSubmit,
+      };
+
+      jest.mocked(getActiveEntries).mockReturnValue([splitEntry] as any);
+
+      renderComponent();
+      await userEvent.click(screen.getByTestId('primary-button'));
+
+      await waitFor(() => {
+        expect(mockDirectSubmit).toHaveBeenCalled();
+      });
+      expect(submitConsultation).not.toHaveBeenCalled();
+    });
+
     it('shows error notification when onDirectSubmit throws', async () => {
       const mockDirectSubmit = jest
         .fn()

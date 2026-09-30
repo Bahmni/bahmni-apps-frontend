@@ -210,4 +210,54 @@ describe('AllergiesTable Integration', () => {
     expect(screen.getAllByText('ALLERGY_LIST_ACTIVE')).toHaveLength(2);
     expect(screen.getByText('ALLERGY_LIST_INACTIVE')).toBeInTheDocument();
   });
+
+  it('renders each Other, Non-Coded allergy with its own specified name, not the first row reused', async () => {
+    // Regression test: every "Other, Non-Coded" allergy shares the same
+    // allergen concept uuid, so if FormattedAllergy.id ever regresses to
+    // that shared concept code instead of the unique FHIR resource id,
+    // SortableDataTable (keyed by id) collapses these rows onto one entry.
+    const mockOtherNonCodedAllergies: FormattedAllergy[] = [
+      {
+        id: 'allergy-other-1',
+        display: 'ABC',
+        category: ['medication'],
+        status: AllergyStatus.Active,
+        recordedDate: '2024-01-01T00:00:00Z',
+        recorder: 'Super Man',
+        reactions: [{ manifestation: ['Bronchospasm'] }],
+        severity: AllergySeverity.mild,
+      },
+      {
+        id: 'allergy-other-2',
+        display: 'BCG',
+        category: ['medication'],
+        status: AllergyStatus.Active,
+        recordedDate: '2024-01-02T00:00:00Z',
+        recorder: 'Super Man',
+        reactions: [{ manifestation: ['Fever'] }],
+        severity: AllergySeverity.mild,
+      },
+      {
+        id: 'allergy-other-3',
+        display: 'XYZ',
+        category: ['medication'],
+        status: AllergyStatus.Active,
+        recordedDate: '2024-01-03T00:00:00Z',
+        recorder: 'Super Man',
+        reactions: [{ manifestation: ['Flushing'] }],
+        severity: AllergySeverity.mild,
+      },
+    ];
+    (getFormattedAllergies as jest.Mock).mockResolvedValue(
+      mockOtherNonCodedAllergies,
+    );
+
+    render(wrapper);
+
+    await waitFor(() => {
+      expect(screen.getByText('ABC')).toBeInTheDocument();
+    });
+    expect(screen.getByText('BCG')).toBeInTheDocument();
+    expect(screen.getByText('XYZ')).toBeInTheDocument();
+  });
 });

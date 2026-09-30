@@ -3,7 +3,13 @@ export {
   getFormattedAllergies,
   fetchAndFormatAllergenConcepts,
   fetchReactionConcepts,
+  fetchAllergySeverityConceptUUIDs,
+  saveAllergy,
 } from './allergyService';
+export {
+  OTHER_NON_CODED_ALLERGEN_UUID,
+  PATIENT_ALLERGY_SAVE_URL,
+} from './constants';
 export {
   type FormattedAllergy,
   AllergyStatus,
@@ -11,5 +17,9 @@ export {
   type AllergenType,
   type AllergyInputEntry,
   type AllergenConcept,
+  type SaveAllergyRequest,
+  type SaveAllergyResponse,
+  OPENMRS_ALLERGEN_TYPE,
+  isNonCodedAllergen,
   mapAllergyToInputEntry,
 } from './models';

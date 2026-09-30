@@ -160,11 +160,18 @@ export {
   type AllergenType,
   type AllergyInputEntry,
   type AllergenConcept,
+  type SaveAllergyRequest,
+  type SaveAllergyResponse,
+  OPENMRS_ALLERGEN_TYPE,
+  isNonCodedAllergen,
+  OTHER_NON_CODED_ALLERGEN_UUID,
   mapAllergyToInputEntry,
   getAllergies,
   getFormattedAllergies,
   fetchAndFormatAllergenConcepts,
   fetchReactionConcepts,
+  fetchAllergySeverityConceptUUIDs,
+  saveAllergy,
 } from './allergyService';
 export {
   getConditions,

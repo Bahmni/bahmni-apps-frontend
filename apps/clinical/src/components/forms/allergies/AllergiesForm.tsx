@@ -5,7 +5,11 @@ import {
   SelectedItem,
   InlineNotification,
 } from '@bahmni/design-system';
-import { useTranslation, getFormattedAllergies } from '@bahmni/services';
+import {
+  getFormattedAllergies,
+  isNonCodedAllergen,
+  useTranslation,
+} from '@bahmni/services';
 import {
   useNotification,
   usePatientUUID,
@@ -63,6 +67,7 @@ const AllergiesForm: React.FC<{
     updateSeverity,
     updateReactions,
     updateNote,
+    updateNonCodedAllergen,
   } = useAllergyStore();
 
   // Use allergen search hook
@@ -100,13 +105,19 @@ const AllergiesForm: React.FC<{
 
   const isDuplicateAllergy = useCallback(
     (allergyId: string): boolean => {
-      // Check against existing allergies from backend
-      const isExistingAllergy = existingAllergies?.some(
-        (a) => a.id === allergyId,
-      );
+      // The Other, Non-Coded concept is shared by every free-text allergy, so
+      // picking it again always represents a distinct new allergen — concept
+      // identity can't be used to detect a duplicate here. Each resulting
+      // entry gets its own unique entryId, so multiple can coexist safely.
+      if (isNonCodedAllergen(allergyId)) return false;
 
       // Check against currently selected allergies in the form
       const isSelectedAllergy = selectedAllergies.some(
+        (a) => a.id === allergyId,
+      );
+
+      // Check against existing allergies from backend
+      const isExistingAllergy = existingAllergies?.some(
         (a) => a.id === allergyId,
       );
 
@@ -203,9 +214,11 @@ const AllergiesForm: React.FC<{
     }
 
     return searchResults.map((item) => {
-      const isAlreadySelected = selectedAllergies.some(
-        (a) => a.id === item.uuid,
-      );
+      // The Other, Non-Coded concept is never "already added" — selecting it
+      // again always adds a distinct new free-text allergen.
+      const isAlreadySelected =
+        !isNonCodedAllergen(item.uuid) &&
+        selectedAllergies.some((a) => a.id === item.uuid);
       return {
         ...item,
         display: isAlreadySelected
@@ -284,9 +297,9 @@ const AllergiesForm: React.FC<{
         >
           {selectedAllergies.map((allergy) => (
             <SelectedItem
-              key={allergy.id}
+              key={allergy.entryId}
               className={styles.selectedAllergyItem}
-              onClose={() => removeAllergy(allergy.id)}
+              onClose={() => removeAllergy(allergy.entryId)}
             >
               <SelectedAllergyItem
                 allergy={allergy}
@@ -294,6 +307,7 @@ const AllergiesForm: React.FC<{
                 updateSeverity={updateSeverity}
                 updateReactions={updateReactions}
                 updateNote={updateNote}
+                updateNonCodedAllergen={updateNonCodedAllergen}
               />
             </SelectedItem>
           ))}

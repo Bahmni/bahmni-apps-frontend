@@ -450,13 +450,16 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
     try {
       setIsSubmitting(true);
 
-      // If any active entry has a direct submit handler, call it directly
-      // and skip the consultation bundle flow.
+      // If any active entry has a direct submit handler, call it directly.
+      // An entry may do both: controls that can only save part of their data
+      // through the bundle (allergies) declare hasBundleData() to say whether
+      // the bundle flow is still needed.
       const directSubmitEntries = activeEntries.filter(
         (entry) => entry.hasData() && entry.onDirectSubmit,
       );
       const bundleEntries = activeEntries.filter(
-        (entry) => entry.hasData() && !entry.onDirectSubmit,
+        (entry) =>
+          entry.hasData() && (!entry.onDirectSubmit || entry.hasBundleData?.()),
       );
 
       for (const entry of directSubmitEntries) {

@@ -24,6 +24,12 @@ export interface InputControl {
   hasData: () => boolean;
   subscribe: (cb: () => void) => () => void;
   createBundleEntries?: (ctx: EncounterContext) => BundleEntry[];
+  /**
+   * For controls that split their data between the encounter bundle and a
+   * direct submit: true when there is still something for the bundle. Controls
+   * without this are assumed to contribute to the bundle whenever hasData().
+   */
+  hasBundleData?: () => boolean;
   updateItemCDSCards?: (itemId: string, cards: CDSCard[]) => void;
   hasCriticalCDSCards?: () => boolean;
   onDirectSubmit?: () => Promise<void>;

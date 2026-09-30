@@ -1,3 +1,4 @@
+import { OTHER_NON_CODED_ALLERGEN_UUID } from '@bahmni/services';
 import { renderHook } from '@testing-library/react';
 import { Coding } from 'fhir/r4';
 import { act } from 'react';
@@ -49,8 +50,9 @@ describe('useAllergyStore', () => {
         result.current.addAllergy(mockAllergen);
       });
 
-      const expectedAllergy: AllergyInputEntry = {
+      const expectedAllergy = {
         id: mockAllergen.uuid,
+        entryId: expect.any(String),
         display: mockAllergen.display,
         type: mockAllergen.type,
         selectedSeverity: null,
@@ -61,6 +63,18 @@ describe('useAllergyStore', () => {
 
       expect(result.current.selectedAllergies).toHaveLength(1);
       expect(result.current.selectedAllergies[0]).toEqual(expectedAllergy);
+    });
+
+    test('should generate a unique entryId distinct from the concept id', () => {
+      const { result } = renderHook(() => useAllergyStore());
+
+      act(() => {
+        result.current.addAllergy(mockAllergen);
+      });
+
+      const entry = result.current.selectedAllergies[0];
+      expect(entry.entryId).toBeTruthy();
+      expect(entry.entryId).not.toBe(entry.id);
     });
 
     test('should add multiple allergies to the store', () => {
@@ -134,9 +148,10 @@ describe('useAllergyStore', () => {
       });
 
       expect(result.current.selectedAllergies).toHaveLength(1);
+      const { entryId } = result.current.selectedAllergies[0];
 
       act(() => {
-        result.current.removeAllergy(mockAllergen.uuid);
+        result.current.removeAllergy(entryId);
       });
 
       expect(result.current.selectedAllergies).toHaveLength(0);
@@ -156,9 +171,12 @@ describe('useAllergyStore', () => {
       });
 
       expect(result.current.selectedAllergies).toHaveLength(2);
+      const entryIdToRemove = result.current.selectedAllergies.find(
+        (a) => a.id === mockAllergen.uuid,
+      )!.entryId;
 
       act(() => {
-        result.current.removeAllergy(mockAllergen.uuid);
+        result.current.removeAllergy(entryIdToRemove);
       });
 
       expect(result.current.selectedAllergies).toHaveLength(1);
@@ -174,12 +192,10 @@ describe('useAllergyStore', () => {
       act(() => {
         result.current.addAllergy(mockAllergen);
       });
+      const { entryId } = result.current.selectedAllergies[0];
 
       act(() => {
-        result.current.updateSeverity(
-          mockAllergen.uuid,
-          ALLERGY_SEVERITY_CONCEPTS[0],
-        );
+        result.current.updateSeverity(entryId, ALLERGY_SEVERITY_CONCEPTS[0]);
       });
 
       expect(result.current.selectedAllergies[0].selectedSeverity).toBe(
@@ -196,12 +212,10 @@ describe('useAllergyStore', () => {
       });
 
       expect(result.current.selectedAllergies[0].errors.severity).toBeDefined();
+      const { entryId } = result.current.selectedAllergies[0];
 
       act(() => {
-        result.current.updateSeverity(
-          mockAllergen.uuid,
-          ALLERGY_SEVERITY_CONCEPTS[0],
-        );
+        result.current.updateSeverity(entryId, ALLERGY_SEVERITY_CONCEPTS[0]);
       });
 
       expect(
@@ -218,9 +232,10 @@ describe('useAllergyStore', () => {
       act(() => {
         result.current.addAllergy(mockAllergen);
       });
+      const { entryId } = result.current.selectedAllergies[0];
 
       act(() => {
-        result.current.updateReactions(mockAllergen.uuid, [mockReactions[0]]);
+        result.current.updateReactions(entryId, [mockReactions[0]]);
       });
 
       expect(result.current.selectedAllergies[0].selectedReactions).toEqual([
@@ -239,9 +254,10 @@ describe('useAllergyStore', () => {
       expect(
         result.current.selectedAllergies[0].errors.reactions,
       ).toBeDefined();
+      const { entryId } = result.current.selectedAllergies[0];
 
       act(() => {
-        result.current.updateReactions(mockAllergen.uuid, [mockReactions[0]]);
+        result.current.updateReactions(entryId, [mockReactions[0]]);
       });
 
       expect(
@@ -257,7 +273,11 @@ describe('useAllergyStore', () => {
 
       act(() => {
         result.current.addAllergy(mockAllergen);
-        result.current.updateReactions(mockAllergen.uuid, [mockReactions[0]]);
+      });
+      const { entryId } = result.current.selectedAllergies[0];
+
+      act(() => {
+        result.current.updateReactions(entryId, [mockReactions[0]]);
       });
 
       let isValid: boolean = true;
@@ -277,10 +297,11 @@ describe('useAllergyStore', () => {
 
       act(() => {
         result.current.addAllergy(mockAllergen);
-        result.current.updateSeverity(
-          mockAllergen.uuid,
-          ALLERGY_SEVERITY_CONCEPTS[0],
-        );
+      });
+      const { entryId } = result.current.selectedAllergies[0];
+
+      act(() => {
+        result.current.updateSeverity(entryId, ALLERGY_SEVERITY_CONCEPTS[0]);
       });
 
       let isValid: boolean = true;
@@ -300,11 +321,12 @@ describe('useAllergyStore', () => {
 
       act(() => {
         result.current.addAllergy(mockAllergen);
-        result.current.updateSeverity(
-          mockAllergen.uuid,
-          ALLERGY_SEVERITY_CONCEPTS[0],
-        );
-        result.current.updateReactions(mockAllergen.uuid, [mockReactions[0]]);
+      });
+      const { entryId } = result.current.selectedAllergies[0];
+
+      act(() => {
+        result.current.updateSeverity(entryId, ALLERGY_SEVERITY_CONCEPTS[0]);
+        result.current.updateReactions(entryId, [mockReactions[0]]);
       });
 
       let isValid: boolean = false;
@@ -325,11 +347,12 @@ describe('useAllergyStore', () => {
 
       act(() => {
         result.current.addAllergy(mockAllergen);
-        result.current.updateSeverity(
-          mockAllergen.uuid,
-          ALLERGY_SEVERITY_CONCEPTS[0],
-        );
-        result.current.updateReactions(mockAllergen.uuid, [mockReactions[0]]);
+      });
+      const { entryId } = result.current.selectedAllergies[0];
+
+      act(() => {
+        result.current.updateSeverity(entryId, ALLERGY_SEVERITY_CONCEPTS[0]);
+        result.current.updateReactions(entryId, [mockReactions[0]]);
       });
 
       expect(result.current.selectedAllergies).toHaveLength(1);
@@ -351,9 +374,10 @@ describe('useAllergyStore', () => {
       act(() => {
         result.current.addAllergy(mockAllergen);
       });
+      const { entryId } = result.current.selectedAllergies[0];
 
       act(() => {
-        result.current.updateNote(mockAllergen.uuid, testNote);
+        result.current.updateNote(entryId, testNote);
       });
 
       expect(result.current.selectedAllergies[0].note).toBe(testNote);
@@ -447,8 +471,9 @@ describe('useAllergyStore', () => {
 
   // PRELOAD ALLERGIES TESTS
   describe('preloadAllergies', () => {
-    const preloadedEntry = {
+    const preloadedEntry: AllergyInputEntry = {
       id: 'preloaded-1',
+      entryId: 'preloaded-1',
       display: 'Shellfish',
       type: 'food',
       selectedSeverity: null,
@@ -487,8 +512,9 @@ describe('useAllergyStore', () => {
 
   // ISMODIFIED TRACKING TESTS
   describe('isModified tracking', () => {
-    const preloadedEntry = {
+    const preloadedEntry: AllergyInputEntry = {
       id: 'preloaded-1',
+      entryId: 'preloaded-1',
       display: 'Shellfish',
       type: 'food',
       selectedSeverity: null,
@@ -560,8 +586,9 @@ describe('useAllergyStore', () => {
   // hasData is defined in the index.ts registration as:
   // () => useAllergyStore.getState().selectedAllergies.some((a) => a.isModified !== false)
   describe('hasData logic (via store state)', () => {
-    const preloadedEntry = {
+    const preloadedEntry: AllergyInputEntry = {
       id: 'preloaded-1',
+      entryId: 'preloaded-1',
       display: 'Shellfish',
       type: 'food',
       selectedSeverity: null,
@@ -607,6 +634,141 @@ describe('useAllergyStore', () => {
       });
 
       expect(hasData()).toBe(true);
+    });
+  });
+
+  // MULTIPLE OTHER, NON-CODED ALLERGIES — REGRESSION TESTS
+  // Every free-text "Other" allergy shares the same concept uuid
+  // (OTHER_NON_CODED_ALLERGEN_UUID), so store operations must key off the
+  // unique entryId, not id, or edits/removals on one would leak onto another.
+  describe('multiple Other, Non-Coded allergies', () => {
+    const otherAllergyOne: AllergyInputEntry = {
+      id: OTHER_NON_CODED_ALLERGEN_UUID,
+      entryId: 'other-entry-1',
+      resourceId: 'resource-uuid-1',
+      display: 'you',
+      type: 'medication',
+      nonCodedAllergen: 'you',
+      selectedSeverity: ALLERGY_SEVERITY_CONCEPTS[0],
+      selectedReactions: [mockReactions[0]],
+      errors: {},
+      hasBeenValidated: false,
+    };
+
+    const otherAllergyTwo: AllergyInputEntry = {
+      id: OTHER_NON_CODED_ALLERGEN_UUID,
+      entryId: 'other-entry-2',
+      resourceId: 'resource-uuid-2',
+      display: 'jj',
+      type: 'medication',
+      nonCodedAllergen: 'jj',
+      selectedSeverity: ALLERGY_SEVERITY_CONCEPTS[1],
+      selectedReactions: [mockReactions[1]],
+      errors: {},
+      hasBeenValidated: false,
+    };
+
+    const preloadBoth = () => {
+      const { result } = renderHook(() => useAllergyStore());
+      act(() => {
+        result.current.preloadAllergies([otherAllergyOne, otherAllergyTwo]);
+      });
+      return result;
+    };
+
+    test('preloads both entries distinctly despite sharing the same concept id', () => {
+      const result = preloadBoth();
+
+      expect(result.current.selectedAllergies).toHaveLength(2);
+      expect(
+        result.current.selectedAllergies.every(
+          (a) => a.id === OTHER_NON_CODED_ALLERGEN_UUID,
+        ),
+      ).toBe(true);
+      // Distinct entryIds are what keeps the two records addressable.
+      expect(result.current.selectedAllergies[0].entryId).not.toBe(
+        result.current.selectedAllergies[1].entryId,
+      );
+    });
+
+    test('updateSeverity on entry #1 does not modify entry #2', () => {
+      const result = preloadBoth();
+
+      act(() => {
+        result.current.updateSeverity(
+          'other-entry-1',
+          ALLERGY_SEVERITY_CONCEPTS[2],
+        );
+      });
+
+      const [first, second] = result.current.selectedAllergies;
+      expect(first.selectedSeverity).toBe(ALLERGY_SEVERITY_CONCEPTS[2]);
+      expect(second.selectedSeverity).toBe(otherAllergyTwo.selectedSeverity);
+    });
+
+    test('updateReactions on entry #1 does not modify entry #2', () => {
+      const result = preloadBoth();
+
+      act(() => {
+        result.current.updateReactions('other-entry-1', mockReactions);
+      });
+
+      const [first, second] = result.current.selectedAllergies;
+      expect(first.selectedReactions).toEqual(mockReactions);
+      expect(second.selectedReactions).toEqual(
+        otherAllergyTwo.selectedReactions,
+      );
+    });
+
+    test('updateNonCodedAllergen (free text) on entry #1 does not modify entry #2', () => {
+      const result = preloadBoth();
+
+      act(() => {
+        result.current.updateNonCodedAllergen(
+          'other-entry-1',
+          'Updated free text',
+        );
+      });
+
+      const [first, second] = result.current.selectedAllergies;
+      expect(first.nonCodedAllergen).toBe('Updated free text');
+      expect(second.nonCodedAllergen).toBe('jj');
+    });
+
+    test('updateNote on entry #1 does not modify entry #2', () => {
+      const result = preloadBoth();
+
+      act(() => {
+        result.current.updateNote('other-entry-1', 'A note for entry one');
+      });
+
+      const [first, second] = result.current.selectedAllergies;
+      expect(first.note).toBe('A note for entry one');
+      expect(second.note).toBeUndefined();
+    });
+
+    test('removeAllergy removes only entry #1, leaving entry #2 intact', () => {
+      const result = preloadBoth();
+
+      act(() => {
+        result.current.removeAllergy('other-entry-1');
+      });
+
+      expect(result.current.selectedAllergies).toHaveLength(1);
+      expect(result.current.selectedAllergies[0].entryId).toBe('other-entry-2');
+      expect(result.current.selectedAllergies[0].nonCodedAllergen).toBe('jj');
+    });
+
+    test('setResourceId on entry #1 does not modify entry #2', () => {
+      const result = preloadBoth();
+
+      act(() => {
+        result.current.setResourceId('other-entry-1', 'new-resource-uuid');
+      });
+
+      const [first, second] = result.current.selectedAllergies;
+      expect(first.resourceId).toBe('new-resource-uuid');
+      expect(second.resourceId).toBe('resource-uuid-2');
     });
   });
 });
