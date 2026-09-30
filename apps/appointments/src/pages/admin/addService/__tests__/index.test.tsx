@@ -4,7 +4,7 @@ import {
   QueryClientProvider,
   useQuery,
 } from '@tanstack/react-query';
-import { render, screen } from '@testing-library/react';
+import { act, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MANAGE_APPOINTMENT_SERVICES_PRIVILEGE } from '../../../../constants/app';
 import { useServiceStore } from '../../stores';
@@ -42,6 +42,13 @@ jest.mock('../../stores', () => ({
 const mockNavigate = jest.fn();
 const mockAddNotification = jest.fn();
 const mockValidate = jest.fn();
+const mockHasUnsavedChanges = jest.fn();
+const mockReset = jest.fn();
+
+const isLeaveModalVisible = () =>
+  screen
+    .getByTestId('add-service-unsaved-changes-modal')
+    .classList.contains('is-visible');
 
 const defaultStoreState = {
   name: 'Test Service',
@@ -52,6 +59,7 @@ const defaultStoreState = {
   locationUuid: null,
   availabilityRows: [defaultRow],
   validate: mockValidate,
+  hasUnsavedChanges: mockHasUnsavedChanges,
   setName: jest.fn(),
   setDescription: jest.fn(),
   setDurationMins: jest.fn(),
@@ -61,7 +69,7 @@ const defaultStoreState = {
   toggleDayOfWeek: jest.fn(),
   addAvailabilityRow: jest.fn(),
   removeAvailabilityRow: jest.fn(),
-  reset: jest.fn(),
+  reset: mockReset,
 };
 
 describe('AddServicePage', () => {
@@ -71,7 +79,13 @@ describe('AddServicePage', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    jest.mocked(useServiceStore).mockReturnValue(defaultStoreState);
+    window.history.replaceState(null, '');
+    jest
+      .mocked(useServiceStore)
+      .mockImplementation(((
+        selector?: (state: typeof defaultStoreState) => unknown,
+      ) =>
+        selector ? selector(defaultStoreState) : defaultStoreState) as never);
     jest.mocked(useServiceStore.getState).mockReturnValue(defaultStoreState);
     (useQuery as jest.Mock).mockReturnValue({
       data: undefined,
@@ -136,12 +150,170 @@ describe('AddServicePage', () => {
     expect(screen.getByTestId('save-btn-test-id')).toBeInTheDocument();
   });
 
-  it('should navigate to ADMIN_SERVICES when Back is clicked', async () => {
-    renderPage();
+  describe('Leaving the page', () => {
+    const ADMIN_SERVICES = '/appointments/admin/services';
+    const originalLocation = window.location;
+    const mockLocationAssign = jest.fn();
+    const mockLocationReplace = jest.fn();
 
-    await userEvent.click(screen.getByTestId('back-btn-test-id'));
+    beforeEach(() => {
+      Object.defineProperty(window, 'location', {
+        configurable: true,
+        value: {
+          ...originalLocation,
+          assign: mockLocationAssign,
+          replace: mockLocationReplace,
+        },
+      });
+    });
 
-    expect(mockNavigate).toHaveBeenCalledWith('/appointments/admin/services');
+    afterEach(() => {
+      Object.defineProperty(window, 'location', {
+        configurable: true,
+        value: originalLocation,
+      });
+    });
+
+    const clickBack = () =>
+      userEvent.click(screen.getByTestId('back-btn-test-id'));
+    const clickAdminBreadcrumb = () =>
+      userEvent.click(screen.getByRole('link', { name: 'Admin' }));
+    const clickHomeBreadcrumb = () =>
+      userEvent.click(screen.getByRole('link', { name: 'Home' }));
+    const pressBrowserBack = async () =>
+      act(async () => {
+        window.dispatchEvent(new PopStateEvent('popstate'));
+      });
+
+    it('should link the Admin breadcrumb to the app-prefixed All Services path', () => {
+      renderPage();
+
+      expect(screen.getByRole('link', { name: 'Admin' })).toHaveAttribute(
+        'href',
+        '/bahmni-v2/appointments/admin/services',
+      );
+    });
+
+    it.each([
+      { trigger: 'Back button', leave: clickBack },
+      { trigger: 'Admin breadcrumb', leave: clickAdminBreadcrumb },
+    ])(
+      'should navigate to All Services without confirmation from the $trigger when the form is untouched',
+      async ({ leave }) => {
+        mockHasUnsavedChanges.mockReturnValue(false);
+        renderPage();
+
+        await leave();
+
+        expect(isLeaveModalVisible()).toBe(false);
+        expect(mockNavigate).toHaveBeenCalledWith(ADMIN_SERVICES, {
+          replace: false,
+        });
+      },
+    );
+
+    it('should go Home without confirmation from the Home breadcrumb when the form is untouched', async () => {
+      mockHasUnsavedChanges.mockReturnValue(false);
+      renderPage();
+
+      await clickHomeBreadcrumb();
+
+      expect(isLeaveModalVisible()).toBe(false);
+      expect(mockLocationAssign).toHaveBeenCalledWith('/bahmni-v2/home');
+    });
+
+    it.each([
+      { trigger: 'Back button', leave: clickBack },
+      { trigger: 'Admin breadcrumb', leave: clickAdminBreadcrumb },
+      { trigger: 'Home breadcrumb', leave: clickHomeBreadcrumb },
+      { trigger: 'browser Back button', leave: pressBrowserBack },
+    ])(
+      'should ask for confirmation from the $trigger when the form has changes',
+      async ({ leave }) => {
+        mockHasUnsavedChanges.mockReturnValue(true);
+        renderPage();
+
+        await leave();
+
+        expect(isLeaveModalVisible()).toBe(true);
+        expect(screen.getByText('Unsaved changes')).toBeInTheDocument();
+        expect(
+          screen.getByText(
+            'You have unsaved changes. Leaving this page now will discard them.',
+          ),
+        ).toBeInTheDocument();
+        expect(mockNavigate).not.toHaveBeenCalled();
+        expect(mockLocationAssign).not.toHaveBeenCalled();
+        expect(mockLocationReplace).not.toHaveBeenCalled();
+        expect(mockReset).not.toHaveBeenCalled();
+      },
+    );
+
+    it.each([
+      {
+        trigger: 'Back button',
+        leave: clickBack,
+        assertLeft: () =>
+          expect(mockNavigate).toHaveBeenCalledWith(ADMIN_SERVICES, {
+            replace: true,
+          }),
+      },
+      {
+        trigger: 'Admin breadcrumb',
+        leave: clickAdminBreadcrumb,
+        assertLeft: () =>
+          expect(mockNavigate).toHaveBeenCalledWith(ADMIN_SERVICES, {
+            replace: true,
+          }),
+      },
+      {
+        trigger: 'Home breadcrumb',
+        leave: clickHomeBreadcrumb,
+        assertLeft: () =>
+          expect(mockLocationReplace).toHaveBeenCalledWith('/bahmni-v2/home'),
+      },
+      {
+        trigger: 'browser Back button',
+        leave: pressBrowserBack,
+        assertLeft: () => expect(window.history.go).toHaveBeenCalledWith(-2),
+      },
+    ])(
+      'should clear the form and leave when Leave is clicked after the $trigger',
+      async ({ leave, assertLeft }) => {
+        const goSpy = jest
+          .spyOn(window.history, 'go')
+          .mockImplementation(() => {});
+        mockHasUnsavedChanges.mockReturnValue(true);
+        renderPage();
+
+        await leave();
+        await userEvent.click(screen.getByText('Leave'));
+
+        expect(mockReset).toHaveBeenCalledTimes(1);
+        assertLeft();
+        goSpy.mockRestore();
+      },
+    );
+
+    it('should keep the form and stay on the page when Stay is clicked', async () => {
+      mockHasUnsavedChanges.mockReturnValue(true);
+      renderPage();
+
+      await clickBack();
+      await userEvent.click(screen.getByText('Stay'));
+
+      expect(isLeaveModalVisible()).toBe(false);
+      expect(mockReset).not.toHaveBeenCalled();
+      expect(mockNavigate).not.toHaveBeenCalled();
+    });
+
+    it('should clear the form when the page unmounts', () => {
+      const { unmount } = renderPage();
+
+      unmount();
+
+      expect(mockReset).toHaveBeenCalledTimes(1);
+    });
   });
 
   it('should not call createAppointmentService when validation fails', async () => {

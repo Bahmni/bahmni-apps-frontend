@@ -25,6 +25,16 @@ export const createRow = (allDaysSelected = false): AvailabilityRow => ({
 });
 
 /**
+ * A row counts as untouched while it still matches the initial row: no times, no
+ * max load and every day selected. Meridiem alone carries no data, so it is ignored.
+ */
+export const isRowPristine = (row: AvailabilityRow): boolean =>
+  !row.startTime.trim() &&
+  !row.endTime.trim() &&
+  row.maxLoad === null &&
+  row.daysOfWeek.length === DAYS_OF_WEEK.length;
+
+/**
  * Recomputes the derived end time from the row's start time, start meridiem and the
  * service duration. A no-op once the user has typed their own end time.
  */

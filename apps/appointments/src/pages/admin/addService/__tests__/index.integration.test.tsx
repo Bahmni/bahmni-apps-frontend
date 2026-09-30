@@ -140,11 +140,38 @@ describe('AddServicePage Integration', () => {
     });
   });
 
-  it('should navigate to admin services when Back is clicked', async () => {
+  it('should navigate to admin services when Back is clicked on an untouched form', async () => {
     renderPage();
 
     await userEvent.click(screen.getByTestId('back-btn-test-id'));
 
-    expect(mockNavigate).toHaveBeenCalledWith('/appointments/admin/services');
+    expect(mockNavigate).toHaveBeenCalledWith('/appointments/admin/services', {
+      replace: false,
+    });
+  });
+
+  it('should confirm before leaving an edited form and clear it on Leave', async () => {
+    renderPage();
+
+    await userEvent.type(
+      screen.getByTestId('add-appointment-details-service-name-test-id'),
+      'Cardiology',
+    );
+    await userEvent.click(screen.getByTestId('back-btn-test-id'));
+
+    expect(
+      screen
+        .getByTestId('add-service-unsaved-changes-modal')
+        .classList.contains('is-visible'),
+    ).toBe(true);
+    expect(mockNavigate).not.toHaveBeenCalled();
+
+    await userEvent.click(screen.getByText('Leave'));
+
+    expect(useServiceStore.getState().name).toBe('');
+    expect(useServiceStore.getState().hasUnsavedChanges()).toBe(false);
+    expect(mockNavigate).toHaveBeenCalledWith('/appointments/admin/services', {
+      replace: true,
+    });
   });
 });

@@ -4,6 +4,7 @@ import {
   applyDerivedEndTime,
   createRow,
   findOverlappingRowIds,
+  isRowPristine,
   toggleRowDay,
   updateRowField,
   validateRow,
@@ -33,6 +34,7 @@ interface ServiceState {
   ) => void;
   toggleDayOfWeek: (rowId: string, day: DayOfWeek) => void;
   validate: () => boolean;
+  hasUnsavedChanges: () => boolean;
   reset: () => void;
 }
 
@@ -115,6 +117,19 @@ export const useServiceStore = create<ServiceState>((set, get) => ({
 
     set({ nameError, availabilityRows: updatedRows });
     return isValid;
+  },
+
+  hasUnsavedChanges: () => {
+    const state = get();
+    return (
+      !!state.name.trim() ||
+      !!state.description.trim() ||
+      state.durationMins !== null ||
+      state.specialityUuid !== null ||
+      state.locationUuid !== null ||
+      state.availabilityRows.length !== 1 ||
+      !isRowPristine(state.availabilityRows[0])
+    );
   },
 
   reset: () =>

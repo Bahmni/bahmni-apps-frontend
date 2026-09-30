@@ -1,12 +1,17 @@
 import { BaseLayout, Button, Header } from '@bahmni/design-system';
 import {
+  BAHMNI_APP_BASE_PATH,
   BAHMNI_HOME_PATH,
   createAppointmentService,
   hasPrivilege,
   useTranslation,
 } from '@bahmni/services';
-import { useNotification, useUserPrivilege } from '@bahmni/widgets';
-import React, { useState } from 'react';
+import {
+  ConfirmationModal,
+  useNotification,
+  useUserPrivilege,
+} from '@bahmni/widgets';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   MANAGE_APPOINTMENT_SERVICES_PRIVILEGE,
@@ -15,6 +20,7 @@ import {
 import { useServiceStore } from '../stores';
 import AvailabilitySection from './components/AvailabilitySection';
 import ServiceDetailsSection from './components/DetailsSection';
+import { useUnsavedChangesGuard } from './hooks/useUnsavedChangesGuard';
 import styles from './styles/index.module.scss';
 
 const toSqlTime = (time: string) => `${time}:00`;
@@ -25,13 +31,49 @@ const AddServicePage: React.FC = () => {
   const { addNotification } = useNotification();
   const { userPrivileges } = useUserPrivilege();
   const [isSaving, setIsSaving] = useState(false);
+  // What to do if the user confirms Leave. Non-null means the dialog is open.
+  const [pendingLeave, setPendingLeave] = useState<
+    ((hasGuard: boolean) => void) | null
+  >(null);
 
   const canManageServices = hasPrivilege(
     userPrivileges,
     MANAGE_APPOINTMENT_SERVICES_PRIVILEGE,
   );
 
-  const { validate } = useServiceStore();
+  const { validate, reset } = useServiceStore();
+  const isDirty = useServiceStore((state) => state.hasUnsavedChanges());
+
+  // The store outlives the page, so clear it however the user leaves.
+  useEffect(() => reset, [reset]);
+
+  const { leave } = useUnsavedChangesGuard(isDirty, () =>
+    // Browser Back: the guard entry sits above the page entry, so skip both.
+    setPendingLeave(() => () => window.history.go(-2)),
+  );
+
+  const confirmLeave = (navigateAway: (hasGuard: boolean) => void) => {
+    if (isDirty) {
+      setPendingLeave(() => navigateAway);
+      return;
+    }
+    leave(navigateAway);
+  };
+
+  const goToAllServices = (hasGuard: boolean) =>
+    navigate(PATHS.ADMIN_SERVICES, { replace: hasGuard });
+
+  const goToHome = (hasGuard: boolean) =>
+    hasGuard
+      ? window.location.replace(BAHMNI_HOME_PATH)
+      : window.location.assign(BAHMNI_HOME_PATH);
+
+  const handleLeave = () => {
+    const navigateAway = pendingLeave!;
+    setPendingLeave(null);
+    reset();
+    leave(navigateAway);
+  };
 
   const handleSave = async () => {
     if (!validate()) return;
@@ -84,11 +126,24 @@ const AddServicePage: React.FC = () => {
   };
 
   const breadcrumbs = [
-    { id: 'home', label: t('BREADCRUMB_HOME'), href: BAHMNI_HOME_PATH },
+    {
+      id: 'home',
+      label: t('BREADCRUMB_HOME'),
+      href: BAHMNI_HOME_PATH,
+      onClick: (event: React.MouseEvent<HTMLElement>) => {
+        event.preventDefault();
+        confirmLeave(goToHome);
+      },
+    },
     {
       id: 'admin',
       label: t('BREADCRUMB_ADMIN'),
-      href: PATHS.ADMIN_SERVICES,
+      // Breadcrumb hrefs are plain anchors, so they need the app-prefixed path.
+      href: `${BAHMNI_APP_BASE_PATH}${PATHS.ADMIN_SERVICES}`,
+      onClick: (event: React.MouseEvent<HTMLElement>) => {
+        event.preventDefault();
+        confirmLeave(goToAllServices);
+      },
     },
     {
       id: 'add-service',
@@ -118,6 +173,17 @@ const AddServicePage: React.FC = () => {
               <ServiceDetailsSection />
               <AvailabilitySection />
             </div>
+            <ConfirmationModal
+              open={pendingLeave !== null}
+              danger
+              testId="add-service-unsaved-changes-modal"
+              heading={t('ADMIN_ADD_SERVICE_UNSAVED_MODAL_TITLE')}
+              body={t('ADMIN_ADD_SERVICE_UNSAVED_MODAL_BODY')}
+              confirmLabel={t('ADMIN_ADD_SERVICE_UNSAVED_MODAL_LEAVE')}
+              cancelLabel={t('ADMIN_ADD_SERVICE_UNSAVED_MODAL_STAY')}
+              onConfirm={handleLeave}
+              onCancel={() => setPendingLeave(null)}
+            />
           </div>
         ) : (
           <div
@@ -137,7 +203,7 @@ const AddServicePage: React.FC = () => {
               id="back-btn"
               data-testid="back-btn-test-id"
               kind="tertiary"
-              onClick={() => navigate(PATHS.ADMIN_SERVICES)}
+              onClick={() => confirmLeave(goToAllServices)}
             >
               {t('ADMIN_ADD_SERVICE_BACK_BUTTON')}
             </Button>

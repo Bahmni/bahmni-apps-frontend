@@ -186,6 +186,69 @@ describe('useServiceStore', () => {
     });
   });
 
+  describe('hasUnsavedChanges', () => {
+    it('should return false for the initial state', () => {
+      expect(getStore().hasUnsavedChanges()).toBe(false);
+    });
+
+    it.each([
+      { scenario: 'name is set', edit: () => getStore().setName('Test') },
+      {
+        scenario: 'description is set',
+        edit: () => getStore().setDescription('Desc'),
+      },
+      {
+        scenario: 'duration is set',
+        edit: () => getStore().setDurationMins(30),
+      },
+      {
+        scenario: 'speciality is set',
+        edit: () => getStore().setSpecialityUuid('speciality-uuid'),
+      },
+      {
+        scenario: 'location is set',
+        edit: () => getStore().setLocationUuid('location-uuid'),
+      },
+      {
+        scenario: 'a row is added',
+        edit: () => getStore().addAvailabilityRow(),
+      },
+      {
+        scenario: 'the only row is removed',
+        edit: () => getStore().removeAvailabilityRow(INITIAL_ROW_ID),
+      },
+      {
+        scenario: 'a row field is edited',
+        edit: () =>
+          getStore().updateAvailabilityRow(
+            INITIAL_ROW_ID,
+            'startTime',
+            '09:00',
+          ),
+      },
+      {
+        scenario: 'a day is toggled',
+        edit: () => getStore().toggleDayOfWeek(INITIAL_ROW_ID, 'MONDAY'),
+      },
+    ])('should return true when $scenario', ({ edit }) => {
+      edit();
+      expect(getStore().hasUnsavedChanges()).toBe(true);
+    });
+
+    it('should return false once name is cleared back to whitespace', () => {
+      getStore().setName('Test');
+      getStore().setName('   ');
+      expect(getStore().hasUnsavedChanges()).toBe(false);
+    });
+
+    it('should return false after reset', () => {
+      getStore().setName('Test');
+      getStore().addAvailabilityRow();
+      getStore().reset();
+      expect(getStore().hasUnsavedChanges()).toBe(false);
+    });
+  });
+
   describe('reset', () => {
     it('should restore all state to initial values', () => {
       getStore().setName('Test');

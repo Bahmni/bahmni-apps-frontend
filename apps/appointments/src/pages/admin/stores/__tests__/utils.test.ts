@@ -4,6 +4,7 @@ import { DayOfWeek } from '../models';
 import {
   createRow,
   findOverlappingRowIds,
+  isRowPristine,
   toggleRowDay,
   updateRowField,
   validateRow,
@@ -31,6 +32,36 @@ describe('createRow', () => {
       expect(row.daysOfWeek).toEqual(expectedDays);
     },
   );
+});
+
+describe('isRowPristine', () => {
+  it('should return true for a row matching the initial row', () => {
+    expect(isRowPristine(makeRow({ daysOfWeek: [...DAYS_OF_WEEK] }))).toBe(
+      true,
+    );
+  });
+
+  it('should ignore meridiem changes', () => {
+    expect(
+      isRowPristine(
+        makeRow({ daysOfWeek: [...DAYS_OF_WEEK], startMeridiem: 'PM' }),
+      ),
+    ).toBe(true);
+  });
+
+  it.each([
+    { scenario: 'start time is set', overrides: { startTime: '09:00' } },
+    { scenario: 'end time is set', overrides: { endTime: '10:00' } },
+    { scenario: 'max load is set', overrides: { maxLoad: 5 } },
+    {
+      scenario: 'a day is deselected',
+      overrides: { daysOfWeek: DAYS_OF_WEEK.slice(1) as DayOfWeek[] },
+    },
+  ])('should return false when $scenario', ({ overrides }) => {
+    expect(
+      isRowPristine(makeRow({ daysOfWeek: [...DAYS_OF_WEEK], ...overrides })),
+    ).toBe(false);
+  });
 });
 
 describe('updateRowField', () => {
