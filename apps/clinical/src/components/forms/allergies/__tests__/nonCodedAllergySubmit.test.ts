@@ -293,6 +293,68 @@ describe('allergies control - REST save path', () => {
       );
     });
 
+    it('a failure partway through a multi-entry save preserves already-captured resourceIds and never attempts entries after the failing one', async () => {
+      const entry1 = makeNonCodedAllergy({
+        entryId: 'entry-1',
+        nonCodedAllergen: 'Ibuprofen gel',
+      });
+      const entry2 = makeNonCodedAllergy({
+        entryId: 'entry-2',
+        nonCodedAllergen: 'Shellfish stock',
+      });
+      const entry3 = makeNonCodedAllergy({
+        entryId: 'entry-3',
+        nonCodedAllergen: 'Latex',
+      });
+      useAllergyStore.setState({ selectedAllergies: [entry1, entry2, entry3] });
+
+      (saveAllergy as jest.Mock)
+        .mockResolvedValueOnce({ uuid: 'entry-1-uuid' }) // entry1 succeeds
+        .mockRejectedValueOnce(new Error('500')); // entry2 fails
+
+      await expect(allergiesControl().onDirectSubmit!()).rejects.toThrow('500');
+
+      // entry1's resourceId survived the later failure; entry2 got none;
+      // entry3 was never attempted (the loop stops at the rejection).
+      const stateAfterFailure = useAllergyStore.getState().selectedAllergies;
+      expect(stateAfterFailure[0].resourceId).toBe('entry-1-uuid');
+      expect(stateAfterFailure[1].resourceId).toBeUndefined();
+      expect(stateAfterFailure[2].resourceId).toBeUndefined();
+      expect(saveAllergy).toHaveBeenCalledTimes(2);
+
+      // Retry: entry1 must be addressed by uuid (update, no duplicate);
+      // entry2 and entry3 are attempted fresh.
+      (saveAllergy as jest.Mock)
+        .mockResolvedValueOnce({ uuid: 'entry-1-uuid' })
+        .mockResolvedValueOnce({ uuid: 'entry-2-uuid' })
+        .mockResolvedValueOnce({ uuid: 'entry-3-uuid' });
+
+      await allergiesControl().onDirectSubmit!();
+
+      expect(saveAllergy).toHaveBeenCalledTimes(5);
+      expect(saveAllergy).toHaveBeenNthCalledWith(
+        3,
+        'patient-123',
+        expect.anything(),
+        'entry-1-uuid', // update — no duplicate created
+      );
+      expect(saveAllergy).toHaveBeenNthCalledWith(
+        4,
+        'patient-123',
+        expect.anything(),
+        undefined, // create
+      );
+      expect(saveAllergy).toHaveBeenNthCalledWith(
+        5,
+        'patient-123',
+        expect.anything(),
+        undefined, // create
+      );
+      const stateAfterRetry = useAllergyStore.getState().selectedAllergies;
+      expect(stateAfterRetry[1].resourceId).toBe('entry-2-uuid');
+      expect(stateAfterRetry[2].resourceId).toBe('entry-3-uuid');
+    });
+
     it('does not set a resourceId when the backend response has no uuid', async () => {
       (saveAllergy as jest.Mock).mockResolvedValue({});
       useAllergyStore.setState({ selectedAllergies: [makeNonCodedAllergy()] });

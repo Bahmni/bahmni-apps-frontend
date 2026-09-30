@@ -811,8 +811,18 @@ describe('AllergiesForm', () => {
       const user = userEvent.setup();
       const mockAddAllergy = jest.fn();
 
+      // Realistic FormattedAllergy shape: id is the unique FHIR resource
+      // uuid, conceptCode is the allergen concept identity — duplicate
+      // detection must compare against conceptCode, not id (id would never
+      // match a concept uuid from the allergen search).
       (useQuery as jest.Mock).mockReturnValue({
-        data: [{ id: mockAllergen.uuid, display: 'Peanut Allergy' }] as any,
+        data: [
+          {
+            id: 'existing-allergy-resource-uuid',
+            conceptCode: mockAllergen.uuid,
+            display: 'Peanut Allergy',
+          },
+        ] as any,
         isLoading: false,
         error: null,
       });
@@ -828,6 +838,46 @@ describe('AllergiesForm', () => {
       await user.click(screen.getByText('Peanut Allergy [Food]'));
 
       expect(mockAddAllergy).not.toHaveBeenCalled();
+    });
+
+    it('should allow adding an allergy whose resource id happens to differ from every concept uuid being searched (regression: dedup must not compare by id)', async () => {
+      const user = userEvent.setup();
+      const mockAddAllergy = jest.fn();
+      const unrelatedAllergen: AllergenConcept = {
+        uuid: 'unrelated-concept-uuid',
+        display: 'Shellfish Allergy',
+        type: 'food',
+        disabled: false,
+      };
+
+      // An existing backend allergy for a *different* concept — its id
+      // (resource uuid) is unrelated to unrelatedAllergen's concept uuid, and
+      // must not accidentally suppress adding it.
+      (useQuery as jest.Mock).mockReturnValue({
+        data: [
+          {
+            id: 'existing-allergy-resource-uuid',
+            conceptCode: mockAllergen.uuid,
+            display: 'Peanut Allergy',
+          },
+        ] as any,
+        isLoading: false,
+        error: null,
+      });
+      mockAllergenSearchHook({ allergens: [unrelatedAllergen] });
+      renderAllergiesForm({ addAllergy: mockAddAllergy });
+
+      await user.type(getSearchCombobox(), 'shellfish');
+
+      await waitFor(() => {
+        expect(
+          screen.getByText('Shellfish Allergy [Food]'),
+        ).toBeInTheDocument();
+      });
+
+      await user.click(screen.getByText('Shellfish Allergy [Food]'));
+
+      expect(mockAddAllergy).toHaveBeenCalledWith(unrelatedAllergen);
     });
   });
 

@@ -17,7 +17,10 @@ export enum AllergySeverity {
  */
 //TODO: Move to Bahmni Widgets
 export interface FormattedAllergy {
+  /** Unique per-record identity (the FHIR resource id when available) — use for table/React keys, never for concept-identity comparisons like duplicate detection. */
   readonly id: string;
+  /** Allergen *concept* identity — shared by every non-coded ("Other") allergy, so compare against this (not `id`) to detect "this concept is already selected". */
+  readonly conceptCode: string;
   /** FHIR AllergyIntolerance resource UUID — required for PUT (edit existing allergy). */
   readonly resourceId?: string;
   readonly display: string;
@@ -93,10 +96,10 @@ export function mapAllergyToInputEntry(
   }
   return {
     id: allergenCode,
-    // fhir.id is always present for a persisted resource; the fallback only
-    // guards against a malformed input, so it doesn't need to be a real UUID.
-    entryId:
-      fhir.id ?? `${allergenCode}-${Math.random().toString(36).slice(2)}`,
+    // fhir.id is always present for a persisted resource; this fallback only
+    // guards against a malformed input. Matches the crypto.randomUUID() used
+    // for entryId elsewhere (allergyStore.ts's addAllergy).
+    entryId: fhir.id ?? crypto.randomUUID(),
     resourceId: fhir.id,
     rawFhirResource: fhir,
     display: fhir.code?.text ?? '',
@@ -118,12 +121,24 @@ export function mapAllergyToInputEntry(
 
 export type AllergenType = 'food' | 'medication' | 'environment';
 
+let resolvedOtherNonCodedAllergenUuid: string = OTHER_NON_CODED_ALLERGEN_UUID;
+
+/**
+ * Called by fetchOtherNonCodedAllergenUUID() (allergyService.ts) once it
+ * resolves this install's actual `allergy.concept.otherNonCoded` global
+ * property, so isNonCodedAllergen() can consult that instead of the
+ * hardcoded CIEL default below.
+ */
+export const setOtherNonCodedAllergenUuid = (uuid: string): void => {
+  resolvedOtherNonCodedAllergenUuid = uuid;
+};
+
 /**
  * True for the Other, Non-Coded allergen concept. OpenMRS treats an allergy on
  * it as non-coded and requires a free-text allergen name.
  */
 export const isNonCodedAllergen = (conceptUuid: string): boolean =>
-  conceptUuid === OTHER_NON_CODED_ALLERGEN_UUID;
+  conceptUuid === resolvedOtherNonCodedAllergenUuid;
 
 /** OpenMRS AllergenType enum values, as accepted by the REST allergy API. */
 export const OPENMRS_ALLERGEN_TYPE: Record<AllergenType, string> = {

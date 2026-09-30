@@ -4,6 +4,7 @@ export {
   fetchAndFormatAllergenConcepts,
   fetchReactionConcepts,
   fetchAllergySeverityConceptUUIDs,
+  fetchOtherNonCodedAllergenUUID,
   saveAllergy,
 } from './allergyService';
 export {

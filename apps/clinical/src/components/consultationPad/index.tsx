@@ -462,12 +462,12 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
           entry.hasData() && (!entry.onDirectSubmit || entry.hasBundleData?.()),
       );
 
-      for (const entry of directSubmitEntries) {
-        await entry.onDirectSubmit!();
-      }
-
       // Skip bundle submission if all data was handled by direct submit
       if (directSubmitEntries.length > 0 && bundleEntries.length === 0) {
+        for (const entry of directSubmitEntries) {
+          await entry.onDirectSubmit!();
+        }
+
         const updatedResources = captureUpdatedResources(activeEntries);
         dispatchConsultationSaved({
           patientUUID: useEncounterDetailsStore.getState().patientUUID ?? '',
@@ -500,6 +500,14 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
         patientUuid: result.patientUUID,
         messageParams: { encounterType: result.encounterTypeName },
       });
+
+      // Run direct-submit entries only after the bundle succeeds, so a bundle
+      // failure never leaves one persisted (e.g. a non-coded allergy saved
+      // via REST) with no corresponding encounter. Direct-submit calls are
+      // idempotent via resourceId, so this ordering is safe on retry too.
+      for (const entry of directSubmitEntries) {
+        await entry.onDirectSubmit!();
+      }
 
       bundleEntries.forEach((entry) => entry.onSubmitSuccess?.(result));
 

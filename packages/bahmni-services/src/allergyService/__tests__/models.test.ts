@@ -1,6 +1,20 @@
 import type { AllergyIntolerance } from 'fhir/r4';
 import { mapAllergyToInputEntry } from '../models';
 
+// jsdom in this package doesn't implement crypto.randomUUID (unlike a real
+// browser); mapAllergyToInputEntry's fhir.id-absent fallback calls it, so it
+// must exist for these tests to run. Scoped to this file only — the fake
+// value is never asserted on — so it doesn't affect other test files' own
+// expectations about crypto.randomUUID's availability/shape.
+beforeAll(() => {
+  if (!globalThis.crypto?.randomUUID) {
+    Object.defineProperty(globalThis, 'crypto', {
+      value: { ...globalThis.crypto, randomUUID: () => 'mock-entry-id' },
+      writable: true,
+    });
+  }
+});
+
 const baseFhir: AllergyIntolerance = {
   resourceType: 'AllergyIntolerance',
   id: 'fhir-uuid-001',

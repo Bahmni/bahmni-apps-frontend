@@ -6,6 +6,7 @@ import {
   InlineNotification,
 } from '@bahmni/design-system';
 import {
+  fetchOtherNonCodedAllergenUUID,
   getFormattedAllergies,
   isNonCodedAllergen,
   useTranslation,
@@ -99,6 +100,20 @@ const AllergiesForm: React.FC<{
     }
   }, [existingAllergiesLoading, existingAllergiesError, addNotification, t]);
 
+  // Resolves this install's actual Other, Non-Coded concept uuid as early as
+  // possible, so isNonCodedAllergen() (used for dedup, validation, and the
+  // Specify Allergen field's visibility) isn't left consulting the hardcoded
+  // CIEL default for the lifetime of this form.
+  useEffect(() => {
+    fetchOtherNonCodedAllergenUUID().catch((err: Error) => {
+      addNotification({
+        title: t('ERROR_DEFAULT_TITLE'),
+        message: err.message,
+        type: 'error',
+      });
+    });
+  }, [addNotification, t]);
+
   const handleSearch = (searchTerm: string) => {
     setSearchAllergenTerm(searchTerm);
   };
@@ -116,9 +131,11 @@ const AllergiesForm: React.FC<{
         (a) => a.id === allergyId,
       );
 
-      // Check against existing allergies from backend
+      // Check against existing allergies from backend. Compare by
+      // conceptCode, not id: id is now the unique FHIR resource id (needed
+      // for table/React keys), so it can never match a concept uuid here.
       const isExistingAllergy = existingAllergies?.some(
-        (a) => a.id === allergyId,
+        (a) => a.conceptCode === allergyId,
       );
 
       // We need || here (not ??) because we're checking boolean false values

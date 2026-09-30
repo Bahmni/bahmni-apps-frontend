@@ -169,7 +169,7 @@ export const useAllergyStore = create<AllergyState>((set, get) => ({
           isNonCodedAllergen(allergy.id) &&
           !allergy.nonCodedAllergen?.trim()
         ) {
-          errors.nonCodedAllergen = 'FIELD_VALUE_REQUIRED';
+          errors.nonCodedAllergen = 'INPUT_VALUE_REQUIRED';
           isValid = false;
         } else {
           delete errors.nonCodedAllergen;

@@ -8,6 +8,7 @@ import {
   ALLERGEN_TYPES,
   ALLERGY_REACTION,
   ALLERGY_SEVERITY_GLOBAL_PROPERTY,
+  OTHER_NON_CODED_ALLERGEN_GLOBAL_PROPERTY,
 } from './constants';
 import {
   AllergenConcept,
@@ -15,6 +16,7 @@ import {
   FormattedAllergy,
   SaveAllergyRequest,
   SaveAllergyResponse,
+  setOtherNonCodedAllergenUuid,
 } from './models';
 
 /**
@@ -167,6 +169,7 @@ export function formatAllergies(
 
     return {
       id: allergy.id ?? conceptCode,
+      conceptCode,
       resourceId: allergy.id,
       display: allergy.code?.text ?? '',
       category: allergy.category,
@@ -238,6 +241,31 @@ export async function fetchAllergySeverityConceptUUIDs(): Promise<
 
   severityConceptUUIDCache = Object.fromEntries(entries);
   return severityConceptUUIDCache;
+}
+
+let otherNonCodedAllergenUUIDCache: string | null = null;
+
+/**
+ * Resolves the Other, Non-Coded allergen concept uuid from this install's
+ * `allergy.concept.otherNonCoded` global property, following the same
+ * pattern as fetchAllergySeverityConceptUUIDs above and for the same reason:
+ * this concept id is configurable per install, so a hardcoded default can
+ * silently mismatch the install's actual dictionary. Updates the shared
+ * isNonCodedAllergen() check (models.ts) once resolved.
+ */
+export async function fetchOtherNonCodedAllergenUUID(): Promise<string> {
+  if (otherNonCodedAllergenUUIDCache) return otherNonCodedAllergenUUIDCache;
+
+  const uuid = await get<string>(
+    APP_PROPERTY_URL(OTHER_NON_CODED_ALLERGEN_GLOBAL_PROPERTY),
+  );
+  if (!uuid) {
+    throw new Error('OTHER_NON_CODED_ALLERGEN_CONCEPT_MISSING');
+  }
+
+  otherNonCodedAllergenUUIDCache = uuid;
+  setOtherNonCodedAllergenUuid(uuid);
+  return otherNonCodedAllergenUUIDCache;
 }
 
 /**

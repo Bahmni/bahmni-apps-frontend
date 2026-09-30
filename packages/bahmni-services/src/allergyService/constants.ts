@@ -21,15 +21,19 @@ export const PATIENT_ALLERGY_SAVE_URL = (
   (allergyUUID ? `/${allergyUUID}` : '');
 
 /**
- * CIEL "Other, Non-Coded" concept — a member of the drug, food and environment
- * allergen sets, so it appears in the allergen search as "Other non-coded".
- * OpenMRS treats an allergy on it as non-coded and its AllergyValidator then
- * requires a free-text allergen name.
- *
- * Mirrors the backend global property `allergy.concept.otherNonCoded`.
+ * CIEL "Other, Non-Coded" concept uuid — used only as the default value
+ * before `fetchOtherNonCodedAllergenUUID()` (allergyService.ts) resolves the
+ * install's actual `allergy.concept.otherNonCoded` global property, or if
+ * that fetch fails. Like the severity concept UUIDs below, this is
+ * configurable per install, so it must not be treated as guaranteed stable —
+ * `isNonCodedAllergen()` prefers the resolved value once available.
  */
 export const OTHER_NON_CODED_ALLERGEN_UUID =
   '5622AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA';
+
+/** Global property holding the install's actual Other, Non-Coded concept uuid. */
+export const OTHER_NON_CODED_ALLERGEN_GLOBAL_PROPERTY =
+  'allergy.concept.otherNonCoded';
 
 /**
  * Global properties holding the OpenMRS severity concept UUID for each FHIR

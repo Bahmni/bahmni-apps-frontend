@@ -29,9 +29,15 @@ import {
   fetchAndFormatAllergenConcepts,
   fetchReactionConcepts,
   fetchAllergySeverityConceptUUIDs,
+  fetchOtherNonCodedAllergenUUID,
   saveAllergy,
 } from '../allergyService';
-import { ALLERGEN_TYPES, ALLERGY_REACTION } from '../constants';
+import {
+  ALLERGEN_TYPES,
+  ALLERGY_REACTION,
+  OTHER_NON_CODED_ALLERGEN_UUID,
+} from '../constants';
+import { isNonCodedAllergen } from '../models';
 
 // Mock the api module
 jest.mock('../../api');
@@ -154,6 +160,7 @@ describe('allergyService', () => {
       expect(result).toHaveLength(1);
       expect(result[0]).toEqual({
         id: mockAllergyIntolerance.id,
+        conceptCode: mockAllergyIntolerance.code.coding[0].code,
         resourceId: mockAllergyIntolerance.id,
         display: mockAllergyIntolerance.code.text,
         category: mockAllergyIntolerance.category,
@@ -814,6 +821,49 @@ describe('allergyService', () => {
         moderate: '1499AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
         severe: '1500AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
       });
+      expect(get).not.toHaveBeenCalled();
+    });
+  });
+
+  // NOTE: same module-scope caching behavior as fetchAllergySeverityConceptUUIDs
+  // above — the missing-property case must run first, before a successful
+  // fetch populates the cache for the rest of this describe block.
+  describe('fetchOtherNonCodedAllergenUUID', () => {
+    beforeEach(() => jest.clearAllMocks());
+
+    it('throws instead of falling back to the hardcoded CIEL uuid when the global property is missing', async () => {
+      (get as jest.Mock).mockResolvedValue(null);
+
+      await expect(fetchOtherNonCodedAllergenUUID()).rejects.toThrow(
+        'OTHER_NON_CODED_ALLERGEN_CONCEPT_MISSING',
+      );
+    });
+
+    it('resolves the concept uuid from the allergy.concept.otherNonCoded global property and updates isNonCodedAllergen', async () => {
+      (get as jest.Mock).mockImplementation((url: string) => {
+        if (url === APP_PROPERTY_URL('allergy.concept.otherNonCoded')) {
+          return Promise.resolve('custom-install-other-non-coded-uuid');
+        }
+        return Promise.reject(new Error(`Unexpected url: ${url}`));
+      });
+
+      const result = await fetchOtherNonCodedAllergenUUID();
+
+      expect(result).toBe('custom-install-other-non-coded-uuid');
+      // The whole point of this fetch: isNonCodedAllergen must now consult
+      // the resolved value, not the hardcoded CIEL default.
+      expect(isNonCodedAllergen('custom-install-other-non-coded-uuid')).toBe(
+        true,
+      );
+      expect(isNonCodedAllergen(OTHER_NON_CODED_ALLERGEN_UUID)).toBe(false);
+    });
+
+    it('caches the result so a repeated call does not refetch the global property', async () => {
+      (get as jest.Mock).mockResolvedValue('should-not-be-used');
+
+      const result = await fetchOtherNonCodedAllergenUUID();
+
+      expect(result).toBe('custom-install-other-non-coded-uuid');
       expect(get).not.toHaveBeenCalled();
     });
   });

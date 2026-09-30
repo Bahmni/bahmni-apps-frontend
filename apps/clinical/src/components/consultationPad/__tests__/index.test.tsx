@@ -870,7 +870,11 @@ describe('ConsultationPad', () => {
       });
     });
 
-    it('shows error when direct submit succeeds but bundle submission fails in mixed scenario', async () => {
+    it('shows error and never calls direct submit when bundle submission fails in mixed scenario', async () => {
+      // The bundle now runs first: a direct-submit entry (e.g. a non-coded
+      // allergy saved via REST) must never be persisted when the bundle that
+      // was meant to carry the rest of the consultation fails, or it's left
+      // permanently orphaned with no corresponding encounter.
       const mockDirectSubmit = jest.fn().mockResolvedValue(undefined);
       const directEntry = {
         ...makeMockEntry('stopMedications'),
@@ -893,12 +897,12 @@ describe('ConsultationPad', () => {
       await userEvent.click(screen.getByTestId('primary-button'));
 
       await waitFor(() => {
-        expect(mockDirectSubmit).toHaveBeenCalled();
         expect(submitConsultation).toHaveBeenCalled();
         expect(mockAddNotification).toHaveBeenCalledWith(
           expect.objectContaining({ type: 'error' }),
         );
       });
+      expect(mockDirectSubmit).not.toHaveBeenCalled();
     });
 
     it('calls submitConsultation when mixed entries (direct + bundle)', async () => {
@@ -947,6 +951,58 @@ describe('ConsultationPad', () => {
         expect(mockDirectSubmit).toHaveBeenCalled();
         expect(submitConsultation).toHaveBeenCalled();
       });
+    });
+
+    it('calls onDirectSubmit only after the bundle submission succeeds, not before', async () => {
+      const callOrder: string[] = [];
+      const mockDirectSubmit = jest.fn().mockImplementation(async () => {
+        callOrder.push('onDirectSubmit');
+      });
+      jest.mocked(submitConsultation).mockImplementation(async () => {
+        callOrder.push('submitConsultation');
+        return mockSubmitResult;
+      });
+      const splitEntry = {
+        ...makeMockEntry('allergies'),
+        hasData: jest.fn().mockReturnValue(true),
+        hasBundleData: jest.fn().mockReturnValue(true),
+        onDirectSubmit: mockDirectSubmit,
+      };
+
+      jest.mocked(getActiveEntries).mockReturnValue([splitEntry] as any);
+
+      renderComponent();
+      await userEvent.click(screen.getByTestId('primary-button'));
+
+      await waitFor(() => {
+        expect(mockDirectSubmit).toHaveBeenCalled();
+      });
+      expect(callOrder).toEqual(['submitConsultation', 'onDirectSubmit']);
+    });
+
+    it('never calls onDirectSubmit when the bundle submission fails, so a direct-submitted allergy is never left without an encounter', async () => {
+      const mockDirectSubmit = jest.fn().mockResolvedValue(undefined);
+      jest
+        .mocked(submitConsultation)
+        .mockRejectedValue(new Error('Bundle failed'));
+      const splitEntry = {
+        ...makeMockEntry('allergies'),
+        hasData: jest.fn().mockReturnValue(true),
+        hasBundleData: jest.fn().mockReturnValue(true),
+        onDirectSubmit: mockDirectSubmit,
+      };
+
+      jest.mocked(getActiveEntries).mockReturnValue([splitEntry] as any);
+
+      renderComponent();
+      await userEvent.click(screen.getByTestId('primary-button'));
+
+      await waitFor(() => {
+        expect(mockAddNotification).toHaveBeenCalledWith(
+          expect.objectContaining({ type: 'error' }),
+        );
+      });
+      expect(mockDirectSubmit).not.toHaveBeenCalled();
     });
 
     it('skips the bundle when a direct-submit entry has no bundle data', async () => {
