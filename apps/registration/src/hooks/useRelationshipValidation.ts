@@ -56,11 +56,13 @@ export const useRelationshipValidation = () => {
     const duplicateIds = new Set<string>();
 
     relationships.forEach((rel, currentIndex) => {
+      if (rel.isExisting) return; // already saved — skip, backend is source of truth
       if (!rel.relationshipType) return;
       if (!rel.patientUuid && !rel.patientId) return;
 
       const firstIndex = relationships.findIndex((r, idx) => {
         if (idx >= currentIndex) return false;
+        if (r.isDeleted) return false; // being deleted — not a conflict for new rows
         const sameRelationType = r.relationshipType === rel.relationshipType;
         const samePatient = rel.patientUuid
           ? r.patientUuid === rel.patientUuid
@@ -82,6 +84,9 @@ export const useRelationshipValidation = () => {
     const newValidationErrors: ValidationErrors = {};
 
     relationships.forEach((rel) => {
+      // only validate newly added rows — existing rows are already saved, deleted rows are going away
+      if (rel.isExisting || rel.isDeleted) return;
+
       const hasAnyData =
         rel.relationshipType.trim() ||
         rel.patientId.trim() ||

@@ -161,6 +161,133 @@ describe('useRelationshipValidation', () => {
       expect(result.current.validationErrors).toEqual({});
     });
 
+    it('should not block save when all existing rows have duplicate data', () => {
+      const { result } = renderHook(() => useRelationshipValidation(), {
+        wrapper,
+      });
+
+      // Pre-existing duplicate rows saved before backend validation was added
+      const relationships: RelationshipData[] = [
+        {
+          id: 'rel-1',
+          relationshipType: 'parent-child-uuid',
+          patientId: 'P001',
+          patientUuid: 'uuid-1',
+          tillDate: '',
+          isExisting: true,
+        },
+        {
+          id: 'rel-2',
+          relationshipType: 'parent-child-uuid',
+          patientId: 'P001',
+          patientUuid: 'uuid-1',
+          tillDate: '',
+          isExisting: true,
+        },
+      ];
+
+      let isValid = false;
+      act(() => {
+        isValid = result.current.validateRelationships(relationships);
+      });
+
+      expect(isValid).toBe(true);
+      expect(result.current.validationErrors).toEqual({});
+    });
+
+    it('should not block save when all existing rows are deleted', () => {
+      const { result } = renderHook(() => useRelationshipValidation(), {
+        wrapper,
+      });
+
+      const relationships: RelationshipData[] = [
+        {
+          id: 'rel-1',
+          relationshipType: 'parent-child-uuid',
+          patientId: 'P001',
+          patientUuid: 'uuid-1',
+          tillDate: '',
+          isExisting: true,
+          isDeleted: true,
+        },
+      ];
+
+      let isValid = false;
+      act(() => {
+        isValid = result.current.validateRelationships(relationships);
+      });
+
+      expect(isValid).toBe(true);
+      expect(result.current.validationErrors).toEqual({});
+    });
+
+    it('should allow adding new row when existing row with same type is being deleted', () => {
+      const { result } = renderHook(() => useRelationshipValidation(), {
+        wrapper,
+      });
+
+      const relationships: RelationshipData[] = [
+        {
+          id: 'rel-1',
+          relationshipType: 'parent-child-uuid',
+          patientId: 'P001',
+          patientUuid: 'uuid-1',
+          tillDate: '',
+          isExisting: true,
+          isDeleted: true,
+        },
+        {
+          id: 'rel-2',
+          relationshipType: 'parent-child-uuid',
+          patientId: 'P001',
+          patientUuid: 'uuid-1',
+          tillDate: '',
+        },
+      ];
+
+      let isValid = false;
+      act(() => {
+        isValid = result.current.validateRelationships(relationships);
+      });
+
+      expect(isValid).toBe(true);
+      expect(result.current.validationErrors).toEqual({});
+    });
+
+    it('should block new row that duplicates an existing active row', () => {
+      const { result } = renderHook(() => useRelationshipValidation(), {
+        wrapper,
+      });
+
+      const relationships: RelationshipData[] = [
+        {
+          id: 'rel-1',
+          relationshipType: 'parent-child-uuid',
+          patientId: 'P001',
+          patientUuid: 'uuid-1',
+          tillDate: '',
+          isExisting: true,
+        },
+        {
+          id: 'rel-2',
+          relationshipType: 'parent-child-uuid',
+          patientId: 'P001',
+          patientUuid: 'uuid-1',
+          tillDate: '',
+        },
+      ];
+
+      let isValid = false;
+      act(() => {
+        isValid = result.current.validateRelationships(relationships);
+      });
+
+      expect(isValid).toBe(false);
+      expect(result.current.validationErrors['rel-2']).toEqual({
+        patientId: 'REGISTRATION_RELATIONSHIP_ALREADY_EXISTS',
+      });
+    });
+
     it('should not flag duplicates if relationship types are different', () => {
       const { result } = renderHook(() => useRelationshipValidation(), {
         wrapper,
