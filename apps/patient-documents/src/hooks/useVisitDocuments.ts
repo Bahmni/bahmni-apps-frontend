@@ -2,6 +2,7 @@ import {
   DocumentViewModel,
   getFormattedDocumentReferences,
   getPatientEncounters,
+  visitIdOf,
 } from '@bahmni/services';
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { Encounter } from 'fhir/r4';
@@ -15,9 +16,6 @@ export interface VisitDocumentGroup {
 
 const isVisit = (encounter: Encounter): boolean =>
   encounter.meta?.tag?.some((tag) => tag.code === 'visit') ?? !encounter.partOf;
-
-const visitIdOf = (encounter: Encounter): string | undefined =>
-  encounter.partOf?.reference?.split('/').pop();
 
 const startTime = (encounter: Encounter): number =>
   encounter.period?.start ? new Date(encounter.period.start).getTime() : 0;

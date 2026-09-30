@@ -195,7 +195,7 @@ describe('DocumentUpload', () => {
     selectFile('text/plain');
     expect(uploadDocument).not.toHaveBeenCalled();
     expect(mockAddNotification).toHaveBeenCalledWith(
-      expect.objectContaining({ type: 'error' }),
+      expect.objectContaining({ type: 'error', timeout: 5000 }),
     );
   });
 
@@ -254,7 +254,7 @@ describe('DocumentUpload', () => {
 
     expect(uploadDocument).not.toHaveBeenCalled();
     expect(mockAddNotification).toHaveBeenCalledWith(
-      expect.objectContaining({ type: 'error' }),
+      expect.objectContaining({ type: 'error', timeout: 5000 }),
     );
   });
 
