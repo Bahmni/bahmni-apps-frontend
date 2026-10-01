@@ -185,7 +185,7 @@ const PatientSearchResults = ({
                 data-testid={`patient-action-button-${action.translationKey}`}
                 onClick={() => {
                   if (!data) return;
-                  handleActionButtonClick(
+                  void handleActionButtonClick(
                     action,
                     row as PatientSearchViewModel<AppointmentSearchResult>,
                     data,

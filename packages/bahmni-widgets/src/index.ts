@@ -37,6 +37,7 @@ export { TaskList } from './tasks';
 export { PatientProgramsTable } from './patientPrograms';
 export { ImmunizationHistory } from './immunizationHistory';
 export { ProgramDetails } from './programDetails';
+export { VisitsTable } from './visits';
 export { extractFormName } from './observations';
 
 export {
@@ -64,6 +65,7 @@ export {
 export { useDebounce } from './commandPalette/useDebounce';
 export { usePatientUUID } from './hooks/usePatientUUID';
 export { usePatientPhoto } from './hooks/usePatientPhoto';
+export { useFormSchemaData } from './observationsRenderer/hooks/useFormSchemaData';
 export { useUserPrivilege } from './userPrivileges/useUserPrivilege';
 export { useHasPrivilege } from './userPrivileges/useHasPrivilege';
 

@@ -170,6 +170,7 @@ export const DocumentUpload = forwardRef<
         title: t('DOCUMENT_UPLOAD_INVALID_TYPE_TITLE'),
         message: t('DOCUMENT_UPLOAD_INVALID_TYPE_MESSAGE'),
         type: 'error',
+        timeout: 5000,
       });
     }
     if (tooLarge.length > 0) {
@@ -179,6 +180,7 @@ export const DocumentUpload = forwardRef<
           size: maxFileSizeMb,
         }),
         type: 'error',
+        timeout: 5000,
       });
     }
 

@@ -287,6 +287,9 @@ export {
   getEncounterByUuid,
   getVisits,
   getPatientEncounters,
+  getRecentVisitEncounters,
+  visitIdOf,
+  type EncounterWithVisit,
   getEncounterTypeByName,
   type EncounterTypeRef,
   shouldEnableEncounterFilter,
@@ -355,12 +358,14 @@ export {
   OPENMRS_FHIR_R4,
   BAHMNI_HOME_PATH,
   BAHMNI_APP_BASE_PATH,
+  HOME_ROUTE_PATH,
 } from './constants/app';
 export {
   getCurrentUserPrivileges,
   hasPrivilege,
   type UserPrivilege,
   type SessionResponse,
+  type AccessDeniedRouteState,
 } from './privilegeService';
 export {
   fetchObservationForms,
