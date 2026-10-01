@@ -159,6 +159,7 @@
   "CONSULTATION_PAD_ERROR_TITLE": "Something went wrong",
   "CONSULTATION_PAD_EXPAND_ARIA_LABEL": "Expand consultation pad",
   "CONSULTATION_PAD_TITLE": "New Consultation",
+  "CONSULTATION_PARTIAL_SAVE_ERROR_MESSAGE": "The consultation was saved, but some additional details failed to save. Please retry.",
   "CONSULTATION_SUBMITTED_SUCCESS_MESSAGE": "Consultation saved successfully",
   "CONSULTATION_SUBMITTED_SUCCESS_TITLE": "Success",
   "CONTROL_NOT_FOUND": "No controls registered for type: {{type}}",

@@ -37,7 +37,7 @@ import {
   ALLERGY_REACTION,
   OTHER_NON_CODED_ALLERGEN_UUID,
 } from '../constants';
-import { isNonCodedAllergen } from '../models';
+import { isNonCodedAllergen } from '../utils';
 
 // Mock the api module
 jest.mock('../../api');

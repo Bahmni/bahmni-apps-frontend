@@ -16,8 +16,8 @@ import {
   FormattedAllergy,
   SaveAllergyRequest,
   SaveAllergyResponse,
-  setOtherNonCodedAllergenUuid,
 } from './models';
+import { setOtherNonCodedAllergenUuid } from './utils';
 
 /**
  * Extended Coding interface to include inactive property
@@ -251,7 +251,7 @@ let otherNonCodedAllergenUUIDCache: string | null = null;
  * pattern as fetchAllergySeverityConceptUUIDs above and for the same reason:
  * this concept id is configurable per install, so a hardcoded default can
  * silently mismatch the install's actual dictionary. Updates the shared
- * isNonCodedAllergen() check (models.ts) once resolved.
+ * isNonCodedAllergen() check (utils.ts) once resolved.
  */
 export async function fetchOtherNonCodedAllergenUUID(): Promise<string> {
   if (otherNonCodedAllergenUUIDCache) return otherNonCodedAllergenUUIDCache;

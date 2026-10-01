@@ -168,6 +168,7 @@
   "CONSULTATION_PAD_ERROR_TITLE": "Algo salió mal",
   "CONSULTATION_PAD_EXPAND_ARIA_LABEL": "Expandir panel de consulta",
   "CONSULTATION_PAD_TITLE": "Nueva Consulta",
+  "CONSULTATION_PARTIAL_SAVE_ERROR_MESSAGE": "La consulta se guardó, pero algunos detalles adicionales no se pudieron guardar. Por favor, vuelva a intentarlo.",
   "CONSULTATION_SUBMITTED_SUCCESS_MESSAGE": "Consulta salvado correctamente",
   "CONSULTATION_SUBMITTED_SUCCESS_TITLE": "Éxito",
   "CONTROL_NOT_FOUND": "No se encontraron controles registrados para el tipo: {{type}}",

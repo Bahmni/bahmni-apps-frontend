@@ -1,5 +1,5 @@
 import type { AllergyIntolerance } from 'fhir/r4';
-import { mapAllergyToInputEntry } from '../models';
+import { mapAllergyToInputEntry } from '../utils';
 
 // jsdom in this package doesn't implement crypto.randomUUID (unlike a real
 // browser); mapAllergyToInputEntry's fhir.id-absent fallback calls it, so it

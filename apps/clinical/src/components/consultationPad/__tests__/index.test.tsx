@@ -980,6 +980,44 @@ describe('ConsultationPad', () => {
       expect(callOrder).toEqual(['submitConsultation', 'onDirectSubmit']);
     });
 
+    it('resets bundle-only entries once the bundle succeeds but keeps the pad open and the direct-submit entry unreset when onDirectSubmit then fails, so retry cannot resubmit the bundle', async () => {
+      const bundleOnlyEntry = {
+        ...makeMockEntry('medication'),
+        hasData: jest.fn().mockReturnValue(true),
+      };
+      const mockDirectSubmit = jest
+        .fn()
+        .mockRejectedValue(new Error('REST save failed'));
+      const splitEntry = {
+        ...makeMockEntry('allergies'),
+        hasData: jest.fn().mockReturnValue(true),
+        hasBundleData: jest.fn().mockReturnValue(true),
+        onDirectSubmit: mockDirectSubmit,
+      };
+      const onClose = jest.fn();
+
+      jest
+        .mocked(getActiveEntries)
+        .mockReturnValue([bundleOnlyEntry, splitEntry] as any);
+
+      renderComponent({ onClose });
+      await userEvent.click(screen.getByTestId('primary-button'));
+
+      await waitFor(() => {
+        expect(mockAddNotification).toHaveBeenCalledWith(
+          expect.objectContaining({ type: 'error' }),
+        );
+      });
+
+      // The bundle (medication) already succeeded and must never be
+      // resubmitted on retry, so it's reset immediately.
+      expect(bundleOnlyEntry.reset).toHaveBeenCalled();
+      // The failed direct-submit entry (allergies) keeps its data so the
+      // next retry attempt picks it back up instead of losing it.
+      expect(splitEntry.reset).not.toHaveBeenCalled();
+      expect(onClose).not.toHaveBeenCalled();
+    });
+
     it('never calls onDirectSubmit when the bundle submission fails, so a direct-submitted allergy is never left without an encounter', async () => {
       const mockDirectSubmit = jest.fn().mockResolvedValue(undefined);
       jest
