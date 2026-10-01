@@ -2,6 +2,7 @@ import {
   OTHER_NON_CODED_ALLERGEN_UUID,
   saveAllergy,
   fetchAllergySeverityConceptUUIDs,
+  fetchOtherNonCodedAllergenUUID,
 } from '@bahmni/services';
 import type { AllergyInputEntry } from '../../../../models/allergy';
 import { useAllergyStore, useEncounterDetailsStore } from '../../../../stores';
@@ -388,11 +389,38 @@ describe('allergies control - REST save path', () => {
     await expect(allergiesControl().onDirectSubmit!()).rejects.toThrow('500');
   });
 
+  // Regression: silently falling back to the hardcoded default uuid here
+  // would risk routing a custom-UUID install's non-coded allergy through the
+  // coded bundle path instead of this REST path — which can't carry its
+  // free-text name. The lookup failure must propagate, not be swallowed.
+  it('propagates an otherNonCoded uuid lookup failure instead of falling back to the default', async () => {
+    (fetchOtherNonCodedAllergenUUID as jest.Mock).mockRejectedValueOnce(
+      new Error('GLOBAL_PROPERTY_FETCH_FAILED'),
+    );
+    useAllergyStore.setState({ selectedAllergies: [makeNonCodedAllergy()] });
+
+    await expect(allergiesControl().onDirectSubmit!()).rejects.toThrow(
+      'GLOBAL_PROPERTY_FETCH_FAILED',
+    );
+    expect(saveAllergy).not.toHaveBeenCalled();
+  });
+
   describe('hasBundleData', () => {
     it('is false when every allergy must go over REST', async () => {
       useAllergyStore.setState({ selectedAllergies: [makeNonCodedAllergy()] });
 
       await expect(allergiesControl().hasBundleData!()).resolves.toBe(false);
+    });
+
+    it('propagates an otherNonCoded uuid lookup failure instead of falling back to the default', async () => {
+      (fetchOtherNonCodedAllergenUUID as jest.Mock).mockRejectedValueOnce(
+        new Error('GLOBAL_PROPERTY_FETCH_FAILED'),
+      );
+      useAllergyStore.setState({ selectedAllergies: [makeNonCodedAllergy()] });
+
+      await expect(allergiesControl().hasBundleData!()).rejects.toThrow(
+        'GLOBAL_PROPERTY_FETCH_FAILED',
+      );
     });
 
     it('is true when at least one allergy can travel in the bundle', async () => {

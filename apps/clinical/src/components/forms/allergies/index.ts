@@ -61,12 +61,15 @@ registerInputControl({
   subscribe: (cb) => useAllergyStore.subscribe(cb),
   // Without this the consultation pad skips the bundle whenever the allergies
   // control also has a direct submit, losing any coded allergy saved alongside.
-  // Awaits the install's actual Other, Non-Coded concept uuid first (falling
-  // back to the cached/default value on failure) so this — and the
-  // createBundleEntries call consultationPad makes right after — never
-  // misclassify an allergy using a stale default.
+  // Awaits the install's actual Other, Non-Coded concept uuid first so this —
+  // and the createBundleEntries call consultationPad makes right after —
+  // never misclassify an allergy using the hardcoded default. Lets the fetch
+  // failure propagate rather than swallowing it: silently falling back here
+  // would risk sending a custom-UUID install's non-coded allergy through the
+  // bundle path, which can't carry its free-text name — the exact bug class
+  // this control exists to prevent.
   hasBundleData: async () => {
-    await fetchOtherNonCodedAllergenUUID().catch(() => undefined);
+    await fetchOtherNonCodedAllergenUUID();
     return pendingAllergies().some((a) => !isNonCodedAllergen(a.id));
   },
   createBundleEntries: (ctx) =>
@@ -84,7 +87,10 @@ registerInputControl({
     const patientUUID = useEncounterDetailsStore.getState().patientUUID;
     if (!patientUUID) return;
 
-    await fetchOtherNonCodedAllergenUUID().catch(() => undefined);
+    // Same reasoning as hasBundleData above: a failed lookup must not be
+    // swallowed, or a custom-UUID install's non-coded allergy could be left
+    // out of this REST loop and silently fall through to the bundle instead.
+    await fetchOtherNonCodedAllergenUUID();
 
     for (const allergy of pendingAllergies().filter((a) =>
       isNonCodedAllergen(a.id),
