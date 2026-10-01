@@ -7,6 +7,7 @@ import {
 } from '@bahmni/services';
 import { useQuery } from '@tanstack/react-query';
 import { useEffect, useRef, useState } from 'react';
+import { AUDIT_LOG_PAGE_SIZE } from '../constants/app';
 import { combineDateAndTime } from './utils';
 
 export interface AuditLogFilters {
@@ -38,8 +39,6 @@ interface AuditLogRequest {
 export const NO_EVENTS_FOUND = 'NO_EVENTS_FOUND';
 export const NO_MORE_EVENTS_FOUND = 'NO_MORE_EVENTS_FOUND';
 export const MATCHING_EVENTS_NOT_FOUND = 'MATCHING_EVENTS_NOT_FOUND';
-
-const AUDIT_LOG_PAGE_SIZE = 50;
 
 export const useAuditLogs = () => {
   const [filters, setFilters] = useState<AuditLogFilters>({

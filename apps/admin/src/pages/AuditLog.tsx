@@ -15,10 +15,9 @@ import {
 } from '@bahmni/services';
 import React, { useCallback, useMemo } from 'react';
 import { AdminLayout } from '../components/AdminLayout';
+import { AUDIT_LOG_PAGE_SIZE } from '../constants/app';
 import { useAuditLogs } from '../hooks/useAuditLogs';
 import styles from './styles/AuditLog.module.scss';
-
-const AUDIT_LOG_PAGE_SIZE = 50;
 
 export const AuditLog: React.FC = () => {
   const { t } = useTranslation();
