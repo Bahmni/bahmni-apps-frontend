@@ -52,6 +52,7 @@ import {
   getActiveEncounter,
   getActiveEntries,
   loadEncounterInputControls,
+  resolveSubmissionEntries,
 } from './utils';
 
 interface ConsultationPadProps {
@@ -454,23 +455,8 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
       setIsSubmitting(true);
 
       // If any active entry has a direct submit handler, call it directly.
-      // An entry may do both: controls that can only save part of their data
-      // through the bundle (allergies) declare hasBundleData() to say whether
-      // the bundle flow is still needed. hasBundleData() may be async (e.g.
-      // allergies awaits its install-specific concept uuid before deciding),
-      // so this is resolved before createBundleEntries runs below.
-      const directSubmitEntries = activeEntries.filter(
-        (entry) => entry.hasData() && entry.onDirectSubmit,
-      );
-      const bundleEntries: typeof activeEntries = [];
-      for (const entry of activeEntries) {
-        if (
-          entry.hasData() &&
-          (!entry.onDirectSubmit || (await entry.hasBundleData?.()))
-        ) {
-          bundleEntries.push(entry);
-        }
-      }
+      const { directSubmitEntries, bundleEntries } =
+        await resolveSubmissionEntries(activeEntries);
 
       // Skip bundle submission if all data was handled by direct submit
       if (directSubmitEntries.length > 0 && bundleEntries.length === 0) {
