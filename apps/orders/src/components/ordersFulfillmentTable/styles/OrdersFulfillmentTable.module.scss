@@ -1,0 +1,160 @@
+@use "@carbon/react/scss/type" as *;
+@use "@carbon/react/scss/spacing" as *;
+@use "@carbon/react/scss/theme" as *;
+
+.statusHeader {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+}
+
+.statusCaret {
+  display: inline;
+  vertical-align: middle;
+  pointer-events: all;
+  opacity: 0.7;
+  transition: opacity 0.2s;
+  cursor: pointer;
+
+  &:hover {
+    opacity: 1;
+  }
+}
+
+$row-height: 48px;
+
+$col-expand: 4%;
+$col-badge: 6%;
+$col-identifier: 8%;
+$col-patient-name: 13%;
+$col-orders: 17%;
+$col-priority: 8%;
+$col-status: 8%;
+$col-provider: 12%;
+$col-date-time: 11%;
+$col-owner: calc(13% - 36px);
+$col-admitted: 36px;
+
+.ordersTable {
+  thead tr th:nth-child(1),
+  tbody tr td:nth-child(1) {
+    width: $col-expand;
+    min-width: 48px;
+  }
+
+  thead tr th:nth-child(2),
+  tbody tr td:nth-child(2) {
+    width: $col-badge;
+    min-width: 60px;
+    * {
+      justify-content: center;
+    }
+  }
+
+  thead tr th:nth-child(3),
+  tbody tr td:nth-child(3) {
+    width: $col-identifier;
+    min-width: 100px;
+  }
+
+  thead tr th:nth-child(4),
+  tbody tr td:nth-child(4) {
+    width: $col-patient-name;
+    min-width: 120px;
+  }
+
+  thead tr th:nth-child(5),
+  tbody tr td:nth-child(5) {
+    width: $col-orders;
+    min-width: 140px;
+  }
+
+  thead tr th:nth-child(6) {
+    width: $col-priority;
+    min-width: 70px;
+    * {
+      justify-content: center;
+    }
+  }
+
+  tbody tr td:nth-child(6) {
+    width: $col-priority;
+    min-width: 70px;
+    text-align: center;
+  }
+
+  thead tr th:nth-child(7),
+  tbody tr td:nth-child(7),
+  tbody tr.cds--expanded-row td:nth-child(7) {
+    width: $col-status;
+    min-width: 60px;
+  }
+
+  thead tr th:nth-child(8),
+  tbody tr td:nth-child(8),
+  tbody tr.cds--expanded-row td:nth-child(8) {
+    width: $col-provider;
+    min-width: 120px;
+  }
+
+  thead tr th:nth-child(9),
+  tbody tr td:nth-child(9) {
+    width: $col-date-time;
+    min-width: 110px;
+  }
+
+  thead tr th:nth-child(10),
+  tbody tr td:nth-child(10) {
+    width: $col-owner;
+    min-width: 100px;
+    text-align: left;
+  }
+  thead tr th:last-child,
+  tbody tr td:last-child {
+    width: $col-admitted;
+    min-width: 36px;
+    text-align: right;
+    padding: 0;
+  }
+
+  thead tr {
+    height: $row-height;
+  }
+
+  thead tr th {
+    @include type-style("heading-compact-01");
+    background-color: #e0e0e0 !important;
+    color: #161616 !important;
+    border-bottom: 1px solid #c6c6c6 !important;
+    padding: $spacing-03 $spacing-05;
+    text-align: left;
+    vertical-align: middle;
+    font-weight: 600 !important;
+    height: $row-height;
+  }
+
+  tbody tr {
+    height: $row-height;
+  }
+}
+.ordersTable :global(.cds--data-table) thead tr th {
+  height: $row-height !important;
+}
+
+.ordersTable :global(.cds--data-table) tbody tr,
+.ordersTable :global(.cds--data-table) tbody tr td {
+  height: $row-height !important;
+}
+.centerAlignText {
+  text-align: center;
+}
+
+.ipdBedIndication {
+  background: #88af28;
+  color: white;
+  padding: 2px 8px;
+  border-top-left-radius: 4px;
+  border-bottom-left-radius: 4px;
+}

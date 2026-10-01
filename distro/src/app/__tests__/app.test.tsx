@@ -13,13 +13,21 @@ jest.mock('@bahmni/patient-documents-app', () => ({
   PatientDocumentsApp: () => <div data-testid="patient-documents-page" />,
 }));
 
-jest.mock('@bahmni/admin-app', () => ({
-  AdminApp: () => <div data-testid="admin-page" />,
-}));
+jest.mock(
+  '@bahmni/admin-app',
+  () => ({
+    AdminApp: () => <div data-testid="admin-page" />,
+  }),
+  { virtual: true },
+);
 
-jest.mock('@bahmni/reports-app', () => ({
-  ReportsApp: () => <div data-testid="reports-page" />,
-}));
+jest.mock(
+  '@bahmni/reports-app',
+  () => ({
+    ReportsApp: () => <div data-testid="reports-page" />,
+  }),
+  { virtual: true },
+);
 
 jest.mock('@bahmni/widgets', () => ({
   AppContextProvider: ({ children }: { children: React.ReactNode }) => children,

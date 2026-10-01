@@ -1,0 +1,109 @@
+@use "@carbon/react/scss/spacing" as *;
+@use "@carbon/react/scss/theme" as *;
+@use "@carbon/react/scss/type" as *;
+
+.pageContainer {
+  display: flex;
+  flex-direction: column;
+  height: 100dvh;
+  width: 100%;
+  background-color: $background;
+}
+
+.mainContentWrapper {
+  flex: 1;
+  display: flex;
+  overflow: hidden;
+}
+
+.contentContainer {
+  flex: 1;
+  padding: $spacing-05 $spacing-06;
+  overflow-y: auto;
+  transition: width 0.3s ease;
+  min-width: 0;
+}
+
+.contentContainerWithSlider {
+  width: 70%;
+  min-width: 0;
+}
+
+.sliderContainer {
+  width: 30%;
+  flex: none;
+  overflow-y: auto;
+  background-color: $layer-01;
+  border-left: 1px solid $border-subtle-01;
+  box-shadow: -1px 2px 3px 0 #aaa;
+  margin-top: 3rem;
+}
+
+.ordersContainer {
+  background-color: $background;
+  border: 1px solid $border-subtle-01;
+  border-radius: $spacing-02;
+  padding: $spacing-05;
+  margin-top: 4rem;
+  min-width: 0;
+  box-shadow: 0px 6px 6px 0px #00000033;
+}
+
+.tabList {
+  margin-left: 0;
+  padding-left: 16px;
+}
+
+.tabContent {
+  padding: $spacing-05 0;
+  min-width: 0;
+}
+
+.searchContainer {
+  max-width: 500px;
+  margin-bottom: $spacing-05;
+
+  :global(input::placeholder) {
+    color: #525252 !important;
+  }
+}
+
+.ordersTable {
+  border: 1px solid $border-subtle-01;
+  border-radius: $spacing-02;
+  min-width: 0;
+  overflow-x: auto;
+  max-width: 100%;
+}
+
+.errorContainer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: $spacing-07;
+  background-color: $background;
+  min-height: 25rem;
+}
+
+.errorMessage {
+  @include type-style("body-01");
+  color: $text-error;
+  text-align: center;
+}
+
+@media (max-width: 1023px) {
+  .mainContentWrapper {
+    flex-direction: column;
+  }
+
+  .sliderContainer {
+    width: 100%;
+    min-width: 540px;
+    height: 100%;
+  }
+}
+
+:global(.cds--content) {
+  padding: 0;
+  height: 100dvh;
+}

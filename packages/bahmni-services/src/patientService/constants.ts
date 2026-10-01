@@ -173,3 +173,9 @@ export const RELATED_PERSONS_BY_PATIENT_URL = (patientUuid: string) =>
 
 export const RELATED_PERSON_BY_ID_URL = (uuid: string) =>
   `${RELATED_PERSON_URL}/${uuid}`;
+/**
+ * UUID for the Last Menstrual Period (LMP) concept in OpenMRS
+ * VERIFIED: This UUID is consistent across all environments (dev, staging, prod)
+ * Using UUID (not concept name) because FHIR API requires code parameter in UUID format
+ */
+export const LMP_CONCEPT_UUID = 'c45a7e4b-3f10-11e4-adec-0800271c1b75';

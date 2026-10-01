@@ -24,3 +24,11 @@ export const PATIENT_ENCOUNTERS_URL = (
   (sinceDate ? `&date=ge${encodeURIComponent(sinceDate)}` : '');
 
 export const FHIR_ENCOUNTER_URL = OPENMRS_FHIR_R4 + '/Encounter';
+
+export const BAHMNI_ENCOUNTER_URL = (
+  encounterUUID: string,
+  includeAll: boolean = false,
+) =>
+  `${OPENMRS_REST_V1}/bahmnicore/bahmniencounter/${encounterUUID}?includeAll=${includeAll}`;
+
+export const ENCOUNTER_BUNDLE_URL = OPENMRS_FHIR_R4 + '/EncounterBundle';

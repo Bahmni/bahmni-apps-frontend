@@ -1,6 +1,9 @@
 import type { Bundle, ServiceRequest } from 'fhir/r4';
 import { get } from '../../api';
-import { SERVICE_REQUESTS_URL, SERVICE_REQUEST_COUNT } from '../constants';
+import {
+  SERVICE_REQUESTS_URL,
+  SERVICE_REQUEST_QUERY_PARAMS,
+} from '../constants';
 import { getServiceRequests } from '../orderRequestService';
 
 jest.mock('../../api');
@@ -65,7 +68,7 @@ describe('serviceRequestService', () => {
       const url = SERVICE_REQUESTS_URL(category, patientUuid);
 
       expect(url).toBe(
-        `/openmrs/ws/fhir2/R4/ServiceRequest?_count=${SERVICE_REQUEST_COUNT}&_sort=-_lastUpdated&category=${category}&patient=${patientUuid}`,
+        `/openmrs/ws/fhir2/R4/ServiceRequest?${SERVICE_REQUEST_QUERY_PARAMS.SORT}&category=${category}&patient=${patientUuid}&${SERVICE_REQUEST_QUERY_PARAMS.COUNT}`,
       );
     });
 
@@ -80,7 +83,7 @@ describe('serviceRequestService', () => {
       );
 
       expect(url).toBe(
-        `/openmrs/ws/fhir2/R4/ServiceRequest?_count=${SERVICE_REQUEST_COUNT}&_sort=-_lastUpdated&category=${category}&patient=${patientUuid}&numberOfVisits=${numberOfVisits}`,
+        `/openmrs/ws/fhir2/R4/ServiceRequest?${SERVICE_REQUEST_QUERY_PARAMS.SORT}&category=${category}&patient=${patientUuid}&${SERVICE_REQUEST_QUERY_PARAMS.COUNT}&numberOfVisits=${numberOfVisits}`,
       );
     });
 
@@ -96,7 +99,7 @@ describe('serviceRequestService', () => {
       );
 
       expect(url).toBe(
-        `/openmrs/ws/fhir2/R4/ServiceRequest?_count=${SERVICE_REQUEST_COUNT}&_sort=-_lastUpdated&category=${category}&patient=${patientUuid}&encounter=${encounterUuids}`,
+        `/openmrs/ws/fhir2/R4/ServiceRequest?${SERVICE_REQUEST_QUERY_PARAMS.SORT}&category=${category}&patient=${patientUuid}&${SERVICE_REQUEST_QUERY_PARAMS.COUNT}&encounter=${encounterUuids}`,
       );
       expect(url).not.toContain('numberOfVisits');
     });
@@ -113,7 +116,7 @@ describe('serviceRequestService', () => {
       );
 
       expect(url).toBe(
-        `/openmrs/ws/fhir2/R4/ServiceRequest?_count=${SERVICE_REQUEST_COUNT}&_sort=-_lastUpdated&category=${category}&patient=${patientUuid}&_revinclude=${revinclude}&encounter=${encounterUuids}`,
+        `/openmrs/ws/fhir2/R4/ServiceRequest?${SERVICE_REQUEST_QUERY_PARAMS.SORT}&category=${category}&patient=${patientUuid}&${SERVICE_REQUEST_QUERY_PARAMS.COUNT}&_revinclude=${revinclude}&encounter=${encounterUuids}`,
       );
     });
   });

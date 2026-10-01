@@ -34,6 +34,8 @@ export {
   deleteRelatedPerson,
   type FhirRelatedPerson,
   type FhirRelatedPersonBundle,
+  getObservationByConceptName,
+  calculateDaysSince,
   type FormattedPatientData,
   type PatientSearchResult,
   type PatientSearchResultBundle,
@@ -60,6 +62,7 @@ export {
   type AppointmentSearchResult,
   type ExpectedFieldConfig,
   type SearchActionConfig,
+  type ObservationData,
   AttributeFormat,
   AttributeInputType,
   getInputTypeForFormat,
@@ -197,6 +200,7 @@ export {
   fetchMedicationOrdersMetadata,
   searchMedications,
   getVaccinations,
+  getMedicationRequestsForWorklist,
   type MedicationRequest,
   MedicationStatus,
   type MedicationOrdersMetadataResponse,
@@ -232,7 +236,18 @@ export {
   ORDER_TYPE_QUERY_KEY,
 } from './investigationService';
 
-export { getConfig } from './configService';
+export {
+  getConfig,
+  getOrdersConfig,
+  getOrdersTableConfig,
+  type OrdersConfig,
+  type OrderExtension,
+  type OrderExtensionParams,
+  type OrdersTableConfig,
+  type OrderColumnConfig,
+  type OrderStatusOption,
+  type TabStatus,
+} from './configService';
 
 export {
   getCurrentUser,
@@ -297,7 +312,10 @@ export {
   updateFhirEncounter,
   buildEncounterResource,
   type BuildEncounterResourceParams,
+  getFormsDataByEncounterUuid,
+  createOrderFulfillmentEncounter,
   type FormsEncounter,
+  type OrderFulfillmentEncounterParams,
 } from './encounterService';
 
 export {
@@ -390,7 +408,10 @@ export {
   type VitalFlowSheetConceptDetail,
 } from './vitalFlowSheetService';
 
-export { getServiceRequests } from './orderRequestService';
+export {
+  getServiceRequests,
+  getServiceRequestsForWorklist,
+} from './orderRequestService';
 export {
   getPatientPrograms,
   getPatientProgramsPage,
@@ -493,3 +514,12 @@ export {
   type ActionExtension,
   type ExtensionButtonKind,
 } from './extensions';
+
+export * from './orders';
+export {
+  createTask,
+  createOrUpdateTask,
+  getTasksByBasedOn,
+  type CreateTaskPayload,
+  type CreateTaskOptions,
+} from './taskService';

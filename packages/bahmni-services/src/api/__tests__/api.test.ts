@@ -83,6 +83,23 @@ describe('Public API Methods', () => {
         expect(mockAxiosPost).toHaveBeenCalledWith(
           '/api/patients',
           requestData,
+          undefined,
+        );
+        expect(result).toEqual(mockData);
+      });
+
+      it('should make POST request with options and return response data', async () => {
+        const mockData = { id: 1, name: 'New Patient' };
+        const requestData = { name: 'New Patient', age: 30 };
+        const options = { headers: { 'Content-Type': 'application/json' } };
+        mockAxiosPost.mockResolvedValue({ data: mockData });
+
+        const result = await post('/api/patients', requestData, options);
+
+        expect(mockAxiosPost).toHaveBeenCalledWith(
+          '/api/patients',
+          requestData,
+          options,
         );
         expect(result).toEqual(mockData);
       });
@@ -94,7 +111,11 @@ describe('Public API Methods', () => {
         await expect(post('/api/patients', {})).rejects.toThrow(
           'Validation error',
         );
-        expect(mockAxiosPost).toHaveBeenCalledWith('/api/patients', {});
+        expect(mockAxiosPost).toHaveBeenCalledWith(
+          '/api/patients',
+          {},
+          undefined,
+        );
       });
     });
 
@@ -193,9 +214,13 @@ describe('Public API Methods', () => {
 
       const result = await post('/api/patients', { name: 'Test Patient' });
 
-      expect(mockAxiosPost).toHaveBeenCalledWith('/api/patients', {
-        name: 'Test Patient',
-      });
+      expect(mockAxiosPost).toHaveBeenCalledWith(
+        '/api/patients',
+        {
+          name: 'Test Patient',
+        },
+        undefined,
+      );
       expect(result).toEqual(responseData);
     });
   });
