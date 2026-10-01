@@ -5,7 +5,12 @@ import {
   SelectedItem,
   InlineNotification,
 } from '@bahmni/design-system';
-import { useTranslation, getFormattedAllergies } from '@bahmni/services';
+import {
+  fetchOtherNonCodedAllergenUUID,
+  getFormattedAllergies,
+  OTHER_NON_CODED_ALLERGEN_UUID,
+  useTranslation,
+} from '@bahmni/services';
 import {
   useNotification,
   usePatientUUID,
@@ -63,6 +68,7 @@ const AllergiesForm: React.FC<{
     updateSeverity,
     updateReactions,
     updateNote,
+    updateNonCodedAllergen,
   } = useAllergyStore();
 
   // Use allergen search hook
@@ -94,27 +100,61 @@ const AllergiesForm: React.FC<{
     }
   }, [existingAllergiesLoading, existingAllergiesError, addNotification, t]);
 
+  // Resolves this install's actual Other, Non-Coded concept uuid as early as
+  // possible. A bare fetch-and-cache effect isn't enough here: the checks
+  // below feed the Specify Allergen field's visibility in the memoized
+  // SelectedAllergyItem, and nothing would tell React to re-render once the
+  // fetch resolved, so a preloaded "Other" allergy could keep that field
+  // hidden for the lifetime of the form. Holding the result in state (rather
+  // than only the module-level cache fetchOtherNonCodedAllergenUUID
+  // populates) gives this component something that changes on resolution, so
+  // everything derived from otherNonCodedAllergenId below recomputes instead
+  // of staying stuck on the hardcoded CIEL default.
+  const [otherNonCodedAllergenId, setOtherNonCodedAllergenId] = useState(
+    OTHER_NON_CODED_ALLERGEN_UUID,
+  );
+
+  useEffect(() => {
+    fetchOtherNonCodedAllergenUUID()
+      .then(setOtherNonCodedAllergenId)
+      .catch((err: Error) => {
+        addNotification({
+          title: t('ERROR_DEFAULT_TITLE'),
+          message: err.message,
+          type: 'error',
+        });
+      });
+  }, [addNotification, t]);
+
   const handleSearch = (searchTerm: string) => {
     setSearchAllergenTerm(searchTerm);
   };
 
   const isDuplicateAllergy = useCallback(
     (allergyId: string): boolean => {
-      // Check against existing allergies from backend
-      const isExistingAllergy = existingAllergies?.some(
-        (a) => a.id === allergyId,
-      );
+      // The Other, Non-Coded concept is shared by every free-text allergy, so
+      // picking it again always represents a distinct new allergen — concept
+      // identity can't be used to detect a duplicate here. Each resulting
+      // entry gets its own unique entryId, so multiple can coexist safely.
+      if (allergyId === otherNonCodedAllergenId) return false;
 
       // Check against currently selected allergies in the form
       const isSelectedAllergy = selectedAllergies.some(
         (a) => a.id === allergyId,
       );
 
+      // Check against existing allergies from backend. Compare by
+      // conceptCode, not id: id is now the unique FHIR resource id (needed
+      // for table/React keys), so it can never match a concept uuid here.
+      const isExistingAllergy = existingAllergies?.some(
+        (a) => a.conceptCode === allergyId,
+      );
+
       // We need || here (not ??) because we're checking boolean false values
       // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
       return !!(isExistingAllergy || isSelectedAllergy);
     },
-    [existingAllergies, selectedAllergies],
+    [existingAllergies, selectedAllergies, otherNonCodedAllergenId],
   );
 
   // Clear notification when search term is cleared or when the duplicate allergy is no longer a duplicate
@@ -203,9 +243,11 @@ const AllergiesForm: React.FC<{
     }
 
     return searchResults.map((item) => {
-      const isAlreadySelected = selectedAllergies.some(
-        (a) => a.id === item.uuid,
-      );
+      // The Other, Non-Coded concept is never "already added" — selecting it
+      // again always adds a distinct new free-text allergen.
+      const isAlreadySelected =
+        item.uuid !== otherNonCodedAllergenId &&
+        selectedAllergies.some((a) => a.id === item.uuid);
       return {
         ...item,
         display: isAlreadySelected
@@ -223,6 +265,7 @@ const AllergiesForm: React.FC<{
     error,
     existingAllergiesError,
     selectedAllergies,
+    otherNonCodedAllergenId,
     t,
   ]);
 
@@ -284,16 +327,18 @@ const AllergiesForm: React.FC<{
         >
           {selectedAllergies.map((allergy) => (
             <SelectedItem
-              key={allergy.id}
+              key={allergy.entryId}
               className={styles.selectedAllergyItem}
-              onClose={() => removeAllergy(allergy.id)}
+              onClose={() => removeAllergy(allergy.entryId)}
             >
               <SelectedAllergyItem
                 allergy={allergy}
+                isNonCoded={allergy.id === otherNonCodedAllergenId}
                 reactionConcepts={reactionConcepts}
                 updateSeverity={updateSeverity}
                 updateReactions={updateReactions}
                 updateNote={updateNote}
+                updateNonCodedAllergen={updateNonCodedAllergen}
               />
             </SelectedItem>
           ))}

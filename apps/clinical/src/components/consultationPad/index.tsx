@@ -26,7 +26,10 @@ import React, {
   useState,
 } from 'react';
 import { CDSS_SERVER_CONFIG_URL } from '../../constants/app';
-import { ERROR_TITLES } from '../../constants/errors';
+import {
+  CONSULTATION_ERROR_MESSAGES,
+  ERROR_TITLES,
+} from '../../constants/errors';
 import { MEDICATIONS_INPUT_CONTROL_KEY } from '../../constants/medications';
 import type { EncounterSessionStartContext } from '../../events/startConsultation';
 import { useActionAreaExpandProps } from '../../hooks/useActionAreaExpandProps';
@@ -49,6 +52,7 @@ import {
   getActiveEncounter,
   getActiveEntries,
   loadEncounterInputControls,
+  resolveSubmissionEntries,
 } from './utils';
 
 interface ConsultationPadProps {
@@ -450,21 +454,16 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
     try {
       setIsSubmitting(true);
 
-      // If any active entry has a direct submit handler, call it directly
-      // and skip the consultation bundle flow.
-      const directSubmitEntries = activeEntries.filter(
-        (entry) => entry.hasData() && entry.onDirectSubmit,
-      );
-      const bundleEntries = activeEntries.filter(
-        (entry) => entry.hasData() && !entry.onDirectSubmit,
-      );
-
-      for (const entry of directSubmitEntries) {
-        await entry.onDirectSubmit!();
-      }
+      // If any active entry has a direct submit handler, call it directly.
+      const { directSubmitEntries, bundleEntries } =
+        await resolveSubmissionEntries(activeEntries);
 
       // Skip bundle submission if all data was handled by direct submit
       if (directSubmitEntries.length > 0 && bundleEntries.length === 0) {
+        for (const entry of directSubmitEntries) {
+          await entry.onDirectSubmit!();
+        }
+
         const updatedResources = captureUpdatedResources(activeEntries);
         dispatchConsultationSaved({
           patientUUID: useEncounterDetailsStore.getState().patientUUID ?? '',
@@ -500,12 +499,44 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
 
       bundleEntries.forEach((entry) => entry.onSubmitSuccess?.(result));
 
+      // Capture resource state and notify before any reset below, same as
+      // the original single-phase flow.
       const updatedResources = captureUpdatedResources(activeEntries);
       dispatchConsultationSaved({
         patientUUID: result.patientUUID,
         updatedResources,
         updatedConcepts: result.updatedConcepts,
       });
+
+      // The bundle is fully persisted at this point. Reset entries that only
+      // contributed to the bundle now, so a direct-submit failure below can
+      // never cause the bundle to be resubmitted on retry. Entries that still
+      // have pending direct-submit data (e.g. allergies with both coded and
+      // non-coded entries) keep their store until their own onDirectSubmit
+      // succeeds below.
+      const bundleOnlyEntries = bundleEntries.filter(
+        (entry) => !directSubmitEntries.includes(entry),
+      );
+      bundleOnlyEntries.forEach((entry) => entry.reset());
+
+      // Run direct-submit entries only after the bundle succeeds, so a bundle
+      // failure never leaves one persisted (e.g. a non-coded allergy saved
+      // via REST) with no corresponding encounter. Direct-submit calls are
+      // idempotent via resourceId, so a failure here is safe to retry without
+      // resubmitting the bundle, which is already reset above.
+      try {
+        for (const entry of directSubmitEntries) {
+          await entry.onDirectSubmit!();
+        }
+      } catch {
+        addNotification({
+          title: t(ERROR_TITLES.CONSULTATION_ERROR),
+          message: t(CONSULTATION_ERROR_MESSAGES.PARTIAL_SAVE),
+          type: 'error',
+          timeout: 5000,
+        });
+        return;
+      }
 
       addNotification({
         title: t('CONSULTATION_SUBMITTED_SUCCESS_TITLE'),
@@ -514,7 +545,7 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
         timeout: 5000,
       });
 
-      activeEntries.forEach((entry) => entry.reset());
+      directSubmitEntries.forEach((entry) => entry.reset());
       onClose();
     } catch (error) {
       const errorMessage =

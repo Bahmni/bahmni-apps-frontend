@@ -4,6 +4,7 @@ import {
   AllergySeverity,
   getFormattedAllergies,
   resetEncounterSession,
+  OTHER_NON_CODED_ALLERGEN_UUID,
 } from '@bahmni/services';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, screen, waitFor } from '@testing-library/react';
@@ -24,6 +25,7 @@ const mockAddNotification = jest.fn();
 const mockSingleAllergy: FormattedAllergy[] = [
   {
     id: 'allergy-123',
+    conceptCode: 'concept-peanut',
     display: 'Peanut Allergy',
     category: ['food'],
     criticality: 'high',
@@ -44,6 +46,7 @@ const mockSingleAllergy: FormattedAllergy[] = [
 const mockMultipleAllergies: FormattedAllergy[] = [
   {
     id: 'severe-allergy',
+    conceptCode: 'concept-shellfish',
     display: 'Shellfish Allergy',
     category: ['food'],
     status: AllergyStatus.Active,
@@ -59,6 +62,7 @@ const mockMultipleAllergies: FormattedAllergy[] = [
   },
   {
     id: 'mild-allergy',
+    conceptCode: 'concept-dust',
     display: 'Dust Allergy',
     category: ['environment'],
     status: AllergyStatus.Inactive,
@@ -74,6 +78,7 @@ const mockMultipleAllergies: FormattedAllergy[] = [
   },
   {
     id: 'moderate-allergy',
+    conceptCode: 'concept-peanut',
     display: 'Peanut Allergy',
     category: ['food'],
     status: AllergyStatus.Active,
@@ -209,5 +214,58 @@ describe('AllergiesTable Integration', () => {
     // Verify status display
     expect(screen.getAllByText('ALLERGY_LIST_ACTIVE')).toHaveLength(2);
     expect(screen.getByText('ALLERGY_LIST_INACTIVE')).toBeInTheDocument();
+  });
+
+  it('renders each Other, Non-Coded allergy with its own specified name, not the first row reused', async () => {
+    // Regression test: every "Other, Non-Coded" allergy shares the same
+    // allergen concept uuid, so if FormattedAllergy.id ever regresses to
+    // that shared concept code instead of the unique FHIR resource id,
+    // SortableDataTable (keyed by id) collapses these rows onto one entry.
+    const mockOtherNonCodedAllergies: FormattedAllergy[] = [
+      {
+        id: 'allergy-other-1',
+        conceptCode: OTHER_NON_CODED_ALLERGEN_UUID,
+        display: 'ABC',
+        category: ['medication'],
+        status: AllergyStatus.Active,
+        recordedDate: '2024-01-01T00:00:00Z',
+        recorder: 'Super Man',
+        reactions: [{ manifestation: ['Bronchospasm'] }],
+        severity: AllergySeverity.mild,
+      },
+      {
+        id: 'allergy-other-2',
+        conceptCode: OTHER_NON_CODED_ALLERGEN_UUID,
+        display: 'BCG',
+        category: ['medication'],
+        status: AllergyStatus.Active,
+        recordedDate: '2024-01-02T00:00:00Z',
+        recorder: 'Super Man',
+        reactions: [{ manifestation: ['Fever'] }],
+        severity: AllergySeverity.mild,
+      },
+      {
+        id: 'allergy-other-3',
+        conceptCode: OTHER_NON_CODED_ALLERGEN_UUID,
+        display: 'XYZ',
+        category: ['medication'],
+        status: AllergyStatus.Active,
+        recordedDate: '2024-01-03T00:00:00Z',
+        recorder: 'Super Man',
+        reactions: [{ manifestation: ['Flushing'] }],
+        severity: AllergySeverity.mild,
+      },
+    ];
+    (getFormattedAllergies as jest.Mock).mockResolvedValue(
+      mockOtherNonCodedAllergies,
+    );
+
+    render(wrapper);
+
+    await waitFor(() => {
+      expect(screen.getByText('ABC')).toBeInTheDocument();
+    });
+    expect(screen.getByText('BCG')).toBeInTheDocument();
+    expect(screen.getByText('XYZ')).toBeInTheDocument();
   });
 });
