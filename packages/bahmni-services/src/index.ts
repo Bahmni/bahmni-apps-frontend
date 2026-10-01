@@ -320,6 +320,13 @@ export {
   initializeAuditListener,
   type AuditEventType,
   logAuditEvent,
+  fetchAuditLogs,
+  parseAuditLogEntry,
+  parseAuditLogMessage,
+  interpolateMessage,
+  type AuditLogQueryParams,
+  type RawAuditLogEntry,
+  type AuditLogListEntry,
 } from './auditLogService';
 
 export {

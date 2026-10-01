@@ -21,3 +21,39 @@ export type AuditEventType =
   | 'STOP_MEDICATION'
   | 'UPLOAD_PATIENT_DOCUMENT'
   | 'START_VISIT';
+
+// Query params accepted by the audit log list (GET) endpoint.
+// Mirrors the legacy `auditLogController`/`auditLogService` request shape.
+export interface AuditLogQueryParams {
+  username?: string;
+  patientId?: string;
+  startFrom?: string;
+  lastAuditLogId?: number | string;
+  prev?: boolean;
+  defaultView?: boolean;
+}
+
+// Raw shape of a single audit log entry as returned by the backend.
+export interface RawAuditLogEntry {
+  auditLogId: number;
+  dateCreated: string;
+  eventType: string;
+  userId: string;
+  patientId: string;
+  message: string;
+  module: string;
+}
+
+// Parsed/display shape of an audit log entry, ready to be rendered in a table.
+export interface AuditLogListEntry {
+  id: string;
+  auditLogId: number;
+  dateCreated: string;
+  eventType: string;
+  userId: string;
+  patientId: string;
+  // The message/translation key (already split off from its `~<JSON>` params suffix, if any).
+  message: string;
+  messageParams?: Record<string, unknown>;
+  module: string;
+}
