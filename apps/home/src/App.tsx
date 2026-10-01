@@ -34,7 +34,7 @@ export function App() {
         setIsInitialized(true);
       }
     };
-    initializeApp();
+    void initializeApp();
   }, []);
 
   if (!isInitialized) {
