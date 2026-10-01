@@ -1,15 +1,21 @@
-import { useUserPrivilege } from '@bahmni/widgets';
+import { useNotification, useUserPrivilege } from '@bahmni/widgets';
 import { render, screen } from '@testing-library/react';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { PrivilegeGuard } from '../PrivilegeGuard';
 
+const mockAddNotification = jest.fn();
+
 jest.mock('@bahmni/widgets', () => ({
   ...jest.requireActual('@bahmni/widgets'),
   useUserPrivilege: jest.fn(),
+  useNotification: jest.fn(),
 }));
 
 const mockUseUserPrivilege = useUserPrivilege as jest.MockedFunction<
   typeof useUserPrivilege
+>;
+const mockUseNotification = useNotification as jest.MockedFunction<
+  typeof useNotification
 >;
 
 describe('PrivilegeGuard', () => {
@@ -35,6 +41,12 @@ describe('PrivilegeGuard', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+    mockUseNotification.mockReturnValue({
+      notifications: [],
+      addNotification: mockAddNotification,
+      removeNotification: jest.fn(),
+      clearAllNotifications: jest.fn(),
+    });
   });
 
   it('renders the children when the user has the app:reports privilege', () => {
@@ -53,7 +65,7 @@ describe('PrivilegeGuard', () => {
     expect(screen.queryByTestId('home-page-test-id')).not.toBeInTheDocument();
   });
 
-  it('redirects to home and does not render children when the user lacks the app:reports privilege', () => {
+  it('shows a privilege-denied global notification and a persistent fallback message, without redirecting or rendering children, when the user lacks the app:reports privilege', () => {
     mockUseUserPrivilege.mockReturnValue({
       userPrivileges: [{ uuid: 'priv-1', name: 'app:clinical' }],
       isLoading: false,
@@ -65,7 +77,20 @@ describe('PrivilegeGuard', () => {
 
     renderGuard();
 
-    expect(screen.getByTestId('home-page-test-id')).toBeInTheDocument();
+    expect(mockAddNotification).toHaveBeenCalledWith({
+      title: 'Error',
+      message: 'You do not have permission to access reports',
+      type: 'error',
+    });
+    expect(screen.getByTestId('privilege-guard-denied')).toHaveTextContent(
+      'You do not have permission to access reports',
+    );
+    expect(screen.getByRole('alert')).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Back to Home' })).toHaveAttribute(
+      'href',
+      '/bahmni-v2/home',
+    );
+    expect(screen.queryByTestId('home-page-test-id')).not.toBeInTheDocument();
     expect(
       screen.queryByTestId('guarded-child-test-id'),
     ).not.toBeInTheDocument();
@@ -86,6 +111,29 @@ describe('PrivilegeGuard', () => {
     expect(
       screen.getByTestId('privilege-guard-loading-test-id'),
     ).toBeInTheDocument();
+    expect(screen.queryByTestId('home-page-test-id')).not.toBeInTheDocument();
+    expect(
+      screen.queryByTestId('guarded-child-test-id'),
+    ).not.toBeInTheDocument();
+  });
+
+  it('shows a persistent fallback message but no duplicate toast (the provider already toasts the fetch failure), and does not redirect or render children, when the privilege fetch fails', () => {
+    mockUseUserPrivilege.mockReturnValue({
+      userPrivileges: null,
+      isLoading: false,
+      error: new Error('Network error'),
+      setUserPrivileges: jest.fn(),
+      setIsLoading: jest.fn(),
+      setError: jest.fn(),
+    });
+
+    renderGuard();
+
+    expect(mockAddNotification).not.toHaveBeenCalled();
+    expect(screen.getByTestId('privilege-guard-denied')).toHaveTextContent(
+      'Unable to verify your access to reports',
+    );
+    expect(screen.getByRole('alert')).toBeInTheDocument();
     expect(screen.queryByTestId('home-page-test-id')).not.toBeInTheDocument();
     expect(
       screen.queryByTestId('guarded-child-test-id'),

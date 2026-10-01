@@ -1,0 +1,25 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Reports App Configuration",
+  "type": "object",
+  "properties": {
+    "config": {
+      "type": "object",
+      "properties": {
+        "supportedFormats": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "List of supported report formats"
+        },
+        "paperSize": {
+          "type": "string",
+          "description": "Default paper size for generated reports (e.g., A4)"
+        }
+      },
+      "additionalProperties": true
+    }
+  },
+  "additionalProperties": true
+}

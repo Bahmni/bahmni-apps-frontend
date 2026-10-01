@@ -1,0 +1,79 @@
+.tableContainer {
+  background: #ffffff;
+  border: 1px solid #e0e0e0;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+
+  th {
+    padding: 0.875rem 1rem;
+    text-align: left;
+    font-size: 0.875rem;
+    font-weight: 400;
+    color: #161616;
+    border-bottom: 1px solid #e0e0e0;
+  }
+
+  td {
+    padding: 1rem 1rem;
+    font-size: 0.875rem;
+    vertical-align: middle;
+    border-bottom: 1px solid #e0e0e0;
+  }
+
+  tbody tr:last-child td {
+    border-bottom: none;
+  }
+
+  // Needs th/td in the selector to outrank the shared `th`/`td` padding above.
+  th.actionsColumn,
+  td.actionsColumn {
+    text-align: left;
+    padding-left: 2rem;
+  }
+
+  // Carbon fields stretch to their container by default; the mock leaves a
+  // gutter between columns, so cap them instead of filling the cell.
+  td :global {
+    .cds--form-item,
+    .cds--date-picker,
+    .cds--date-picker-container,
+    .cds--date-picker__input,
+    .cds--dropdown,
+    .cds--list-box {
+      width: 100%;
+      max-width: 15rem;
+    }
+  }
+}
+
+.nameColumn {
+  width: 22.5%;
+}
+
+.dateColumn {
+  width: 23%;
+}
+
+.formatColumn {
+  width: 21.5%;
+}
+
+.actionsColumn {
+  width: 10%;
+}
+
+.nameColumnWide {
+  width: 68.5%;
+}
+
+.emptyState {
+  padding: 2rem;
+  text-align: center;
+  color: #525252;
+  background: #ffffff;
+  border: 1px solid #e0e0e0;
+}
