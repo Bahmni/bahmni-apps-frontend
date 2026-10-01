@@ -70,6 +70,7 @@ const mockAddNotification = jest.fn();
 
 const mockAllergy: FormattedAllergy = {
   id: 'allergy-1',
+  conceptCode: 'concept-peanut',
   display: 'Peanut Allergy',
   severity: AllergySeverity.moderate,
   category: ['food'],

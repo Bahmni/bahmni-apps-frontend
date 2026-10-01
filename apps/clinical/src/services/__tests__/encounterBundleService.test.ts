@@ -866,6 +866,30 @@ describe('encounterBundleService', () => {
         expect((result[0].request as { method: string }).method).toBe('POST');
         expect(result[0].fullUrl).toMatch(/^urn:uuid:/);
       });
+
+      // Regression: a coded allergy that was just POSTed in a successful
+      // bundle has no resourceId yet (the response isn't parsed back into
+      // the store). If a later direct-submit step then fails and the user
+      // retries, this allergy must not be POSTed again — see
+      // markCodedAllergiesAsSaved in allergyStore and its onSubmitSuccess
+      // wiring in the allergies control.
+      it('should skip a brand-new allergy once marked saved (isModified: false), even without a resourceId yet', () => {
+        const newlyBundledAllergy: AllergyInputEntry = {
+          ...mockValidAllergy,
+          resourceId: undefined,
+          rawFhirResource: undefined,
+          isModified: false,
+        };
+
+        const result = createAllergiesBundleEntries({
+          selectedAllergies: [newlyBundledAllergy],
+          encounterSubject: mockEncounterSubject,
+          encounterReference: mockEncounterReference,
+          practitionerUUID: mockPractitionerUUID,
+        });
+
+        expect(result).toHaveLength(0);
+      });
     });
 
     describe('Cross-session allergy (DELETE + POST) paths', () => {

@@ -8,7 +8,7 @@ import {
 import {
   fetchOtherNonCodedAllergenUUID,
   getFormattedAllergies,
-  isNonCodedAllergen,
+  OTHER_NON_CODED_ALLERGEN_UUID,
   useTranslation,
 } from '@bahmni/services';
 import {
@@ -101,17 +101,29 @@ const AllergiesForm: React.FC<{
   }, [existingAllergiesLoading, existingAllergiesError, addNotification, t]);
 
   // Resolves this install's actual Other, Non-Coded concept uuid as early as
-  // possible, so isNonCodedAllergen() (used for dedup, validation, and the
-  // Specify Allergen field's visibility) isn't left consulting the hardcoded
-  // CIEL default for the lifetime of this form.
+  // possible. A bare fetch-and-cache effect isn't enough here: the checks
+  // below feed the Specify Allergen field's visibility in the memoized
+  // SelectedAllergyItem, and nothing would tell React to re-render once the
+  // fetch resolved, so a preloaded "Other" allergy could keep that field
+  // hidden for the lifetime of the form. Holding the result in state (rather
+  // than only the module-level cache fetchOtherNonCodedAllergenUUID
+  // populates) gives this component something that changes on resolution, so
+  // everything derived from otherNonCodedAllergenId below recomputes instead
+  // of staying stuck on the hardcoded CIEL default.
+  const [otherNonCodedAllergenId, setOtherNonCodedAllergenId] = useState(
+    OTHER_NON_CODED_ALLERGEN_UUID,
+  );
+
   useEffect(() => {
-    fetchOtherNonCodedAllergenUUID().catch((err: Error) => {
-      addNotification({
-        title: t('ERROR_DEFAULT_TITLE'),
-        message: err.message,
-        type: 'error',
+    fetchOtherNonCodedAllergenUUID()
+      .then(setOtherNonCodedAllergenId)
+      .catch((err: Error) => {
+        addNotification({
+          title: t('ERROR_DEFAULT_TITLE'),
+          message: err.message,
+          type: 'error',
+        });
       });
-    });
   }, [addNotification, t]);
 
   const handleSearch = (searchTerm: string) => {
@@ -124,7 +136,7 @@ const AllergiesForm: React.FC<{
       // picking it again always represents a distinct new allergen — concept
       // identity can't be used to detect a duplicate here. Each resulting
       // entry gets its own unique entryId, so multiple can coexist safely.
-      if (isNonCodedAllergen(allergyId)) return false;
+      if (allergyId === otherNonCodedAllergenId) return false;
 
       // Check against currently selected allergies in the form
       const isSelectedAllergy = selectedAllergies.some(
@@ -142,7 +154,7 @@ const AllergiesForm: React.FC<{
       // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
       return !!(isExistingAllergy || isSelectedAllergy);
     },
-    [existingAllergies, selectedAllergies],
+    [existingAllergies, selectedAllergies, otherNonCodedAllergenId],
   );
 
   // Clear notification when search term is cleared or when the duplicate allergy is no longer a duplicate
@@ -234,7 +246,7 @@ const AllergiesForm: React.FC<{
       // The Other, Non-Coded concept is never "already added" — selecting it
       // again always adds a distinct new free-text allergen.
       const isAlreadySelected =
-        !isNonCodedAllergen(item.uuid) &&
+        item.uuid !== otherNonCodedAllergenId &&
         selectedAllergies.some((a) => a.id === item.uuid);
       return {
         ...item,
@@ -253,6 +265,7 @@ const AllergiesForm: React.FC<{
     error,
     existingAllergiesError,
     selectedAllergies,
+    otherNonCodedAllergenId,
     t,
   ]);
 
@@ -320,6 +333,7 @@ const AllergiesForm: React.FC<{
             >
               <SelectedAllergyItem
                 allergy={allergy}
+                isNonCoded={allergy.id === otherNonCodedAllergenId}
                 reactionConcepts={reactionConcepts}
                 updateSeverity={updateSeverity}
                 updateReactions={updateReactions}

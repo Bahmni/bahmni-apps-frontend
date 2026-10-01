@@ -205,7 +205,12 @@ export function createAllergiesBundleEntries({
 
     const isExisting = !!allergy.resourceId && !!allergy.rawFhirResource;
 
-    if (isExisting && !allergy.isModified) continue;
+    // isModified: false means either an untouched preloaded allergy, or one
+    // the allergies control already marked saved once its own bundle
+    // submission succeeded (see markCodedAllergiesAsSaved) — in both cases
+    // already persisted, so skip it regardless of whether it has a
+    // resourceId yet (a freshly-bundled allergy may not).
+    if (allergy.isModified === false) continue;
 
     const manifestationUUIDs = allergy.selectedReactions
       .filter((r): r is { code: string } => r.code !== undefined)

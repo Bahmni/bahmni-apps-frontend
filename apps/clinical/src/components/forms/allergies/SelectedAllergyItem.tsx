@@ -7,7 +7,7 @@ import {
   TextAreaWClose,
   TextInput,
 } from '@bahmni/design-system';
-import { isNonCodedAllergen, useTranslation } from '@bahmni/services';
+import { useTranslation } from '@bahmni/services';
 import { Coding } from 'fhir/r4';
 import React, { useState } from 'react';
 import { ALLERGY_SEVERITY_CONCEPTS } from '../../../constants/allergy';
@@ -22,6 +22,13 @@ import styles from './styles/SelectedAllergyItem.module.scss';
 export interface SelectedAllergyItemProps {
   /** The allergy input entry containing all allergy data */
   allergy: AllergyInputEntry;
+  /**
+   * Whether `allergy` is on the Other, Non-Coded concept. Computed by the
+   * parent (which knows the install's resolved concept uuid) rather than
+   * read here, since this component is memoized and would otherwise miss a
+   * change to that resolved uuid — none of its other props depend on it.
+   */
+  isNonCoded: boolean;
   /** Available reaction concepts for the multiselect */
   reactionConcepts: Coding[];
   /** Callback function to update allergy severity */
@@ -42,6 +49,7 @@ export interface SelectedAllergyItemProps {
 const SelectedAllergyItem: React.FC<SelectedAllergyItemProps> = React.memo(
   ({
     allergy,
+    isNonCoded,
     reactionConcepts,
     updateSeverity,
     updateReactions,
@@ -50,7 +58,6 @@ const SelectedAllergyItem: React.FC<SelectedAllergyItemProps> = React.memo(
   }) => {
     const { t } = useTranslation();
     const {
-      id,
       entryId,
       display,
       type,
@@ -63,7 +70,6 @@ const SelectedAllergyItem: React.FC<SelectedAllergyItemProps> = React.memo(
     } = allergy;
     const hasSeverityError = !!(hasBeenValidated && errors.severity);
     const hasReactionsError = !!(hasBeenValidated && errors.reactions);
-    const isNonCoded = isNonCodedAllergen(id);
     const hasNonCodedError = !!(hasBeenValidated && errors.nonCodedAllergen);
     const [hasNote, setHasNote] = useState(!!note);
 

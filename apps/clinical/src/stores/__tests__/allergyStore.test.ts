@@ -771,4 +771,44 @@ describe('useAllergyStore', () => {
       expect(second.resourceId).toBe('resource-uuid-2');
     });
   });
+
+  // Regression: the encounter bundle is one all-or-nothing transaction, so
+  // once it succeeds every coded allergy that was pending is persisted —
+  // even a brand-new one with no resourceId yet. This must be reflected in
+  // the store so a retry after a later direct-submit failure doesn't send
+  // them through createAllergiesBundleEntries again (see allergies/index.ts).
+  describe('markCodedAllergiesAsSaved', () => {
+    test('marks a pending coded allergy as unmodified', () => {
+      const { result } = renderHook(() => useAllergyStore());
+
+      act(() => {
+        result.current.addAllergy(mockAllergen);
+      });
+      expect(result.current.selectedAllergies[0].isModified).toBeUndefined();
+
+      act(() => {
+        result.current.markCodedAllergiesAsSaved();
+      });
+
+      expect(result.current.selectedAllergies[0].isModified).toBe(false);
+    });
+
+    test('leaves a pending Other, Non-Coded allergy untouched, since it is saved separately over REST', () => {
+      const { result } = renderHook(() => useAllergyStore());
+
+      act(() => {
+        result.current.addAllergy({
+          uuid: OTHER_NON_CODED_ALLERGEN_UUID,
+          display: 'Other, Non-Coded',
+          type: 'food',
+        });
+      });
+
+      act(() => {
+        result.current.markCodedAllergiesAsSaved();
+      });
+
+      expect(result.current.selectedAllergies[0].isModified).toBeUndefined();
+    });
+  });
 });

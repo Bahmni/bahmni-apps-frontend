@@ -22,6 +22,11 @@ jest.mock('@bahmni/services', () => ({
     moderate: '1499AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
     severe: '1500AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
   }),
+  // Avoids a real network call from hasBundleData's await; the uuid value
+  // itself doesn't matter here since these tests exercise the REST path.
+  fetchOtherNonCodedAllergenUUID: jest
+    .fn()
+    .mockResolvedValue('5622AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA'),
 }));
 
 jest.mock('../AllergiesForm', () => ({
@@ -384,18 +389,18 @@ describe('allergies control - REST save path', () => {
   });
 
   describe('hasBundleData', () => {
-    it('is false when every allergy must go over REST', () => {
+    it('is false when every allergy must go over REST', async () => {
       useAllergyStore.setState({ selectedAllergies: [makeNonCodedAllergy()] });
 
-      expect(allergiesControl().hasBundleData!()).toBe(false);
+      await expect(allergiesControl().hasBundleData!()).resolves.toBe(false);
     });
 
-    it('is true when at least one allergy can travel in the bundle', () => {
+    it('is true when at least one allergy can travel in the bundle', async () => {
       useAllergyStore.setState({
         selectedAllergies: [makeNonCodedAllergy(), makeAllergy()],
       });
 
-      expect(allergiesControl().hasBundleData!()).toBe(true);
+      await expect(allergiesControl().hasBundleData!()).resolves.toBe(true);
     });
   });
 });

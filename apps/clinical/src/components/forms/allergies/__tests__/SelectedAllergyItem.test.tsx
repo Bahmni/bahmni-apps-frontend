@@ -36,6 +36,7 @@ const mockAllergy = {
 
 const defaultProps = {
   allergy: mockAllergy,
+  isNonCoded: false,
   reactionConcepts: mockReactionConcepts,
   updateSeverity: jest.fn(),
   updateReactions: jest.fn(),
@@ -291,6 +292,7 @@ describe('SelectedAllergyItem', () => {
       render(
         <SelectedAllergyItem
           allergy={allergyWithNullSeverity}
+          isNonCoded={false}
           reactionConcepts={defaultProps.reactionConcepts}
           updateSeverity={defaultProps.updateSeverity}
           updateReactions={defaultProps.updateReactions}
@@ -317,6 +319,7 @@ describe('SelectedAllergyItem', () => {
       render(
         <SelectedAllergyItem
           allergy={allergyWithError}
+          isNonCoded={false}
           reactionConcepts={defaultProps.reactionConcepts}
           updateSeverity={defaultProps.updateSeverity}
           updateReactions={defaultProps.updateReactions}
@@ -343,6 +346,7 @@ describe('SelectedAllergyItem', () => {
       render(
         <SelectedAllergyItem
           allergy={allergyWithNoValidation}
+          isNonCoded={false}
           reactionConcepts={defaultProps.reactionConcepts}
           updateSeverity={defaultProps.updateSeverity}
           updateReactions={defaultProps.updateReactions}
@@ -373,6 +377,7 @@ describe('SelectedAllergyItem', () => {
       render(
         <SelectedAllergyItem
           allergy={allergyWithAllReactions}
+          isNonCoded={false}
           reactionConcepts={defaultProps.reactionConcepts}
           updateSeverity={defaultProps.updateSeverity}
           updateReactions={defaultProps.updateReactions}
@@ -396,6 +401,7 @@ describe('SelectedAllergyItem', () => {
       render(
         <SelectedAllergyItem
           allergy={allergyWithLongDisplay}
+          isNonCoded={false}
           reactionConcepts={defaultProps.reactionConcepts}
           updateSeverity={defaultProps.updateSeverity}
           updateReactions={defaultProps.updateReactions}
@@ -419,6 +425,7 @@ describe('SelectedAllergyItem', () => {
       render(
         <SelectedAllergyItem
           allergy={allergyWithSpecialChars}
+          isNonCoded={false}
           reactionConcepts={defaultProps.reactionConcepts}
           updateSeverity={defaultProps.updateSeverity}
           updateReactions={defaultProps.updateReactions}
@@ -471,6 +478,7 @@ describe('SelectedAllergyItem', () => {
       render(
         <SelectedAllergyItem
           allergy={allergyWithError}
+          isNonCoded={false}
           reactionConcepts={defaultProps.reactionConcepts}
           updateSeverity={defaultProps.updateSeverity}
           updateReactions={defaultProps.updateReactions}
@@ -770,7 +778,13 @@ describe('SelectedAllergyItem', () => {
     };
 
     test('free-text input DOM id and testid use entryId, not the shared concept id', () => {
-      render(<SelectedAllergyItem {...defaultProps} allergy={otherAllergy} />);
+      render(
+        <SelectedAllergyItem
+          {...defaultProps}
+          allergy={otherAllergy}
+          isNonCoded
+        />,
+      );
 
       expect(
         screen.getByTestId('allergy-non-coded-name-distinct-entry-id'),
@@ -787,6 +801,7 @@ describe('SelectedAllergyItem', () => {
         <SelectedAllergyItem
           {...defaultProps}
           allergy={otherAllergy}
+          isNonCoded
           updateNonCodedAllergen={mockUpdateNonCodedAllergen}
         />,
       );
@@ -839,6 +854,7 @@ describe('SelectedAllergyItem', () => {
       const { container } = render(
         <SelectedAllergyItem
           allergy={allergyWithErrors}
+          isNonCoded={false}
           reactionConcepts={defaultProps.reactionConcepts}
           updateSeverity={defaultProps.updateSeverity}
           updateReactions={defaultProps.updateReactions}

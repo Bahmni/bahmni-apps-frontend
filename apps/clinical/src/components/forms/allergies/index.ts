@@ -1,5 +1,6 @@
 import {
   fetchAllergySeverityConceptUUIDs,
+  fetchOtherNonCodedAllergenUUID,
   isNonCodedAllergen,
   OPENMRS_ALLERGEN_TYPE,
   saveAllergy,
@@ -60,8 +61,14 @@ registerInputControl({
   subscribe: (cb) => useAllergyStore.subscribe(cb),
   // Without this the consultation pad skips the bundle whenever the allergies
   // control also has a direct submit, losing any coded allergy saved alongside.
-  hasBundleData: () =>
-    pendingAllergies().some((a) => !isNonCodedAllergen(a.id)),
+  // Awaits the install's actual Other, Non-Coded concept uuid first (falling
+  // back to the cached/default value on failure) so this — and the
+  // createBundleEntries call consultationPad makes right after — never
+  // misclassify an allergy using a stale default.
+  hasBundleData: async () => {
+    await fetchOtherNonCodedAllergenUUID().catch(() => undefined);
+    return pendingAllergies().some((a) => !isNonCodedAllergen(a.id));
+  },
   createBundleEntries: (ctx) =>
     createAllergiesBundleEntries({
       selectedAllergies: useAllergyStore.getState().selectedAllergies,
@@ -69,9 +76,15 @@ registerInputControl({
       encounterReference: ctx.encounterReference,
       practitionerUUID: ctx.practitionerUUID,
     }),
+  // The bundle is one all-or-nothing transaction, so every coded allergy that
+  // was pending when it succeeded is now persisted. Mark them unmodified so a
+  // retry after a later onDirectSubmit failure doesn't POST them again.
+  onSubmitSuccess: () => useAllergyStore.getState().markCodedAllergiesAsSaved(),
   onDirectSubmit: async () => {
     const patientUUID = useEncounterDetailsStore.getState().patientUUID;
     if (!patientUUID) return;
+
+    await fetchOtherNonCodedAllergenUUID().catch(() => undefined);
 
     for (const allergy of pendingAllergies().filter((a) =>
       isNonCodedAllergen(a.id),

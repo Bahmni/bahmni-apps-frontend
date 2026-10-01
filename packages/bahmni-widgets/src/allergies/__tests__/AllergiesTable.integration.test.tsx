@@ -4,6 +4,7 @@ import {
   AllergySeverity,
   getFormattedAllergies,
   resetEncounterSession,
+  OTHER_NON_CODED_ALLERGEN_UUID,
 } from '@bahmni/services';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, screen, waitFor } from '@testing-library/react';
@@ -24,6 +25,7 @@ const mockAddNotification = jest.fn();
 const mockSingleAllergy: FormattedAllergy[] = [
   {
     id: 'allergy-123',
+    conceptCode: 'concept-peanut',
     display: 'Peanut Allergy',
     category: ['food'],
     criticality: 'high',
@@ -44,6 +46,7 @@ const mockSingleAllergy: FormattedAllergy[] = [
 const mockMultipleAllergies: FormattedAllergy[] = [
   {
     id: 'severe-allergy',
+    conceptCode: 'concept-shellfish',
     display: 'Shellfish Allergy',
     category: ['food'],
     status: AllergyStatus.Active,
@@ -59,6 +62,7 @@ const mockMultipleAllergies: FormattedAllergy[] = [
   },
   {
     id: 'mild-allergy',
+    conceptCode: 'concept-dust',
     display: 'Dust Allergy',
     category: ['environment'],
     status: AllergyStatus.Inactive,
@@ -74,6 +78,7 @@ const mockMultipleAllergies: FormattedAllergy[] = [
   },
   {
     id: 'moderate-allergy',
+    conceptCode: 'concept-peanut',
     display: 'Peanut Allergy',
     category: ['food'],
     status: AllergyStatus.Active,
@@ -219,6 +224,7 @@ describe('AllergiesTable Integration', () => {
     const mockOtherNonCodedAllergies: FormattedAllergy[] = [
       {
         id: 'allergy-other-1',
+        conceptCode: OTHER_NON_CODED_ALLERGEN_UUID,
         display: 'ABC',
         category: ['medication'],
         status: AllergyStatus.Active,
@@ -229,6 +235,7 @@ describe('AllergiesTable Integration', () => {
       },
       {
         id: 'allergy-other-2',
+        conceptCode: OTHER_NON_CODED_ALLERGEN_UUID,
         display: 'BCG',
         category: ['medication'],
         status: AllergyStatus.Active,
@@ -239,6 +246,7 @@ describe('AllergiesTable Integration', () => {
       },
       {
         id: 'allergy-other-3',
+        conceptCode: OTHER_NON_CODED_ALLERGEN_UUID,
         display: 'XYZ',
         category: ['medication'],
         status: AllergyStatus.Active,

@@ -16,6 +16,12 @@ export interface AllergyState {
   updateNonCodedAllergen: (entryId: string, name: string) => void;
   /** Records the backend-assigned resource UUID after a successful REST save, so a retry updates instead of re-creating. */
   setResourceId: (entryId: string, resourceId: string) => void;
+  /**
+   * Marks every coded (non-"Other") allergy as unmodified once the encounter
+   * bundle that persisted them has succeeded, so a retry after a later
+   * direct-submit failure does not resubmit them through the bundle again.
+   */
+  markCodedAllergiesAsSaved: () => void;
   validateAllAllergies: () => boolean;
   reset: () => void;
 
@@ -137,6 +143,16 @@ export const useAllergyStore = create<AllergyState>((set, get) => ({
     set((state) => ({
       selectedAllergies: state.selectedAllergies.map((allergy) =>
         allergy.entryId === entryId ? { ...allergy, resourceId } : allergy,
+      ),
+    }));
+  },
+
+  markCodedAllergiesAsSaved: () => {
+    set((state) => ({
+      selectedAllergies: state.selectedAllergies.map((allergy) =>
+        isNonCodedAllergen(allergy.id)
+          ? allergy
+          : { ...allergy, isModified: false },
       ),
     }));
   },
