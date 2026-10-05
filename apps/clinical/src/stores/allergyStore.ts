@@ -6,7 +6,7 @@ import { AllergyInputEntry, AllergenConcept } from '../models/allergy';
 export interface AllergyState {
   selectedAllergies: AllergyInputEntry[];
 
-  addAllergy: (allergy: AllergenConcept) => void;
+  addAllergy: (allergy: AllergenConcept, isNonCoded?: boolean) => void;
   preloadAllergies: (entries: AllergyInputEntry[]) => void;
   /** All keyed by entryId (unique per record) — never by the allergen concept id. */
   removeAllergy: (entryId: string) => void;
@@ -37,9 +37,10 @@ export const useAllergyStore = create<AllergyState>((set, get) => ({
     });
   },
 
-  addAllergy: (allergy: AllergenConcept) => {
+  addAllergy: (allergy: AllergenConcept, isNonCoded?: boolean) => {
     const newAllergy: AllergyInputEntry = {
       id: allergy.uuid,
+      isNonCoded,
       entryId: crypto.randomUUID(),
       display: allergy.display,
       type: allergy.type ?? '',

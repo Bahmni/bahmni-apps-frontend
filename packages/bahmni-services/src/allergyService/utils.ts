@@ -21,7 +21,12 @@ export const setOtherNonCodedAllergenUuid = (uuid: string): void => {
 export const isNonCodedAllergen = (conceptUuid: string): boolean =>
   conceptUuid === resolvedOtherNonCodedAllergenUuid;
 
-/** Maps a raw FHIR AllergyIntolerance resource to an AllergyInputEntry for the edit form. */
+/**
+ * Maps a raw FHIR AllergyIntolerance resource to an AllergyInputEntry for the
+ * edit form. Callers must await fetchOtherNonCodedAllergenUUID() first so the
+ * non-coded classification (and the preserved free-text name) uses the
+ * install's actual concept uuid rather than the default.
+ */
 export function mapAllergyToInputEntry(
   fhir: AllergyIntolerance,
 ): AllergyInputEntry {
@@ -48,6 +53,7 @@ export function mapAllergyToInputEntry(
     resourceId: fhir.id,
     rawFhirResource: fhir,
     display: fhir.code?.text ?? '',
+    isNonCoded: isNonCodedAllergen(allergenCode),
     // fhir2 puts the free-text allergen name in code.text for a non-coded
     // allergy, so it round-trips back into the edit form.
     ...(isNonCodedAllergen(allergenCode)

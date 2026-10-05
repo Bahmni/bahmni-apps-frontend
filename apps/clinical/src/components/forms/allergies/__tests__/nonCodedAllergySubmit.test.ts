@@ -423,6 +423,20 @@ describe('allergies control - REST save path', () => {
       );
     });
 
+    it('does not look up the otherNonCoded uuid when every pending allergy is already classified as coded', async () => {
+      (fetchOtherNonCodedAllergenUUID as jest.Mock).mockClear();
+      useAllergyStore.setState({
+        selectedAllergies: [{ ...makeAllergy(), isNonCoded: false }],
+      });
+
+      await expect(allergiesControl().hasBundleData!()).resolves.toBe(true);
+      await expect(
+        allergiesControl().onDirectSubmit!(),
+      ).resolves.toBeUndefined();
+      expect(fetchOtherNonCodedAllergenUUID).not.toHaveBeenCalled();
+      expect(saveAllergy).not.toHaveBeenCalled();
+    });
+
     it('is true when at least one allergy can travel in the bundle', async () => {
       useAllergyStore.setState({
         selectedAllergies: [makeNonCodedAllergy(), makeAllergy()],

@@ -114,9 +114,14 @@ const AllergiesForm: React.FC<{
     OTHER_NON_CODED_ALLERGEN_UUID,
   );
 
+  const [otherNonCodedResolved, setOtherNonCodedResolved] = useState(false);
+
   useEffect(() => {
     fetchOtherNonCodedAllergenUUID()
-      .then(setOtherNonCodedAllergenId)
+      .then((uuid) => {
+        setOtherNonCodedAllergenId(uuid);
+        setOtherNonCodedResolved(true);
+      })
       .catch((err: Error) => {
         addNotification({
           title: t('ERROR_DEFAULT_TITLE'),
@@ -201,7 +206,14 @@ const AllergiesForm: React.FC<{
     // Successfully added, clear any previous duplicate notification
     setShowDuplicateNotification(false);
     setDuplicateAllergyId(null);
-    addAllergy(selectedItem as AllergenConcept);
+    // Only classify once the install's real uuid is known; otherwise leave it
+    // undefined so submission resolves it first.
+    addAllergy(
+      selectedItem as AllergenConcept,
+      otherNonCodedResolved
+        ? selectedItem.uuid === otherNonCodedAllergenId
+        : undefined,
+    );
     setSearchAllergenTerm('');
     setSelectedAllergenItem(selectedItem);
   };

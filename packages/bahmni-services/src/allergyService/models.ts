@@ -62,6 +62,13 @@ export interface AllergyInputEntry {
   rawFhirResource?: AllergyIntolerance;
   display: string;
   type: string;
+  /**
+   * Whether this entry is the Other, Non-Coded allergen, as classified against
+   * the install's resolved concept uuid. Left undefined when the entry was
+   * created before that uuid was known, in which case submission must resolve
+   * it first; a defined value lets coded-only submissions skip the lookup.
+   */
+  isNonCoded?: boolean;
   /** Free-text allergen name, captured only for the Other, Non-Coded concept. */
   nonCodedAllergen?: string;
   selectedSeverity: Coding | null;

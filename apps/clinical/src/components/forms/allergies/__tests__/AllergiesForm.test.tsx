@@ -268,7 +268,7 @@ describe('AllergiesForm', () => {
       await user.click(screen.getByText('Peanut Allergy [Food]'));
 
       await waitFor(() => {
-        expect(mockAddAllergy).toHaveBeenCalledWith(mockAllergen);
+        expect(mockAddAllergy).toHaveBeenCalledWith(mockAllergen, undefined);
       });
     });
 
@@ -328,7 +328,7 @@ describe('AllergiesForm', () => {
       // because the ComboBox wouldn't accept new input if selectedItem was still set
       await user.click(screen.getByText('Shellfish Allergy [Food]'));
       await waitFor(() => {
-        expect(mockAddAllergy).toHaveBeenCalledWith(secondAllergen);
+        expect(mockAddAllergy).toHaveBeenCalledWith(secondAllergen, undefined);
       });
     });
 
@@ -801,7 +801,7 @@ describe('AllergiesForm', () => {
       await user.click(screen.getByText('Shellfish [Food]'));
 
       await waitFor(() => {
-        expect(mockAddAllergy).toHaveBeenCalledWith(anotherAllergen);
+        expect(mockAddAllergy).toHaveBeenCalledWith(anotherAllergen, undefined);
       });
     });
   });
@@ -877,7 +877,7 @@ describe('AllergiesForm', () => {
 
       await user.click(screen.getByText('Shellfish Allergy [Food]'));
 
-      expect(mockAddAllergy).toHaveBeenCalledWith(unrelatedAllergen);
+      expect(mockAddAllergy).toHaveBeenCalledWith(unrelatedAllergen, undefined);
     });
   });
 
@@ -925,7 +925,7 @@ describe('AllergiesForm', () => {
       await user.keyboard('{Enter}');
 
       await waitFor(() => {
-        expect(mockAddAllergy).toHaveBeenCalledWith(freshAllergen);
+        expect(mockAddAllergy).toHaveBeenCalledWith(freshAllergen, undefined);
       });
     });
   });

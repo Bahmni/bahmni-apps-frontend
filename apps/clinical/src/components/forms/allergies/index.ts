@@ -19,6 +19,22 @@ const pendingAllergies = (): AllergyInputEntry[] =>
     .getState()
     .selectedAllergies.filter((a) => a.isModified !== false);
 
+/** Classified entries carry their own answer; unclassified ones need the uuid. */
+const isNonCoded = (a: AllergyInputEntry): boolean =>
+  a.isNonCoded ?? isNonCodedAllergen(a.id);
+
+/**
+ * Only look up the install's Other, Non-Coded uuid when some pending entry
+ * hasn't been classified yet, so a coded-only submission never depends on it.
+ */
+const resolveUuidIfNeeded = async (
+  pending: AllergyInputEntry[],
+): Promise<void> => {
+  if (pending.some((a) => a.isNonCoded === undefined)) {
+    await fetchOtherNonCodedAllergenUUID();
+  }
+};
+
 const toSaveAllergyRequest = async (
   allergy: AllergyInputEntry,
 ): Promise<SaveAllergyRequest> => ({
@@ -69,8 +85,9 @@ registerInputControl({
   // bundle path, which can't carry its free-text name — the exact bug class
   // this control exists to prevent.
   hasBundleData: async () => {
-    await fetchOtherNonCodedAllergenUUID();
-    return pendingAllergies().some((a) => !isNonCodedAllergen(a.id));
+    const pending = pendingAllergies();
+    await resolveUuidIfNeeded(pending);
+    return pending.some((a) => !isNonCoded(a));
   },
   createBundleEntries: (ctx) =>
     createAllergiesBundleEntries({
@@ -90,11 +107,10 @@ registerInputControl({
     // Same reasoning as hasBundleData above: a failed lookup must not be
     // swallowed, or a custom-UUID install's non-coded allergy could be left
     // out of this REST loop and silently fall through to the bundle instead.
-    await fetchOtherNonCodedAllergenUUID();
+    const pending = pendingAllergies();
+    await resolveUuidIfNeeded(pending);
 
-    for (const allergy of pendingAllergies().filter((a) =>
-      isNonCodedAllergen(a.id),
-    )) {
+    for (const allergy of pending.filter(isNonCoded)) {
       // resourceId is the FHIR AllergyIntolerance id, which fhir2 sets from the
       // OpenMRS allergy uuid — so it addresses the same record for an update.
       const response = await saveAllergy(
