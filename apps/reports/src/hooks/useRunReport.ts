@@ -18,6 +18,7 @@ export const useRunReport = () => {
       startDate?: Date | null,
       endDate?: Date | null,
       defaultPaperSize?: string,
+      reportTemplateLocation?: string | null,
     ): boolean => {
       try {
         const url = buildRunReportUrl(
@@ -26,6 +27,7 @@ export const useRunReport = () => {
           startDate,
           endDate,
           report.config?.paperSize ?? defaultPaperSize,
+          reportTemplateLocation,
         );
 
         // Passing 'noopener'/'noreferrer' in the window features string makes

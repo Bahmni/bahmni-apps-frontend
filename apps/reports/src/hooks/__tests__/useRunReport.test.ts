@@ -51,6 +51,7 @@ describe('useRunReport', () => {
       startDate,
       endDate,
       report.config?.paperSize,
+      undefined,
     );
     expect(windowOpenSpy).toHaveBeenCalledWith(
       'https://example.com/bahmnireports/report?name=OPD+Visit+Count',
@@ -85,6 +86,7 @@ describe('useRunReport', () => {
       undefined,
       undefined,
       report.config?.paperSize,
+      undefined,
     );
     expect(windowOpenSpy).toHaveBeenCalled();
     expect(opened).toBe(true);
@@ -113,6 +115,7 @@ describe('useRunReport', () => {
       undefined,
       undefined,
       'A3',
+      undefined,
     );
   });
 
@@ -127,6 +130,29 @@ describe('useRunReport', () => {
       undefined,
       undefined,
       report.config?.paperSize,
+      undefined,
+    );
+  });
+
+  it('passes the report template location through to buildRunReportUrl for Custom Excel', () => {
+    const { result } = renderHook(() => useRunReport());
+
+    result.current.runReport(
+      report,
+      'CUSTOM EXCEL',
+      undefined,
+      undefined,
+      undefined,
+      'uuid-template.xlsx',
+    );
+
+    expect(mockBuildRunReportUrl).toHaveBeenCalledWith(
+      report.name,
+      'CUSTOM EXCEL',
+      undefined,
+      undefined,
+      report.config?.paperSize,
+      'uuid-template.xlsx',
     );
   });
 

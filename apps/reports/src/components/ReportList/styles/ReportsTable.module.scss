@@ -1,73 +1,21 @@
 .tableContainer {
-  background: var(--cds-background);
-  border: 1px solid var(--cds-border-subtle);
-}
-
-.table {
-  width: 100%;
-  border-collapse: collapse;
-  table-layout: fixed;
-
-  th {
-    padding: 0.875rem 1rem;
-    text-align: left;
-    font-size: 0.875rem;
-    font-weight: 400;
-    color: var(--cds-text-primary);
-    border-bottom: 1px solid var(--cds-border-subtle);
-  }
-
-  td {
-    padding: 1rem 1rem;
-    font-size: 0.875rem;
-    vertical-align: middle;
-    border-bottom: 1px solid var(--cds-border-subtle);
-  }
-
-  tbody tr:last-child td {
-    border-bottom: none;
-  }
-
-  // Needs th/td in the selector to outrank the shared `th`/`td` padding above.
-  th.actionsColumn,
-  td.actionsColumn {
-    text-align: left;
-    padding-left: 2rem;
-  }
+  // Carbon's TableContainer resolves to the theme's `--cds-layer`
+  // background, which renders gray in this app's theme — force white so
+  // the table reads as its own card against the gray page, matching the
+  // admin module's reports mockup.
+  background-color: #fff !important;
 
   // Carbon fields stretch to their container by default; the mock leaves a
   // gutter between columns, so cap them instead of filling the cell.
-  td :global {
-    .cds--form-item,
-    .cds--date-picker,
-    .cds--date-picker-container,
-    .cds--date-picker__input,
-    .cds--dropdown,
-    .cds--list-box {
-      width: 100%;
-      max-width: 15rem;
-    }
+  :global(.cds--form-item),
+  :global(.cds--date-picker),
+  :global(.cds--date-picker-container),
+  :global(.cds--date-picker__input),
+  :global(.cds--dropdown),
+  :global(.cds--list-box) {
+    width: 100%;
+    max-width: 15rem;
   }
-}
-
-.nameColumn {
-  width: 22.5%;
-}
-
-.dateColumn {
-  width: 23%;
-}
-
-.formatColumn {
-  width: 21.5%;
-}
-
-.actionsColumn {
-  width: 10%;
-}
-
-.nameColumnWide {
-  width: 68.5%;
 }
 
 .emptyState {
@@ -76,4 +24,18 @@
   color: var(--cds-text-secondary);
   background: var(--cds-background);
   border: 1px solid var(--cds-border-subtle);
+}
+
+.preconfiguredTemplate {
+  display: block;
+  margin-top: 0.5rem;
+  font-size: 0.75rem;
+  color: var(--cds-text-secondary);
+}
+
+.templateError {
+  display: block;
+  margin-top: 0.5rem;
+  font-size: 0.75rem;
+  color: var(--cds-text-error);
 }

@@ -1,6 +1,8 @@
 .filtersContainer {
-  background: var(--cds-background);
-  border: 1px solid var(--cds-border-subtle);
+  // Carbon's Tile resolves to the theme's `--cds-layer` background, which
+  // renders gray in this app's theme — force white so it reads as a card
+  // against the gray page, matching the admin module's reports mockup.
+  background-color: #fff !important;
   padding: 1.75rem;
   margin-bottom: 2rem;
 }

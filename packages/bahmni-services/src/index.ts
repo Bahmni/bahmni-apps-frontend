@@ -502,7 +502,10 @@ export type {
 export { getTasks } from './taskService';
 export {
   buildRunReportUrl,
+  buildScheduleReportUrl,
   formatDateForQuery,
+  scheduleReport,
+  uploadReportTemplate,
   DEFAULT_APP_NAME,
   DEFAULT_PAPER_SIZE,
   DEFAULT_SUPPORTED_FORMATS,

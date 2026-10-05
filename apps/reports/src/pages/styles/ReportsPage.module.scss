@@ -6,6 +6,10 @@
 .page {
   padding-top: $spacing-05;
   padding-inline: calc($spacing-12 + $spacing-05);
+  // Pinned to the mockup's literal gray-page/white-card look rather than
+  // `--cds-background`/`--cds-layer`, which resolve inverted in this app's
+  // theme (background renders white, layer renders gray) — see AuditLog.
+  background-color: #f4f4f4;
 }
 
 @include breakpoint-down(lg) {

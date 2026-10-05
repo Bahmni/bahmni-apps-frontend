@@ -196,7 +196,19 @@ describe('TableFilters', () => {
       within(select).getByText('REPORTS_PRESET_THIS_MONTH'),
     ).toBeInTheDocument();
     expect(
+      within(select).getByText('REPORTS_PRESET_PREVIOUS_MONTH'),
+    ).toBeInTheDocument();
+    expect(
+      within(select).getByText('REPORTS_PRESET_THIS_QUARTER'),
+    ).toBeInTheDocument();
+    expect(
+      within(select).getByText('REPORTS_PRESET_THIS_YEAR'),
+    ).toBeInTheDocument();
+    expect(
       within(select).getByText('REPORTS_PRESET_LAST_7_DAYS'),
+    ).toBeInTheDocument();
+    expect(
+      within(select).getByText('REPORTS_PRESET_LAST_30_DAYS'),
     ).toBeInTheDocument();
   });
 
@@ -227,6 +239,21 @@ describe('TableFilters', () => {
     expect(defaultProps.onEndDateChange).toHaveBeenCalledWith(
       new Date('2024-03-15'),
     );
+  });
+
+  it('resets the selected preset when a date is manually changed', async () => {
+    render(<TableFilters {...defaultProps} selectedPreset="THIS_MONTH" />);
+
+    await userEvent.click(
+      screen.getByRole('button', { name: 'set-filter-start-date' }),
+    );
+    expect(defaultProps.onPresetChange).toHaveBeenCalledWith(null);
+
+    jest.clearAllMocks();
+    await userEvent.click(
+      screen.getByRole('button', { name: 'set-filter-end-date' }),
+    );
+    expect(defaultProps.onPresetChange).toHaveBeenCalledWith(null);
   });
 
   it('clears the start/end date to null when the date picker is cleared', async () => {

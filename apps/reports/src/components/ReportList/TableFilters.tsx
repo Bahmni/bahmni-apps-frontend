@@ -3,6 +3,7 @@ import {
   DatePicker,
   DatePickerInput,
   Dropdown,
+  Tile,
 } from '@bahmni/design-system';
 import { useTranslation } from '@bahmni/services';
 import React from 'react';
@@ -45,7 +46,11 @@ export const TableFilters: React.FC<TableFiltersProps> = ({
   const { t } = useTranslation();
 
   return (
-    <section className={styles.filtersContainer} data-testid="reports-filters">
+    <Tile
+      className={styles.filtersContainer}
+      testId="reports-filters"
+      aria-label={t('REPORTS_FILTERS_LABEL')}
+    >
       <h2 className={styles.filtersTitle}>{t('REPORTS_FILTERS_LABEL')}</h2>
 
       <div className={styles.filtersRow}>
@@ -71,7 +76,10 @@ export const TableFilters: React.FC<TableFiltersProps> = ({
           datePickerType="single"
           dateFormat="d/m/Y"
           value={startDate ?? undefined}
-          onChange={(dates) => onStartDateChange(dates[0] ?? null)}
+          onChange={(dates) => {
+            onStartDateChange(dates[0] ?? null);
+            onPresetChange(null);
+          }}
         >
           <DatePickerInput
             id="filter-start-date"
@@ -85,7 +93,10 @@ export const TableFilters: React.FC<TableFiltersProps> = ({
           dateFormat="d/m/Y"
           minDate={startDate ?? undefined}
           value={endDate ?? undefined}
-          onChange={(dates) => onEndDateChange(dates[0] ?? null)}
+          onChange={(dates) => {
+            onEndDateChange(dates[0] ?? null);
+            onPresetChange(null);
+          }}
         >
           <DatePickerInput
             id="filter-end-date"
@@ -115,7 +126,7 @@ export const TableFilters: React.FC<TableFiltersProps> = ({
           {t('REPORTS_APPLY_BUTTON')}
         </Button>
       </div>
-    </section>
+    </Tile>
   );
 };
 

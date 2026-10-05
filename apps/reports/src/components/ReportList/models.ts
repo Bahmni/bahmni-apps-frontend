@@ -22,6 +22,7 @@ export interface ReportsAppConfig {
   config?: {
     supportedFormats?: string[];
     paperSize?: string;
+    enableReportQueue?: boolean;
   };
 }
 
@@ -29,6 +30,7 @@ export interface ReportFilters {
   startDate: Date | null;
   endDate: Date | null;
   format: FormatKey | null;
+  reportTemplateLocation: string | null;
 }
 
 /** `version` bumps on every Apply/Reset so rows re-sync even when values are unchanged. */
@@ -37,7 +39,7 @@ export interface AppliedFilters extends ReportFilters {
 }
 
 export interface ReportValidationError {
-  field?: 'format' | 'startDate' | 'endDate';
+  field?: 'format' | 'startDate' | 'endDate' | 'template';
   message: string;
 }
 

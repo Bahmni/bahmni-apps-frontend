@@ -1,4 +1,10 @@
-export { buildRunReportUrl, formatDateForQuery } from './reportService';
+export {
+  buildRunReportUrl,
+  buildScheduleReportUrl,
+  formatDateForQuery,
+  scheduleReport,
+  uploadReportTemplate,
+} from './reportService';
 export {
   DEFAULT_APP_NAME,
   DEFAULT_PAPER_SIZE,

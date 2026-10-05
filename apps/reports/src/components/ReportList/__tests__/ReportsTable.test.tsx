@@ -27,6 +27,16 @@ jest.mock('../../../hooks/useRunReport', () => ({
   useRunReport: () => ({ runReport: mockRunReport }),
 }));
 
+const mockQueueReportMutate = jest.fn();
+jest.mock('../../../hooks/useQueueReport', () => ({
+  useQueueReport: () => ({ mutate: mockQueueReportMutate }),
+}));
+
+const mockUploadTemplateMutate = jest.fn();
+jest.mock('../../../hooks/useUploadReportTemplate', () => ({
+  useUploadReportTemplate: () => ({ mutate: mockUploadTemplateMutate }),
+}));
+
 // Mirrors the real Dropdown/DatePicker contract closely enough to drive
 // onChange/value without depending on Carbon's flatpickr/floating-ui internals.
 jest.mock('@bahmni/design-system', () => {
@@ -119,6 +129,28 @@ jest.mock('@bahmni/design-system', () => {
         {invalid && <span data-testid={`error-${id}`}>{invalidText}</span>}
       </div>
     ),
+    FileUploader: ({
+      testId,
+      buttonLabel,
+      onChange,
+    }: {
+      testId?: string;
+      buttonLabel?: string;
+      onChange: (
+        event: unknown,
+        data: { addedFiles: Array<{ file: File }> },
+      ) => void;
+    }) => (
+      <input
+        type="file"
+        data-testid={testId}
+        aria-label={buttonLabel}
+        onChange={(e) => {
+          const file = e.target.files?.[0];
+          onChange(e, { addedFiles: file ? [{ file }] : [] });
+        }}
+      />
+    ),
   };
 });
 
@@ -130,10 +162,11 @@ const NO_FILTERS: AppliedFilters = {
   startDate: null,
   endDate: null,
   format: null,
+  reportTemplateLocation: null,
   version: 0,
 };
 
-const availableFormats: FormatKey[] = ['PDF', 'CSV', 'HTML'];
+const availableFormats: FormatKey[] = ['PDF', 'CSV', 'HTML', 'CUSTOM EXCEL'];
 
 const reportWithDates: ReportDefinition & { id: string } = {
   id: 'r-date',
@@ -377,6 +410,7 @@ describe('ReportsTable', () => {
       new Date('2024-03-10'),
       new Date('2024-03-10'),
       undefined,
+      null,
     );
     expect(
       screen.queryByTestId(`error-row-format-${reportWithDates.id}`),
@@ -569,6 +603,7 @@ describe('ReportsTable', () => {
       new Date('2024-03-10'),
       new Date('2024-03-10'),
       undefined,
+      null,
     );
     expect(addNotification).not.toHaveBeenCalled();
     expect(
@@ -615,6 +650,7 @@ describe('ReportsTable', () => {
       new Date('2024-03-10'),
       new Date('2024-03-10'),
       'A3',
+      null,
     );
   });
 
@@ -659,5 +695,273 @@ describe('ReportsTable', () => {
       />,
     );
     expect(await axe(container)).toHaveNoViolations();
+  });
+
+  describe('Custom Excel template handling', () => {
+    it('shows the file uploader for Custom Excel when no pre-configured template exists', async () => {
+      const user = userEvent.setup();
+      render(
+        <ReportsTable
+          reports={[reportNoDates]}
+          appliedFilters={NO_FILTERS}
+          availableFormats={availableFormats}
+        />,
+      );
+
+      await setRowFormat(
+        user,
+        `row-format-${reportNoDates.id}`,
+        'CUSTOM EXCEL',
+      );
+
+      expect(
+        screen.getByTestId(`row-template-upload-${reportNoDates.id}`),
+      ).toBeInTheDocument();
+      expect(
+        screen.queryByTestId(`row-preconfigured-template-${reportNoDates.id}`),
+      ).not.toBeInTheDocument();
+    });
+
+    it('shows a pre-configured template indicator instead of the uploader when macroTemplatePath is set', async () => {
+      const preconfiguredReport: ReportDefinition & { id: string } = {
+        id: 'r-preconfigured',
+        name: 'Preconfigured Report',
+        type: 'sql',
+        config: { dateRangeRequired: false, macroTemplatePath: 'preset.xlsx' },
+      };
+      const user = userEvent.setup();
+      render(
+        <ReportsTable
+          reports={[preconfiguredReport]}
+          appliedFilters={NO_FILTERS}
+          availableFormats={availableFormats}
+        />,
+      );
+
+      await setRowFormat(
+        user,
+        `row-format-${preconfiguredReport.id}`,
+        'CUSTOM EXCEL',
+      );
+
+      expect(
+        screen.getByTestId(
+          `row-preconfigured-template-${preconfiguredReport.id}`,
+        ),
+      ).toHaveTextContent('REPORTS_PRECONFIGURED_TEMPLATE_LABEL');
+      expect(
+        screen.queryByTestId(`row-template-upload-${preconfiguredReport.id}`),
+      ).not.toBeInTheDocument();
+    });
+
+    it('uploads the selected file and runs with the resolved template location', async () => {
+      const user = userEvent.setup();
+      render(
+        <ReportsTable
+          reports={[reportNoDates]}
+          appliedFilters={NO_FILTERS}
+          availableFormats={availableFormats}
+        />,
+      );
+
+      await setRowFormat(
+        user,
+        `row-format-${reportNoDates.id}`,
+        'CUSTOM EXCEL',
+      );
+
+      const file = new File(['contents'], 'template.xlsx');
+      const uploader = screen.getByTestId(
+        `row-template-upload-${reportNoDates.id}`,
+      );
+      await user.upload(uploader, file);
+
+      expect(mockUploadTemplateMutate).toHaveBeenCalledWith(
+        file,
+        expect.objectContaining({
+          onSuccess: expect.any(Function),
+          onError: expect.any(Function),
+        }),
+      );
+
+      const [, callbacks] = mockUploadTemplateMutate.mock.calls[0];
+      act(() => {
+        callbacks.onSuccess('uploaded.xlsx');
+      });
+
+      const row = screen.getByText(reportNoDates.name).closest('tr')!;
+      await user.click(within(row).getByRole('button', { name: 'Options' }));
+      await user.click(screen.getByText('REPORTS_RUN_BUTTON_LABEL'));
+
+      expect(mockRunReport).toHaveBeenCalledWith(
+        reportNoDates,
+        'CUSTOM EXCEL',
+        null,
+        null,
+        undefined,
+        'uploaded.xlsx',
+      );
+    });
+
+    it('shows a template validation error and does not run when Custom Excel has no template', async () => {
+      const user = userEvent.setup();
+      render(
+        <ReportsTable
+          reports={[reportNoDates]}
+          appliedFilters={NO_FILTERS}
+          availableFormats={availableFormats}
+        />,
+      );
+
+      await setRowFormat(
+        user,
+        `row-format-${reportNoDates.id}`,
+        'CUSTOM EXCEL',
+      );
+
+      const row = screen.getByText(reportNoDates.name).closest('tr')!;
+      await runRow(user, row);
+
+      expect(
+        screen.getByTestId(`row-template-error-${reportNoDates.id}`),
+      ).toHaveTextContent('REPORTS_MISSING_TEMPLATE_ERROR');
+      expect(mockRunReport).not.toHaveBeenCalled();
+    });
+
+    it('does not resurface a stale template error after switching format away from and back to Custom Excel', async () => {
+      const user = userEvent.setup();
+      render(
+        <ReportsTable
+          reports={[reportNoDates]}
+          appliedFilters={NO_FILTERS}
+          availableFormats={availableFormats}
+        />,
+      );
+
+      await setRowFormat(
+        user,
+        `row-format-${reportNoDates.id}`,
+        'CUSTOM EXCEL',
+      );
+      const row = screen.getByText(reportNoDates.name).closest('tr')!;
+      await runRow(user, row);
+      expect(
+        screen.getByTestId(`row-template-error-${reportNoDates.id}`),
+      ).toBeInTheDocument();
+
+      await setRowFormat(user, `row-format-${reportNoDates.id}`, 'PDF');
+      await setRowFormat(
+        user,
+        `row-format-${reportNoDates.id}`,
+        'CUSTOM EXCEL',
+      );
+
+      expect(
+        screen.queryByTestId(`row-template-error-${reportNoDates.id}`),
+      ).not.toBeInTheDocument();
+    });
+  });
+
+  describe('Queueing', () => {
+    it('shows "Run Now" and "Queue" actions when enableReportQueue is true', async () => {
+      const user = userEvent.setup();
+      render(
+        <ReportsTable
+          reports={[reportNoDates]}
+          appliedFilters={NO_FILTERS}
+          availableFormats={availableFormats}
+          enableReportQueue
+        />,
+      );
+
+      const row = screen.getByText(reportNoDates.name).closest('tr')!;
+      await user.click(within(row).getByRole('button', { name: 'Options' }));
+
+      expect(
+        screen.getByText('REPORTS_RUN_NOW_BUTTON_LABEL'),
+      ).toBeInTheDocument();
+      expect(
+        screen.getByText('REPORTS_QUEUE_BUTTON_LABEL'),
+      ).toBeInTheDocument();
+      expect(
+        screen.queryByText('REPORTS_RUN_BUTTON_LABEL'),
+      ).not.toBeInTheDocument();
+    });
+
+    it('does not show a Queue action when enableReportQueue is false', async () => {
+      const user = userEvent.setup();
+      render(
+        <ReportsTable
+          reports={[reportNoDates]}
+          appliedFilters={NO_FILTERS}
+          availableFormats={availableFormats}
+        />,
+      );
+
+      const row = screen.getByText(reportNoDates.name).closest('tr')!;
+      await user.click(within(row).getByRole('button', { name: 'Options' }));
+
+      expect(
+        screen.queryByText('REPORTS_QUEUE_BUTTON_LABEL'),
+      ).not.toBeInTheDocument();
+    });
+
+    it('queues the report and shows a queueing loading state', async () => {
+      const user = userEvent.setup({ advanceTimers: jest.advanceTimersByTime });
+      jest.useFakeTimers({ legacyFakeTimers: false });
+
+      render(
+        <ReportsTable
+          reports={[reportNoDates]}
+          appliedFilters={NO_FILTERS}
+          availableFormats={availableFormats}
+          enableReportQueue
+        />,
+      );
+      await setRowFormat(user, `row-format-${reportNoDates.id}`, 'PDF');
+
+      const row = screen.getByText(reportNoDates.name).closest('tr')!;
+      await user.click(within(row).getByRole('button', { name: 'Options' }));
+      await user.click(screen.getByText('REPORTS_QUEUE_BUTTON_LABEL'));
+
+      expect(mockQueueReportMutate).toHaveBeenCalledWith(
+        expect.objectContaining({ report: reportNoDates, format: 'PDF' }),
+        expect.objectContaining({
+          onSuccess: expect.any(Function),
+          onSettled: expect.any(Function),
+        }),
+      );
+      expect(
+        screen.getByText('REPORTS_QUEUEING_LOADING_LABEL'),
+      ).toBeInTheDocument();
+
+      const [, callbacks] = mockQueueReportMutate.mock.calls[0];
+      act(() => {
+        callbacks.onSettled();
+      });
+
+      jest.useRealTimers();
+    });
+
+    it('shows a validation error and does not queue when no format is selected', async () => {
+      const user = userEvent.setup();
+      render(
+        <ReportsTable
+          reports={[reportNoDates]}
+          appliedFilters={NO_FILTERS}
+          availableFormats={availableFormats}
+          enableReportQueue
+        />,
+      );
+
+      const row = screen.getByText(reportNoDates.name).closest('tr')!;
+      await user.click(within(row).getByRole('button', { name: 'Options' }));
+      await user.click(screen.getByText('REPORTS_QUEUE_BUTTON_LABEL'));
+
+      expect(mockQueueReportMutate).not.toHaveBeenCalled();
+      expect(
+        screen.getByTestId(`error-row-format-${reportNoDates.id}`),
+      ).toBeInTheDocument();
+    });
   });
 });
