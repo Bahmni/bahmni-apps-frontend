@@ -4,6 +4,7 @@ import {
   calculateOnsetDate,
   createBundleEntry,
   ENCOUNTER_BUNDLE_URL,
+  isNonCodedAllergen,
   post,
   Form2Observation,
   type EncounterBundle,
@@ -197,9 +198,19 @@ export function createAllergiesBundleEntries({
       throw new Error(CONSULTATION_ERROR_MESSAGES.INVALID_ALLERGY_PARAMS);
     }
 
+    // A non-coded allergen needs a free-text name, which fhir2 never reads
+    // from the FHIR resource. Saved over the REST allergy API instead — see
+    // onDirectSubmit in the allergies control.
+    if (isNonCodedAllergen(allergy.id)) continue;
+
     const isExisting = !!allergy.resourceId && !!allergy.rawFhirResource;
 
-    if (isExisting && !allergy.isModified) continue;
+    // isModified: false means either an untouched preloaded allergy, or one
+    // the allergies control already marked saved once its own bundle
+    // submission succeeded (see markCodedAllergiesAsSaved) — in both cases
+    // already persisted, so skip it regardless of whether it has a
+    // resourceId yet (a freshly-bundled allergy may not).
+    if (allergy.isModified === false) continue;
 
     const manifestationUUIDs = allergy.selectedReactions
       .filter((r): r is { code: string } => r.code !== undefined)
