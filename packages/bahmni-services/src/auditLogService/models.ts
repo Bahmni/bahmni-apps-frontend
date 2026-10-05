@@ -20,7 +20,8 @@ export type AuditEventType =
   | 'VIEWED_RADIOLOGY_RESULTS'
   | 'STOP_MEDICATION'
   | 'UPLOAD_PATIENT_DOCUMENT'
-  | 'START_VISIT';
+  | 'START_VISIT'
+  | 'RUN_REPORT';
 
 // Query params accepted by the audit log list (GET) endpoint.
 // Mirrors the legacy `auditLogController`/`auditLogService` request shape.

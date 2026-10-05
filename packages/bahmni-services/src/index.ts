@@ -367,6 +367,8 @@ export {
   BAHMNI_HOME_PATH,
   BAHMNI_APP_BASE_PATH,
   HOME_ROUTE_PATH,
+  BAHMNI_REPORTS_URL,
+  BASE_PATH,
 } from './constants/app';
 export {
   getCurrentUserPrivileges,
@@ -498,6 +500,15 @@ export type {
   TemplateListResponse,
 } from './templateService';
 export { getTasks } from './taskService';
+export {
+  buildRunReportUrl,
+  formatDateForQuery,
+  DEFAULT_APP_NAME,
+  DEFAULT_PAPER_SIZE,
+  DEFAULT_SUPPORTED_FORMATS,
+  FORMAT_MIME_TYPES,
+  type FormatKey,
+} from './reportService';
 export {
   groupExtensionsByPoint,
   filterExtensionsByPrivileges,
