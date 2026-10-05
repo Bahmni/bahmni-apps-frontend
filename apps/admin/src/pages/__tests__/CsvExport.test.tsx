@@ -25,18 +25,14 @@ jest.mock('@bahmni/widgets', () => ({
 jest.mock('../../components/AdminLayout', () => ({
   AdminLayout: ({
     children,
-    breadcrumbs,
+    currentPage,
   }: {
     children: React.ReactNode;
-    breadcrumbs: { id: string; label: string; href?: string }[];
+    currentPage?: { id: string; label: string };
   }) => (
     <div data-testid="admin-layout-test-id">
       <nav>
-        {breadcrumbs.map((item) => (
-          <span key={item.id} data-href={item.href}>
-            {item.label}
-          </span>
-        ))}
+        <span data-testid="current-page-crumb">{currentPage?.label}</span>
       </nav>
       {children}
     </div>
@@ -108,15 +104,12 @@ describe('CsvExport', () => {
     expect(getExportButton()).toHaveTextContent('Export');
   });
 
-  it('shows Home / Admin / CSV Export breadcrumbs', () => {
+  it('passes CSV Export as the current page to the admin layout', () => {
     renderPage();
 
-    expect(screen.getByText('Home')).toBeInTheDocument();
-    expect(screen.getByText('Admin')).toHaveAttribute(
-      'data-href',
-      '/bahmni-v2/admin',
+    expect(screen.getByTestId('current-page-crumb')).toHaveTextContent(
+      'CSV Export',
     );
-    expect(screen.getByText('CSV Export')).toBeInTheDocument();
   });
 
   it('debounces the concept search by 300ms', async () => {
@@ -160,6 +153,37 @@ describe('CsvExport', () => {
     await typeSearch('v');
 
     expect(mockSearch).not.toHaveBeenCalled();
+  });
+
+  it('skips search results that have no name', async () => {
+    mockSearch.mockResolvedValue([
+      { uuid: 'uuid-1', name: { name: 'Vital signs' } },
+      { uuid: 'uuid-3', name: null },
+    ]);
+    renderPage();
+
+    await typeSearch('vit');
+
+    expect(
+      await screen.findByRole('option', { name: 'Vital signs' }),
+    ).toBeInTheDocument();
+    expect(screen.getAllByRole('option')).toHaveLength(1);
+  });
+
+  it('keeps previous options visible while the next search is loading', async () => {
+    // ComboBox scrolls the highlighted option into view, which jsdom does not implement
+    Element.prototype.scrollIntoView = jest.fn();
+    renderPage();
+    await typeSearch('vit');
+    await screen.findByRole('option', { name: 'Vital signs' });
+
+    mockSearch.mockReturnValue(new Promise(() => {}));
+    await typeSearch('vita');
+
+    expect(mockSearch).toHaveBeenLastCalledWith('vita');
+    expect(
+      screen.getByRole('option', { name: 'Vital signs' }),
+    ).toBeInTheDocument();
   });
 
   it('shows a validation error and blocks export when no concept is selected', () => {
@@ -213,7 +237,10 @@ describe('CsvExport', () => {
       fireEvent.click(getExportButton());
     });
 
-    expect(mockGetConcept).toHaveBeenCalledWith('uuid-1');
+    expect(mockGetConcept).toHaveBeenCalledWith(
+      'uuid-1',
+      'custom:(uuid,setMembers:(uuid))',
+    );
     expect(mockExport).toHaveBeenCalledWith('Vital signs');
     expect(mockDownload).toHaveBeenCalledWith(blob, 'Vital signs.zip');
     expect(mockAddNotification).toHaveBeenCalledWith(
@@ -234,7 +261,10 @@ describe('CsvExport', () => {
       fireEvent.click(getExportButton());
     });
 
-    expect(mockGetConcept).toHaveBeenCalledWith('uuid-1');
+    expect(mockGetConcept).toHaveBeenCalledWith(
+      'uuid-1',
+      'custom:(uuid,setMembers:(uuid))',
+    );
     expect(mockExport).not.toHaveBeenCalled();
     expect(mockDownload).not.toHaveBeenCalled();
     expect(mockAddNotification).toHaveBeenCalledWith(

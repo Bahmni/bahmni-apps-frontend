@@ -147,6 +147,14 @@ describe('conceptService', () => {
       );
     });
 
+    it('should append an encoded custom view when provided', async () => {
+      await getConceptById(mockUUID, 'custom:(uuid,setMembers:(uuid))');
+
+      expect(api.get).toHaveBeenCalledWith(
+        `/openmrs/ws/rest/v1/concept/${mockUUID}?v=custom%3A(uuid%2CsetMembers%3A(uuid))`,
+      );
+    });
+
     it('should return ConceptData from API response', async () => {
       const result = await getConceptById(mockUUID);
 

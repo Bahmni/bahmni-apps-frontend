@@ -1,7 +1,5 @@
 import { Button, ComboBox, InlineLoading, Tile } from '@bahmni/design-system';
 import {
-  BAHMNI_APP_BASE_PATH,
-  BAHMNI_HOME_PATH,
   downloadBlob,
   exportConceptSet,
   getConceptById,
@@ -17,6 +15,7 @@ import styles from './styles/CsvExport.module.scss';
 const SEARCH_DEBOUNCE_MS = 300;
 const MIN_SEARCH_LENGTH = 2;
 const NOTIFICATION_TIMEOUT_MS = 5000;
+const SET_MEMBERS_VIEW = 'custom:(uuid,setMembers:(uuid))';
 
 interface ConceptOption {
   uuid: string;
@@ -32,20 +31,8 @@ export const CsvExport: React.FC = () => {
   );
   const debouncedTerm = useDebounce(inputValue.trim(), SEARCH_DEBOUNCE_MS);
 
-  const breadcrumbs = useMemo(
-    () => [
-      { id: 'home', label: t('BREADCRUMB_HOME'), href: BAHMNI_HOME_PATH },
-      {
-        id: 'admin',
-        label: t('BREADCRUMB_ADMIN'),
-        href: `${BAHMNI_APP_BASE_PATH}/admin`,
-      },
-      {
-        id: 'csv-export',
-        label: t('BREADCRUMB_CSV_EXPORT'),
-        isCurrentPage: true,
-      },
-    ],
+  const currentPage = useMemo(
+    () => ({ id: 'csv-export', label: t('BREADCRUMB_CSV_EXPORT') }),
     [t],
   );
 
@@ -55,20 +42,24 @@ export const CsvExport: React.FC = () => {
     enabled:
       debouncedTerm.length >= MIN_SEARCH_LENGTH &&
       debouncedTerm !== selectedConcept?.name,
+    // Keep prior options visible while the next term loads, but not once the input is too short to search
+    placeholderData: (prev) =>
+      debouncedTerm.length >= MIN_SEARCH_LENGTH ? prev : undefined,
   });
 
   const options = useMemo<ConceptOption[]>(
     () =>
-      searchResults.map((concept) => ({
-        uuid: concept.uuid,
-        name: concept.name.name,
-      })),
+      searchResults.flatMap((concept) =>
+        concept.name?.name
+          ? [{ uuid: concept.uuid, name: concept.name.name }]
+          : [],
+      ),
     [searchResults],
   );
 
   const exportMutation = useMutation({
     mutationFn: async (option: ConceptOption) => {
-      const concept = await getConceptById(option.uuid);
+      const concept = await getConceptById(option.uuid, SET_MEMBERS_VIEW);
       // Leaf concepts and empty sets export a header-only concepts.csv, so treat them as no data
       if (!concept.setMembers?.length) return null;
       return exportConceptSet(option.name);
@@ -125,7 +116,7 @@ export const CsvExport: React.FC = () => {
   };
 
   return (
-    <AdminLayout breadcrumbs={breadcrumbs}>
+    <AdminLayout currentPage={currentPage}>
       <Tile
         id="admin-csv-export-page"
         data-testid="admin-csv-export-page-test-id"

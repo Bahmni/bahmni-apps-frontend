@@ -51,15 +51,9 @@ describe('AdminLayout', () => {
     expect(main).toContainElement(children);
   });
 
-  it('renders custom breadcrumbs when provided', () => {
+  it('links Admin and appends the current page when one is provided', () => {
     render(
-      <AdminLayout
-        breadcrumbs={[
-          { id: 'home', label: 'Home', href: services.BAHMNI_HOME_PATH },
-          { id: 'admin', label: 'Admin', href: '/bahmni-v2/admin' },
-          { id: 'csv-export', label: 'CSV Export', isCurrentPage: true },
-        ]}
-      >
+      <AdminLayout currentPage={{ id: 'csv-export', label: 'CSV Export' }}>
         <div />
       </AdminLayout>,
     );

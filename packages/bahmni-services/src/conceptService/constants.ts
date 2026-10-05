@@ -16,8 +16,13 @@ export const CONCEPT_QUERY_URL = (term: string) =>
   OPENMRS_REST_V1 +
   `/concept?q=${encodeURIComponent(term)}&v=${encodeURIComponent('custom:(uuid,name)')}`;
 
-export const CONCEPT_GET_URL = (uuid: string) =>
-  OPENMRS_REST_V1 + `/concept/${uuid}`;
+export const CONCEPT_GET_URL = (uuid: string, customView?: string) => {
+  const baseUrl = `${OPENMRS_REST_V1}/concept/${uuid}`;
+
+  return customView
+    ? `${baseUrl}?v=${encodeURIComponent(customView)}`
+    : baseUrl;
+};
 
 export const CONCEPT_BY_FULLY_SPECIFIED_NAME_URL = (
   conceptName: string,

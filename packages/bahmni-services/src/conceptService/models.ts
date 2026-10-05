@@ -77,7 +77,7 @@ export interface ConceptSearchByNameResponse {
 
 export interface ConceptQueryResult {
   uuid: string;
-  name: { name: string };
+  name: { name: string } | null;
 }
 
 export interface ConceptQueryResponse {

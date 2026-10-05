@@ -1,30 +1,43 @@
 import { BaseLayout, Header } from '@bahmni/design-system';
-import { BAHMNI_HOME_PATH, useTranslation } from '@bahmni/services';
+import {
+  BAHMNI_APP_BASE_PATH,
+  BAHMNI_HOME_PATH,
+  useTranslation,
+} from '@bahmni/services';
 import { UserGlobalAction } from '@bahmni/widgets';
-import React, { ComponentProps, ReactNode, useMemo } from 'react';
+import React, { ReactNode, useMemo } from 'react';
 import styles from './styles/AdminLayout.module.scss';
 
-type BreadcrumbItems = ComponentProps<typeof Header>['breadcrumbItems'];
+interface AdminCurrentPage {
+  id: string;
+  label: string;
+}
 
 interface AdminLayoutProps {
   children: ReactNode;
-  breadcrumbs?: BreadcrumbItems;
+  currentPage?: AdminCurrentPage;
 }
 
 export const AdminLayout: React.FC<AdminLayoutProps> = ({
   children,
-  breadcrumbs: customBreadcrumbs,
+  currentPage,
 }) => {
   const { t } = useTranslation();
 
-  const defaultBreadcrumbs = useMemo(
+  const breadcrumbs = useMemo(
     () => [
       { id: 'home', label: t('BREADCRUMB_HOME'), href: BAHMNI_HOME_PATH },
-      { id: 'admin', label: t('BREADCRUMB_ADMIN'), isCurrentPage: true },
+      currentPage
+        ? {
+            id: 'admin',
+            label: t('BREADCRUMB_ADMIN'),
+            href: `${BAHMNI_APP_BASE_PATH}/admin`,
+          }
+        : { id: 'admin', label: t('BREADCRUMB_ADMIN'), isCurrentPage: true },
+      ...(currentPage ? [{ ...currentPage, isCurrentPage: true }] : []),
     ],
-    [t],
+    [t, currentPage],
   );
-  const breadcrumbs = customBreadcrumbs ?? defaultBreadcrumbs;
 
   return (
     <BaseLayout

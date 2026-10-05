@@ -63,8 +63,11 @@ export const searchFHIRConceptsByName = async (
   return get<ValueSet>(url);
 };
 
-export async function getConceptById(uuid: string): Promise<ConceptData> {
-  return await get<ConceptData>(CONCEPT_GET_URL(uuid));
+export async function getConceptById(
+  uuid: string,
+  customView?: string,
+): Promise<ConceptData> {
+  return await get<ConceptData>(CONCEPT_GET_URL(uuid, customView));
 }
 
 /**
