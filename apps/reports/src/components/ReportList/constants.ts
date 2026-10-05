@@ -1,10 +1,5 @@
 import { FormatKey } from './models';
 
-export const REPORTS_JSON_CONFIG_URL =
-  '/bahmni_config/openmrs/apps/reports/reports.json';
-export const REPORTS_APP_CONFIG_URL =
-  '/bahmni_config/openmrs/apps/reports/app.json';
-
 export const FORMAT_I18N_KEYS: Record<FormatKey, string> = {
   PDF: 'REPORTS_FORMAT_PDF',
   CSV: 'REPORTS_FORMAT_CSV',

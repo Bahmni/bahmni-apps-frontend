@@ -14,7 +14,7 @@
 .emptyState {
   padding: 2rem;
   text-align: center;
-  color: #525252;
-  background: #ffffff;
-  border: 1px solid #e0e0e0;
+  color: var(--cds-text-secondary);
+  background: var(--cds-background);
+  border: 1px solid var(--cds-border-subtle);
 }

@@ -8,7 +8,7 @@ import {
 } from '@bahmni/design-system';
 import { useTranslation } from '@bahmni/services';
 import React from 'react';
-import { useReportTableState } from './hooks/useReportTableState';
+import { useReportTableState } from '../../hooks/useReportTableState';
 import type { AppliedFilters, FormatKey, ReportDefinition } from './models';
 import styles from './styles/ReportsTable.module.scss';
 import { formatItemToString, requiresDateRange } from './utils';

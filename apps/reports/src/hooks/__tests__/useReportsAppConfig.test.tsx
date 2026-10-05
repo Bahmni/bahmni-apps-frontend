@@ -2,8 +2,8 @@ import { getConfig } from '@bahmni/services';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { renderHook, waitFor } from '@testing-library/react';
 import type { ReactNode } from 'react';
-import appConfigSchema from '../../appConfigSchema.json';
-import { REPORTS_APP_CONFIG_URL } from '../../constants';
+import appConfigSchema from '../../components/ReportList/appConfigSchema.json';
+import { REPORTS_APP_CONFIG_URL } from '../../constants/app';
 import { useReportsAppConfig } from '../useReportsAppConfig';
 
 jest.mock('@bahmni/services', () => ({

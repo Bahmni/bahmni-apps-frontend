@@ -1,6 +1,6 @@
 import { buildRunReportUrl, dispatchAuditEvent } from '@bahmni/services';
 import { renderHook } from '@testing-library/react';
-import type { ReportDefinition } from '../../models';
+import type { ReportDefinition } from '../../components/ReportList/models';
 import { useRunReport } from '../useRunReport';
 
 jest.mock('@bahmni/services', () => ({

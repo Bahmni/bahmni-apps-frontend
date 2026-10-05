@@ -1,8 +1,9 @@
 import { getConfig } from '@bahmni/services';
 import { useQuery } from '@tanstack/react-query';
-import appConfigSchema from '../appConfigSchema.json';
-import { QUERY_KEYS, REPORTS_APP_CONFIG_URL } from '../constants';
-import type { ReportsAppConfig } from '../models';
+import appConfigSchema from '../components/ReportList/appConfigSchema.json';
+import { QUERY_KEYS } from '../components/ReportList/constants';
+import type { ReportsAppConfig } from '../components/ReportList/models';
+import { REPORTS_APP_CONFIG_URL } from '../constants/app';
 
 export const useReportsAppConfig = () =>
   useQuery({

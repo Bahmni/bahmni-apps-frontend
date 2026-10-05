@@ -60,7 +60,7 @@ export const presetToRange = (preset: DatePreset): [Date, Date] => {
     case 'LAST_7_DAYS':
       return [subDays(today, 6), today];
     default:
-      return [today, today];
+      return [new Date(today), new Date(today)];
   }
 };
 

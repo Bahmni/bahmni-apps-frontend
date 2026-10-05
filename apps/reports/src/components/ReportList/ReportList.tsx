@@ -6,9 +6,9 @@ import {
 import { useTranslation } from '@bahmni/services';
 import { useNotification, useUserPrivilege } from '@bahmni/widgets';
 import React, { useEffect, useMemo, useState } from 'react';
+import { useReportsAppConfig } from '../../hooks/useReportsAppConfig';
+import { useReportsConfig } from '../../hooks/useReportsConfig';
 import type { DatePreset } from './constants';
-import { useReportsAppConfig } from './hooks/useReportsAppConfig';
-import { useReportsConfig } from './hooks/useReportsConfig';
 import type { AppliedFilters, FormatKey } from './models';
 import ReportsTable from './ReportsTable';
 import styles from './styles/ReportList.module.scss';
@@ -106,7 +106,7 @@ export const ReportList: React.FC = () => {
     return null;
   }
 
-  if (!reportsConfig || Object.keys(reportsConfig).length === 0) {
+  if (!reportsConfig || visibleReports.length === 0) {
     return (
       <p
         id="reports-empty-state"

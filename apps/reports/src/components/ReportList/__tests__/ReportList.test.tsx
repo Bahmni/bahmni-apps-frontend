@@ -2,8 +2,8 @@ import { useNotification, useUserPrivilege } from '@bahmni/widgets';
 import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { axe, toHaveNoViolations } from 'jest-axe';
-import { useReportsAppConfig } from '../hooks/useReportsAppConfig';
-import { useReportsConfig } from '../hooks/useReportsConfig';
+import { useReportsAppConfig } from '../../../hooks/useReportsAppConfig';
+import { useReportsConfig } from '../../../hooks/useReportsConfig';
 import type { ReportsConfig } from '../models';
 import { ReportList } from '../ReportList';
 
@@ -20,10 +20,10 @@ jest.mock('@bahmni/widgets', () => ({
   useNotification: jest.fn(),
 }));
 
-jest.mock('../hooks/useReportsConfig', () => ({
+jest.mock('../../../hooks/useReportsConfig', () => ({
   useReportsConfig: jest.fn(),
 }));
-jest.mock('../hooks/useReportsAppConfig', () => ({
+jest.mock('../../../hooks/useReportsAppConfig', () => ({
   useReportsAppConfig: jest.fn(),
 }));
 
@@ -190,6 +190,27 @@ describe('ReportList', () => {
   it('shows an empty state when the reports config has no entries', () => {
     mockUseReportsConfig.mockReturnValue({
       data: {},
+      isLoading: false,
+      error: null,
+    } as ReturnType<typeof useReportsConfig>);
+
+    render(<ReportList />);
+    expect(screen.getByTestId('reports-empty-state')).toHaveTextContent(
+      'REPORTS_EMPTY_STATE_MESSAGE',
+    );
+  });
+
+  it('shows an empty state when privilege filtering leaves no visible reports', () => {
+    mockUseUserPrivilege.mockReturnValue({
+      userPrivileges: [],
+      isLoading: false,
+      error: null,
+      setUserPrivileges: jest.fn(),
+      setIsLoading: jest.fn(),
+      setError: jest.fn(),
+    });
+    mockUseReportsConfig.mockReturnValue({
+      data: reportsConfig,
       isLoading: false,
       error: null,
     } as ReturnType<typeof useReportsConfig>);

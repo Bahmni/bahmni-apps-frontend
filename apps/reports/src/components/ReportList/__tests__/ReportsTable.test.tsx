@@ -23,7 +23,7 @@ jest.mock('@bahmni/widgets', () => ({
 jest.mock('../styles/ReportsTable.module.scss', () => ({}), { virtual: true });
 
 const mockRunReport = jest.fn();
-jest.mock('../hooks/useRunReport', () => ({
+jest.mock('../../../hooks/useRunReport', () => ({
   useRunReport: () => ({ runReport: mockRunReport }),
 }));
 

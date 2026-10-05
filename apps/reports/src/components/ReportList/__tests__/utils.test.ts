@@ -309,6 +309,11 @@ describe('Report List Utils', () => {
       expect(isSameDay(start, new Date())).toBe(true);
       expect(isSameDay(end, new Date())).toBe(true);
     });
+
+    it('returns independent Date instances for TODAY, not the same reference', () => {
+      const [start, end] = presetToRange('TODAY');
+      expect(start).not.toBe(end);
+    });
   });
 
   describe('formatItemToString', () => {

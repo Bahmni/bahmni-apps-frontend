@@ -1,10 +1,14 @@
 import {
+  AUDIT_LOG_EVENT_DETAILS,
   buildRunReportUrl,
   dispatchAuditEvent,
-  MODULE_LABELS,
+  type AuditEventType,
 } from '@bahmni/services';
 import { useCallback } from 'react';
-import type { ReportDefinition, FormatKey } from '../models';
+import type {
+  ReportDefinition,
+  FormatKey,
+} from '../components/ReportList/models';
 
 export const useRunReport = () => {
   const runReport = useCallback(
@@ -38,9 +42,10 @@ export const useRunReport = () => {
         reportWindow.opener = null;
 
         dispatchAuditEvent({
-          eventType: 'RUN_REPORT',
+          eventType: AUDIT_LOG_EVENT_DETAILS.RUN_REPORT
+            .eventType as AuditEventType,
           messageParams: { reportName: report.name },
-          module: MODULE_LABELS.REPORTS,
+          module: AUDIT_LOG_EVENT_DETAILS.RUN_REPORT.module,
         });
         return true;
       } catch (error) {

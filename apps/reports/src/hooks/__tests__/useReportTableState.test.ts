@@ -1,6 +1,9 @@
 import { useNotification } from '@bahmni/widgets';
 import { act, renderHook } from '@testing-library/react';
-import type { AppliedFilters, ReportDefinition } from '../../models';
+import type {
+  AppliedFilters,
+  ReportDefinition,
+} from '../../components/ReportList/models';
 import { useReportTableState } from '../useReportTableState';
 
 jest.mock('@bahmni/services', () => ({
