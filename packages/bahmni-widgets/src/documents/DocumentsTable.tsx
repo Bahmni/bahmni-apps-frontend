@@ -136,7 +136,7 @@ const DocumentsTable: React.FC<WidgetProps> = ({ config, encounterUuids }) => {
       }
     };
 
-    validateAttachments();
+    void validateAttachments();
 
     return () => controller.abort();
   }, [isModalOpen, selectedDoc]);
