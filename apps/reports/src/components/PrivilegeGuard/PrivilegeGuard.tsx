@@ -1,4 +1,4 @@
-import { Loading } from '@bahmni/design-system';
+import { InlineNotification, Loading } from '@bahmni/design-system';
 import {
   BAHMNI_HOME_PATH,
   hasPrivilege,
@@ -40,15 +40,23 @@ export const PrivilegeGuard: React.FC<PrivilegeGuardProps> = ({ children }) => {
     return (
       <div
         role="alert"
-        className={styles.accessMessage}
+        className={styles.deniedContainer}
         data-testid="privilege-guard-denied"
       >
-        <p>
-          {error
-            ? t('REPORTS_PRIVILEGE_LOAD_ERROR')
-            : t('REPORTS_PRIVILEGE_DENIED_ERROR')}
-        </p>
-        <a href={BAHMNI_HOME_PATH}>{t('REPORTS_BACK_TO_HOME_LINK')}</a>
+        <InlineNotification
+          className={styles.notification}
+          kind="error"
+          lowContrast
+          hideCloseButton
+          title={
+            error
+              ? t('REPORTS_PRIVILEGE_LOAD_ERROR')
+              : t('REPORTS_PRIVILEGE_DENIED_ERROR')
+          }
+        />
+        <a className={styles.backToHomeLink} href={BAHMNI_HOME_PATH}>
+          {t('REPORTS_BACK_TO_HOME_LINK')}
+        </a>
       </div>
     );
   }

@@ -1,3 +1,7 @@
+import type { FormatKey } from '@bahmni/services';
+
+export type { FormatKey };
+
 export interface ReportConfig {
   dateRangeRequired?: boolean;
   paperSize?: string;
@@ -9,7 +13,7 @@ export interface ReportDefinition {
   name: string;
   type: string;
   requiredPrivilege?: string;
-  config: ReportConfig;
+  config?: ReportConfig;
 }
 
 export type ReportsConfig = Record<string, ReportDefinition>;
@@ -20,14 +24,6 @@ export interface ReportsAppConfig {
     paperSize?: string;
   };
 }
-
-export type FormatKey =
-  | 'PDF'
-  | 'CSV'
-  | 'HTML'
-  | 'EXCEL'
-  | 'CUSTOM EXCEL'
-  | 'ODS';
 
 export interface ReportFilters {
   startDate: Date | null;
@@ -43,13 +39,6 @@ export interface AppliedFilters extends ReportFilters {
 export interface ReportValidationError {
   field?: 'format' | 'startDate' | 'endDate';
   message: string;
-}
-
-export interface RunReportInput {
-  report: ReportDefinition & { id: string };
-  format: FormatKey;
-  startDate?: Date;
-  endDate?: Date;
 }
 
 export interface GroupedReports {

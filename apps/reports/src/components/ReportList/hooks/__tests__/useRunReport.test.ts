@@ -1,16 +1,11 @@
-import { dispatchAuditEvent } from '@bahmni/services';
+import { buildRunReportUrl, dispatchAuditEvent } from '@bahmni/services';
 import { renderHook } from '@testing-library/react';
 import type { ReportDefinition } from '../../models';
-import { buildRunReportUrl } from '../../utils';
 import { useRunReport } from '../useRunReport';
 
 jest.mock('@bahmni/services', () => ({
   ...jest.requireActual('@bahmni/services'),
   dispatchAuditEvent: jest.fn(),
-}));
-
-jest.mock('../../utils', () => ({
-  ...jest.requireActual('../../utils'),
   buildRunReportUrl: jest.fn(),
 }));
 
@@ -59,6 +54,7 @@ describe('useRunReport', () => {
     );
     expect(windowOpenSpy).toHaveBeenCalledWith(
       'https://example.com/bahmnireports/report?name=OPD+Visit+Count',
+      '_blank',
     );
     expect(mockDispatchAuditEvent).toHaveBeenCalledWith({
       eventType: 'RUN_REPORT',
@@ -66,6 +62,16 @@ describe('useRunReport', () => {
       module: 'MODULE_LABEL_REPORTS_KEY',
     });
     expect(opened).toBe(true);
+  });
+
+  it('severs the opener reference on the opened window to prevent reverse tabnabbing', () => {
+    const fakeWindow = { opener: {} } as Window;
+    windowOpenSpy.mockImplementation(() => fakeWindow);
+    const { result } = renderHook(() => useRunReport());
+
+    result.current.runReport(report, 'PDF');
+
+    expect(fakeWindow.opener).toBeNull();
   });
 
   it('works without dates for reports that do not require a date range', () => {

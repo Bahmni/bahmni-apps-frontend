@@ -1,8 +1,11 @@
 import { useNotification } from '@bahmni/widgets';
 import { act, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { axe, toHaveNoViolations } from 'jest-axe';
 import type { AppliedFilters, FormatKey, ReportDefinition } from '../models';
 import ReportsTable from '../ReportsTable';
+
+expect.extend(toHaveNoViolations);
 
 jest.mock('@bahmni/services', () => ({
   ...jest.requireActual('@bahmni/services'),
@@ -645,5 +648,16 @@ describe('ReportsTable', () => {
     expect(
       within(row).getByRole('button', { name: 'Options' }),
     ).toBeInTheDocument();
+  });
+
+  it('has no accessibility violations', async () => {
+    const { container } = render(
+      <ReportsTable
+        reports={[reportWithDates, reportNoDates]}
+        appliedFilters={NO_FILTERS}
+        availableFormats={availableFormats}
+      />,
+    );
+    expect(await axe(container)).toHaveNoViolations();
   });
 });

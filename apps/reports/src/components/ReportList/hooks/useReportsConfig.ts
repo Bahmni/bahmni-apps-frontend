@@ -8,4 +8,5 @@ export const useReportsConfig = () =>
   useQuery({
     queryKey: QUERY_KEYS.reportsConfig,
     queryFn: () => getConfig<ReportsConfig>(REPORTS_JSON_CONFIG_URL, schema),
+    retry: false,
   });

@@ -9,47 +9,36 @@ import React from 'react';
 import {
   DATE_PRESET_I18N_KEYS,
   DATE_PRESETS,
-  FORMAT_I18N_KEYS,
   type DatePreset,
 } from './constants';
 import type { FormatKey } from './models';
 import styles from './styles/TableFilters.module.scss';
+import { formatItemToString, presetToRange } from './utils';
 
 interface TableFiltersProps {
   startDate: Date | null;
   endDate: Date | null;
   format: FormatKey | null;
+  selectedPreset: DatePreset | null;
   availableFormats: FormatKey[];
   onStartDateChange: (date: Date | null) => void;
   onEndDateChange: (date: Date | null) => void;
   onFormatChange: (format: FormatKey | null) => void;
+  onPresetChange: (preset: DatePreset | null) => void;
   onReset: () => void;
   onApply: () => void;
 }
-
-const presetToRange = (preset: DatePreset): [Date, Date] => {
-  const today = new Date();
-  switch (preset) {
-    case 'THIS_MONTH':
-      return [new Date(today.getFullYear(), today.getMonth(), 1), today];
-    case 'LAST_7_DAYS': {
-      const from = new Date();
-      from.setDate(today.getDate() - 7);
-      return [from, today];
-    }
-    default:
-      return [today, today];
-  }
-};
 
 export const TableFilters: React.FC<TableFiltersProps> = ({
   startDate,
   endDate,
   format,
+  selectedPreset,
   availableFormats,
   onStartDateChange,
   onEndDateChange,
   onFormatChange,
+  onPresetChange,
   onReset,
   onApply,
 }) => {
@@ -68,7 +57,9 @@ export const TableFilters: React.FC<TableFiltersProps> = ({
           itemToString={(preset) =>
             preset ? t(DATE_PRESET_I18N_KEYS[preset]) : ''
           }
+          selectedItem={selectedPreset}
           onChange={({ selectedItem }) => {
+            onPresetChange(selectedItem ?? null);
             if (!selectedItem) return;
             const [from, to] = presetToRange(selectedItem);
             onStartDateChange(from);
@@ -110,7 +101,7 @@ export const TableFilters: React.FC<TableFiltersProps> = ({
           titleText={t('REPORTS_FORMAT_LABEL')}
           label={t('REPORTS_CHOOSE_FORMAT')}
           items={availableFormats}
-          itemToString={(fmt) => (fmt ? t(FORMAT_I18N_KEYS[fmt]) : '')}
+          itemToString={formatItemToString(t)}
           selectedItem={format}
           onChange={({ selectedItem }) => onFormatChange(selectedItem)}
         />

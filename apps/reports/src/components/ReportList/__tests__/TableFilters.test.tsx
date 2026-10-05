@@ -1,7 +1,11 @@
 import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { axe, toHaveNoViolations } from 'jest-axe';
+import type { DatePreset } from '../constants';
 import type { FormatKey } from '../models';
 import TableFilters from '../TableFilters';
+
+expect.extend(toHaveNoViolations);
 
 jest.mock('@bahmni/services', () => ({
   ...jest.requireActual('@bahmni/services'),
@@ -94,10 +98,12 @@ describe('TableFilters', () => {
     startDate: null,
     endDate: null,
     format: null as FormatKey | null,
+    selectedPreset: null as DatePreset | null,
     availableFormats,
     onStartDateChange: jest.fn(),
     onEndDateChange: jest.fn(),
     onFormatChange: jest.fn(),
+    onPresetChange: jest.fn(),
     onReset: jest.fn(),
     onApply: jest.fn(),
   };
@@ -154,8 +160,30 @@ describe('TableFilters', () => {
 
     const [start] = defaultProps.onStartDateChange.mock.calls[0];
     const expectedStart = new Date();
-    expectedStart.setDate(expectedStart.getDate() - 7);
+    expectedStart.setDate(expectedStart.getDate() - 6);
     expect(start.toDateString()).toBe(expectedStart.toDateString());
+  });
+
+  it('notifies onPresetChange when a preset is selected or cleared', async () => {
+    render(<TableFilters {...defaultProps} />);
+    await userEvent.selectOptions(
+      screen.getByLabelText('REPORTS_SELECT_DATE_RANGE'),
+      'TODAY',
+    );
+    expect(defaultProps.onPresetChange).toHaveBeenCalledWith('TODAY');
+
+    await userEvent.selectOptions(
+      screen.getByLabelText('REPORTS_SELECT_DATE_RANGE'),
+      '',
+    );
+    expect(defaultProps.onPresetChange).toHaveBeenCalledWith(null);
+  });
+
+  it('reflects the selectedPreset prop as the dropdown value', () => {
+    render(<TableFilters {...defaultProps} selectedPreset="THIS_MONTH" />);
+    expect(screen.getByLabelText('REPORTS_SELECT_DATE_RANGE')).toHaveValue(
+      'THIS_MONTH',
+    );
   });
 
   it('translates the date range presets via the format i18n keys', () => {
@@ -239,5 +267,10 @@ describe('TableFilters', () => {
       screen.getByRole('button', { name: 'REPORTS_APPLY_BUTTON' }),
     );
     expect(defaultProps.onApply).toHaveBeenCalledTimes(1);
+  });
+
+  it('has no accessibility violations', async () => {
+    const { container } = render(<TableFilters {...defaultProps} />);
+    expect(await axe(container)).toHaveNoViolations();
   });
 });

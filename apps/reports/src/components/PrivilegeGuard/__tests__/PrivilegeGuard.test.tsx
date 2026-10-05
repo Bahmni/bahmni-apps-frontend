@@ -1,7 +1,10 @@
 import { useNotification, useUserPrivilege } from '@bahmni/widgets';
 import { render, screen } from '@testing-library/react';
+import { axe, toHaveNoViolations } from 'jest-axe';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { PrivilegeGuard } from '../PrivilegeGuard';
+
+expect.extend(toHaveNoViolations);
 
 const mockAddNotification = jest.fn();
 
@@ -138,5 +141,46 @@ describe('PrivilegeGuard', () => {
     expect(
       screen.queryByTestId('guarded-child-test-id'),
     ).not.toBeInTheDocument();
+  });
+
+  it('renders the denied state without throwing (the Back to Home link must not be nested inside InlineNotification)', () => {
+    mockUseUserPrivilege.mockReturnValue({
+      userPrivileges: [{ uuid: 'priv-1', name: 'app:clinical' }],
+      isLoading: false,
+      error: null,
+      setUserPrivileges: jest.fn(),
+      setIsLoading: jest.fn(),
+      setError: jest.fn(),
+    });
+
+    expect(() => renderGuard()).not.toThrow();
+  });
+
+  it('has no accessibility violations when access is granted', async () => {
+    mockUseUserPrivilege.mockReturnValue({
+      userPrivileges: [{ uuid: 'priv-1', name: 'app:reports' }],
+      isLoading: false,
+      error: null,
+      setUserPrivileges: jest.fn(),
+      setIsLoading: jest.fn(),
+      setError: jest.fn(),
+    });
+
+    const { container } = renderGuard();
+    expect(await axe(container)).toHaveNoViolations();
+  });
+
+  it('has no accessibility violations when access is denied', async () => {
+    mockUseUserPrivilege.mockReturnValue({
+      userPrivileges: [{ uuid: 'priv-1', name: 'app:clinical' }],
+      isLoading: false,
+      error: null,
+      setUserPrivileges: jest.fn(),
+      setIsLoading: jest.fn(),
+      setError: jest.fn(),
+    });
+
+    const { container } = renderGuard();
+    expect(await axe(container)).toHaveNoViolations();
   });
 });

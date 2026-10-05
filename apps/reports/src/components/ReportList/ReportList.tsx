@@ -6,6 +6,7 @@ import {
 import { useTranslation } from '@bahmni/services';
 import { useNotification, useUserPrivilege } from '@bahmni/widgets';
 import React, { useEffect, useMemo, useState } from 'react';
+import type { DatePreset } from './constants';
 import { useReportsAppConfig } from './hooks/useReportsAppConfig';
 import { useReportsConfig } from './hooks/useReportsConfig';
 import type { AppliedFilters, FormatKey } from './models';
@@ -50,6 +51,7 @@ export const ReportList: React.FC = () => {
   const [startDate, setStartDate] = useState<Date | null>(null);
   const [endDate, setEndDate] = useState<Date | null>(null);
   const [format, setFormat] = useState<FormatKey | null>(null);
+  const [selectedPreset, setSelectedPreset] = useState<DatePreset | null>(null);
   const [appliedFilters, setAppliedFilters] =
     useState<AppliedFilters>(NO_FILTERS);
 
@@ -85,6 +87,7 @@ export const ReportList: React.FC = () => {
     setStartDate(null);
     setEndDate(null);
     setFormat(null);
+    setSelectedPreset(null);
     setAppliedFilters((prev) => ({ ...NO_FILTERS, version: prev.version + 1 }));
   };
 
@@ -92,7 +95,7 @@ export const ReportList: React.FC = () => {
     return (
       <CodeSnippetSkeleton
         id="reports-config-loading"
-        data-testid="reports-config-loading"
+        testId="reports-config-loading"
         className={styles.fullWidth}
         type="multi"
       />
@@ -125,10 +128,12 @@ export const ReportList: React.FC = () => {
         startDate={startDate}
         endDate={endDate}
         format={format}
+        selectedPreset={selectedPreset}
         availableFormats={supportedFormats}
         onStartDateChange={setStartDate}
         onEndDateChange={setEndDate}
         onFormatChange={setFormat}
+        onPresetChange={setSelectedPreset}
         onReset={handleReset}
         onApply={handleApply}
       />

@@ -1,11 +1,12 @@
 import { UserPrivilege } from '@bahmni/services';
+import { differenceInCalendarDays, isSameDay } from 'date-fns';
 import type { ReportDefinition, ReportsConfig } from '../models';
 import {
-  buildRunReportUrl,
   filterReportsByPrivilege,
-  formatDateForQuery,
+  formatItemToString,
   groupReportsByDateRequirement,
   hasVisiblePrivilege,
+  presetToRange,
   requiresDateRange,
   resolveSupportedFormats,
   validateReportRun,
@@ -15,13 +16,13 @@ import {
 
 describe('Report List Utils', () => {
   describe('hasVisiblePrivilege', () => {
-    it('should return false when requiredPrivilege is falsy', () => {
+    it('should return true when requiredPrivilege is falsy', () => {
       const userPrivileges: UserPrivilege[] = [
         { uuid: 'priv1', name: 'app:reports' },
       ];
-      expect(hasVisiblePrivilege(userPrivileges, undefined)).toBe(false);
-      expect(hasVisiblePrivilege(userPrivileges, '')).toBe(false);
-      expect(hasVisiblePrivilege(null, undefined)).toBe(false);
+      expect(hasVisiblePrivilege(userPrivileges, undefined)).toBe(true);
+      expect(hasVisiblePrivilege(userPrivileges, '')).toBe(true);
+      expect(hasVisiblePrivilege(null, undefined)).toBe(true);
     });
 
     it('should return true when user has the required privilege', () => {
@@ -58,21 +59,28 @@ describe('Report List Utils', () => {
         requiredPrivilege: 'app:reports',
         config: {},
       },
+      {
+        id: 'report3',
+        name: 'Finance Report',
+        type: 'visits',
+        requiredPrivilege: 'app:finance',
+        config: {},
+      },
     ];
 
-    it('should hide reports without requiredPrivilege', () => {
+    it('should show reports without requiredPrivilege to everyone', () => {
       const userPrivileges: UserPrivilege[] = [];
       const filtered = filterReportsByPrivilege(reports, userPrivileges);
-      expect(filtered).toHaveLength(0);
+      expect(filtered).toHaveLength(1);
+      expect(filtered[0].id).toBe('report1');
     });
 
-    it('should show only reports user has privilege for', () => {
+    it('should show public reports plus only the restricted reports the user has privilege for', () => {
       const userPrivileges: UserPrivilege[] = [
         { uuid: 'priv1', name: 'app:reports' },
       ];
       const filtered = filterReportsByPrivilege(reports, userPrivileges);
-      expect(filtered).toHaveLength(1);
-      expect(filtered[0].id).toBe('report2');
+      expect(filtered.map((r) => r.id)).toEqual(['report1', 'report2']);
     });
   });
 
@@ -166,53 +174,6 @@ describe('Report List Utils', () => {
       const configured = ['pdf', 'invalid', 'csv'];
       const result = resolveSupportedFormats(configured);
       expect(result).toEqual(['PDF', 'CSV']);
-    });
-  });
-
-  describe('formatDateForQuery', () => {
-    it('should format date as YYYY-MM-DD', () => {
-      const date = new Date('2024-03-15');
-      const formatted = formatDateForQuery(date);
-      expect(formatted).toMatch(/^\d{4}-\d{2}-\d{2}$/);
-    });
-
-    it('should return null for null input', () => {
-      expect(formatDateForQuery(null)).toBeNull();
-    });
-  });
-
-  describe('buildRunReportUrl', () => {
-    it('should build URL with basic parameters', () => {
-      const url = buildRunReportUrl(
-        'Test Report',
-        'PDF',
-        undefined,
-        undefined,
-        'A4',
-      );
-      expect(url).toContain('/bahmnireports/report?');
-      expect(url).toMatch(/name=Test[\s+%20]Report/);
-      expect(url).toContain('responseType=application%2Fpdf');
-      expect(url).toContain('paperSize=A4');
-      expect(url).toContain('appName=reports');
-    });
-
-    it('should include dates when provided', () => {
-      const startDate = new Date('2024-03-01');
-      const endDate = new Date('2024-03-31');
-      const url = buildRunReportUrl('Test', 'CSV', startDate, endDate);
-      expect(url).toContain('startDate=');
-      expect(url).toContain('endDate=');
-    });
-
-    it('should use default paper size when not provided', () => {
-      const url = buildRunReportUrl('Test', 'PDF');
-      expect(url).toContain('paperSize=A4');
-    });
-
-    it('should handle CUSTOM EXCEL format', () => {
-      const url = buildRunReportUrl('Test', 'CUSTOM EXCEL');
-      expect(url).toContain('responseType=application%2Fvnd.ms-excel-custom');
     });
   });
 
@@ -325,6 +286,41 @@ describe('Report List Utils', () => {
       };
       const error = validateReportRun(input, mockT);
       expect(error).toBeNull();
+    });
+  });
+
+  describe('presetToRange', () => {
+    it('returns the start of the month through today for THIS_MONTH', () => {
+      const [start, end] = presetToRange('THIS_MONTH');
+      const today = new Date();
+      expect(start.getDate()).toBe(1);
+      expect(start.getMonth()).toBe(today.getMonth());
+      expect(isSameDay(end, today)).toBe(true);
+    });
+
+    it('returns a 7-day inclusive range for LAST_7_DAYS', () => {
+      const [start, end] = presetToRange('LAST_7_DAYS');
+      expect(isSameDay(end, new Date())).toBe(true);
+      expect(differenceInCalendarDays(end, start)).toBe(6);
+    });
+
+    it('returns today through today for TODAY', () => {
+      const [start, end] = presetToRange('TODAY');
+      expect(isSameDay(start, new Date())).toBe(true);
+      expect(isSameDay(end, new Date())).toBe(true);
+    });
+  });
+
+  describe('formatItemToString', () => {
+    const mockT = (key: string) => key;
+
+    it('returns an empty string for a null format', () => {
+      expect(formatItemToString(mockT)(null)).toBe('');
+    });
+
+    it('returns the translated i18n key for each format', () => {
+      expect(formatItemToString(mockT)('PDF')).toBe('REPORTS_FORMAT_PDF');
+      expect(formatItemToString(mockT)('CSV')).toBe('REPORTS_FORMAT_CSV');
     });
   });
 

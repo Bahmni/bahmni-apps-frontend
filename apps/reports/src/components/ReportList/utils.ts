@@ -1,16 +1,11 @@
 import {
-  ISO_DATE_FORMAT,
   hasPrivilege,
   type UserPrivilege,
-  BAHMNI_REPORTS_URL,
-} from '@bahmni/services';
-import { format } from 'date-fns';
-import {
-  DEFAULT_PAPER_SIZE,
   DEFAULT_SUPPORTED_FORMATS,
   FORMAT_MIME_TYPES,
-  DEFAULT_APP_NAME,
-} from './constants';
+} from '@bahmni/services';
+import { startOfMonth, subDays } from 'date-fns';
+import { FORMAT_I18N_KEYS, type DatePreset } from './constants';
 import type {
   FormatKey,
   GroupedReports,
@@ -23,7 +18,7 @@ export const hasVisiblePrivilege = (
   userPrivileges: UserPrivilege[] | null,
   requiredPrivilege?: string,
 ): boolean => {
-  if (!requiredPrivilege) return false;
+  if (!requiredPrivilege) return true;
   return hasPrivilege(userPrivileges, requiredPrivilege);
 };
 
@@ -57,36 +52,22 @@ export const resolveSupportedFormats = (
   return upperCaseFormats.filter((f): f is FormatKey => f in FORMAT_MIME_TYPES);
 };
 
-export const formatDateForQuery = (date: Date | null): string | null => {
-  if (!date) return null;
-  return format(date, ISO_DATE_FORMAT);
+export const presetToRange = (preset: DatePreset): [Date, Date] => {
+  const today = new Date();
+  switch (preset) {
+    case 'THIS_MONTH':
+      return [startOfMonth(today), today];
+    case 'LAST_7_DAYS':
+      return [subDays(today, 6), today];
+    default:
+      return [today, today];
+  }
 };
 
-export const buildRunReportUrl = (
-  reportName: string,
-  format: FormatKey,
-  startDate?: Date | null,
-  endDate?: Date | null,
-  paperSize?: string,
-  appName: string = DEFAULT_APP_NAME,
-): string => {
-  const mimeType = FORMAT_MIME_TYPES[format];
-  const params = new URLSearchParams({
-    name: reportName,
-    responseType: mimeType,
-    paperSize: paperSize ?? DEFAULT_PAPER_SIZE,
-    appName,
-  });
-
-  if (startDate) {
-    params.append('startDate', formatDateForQuery(startDate) ?? '');
-  }
-  if (endDate) {
-    params.append('endDate', formatDateForQuery(endDate) ?? '');
-  }
-
-  return `${BAHMNI_REPORTS_URL}/report?${params.toString()}`;
-};
+export const formatItemToString =
+  (t: (key: string) => string) =>
+  (fmt: FormatKey | null): string =>
+    fmt ? t(FORMAT_I18N_KEYS[fmt]) : '';
 
 export interface ValidateReportRunInput {
   report: ReportDefinition & { id: string };

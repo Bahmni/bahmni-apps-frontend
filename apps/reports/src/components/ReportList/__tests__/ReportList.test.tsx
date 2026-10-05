@@ -1,10 +1,13 @@
 import { useNotification, useUserPrivilege } from '@bahmni/widgets';
 import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { axe, toHaveNoViolations } from 'jest-axe';
 import { useReportsAppConfig } from '../hooks/useReportsAppConfig';
 import { useReportsConfig } from '../hooks/useReportsConfig';
 import type { ReportsConfig } from '../models';
 import { ReportList } from '../ReportList';
+
+expect.extend(toHaveNoViolations);
 
 jest.mock('@bahmni/services', () => ({
   ...jest.requireActual('@bahmni/services'),
@@ -30,14 +33,17 @@ jest.mock('../TableFilters', () => ({
   __esModule: true,
   default: (props: {
     availableFormats: string[];
+    selectedPreset: string | null;
     onStartDateChange: (date: Date | null) => void;
     onEndDateChange: (date: Date | null) => void;
     onFormatChange: (format: string | null) => void;
+    onPresetChange: (preset: string | null) => void;
     onApply: () => void;
     onReset: () => void;
   }) => (
     <div data-testid="table-filters-stub">
       <span data-testid="tf-formats">{props.availableFormats.join(',')}</span>
+      <span data-testid="tf-preset">{props.selectedPreset ?? ''}</span>
       <button onClick={() => props.onStartDateChange(new Date('2024-03-01'))}>
         set-start
       </button>
@@ -45,6 +51,7 @@ jest.mock('../TableFilters', () => ({
         set-end
       </button>
       <button onClick={() => props.onFormatChange('PDF')}>set-format</button>
+      <button onClick={() => props.onPresetChange('TODAY')}>set-preset</button>
       <button onClick={props.onApply}>apply</button>
       <button onClick={props.onReset}>reset</button>
     </div>
@@ -141,13 +148,8 @@ describe('ReportList', () => {
       error: null,
     } as ReturnType<typeof useReportsConfig>);
 
-    // The design-system CodeSnippetSkeleton wrapper drops a literal
-    // `data-testid` prop (only its own `testId` prop survives), so we assert
-    // on the `id` prop instead of `getByTestId` here.
-    const { container } = render(<ReportList />);
-    expect(
-      container.querySelector('#reports-config-loading'),
-    ).toBeInTheDocument();
+    render(<ReportList />);
+    expect(screen.getByTestId('reports-config-loading')).toBeInTheDocument();
   });
 
   it('shows the loading skeleton while privileges are loading', () => {
@@ -165,10 +167,8 @@ describe('ReportList', () => {
       error: null,
     } as ReturnType<typeof useReportsConfig>);
 
-    const { container } = render(<ReportList />);
-    expect(
-      container.querySelector('#reports-config-loading'),
-    ).toBeInTheDocument();
+    render(<ReportList />);
+    expect(screen.getByTestId('reports-config-loading')).toBeInTheDocument();
   });
 
   it('notifies and renders nothing when the reports config fails to load', () => {
@@ -265,11 +265,13 @@ describe('ReportList', () => {
     render(<ReportList />);
 
     await user.click(screen.getByText('set-start'));
+    await user.click(screen.getByText('set-preset'));
     await user.click(screen.getByText('apply'));
     const dateRangeSection = getDateRangeSection();
     expect(
       within(dateRangeSection).getByTestId('rt-version'),
     ).toHaveTextContent('1');
+    expect(screen.getByTestId('tf-preset')).toHaveTextContent('TODAY');
 
     await user.click(screen.getByText('reset'));
 
@@ -282,5 +284,17 @@ describe('ReportList', () => {
     expect(within(dateRangeSection).getByTestId('rt-format')).toHaveTextContent(
       '',
     );
+    expect(screen.getByTestId('tf-preset')).toHaveTextContent('');
+  });
+
+  it('has no accessibility violations', async () => {
+    mockUseReportsConfig.mockReturnValue({
+      data: reportsConfig,
+      isLoading: false,
+      error: null,
+    } as ReturnType<typeof useReportsConfig>);
+
+    const { container } = render(<ReportList />);
+    expect(await axe(container)).toHaveNoViolations();
   });
 });

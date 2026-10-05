@@ -493,6 +493,15 @@ export type {
 } from './templateService';
 export { getTasks } from './taskService';
 export {
+  buildRunReportUrl,
+  formatDateForQuery,
+  DEFAULT_APP_NAME,
+  DEFAULT_PAPER_SIZE,
+  DEFAULT_SUPPORTED_FORMATS,
+  FORMAT_MIME_TYPES,
+  type FormatKey,
+} from './reportService';
+export {
   groupExtensionsByPoint,
   filterExtensionsByPrivileges,
   type Extension,

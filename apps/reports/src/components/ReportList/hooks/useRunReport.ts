@@ -1,7 +1,10 @@
-import { dispatchAuditEvent } from '@bahmni/services';
+import {
+  buildRunReportUrl,
+  dispatchAuditEvent,
+  MODULE_LABELS,
+} from '@bahmni/services';
 import { useCallback } from 'react';
 import type { ReportDefinition, FormatKey } from '../models';
-import { buildRunReportUrl } from '../utils';
 
 export const useRunReport = () => {
   const runReport = useCallback(
@@ -21,16 +24,23 @@ export const useRunReport = () => {
           report.config?.paperSize ?? defaultPaperSize,
         );
 
-        const reportWindow = window.open(url);
+        // Passing 'noopener'/'noreferrer' in the window features string makes
+        // window.open return null even on success (browsers withhold the
+        // handle), which breaks pop-up-blocked detection below. Instead,
+        // open normally and sever the opener reference manually — same
+        // reverse-tabnabbing protection, without losing the return value.
+        const reportWindow = window.open(url, '_blank');
 
         if (!reportWindow) {
           return false;
         }
 
+        reportWindow.opener = null;
+
         dispatchAuditEvent({
           eventType: 'RUN_REPORT',
           messageParams: { reportName: report.name },
-          module: 'MODULE_LABEL_REPORTS_KEY',
+          module: MODULE_LABELS.REPORTS,
         });
         return true;
       } catch (error) {
