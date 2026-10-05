@@ -30,6 +30,8 @@ import {
   ResolvedRow,
   ScalarValue,
   SearchCondition,
+  SearchConditionGroup,
+  SearchConditionLeaf,
   SearchPage,
   SearchPaginationMeta,
   SearchPayload,
@@ -98,6 +100,8 @@ export const toSearchAuditEventType = (
 
 const isRangeInput = (input: InputConfig): boolean =>
   (input.kind === 'date' || input.kind === 'numeric') && !!input.rangeAllowed;
+
+const isLeaf = (c: SearchCondition): c is SearchConditionLeaf => 'field' in c;
 
 const isScalarValue = (v: CriterionValue): v is ScalarValue => 'value' in v;
 
@@ -536,4 +540,109 @@ export const validateConfigForCriteria = (
     }
   }
   return null;
+};
+
+const findLeaf = (
+  group: SearchConditionGroup,
+  field: string,
+  comparator?: SearchConditionLeaf['comparator'],
+): SearchConditionLeaf | undefined =>
+  group.conditions
+    .filter(isLeaf)
+    .find(
+      (c) => c.field === field && (!comparator || c.comparator === comparator),
+    );
+
+/**
+ * Inverse of buildCondition: turns one persisted condition back into the
+ * criterion id and value it was built from. Returns null when it no longer
+ * matches the current config (or is the injected location filter).
+ */
+const conditionToRow = (
+  condition: SearchCondition,
+  criteria: CriterionConfig[],
+): { criterionKey: string; value: CriterionValue } | null => {
+  if (isLeaf(condition)) {
+    if (condition.field === LOCATION_UUID_FIELD) return null;
+    const criterion = criteria.find(
+      (c) =>
+        c.field.key === condition.field &&
+        !c.field.keyType &&
+        !isRangeInput(c.input),
+    );
+    return criterion
+      ? { criterionKey: criterion.id!, value: { value: condition.value } }
+      : null;
+  }
+
+  const kindLeaf = condition.conditions
+    .filter(isLeaf)
+    .find((c) => c.field.endsWith(KEY_TYPE_KIND_SUFFIX));
+  if (kindLeaf) {
+    const key = kindLeaf.field.slice(0, -KEY_TYPE_KIND_SUFFIX.length);
+    const valueLeaf = findLeaf(condition, `${key}${KEY_TYPE_VALUE_SUFFIX}`);
+    const criterion = criteria.find(
+      (c) => c.field.key === key && c.field.keyType === kindLeaf.value,
+    );
+    return criterion && valueLeaf
+      ? { criterionKey: criterion.id!, value: { value: valueLeaf.value } }
+      : null;
+  }
+
+  const from = condition.conditions
+    .filter(isLeaf)
+    .find((c) => c.comparator === 'ge');
+  const to = from && findLeaf(condition, from.field, 'le');
+  const criterion =
+    from &&
+    criteria.find(
+      (c) =>
+        c.field.key === from.field && !c.field.keyType && isRangeInput(c.input),
+    );
+  return criterion && from && to
+    ? {
+        criterionKey: criterion.id!,
+        value: {
+          from: { value: from.value, comparator: null },
+          to: { value: to.value, comparator: null },
+        } satisfies RangeValue,
+      }
+    : null;
+};
+
+/**
+ * Rebuilds criterion rows from a persisted criteria group. Conditions whose
+ * field is absent from the current config are dropped, as is the location
+ * filter (always re-derived from the session location at search time).
+ */
+export const conditionsToRows = (
+  group: SearchConditionGroup,
+  criteria: CriterionConfig[],
+): CriterionRow[] => {
+  const usedKeys = new Set<string>();
+  return group.conditions.flatMap((condition) => {
+    const row = conditionToRow(condition, criteria);
+    if (!row || usedKeys.has(row.criterionKey)) return [];
+    usedKeys.add(row.criterionKey);
+    return [{ ...makeRow(row.criterionKey), value: row.value }];
+  });
+};
+
+/**
+ * Restores rows from the saved search if it belongs to one of the available
+ * contexts and at least one of its conditions is still usable.
+ */
+export const hydrateRecentSearch = (
+  recent: {
+    payload: { entity: string; criteria: SearchConditionGroup };
+  } | null,
+  contexts: SearchContextConfig[],
+): {
+  rows: CriterionRow[];
+  contextKey: SearchContextConfig['context'];
+} | null => {
+  const context = contexts.find((c) => c.context === recent?.payload.entity);
+  if (!recent || !context) return null;
+  const rows = conditionsToRows(recent.payload.criteria, context.criteria);
+  return rows.length > 0 ? { rows, contextKey: context.context } : null;
 };

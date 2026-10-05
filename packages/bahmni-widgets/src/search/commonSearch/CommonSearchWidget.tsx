@@ -10,12 +10,16 @@ import {
   generateUUID,
   getCurrentUserPrivileges,
   getConfig,
+  clearRecentSearchCriteria,
+  getCurrentUser,
+  getRecentSearchCriteria,
   getUserLoginLocation,
   post,
+  saveRecentSearchCriteria,
   useTranslation,
   UserLocation,
 } from '@bahmni/services';
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useMemo, useRef, useState } from 'react';
 import { useNotification } from '../../notification';
 import { SearchWidgetProps } from '../models';
@@ -27,6 +31,7 @@ import {
   CommonSearchWidgetConfig,
   CriterionRow,
   CursorDirection,
+  RecentSearchCriteria,
   SearchContextConfig,
   SearchResponse,
 } from './models';
@@ -36,6 +41,7 @@ import {
   buildPaginationMeta,
   buildPayload,
   extractSearchPage,
+  hydrateRecentSearch,
   processContextConfigs,
   resolveRows,
   toSearchAuditEventType,
@@ -47,6 +53,7 @@ import {
 const CommonSearchWidget = ({ extensionParams }: SearchWidgetProps) => {
   const { t } = useTranslation();
   const { addNotification } = useNotification();
+  const queryClient = useQueryClient();
   const configUrl = extensionParams?.configUrl as string | undefined;
   const [isSearchResultsLoading, setIsSearchResultsLoading] = useState(false);
   const [location] = useState<UserLocation | null>(() => {
@@ -84,6 +91,49 @@ const CommonSearchWidget = ({ extensionParams }: SearchWidgetProps) => {
     enabled: !!config,
   });
 
+  const notifySearchFailure = () =>
+    addNotification({
+      title: t('ERROR_DEFAULT_TITLE'),
+      message: t('COMMON_SEARCH_API_ERROR_MESSAGE'),
+      type: 'error',
+      timeout: 5000,
+    });
+
+  const { isLoading: isUserLoading, data: user } = useQuery({
+    queryKey: ['commonSearchCurrentUser'],
+    queryFn: getCurrentUser,
+    enabled: !!config,
+    staleTime: Infinity,
+  });
+
+  const recentSearchQueryKey = ['recentSearchCriteria', user?.uuid];
+  const { data: recentSearch } = useQuery({
+    queryKey: recentSearchQueryKey,
+    queryFn: () =>
+      getRecentSearchCriteria<RecentSearchCriteria['payload']['criteria']>(
+        user!,
+      ),
+    enabled: !!user,
+    staleTime: Infinity,
+  });
+
+  const saveRecentSearch = useMutation({
+    mutationFn: (payload: RecentSearchCriteria['payload']) =>
+      saveRecentSearchCriteria(user!.uuid, payload),
+    onSuccess: (_, payload) =>
+      queryClient.setQueryData<RecentSearchCriteria>(recentSearchQueryKey, {
+        version: 1,
+        savedAt: new Date().toISOString(),
+        payload,
+      }),
+  });
+
+  const clearRecentSearch = useMutation({
+    mutationFn: () => clearRecentSearchCriteria(user!.uuid),
+    onSuccess: () => queryClient.setQueryData(recentSearchQueryKey, null),
+    onError: notifySearchFailure,
+  });
+
   const configValidationError = useMemo(
     () =>
       config
@@ -93,16 +143,26 @@ const CommonSearchWidget = ({ extensionParams }: SearchWidgetProps) => {
     [config],
   );
 
-  const isLoading = isConfigLoading || isPrivilegesLoading;
-  const error = configError ?? privilegesError ?? configValidationError;
+  const privilegedContexts = useMemo(
+    () => (config ? processContextConfigs(config, userPrivileges ?? null) : []),
+    [config, userPrivileges],
+  );
 
-  const notifySearchFailure = () =>
-    addNotification({
-      title: t('ERROR_DEFAULT_TITLE'),
-      message: t('COMMON_SEARCH_API_ERROR_MESSAGE'),
-      type: 'error',
-      timeout: 5000,
-    });
+  const hydratedSearch = useMemo(
+    () => hydrateRecentSearch(recentSearch ?? null, privilegedContexts),
+    [recentSearch, privilegedContexts],
+  );
+
+  // The form seeds its rows once on mount, so wait for the saved criteria
+  // (null when none) before rendering it
+  const isRecentSearchPending = !!user && recentSearch === undefined;
+
+  const isLoading =
+    isConfigLoading ||
+    isPrivilegesLoading ||
+    isUserLoading ||
+    isRecentSearchPending;
+  const error = configError ?? privilegesError ?? configValidationError;
 
   const runSearch = (
     rows: CriterionRow[],
@@ -174,6 +234,15 @@ const CommonSearchWidget = ({ extensionParams }: SearchWidgetProps) => {
     );
     if (!validated.some((r) => r.validationError ?? r.rangeOrderError)) {
       lastSearchRef.current = { rows: validated, contextKey: context.context };
+      if (user) {
+        saveRecentSearch.mutate({
+          entity: context.context,
+          criteria: buildPayload(
+            resolveRows(validated, context.criteria),
+            context.context,
+          ).criteria,
+        });
+      }
       runSearch(validated, context, {
         cursor: null,
         currentSet: 0,
@@ -181,6 +250,11 @@ const CommonSearchWidget = ({ extensionParams }: SearchWidgetProps) => {
       });
     }
     return validated;
+  };
+
+  const handleReset = () => {
+    lastSearchRef.current = null;
+    if (user) clearRecentSearch.mutate();
   };
 
   const handleSetNavigation = (direction: CursorDirection) => {
@@ -232,11 +306,6 @@ const CommonSearchWidget = ({ extensionParams }: SearchWidgetProps) => {
       />
     );
 
-  const privilegedContexts = processContextConfigs(
-    config,
-    userPrivileges ?? null,
-  );
-
   if (privilegedContexts.length === 0)
     return (
       <InlineNotification
@@ -276,8 +345,11 @@ const CommonSearchWidget = ({ extensionParams }: SearchWidgetProps) => {
             config={privilegedContexts}
             location={location}
             onSearch={handleSearch}
-            savedRows={lastSearchRef.current?.rows}
-            savedContextKey={lastSearchRef.current?.contextKey}
+            savedRows={lastSearchRef.current?.rows ?? hydratedSearch?.rows}
+            savedContextKey={
+              lastSearchRef.current?.contextKey ?? hydratedSearch?.contextKey
+            }
+            onReset={user ? handleReset : undefined}
           />
         </AccordionItem>
       </Accordion>

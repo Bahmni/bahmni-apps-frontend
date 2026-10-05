@@ -11,7 +11,9 @@ import {
   DEFAULT_DATE_FORMAT_PROPERTY,
   AVAILABLE_LOCATIONS_URL,
   SAVE_USER_LOCATION_URL,
+  USER_PROPERTIES_URL,
   UPDATE_SESSION_LOCATION_URL,
+  RECENT_COMMON_SEARCH_CRITERIA_KEY,
 } from './constants';
 import {
   UserResponse,
@@ -19,6 +21,7 @@ import {
   UserLocation,
   AppSettingsResponse,
   LocationsResponse,
+  RecentSearchCriteria,
 } from './models';
 
 export async function getCurrentUser(): Promise<User | null> {
@@ -85,6 +88,23 @@ export const getAvailableLocations = async (): Promise<UserLocation[]> => {
 };
 
 /**
+ * Writes user properties without dropping the others: OpenMRS replaces the
+ * whole userProperties map on update, so the current map is read and merged.
+ * @throws Error when either API call fails
+ */
+const saveUserProperties = async (
+  userUuid: string,
+  properties: Record<string, string>,
+): Promise<void> => {
+  const current = await get<Pick<User, 'userProperties'>>(
+    USER_PROPERTIES_URL(userUuid),
+  );
+  await post(SAVE_USER_LOCATION_URL(userUuid), {
+    userProperties: { ...current?.userProperties, ...properties },
+  });
+};
+
+/**
  * Saves the user's location preference to the server
  * @param userUuid - The UUID of the user
  * @param location - The location object to save
@@ -94,9 +114,7 @@ export const saveUserLocation = async (
   userUuid: string,
   location: UserLocation,
 ): Promise<void> => {
-  await post(SAVE_USER_LOCATION_URL(userUuid), {
-    userProperties: { loginLocation: location.uuid },
-  });
+  await saveUserProperties(userUuid, { loginLocation: location.uuid });
 };
 
 /**
@@ -110,3 +128,90 @@ export const updateSessionLocation = async (
 ): Promise<void> => {
   await post(UPDATE_SESSION_LOCATION_URL, { sessionLocation: locationUuid });
 };
+
+const toBase64 = (value: string): string =>
+  btoa(
+    encodeURIComponent(value).replace(/%([0-9A-F]{2})/g, (_, hex) =>
+      String.fromCharCode(Number.parseInt(hex, 16)),
+    ),
+  );
+
+const fromBase64 = (value: string): string =>
+  decodeURIComponent(
+    Array.from(
+      atob(value),
+      (c) => '%' + c.charCodeAt(0).toString(16).padStart(2, '0'),
+    ).join(''),
+  );
+
+/**
+ * Encodes search criteria as base64 JSON (UTF-8 safe) for storage in a user property
+ */
+export const encodeSearchCriteria = <T>(
+  criteria: RecentSearchCriteria<T>,
+): string => toBase64(JSON.stringify(criteria));
+
+/**
+ * Decodes a stored search criteria value.
+ * @returns null for empty, malformed or unsupported-version values - never throws
+ */
+export const decodeSearchCriteria = <T = unknown>(
+  value: string | undefined,
+): RecentSearchCriteria<T> | null => {
+  if (!value) return null;
+  try {
+    const parsed = JSON.parse(fromBase64(value));
+    if (
+      parsed?.version !== 1 ||
+      typeof parsed.payload?.entity !== 'string' ||
+      !parsed.payload.criteria
+    ) {
+      return null;
+    }
+    return parsed as RecentSearchCriteria<T>;
+  } catch {
+    return null;
+  }
+};
+
+/**
+ * Saves the user's most recently executed common-search criteria
+ * @param userUuid - The UUID of the user
+ * @param payload - The search entity and criteria (without pagination meta)
+ * @throws Error when the API call fails
+ */
+export const saveRecentSearchCriteria = async <T>(
+  userUuid: string,
+  payload: RecentSearchCriteria<T>['payload'],
+): Promise<void> => {
+  await saveUserProperties(userUuid, {
+    [RECENT_COMMON_SEARCH_CRITERIA_KEY]: encodeSearchCriteria({
+      version: 1,
+      savedAt: new Date().toISOString(),
+      payload,
+    }),
+  });
+};
+
+/**
+ * Clears the user's saved common-search criteria
+ * @param userUuid - The UUID of the user
+ * @throws Error when the API call fails
+ */
+export const clearRecentSearchCriteria = async (
+  userUuid: string,
+): Promise<void> => {
+  await saveUserProperties(userUuid, {
+    [RECENT_COMMON_SEARCH_CRITERIA_KEY]: '',
+  });
+};
+
+/**
+ * Reads the saved common-search criteria from a fetched user
+ */
+export const getRecentSearchCriteria = <T = unknown>(
+  user: User,
+): RecentSearchCriteria<T> | null =>
+  decodeSearchCriteria<T>(
+    user.userProperties?.[RECENT_COMMON_SEARCH_CRITERIA_KEY],
+  );

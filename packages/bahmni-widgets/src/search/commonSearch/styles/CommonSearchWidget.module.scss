@@ -65,6 +65,11 @@
   justify-content: space-between;
 }
 
+.footerActions {
+  display: flex;
+  gap: 1rem;
+}
+
 .rangeInputCol {
   flex: 1 1 0;
 }
@@ -132,8 +137,8 @@
 
 .searchCriteriaAccordionItem {
   > div > div {
-  padding-inline: $spacing-06;
-  margin-inline-start: 0 !important;
+    padding-inline: $spacing-06;
+    margin-inline-start: 0 !important;
   }
   > button:first-of-type {
     background-color: $layer-01;
