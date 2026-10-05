@@ -1,31 +1,4 @@
-import type { DocumentSaveTarget, DocumentType } from '@bahmni/services';
-
-// Re-export so consumers/tests of this widget can reference the shared type.
-export type { DocumentSaveTarget } from '@bahmni/services';
-
-export interface DocumentSaveFailure {
-  fileName: string;
-  message: string;
-}
-
-export interface DocumentSaveSummary {
-  savedCount: number;
-  failures: DocumentSaveFailure[];
-}
-
-export interface DocumentUploadRef {
-  save: () => Promise<DocumentSaveSummary>;
-}
-
-export interface DocumentUploadProps {
-  patientUuid: string;
-  encounterTypeName: string;
-  saveTarget: DocumentSaveTarget;
-  documentTypes?: DocumentType[];
-  defaultOption?: string | null;
-  onSaved?: () => void;
-  onPendingChange?: (hasPendingDocument: boolean) => void;
-}
+import type { DocumentType } from '@bahmni/services';
 
 export interface PendingDocument {
   id: string;
@@ -37,4 +10,16 @@ export interface PendingDocument {
   note: string;
   isNoteVisible: boolean;
   uploadedUrl?: string;
+}
+
+/**
+ * Controlled: the consumer owns the pending documents and saving them. The widget only selects,
+ * edits and discards them, so it holds no state a remount could lose.
+ */
+export interface DocumentUploadProps {
+  documents: PendingDocument[];
+  onDocumentsChange: (documents: PendingDocument[]) => void;
+  documentTypes?: DocumentType[];
+  defaultOption?: string | null;
+  isSaving?: boolean;
 }

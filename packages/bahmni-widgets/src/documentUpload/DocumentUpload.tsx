@@ -1,65 +1,34 @@
 import { Button, Dropdown, IconButton, Link } from '@bahmni/design-system';
-import {
-  AUDIT_LOG_EVENT_DETAILS,
-  AuditEventType,
-  dispatchAuditEvent,
-  DocumentType,
-  getDocumentUploadMaxSizeMb,
-  DocumentPayload,
-  saveDocuments,
-  uploadDocument,
-} from '@bahmni/services';
+import { DocumentType, getDocumentUploadMaxSizeMb } from '@bahmni/services';
 import { Close } from '@carbon/icons-react';
 import { InlineLoading, TextArea } from '@carbon/react';
 import { useQuery } from '@tanstack/react-query';
-import React, {
-  forwardRef,
-  useEffect,
-  useImperativeHandle,
-  useRef,
-  useState,
-} from 'react';
+import React, { useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useActivePractitioner } from '../activePractitioner';
 import { useNotification } from '../notification';
 import styles from './__styles__/DocumentUpload.module.scss';
 import { FILE_INPUT_ACCEPT, MAX_NOTE_LENGTH } from './constants';
-import {
-  DocumentSaveFailure,
-  DocumentSaveSummary,
-  DocumentUploadRef,
-  DocumentUploadProps,
-  PendingDocument,
-} from './models';
+import { DocumentUploadProps, PendingDocument } from './models';
 import { renderDocumentTile } from './renderDocumentTile';
-import { isAcceptedFileType } from './utils';
+import {
+  getDefaultDocumentType,
+  isAcceptedFileType,
+  revokeDocumentPreview,
+} from './utils';
 
-interface UploadedDocument {
-  document: PendingDocument;
-  url: string;
-}
+// Module-wide rather than per instance: the consumer keeps the documents across a remount of the
+// widget, so a per-instance counter restarting at zero could reissue an id that is still pending.
+let nextPendingId = 0;
 
-const messageOf = (error: unknown): string =>
-  error instanceof Error ? error.message : String(error);
-
-export const DocumentUpload = forwardRef<
-  DocumentUploadRef,
-  DocumentUploadProps
->(function DocumentUpload(
-  {
-    patientUuid,
-    encounterTypeName,
-    saveTarget,
-    documentTypes = [],
-    defaultOption,
-    onSaved,
-    onPendingChange,
-  },
-  ref,
-) {
+export const DocumentUpload: React.FC<DocumentUploadProps> = ({
+  documents,
+  onDocumentsChange,
+  documentTypes = [],
+  defaultOption,
+  isSaving = false,
+}) => {
   const { t } = useTranslation();
   const { addNotification } = useNotification();
-  const { practitioner } = useActivePractitioner();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Max size comes solely from the bahmni.documentUpload.maxFileSizeInMB setting; when it is not
@@ -69,65 +38,28 @@ export const DocumentUpload = forwardRef<
     queryFn: getDocumentUploadMaxSizeMb,
   });
 
-  const [pendingDocuments, setPendingDocuments] = useState<PendingDocument[]>(
-    [],
+  const defaultDocumentType = getDefaultDocumentType(
+    documentTypes,
+    defaultOption,
   );
-  const [isSaving, setIsSaving] = useState(false);
-  const nextPendingId = useRef(0);
-
-  const defaultDocumentType =
-    documentTypes.find(
-      (type) =>
-        type.label?.toLowerCase().trim() ===
-        defaultOption?.toLowerCase().trim(),
-    ) ??
-    documentTypes[0] ??
-    null;
 
   // Resolved on use, so a file chosen before the type list arrived still gets the default.
   const typeOf = (document: PendingDocument): DocumentType | null =>
     document.documentType ?? defaultDocumentType;
 
   const updatePending = (id: string, patch: Partial<PendingDocument>) =>
-    setPendingDocuments((current) =>
-      current.map((document) =>
+    onDocumentsChange(
+      documents.map((document) =>
         document.id === id ? { ...document, ...patch } : document,
       ),
     );
 
-  const revokePreview = (document: PendingDocument) => {
-    if (document.url.startsWith('blob:')) {
-      URL.revokeObjectURL(document.url);
-    }
-  };
-
   const discardPending = (id: string) => {
-    setPendingDocuments((current) => {
-      current
-        .filter((pending) => pending.id === id)
-        .forEach((pending) => revokePreview(pending));
-      return current.filter((pending) => pending.id !== id);
-    });
+    documents
+      .filter((pending) => pending.id === id)
+      .forEach(revokeDocumentPreview);
+    onDocumentsChange(documents.filter((pending) => pending.id !== id));
   };
-
-  const hasPendingDocuments = pendingDocuments.length > 0;
-  const onPendingChangeRef = useRef(onPendingChange);
-  useEffect(() => {
-    onPendingChangeRef.current = onPendingChange;
-  });
-  useEffect(() => {
-    onPendingChangeRef.current?.(hasPendingDocuments);
-  }, [hasPendingDocuments]);
-
-  const pendingDocumentsRef = useRef(pendingDocuments);
-  useEffect(() => {
-    pendingDocumentsRef.current = pendingDocuments;
-  });
-  useEffect(
-    () => () => pendingDocumentsRef.current.forEach(revokePreview),
-
-    [],
-  );
 
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(event.target.files ?? []);
@@ -154,7 +86,7 @@ export const DocumentUpload = forwardRef<
         return;
       }
       accepted.push({
-        id: `pending-${nextPendingId.current++}`,
+        id: `pending-${nextPendingId++}`,
         file,
         url: URL.createObjectURL(file),
         fileName: file.name,
@@ -185,120 +117,15 @@ export const DocumentUpload = forwardRef<
     }
 
     if (accepted.length > 0) {
-      setPendingDocuments((current) => [...current, ...accepted]);
+      onDocumentsChange([...documents, ...accepted]);
     }
   };
-
-  const toDocumentPayload = ({ document, url }: UploadedDocument) => {
-    const type = typeOf(document);
-    return {
-      url,
-      contentType: document.contentType,
-      title: document.fileName,
-      typeCode: type?.id,
-      typeDisplay: type?.label,
-      description: document.note.trim() || undefined,
-      authorPractitionerUuid: practitioner?.uuid,
-    } satisfies DocumentPayload;
-  };
-
-  const saveUploaded = async (
-    uploaded: UploadedDocument[],
-  ): Promise<Array<{ uploaded: UploadedDocument; error?: unknown }>> => {
-    try {
-      await saveDocuments({
-        patientUuid,
-        target: saveTarget,
-        documents: uploaded.map(toDocumentPayload),
-      });
-      return uploaded.map((entry) => ({ uploaded: entry }));
-    } catch (error) {
-      return uploaded.map((entry) => ({ uploaded: entry, error }));
-    }
-  };
-
-  const handleSave = async (): Promise<DocumentSaveSummary> => {
-    const documents = pendingDocuments;
-    if (documents.length === 0 || isSaving) {
-      return { savedCount: 0, failures: [] };
-    }
-
-    setIsSaving(true);
-    try {
-      const failures: DocumentSaveFailure[] = [];
-
-      const uploads = await Promise.allSettled(
-        documents.map((document) =>
-          document.uploadedUrl
-            ? Promise.resolve({ url: document.uploadedUrl })
-            : uploadDocument(document.file, encounterTypeName, patientUuid),
-        ),
-      );
-      const uploaded: UploadedDocument[] = [];
-      documents.forEach((document, index) => {
-        const upload = uploads[index];
-        if (upload.status === 'fulfilled') {
-          uploaded.push({ document, url: upload.value.url });
-        } else {
-          failures.push({
-            fileName: document.fileName,
-            message: messageOf(upload.reason),
-          });
-        }
-      });
-      const uploadedUrlById = new Map(
-        uploaded.map(({ document, url }) => [document.id, url]),
-      );
-      setPendingDocuments((current) =>
-        current.map((document) => {
-          const url = uploadedUrlById.get(document.id);
-          return url ? { ...document, uploadedUrl: url } : document;
-        }),
-      );
-
-      const outcomes = uploaded.length > 0 ? await saveUploaded(uploaded) : [];
-      const savedIds = new Set<string>();
-      outcomes.forEach(({ uploaded: entry, error }) => {
-        if (error) {
-          failures.push({
-            fileName: entry.document.fileName,
-            message: messageOf(error),
-          });
-          return;
-        }
-        savedIds.add(entry.document.id);
-        dispatchAuditEvent({
-          eventType: AUDIT_LOG_EVENT_DETAILS.UPLOAD_PATIENT_DOCUMENT
-            .eventType as AuditEventType,
-          patientUuid,
-          messageParams: { encounterType: encounterTypeName },
-          module: encounterTypeName,
-        });
-      });
-
-      if (savedIds.size > 0) {
-        setPendingDocuments((current) => {
-          current
-            .filter((document) => savedIds.has(document.id))
-            .forEach(revokePreview);
-          return current.filter((document) => !savedIds.has(document.id));
-        });
-        onSaved?.();
-      }
-
-      return { savedCount: savedIds.size, failures };
-    } finally {
-      setIsSaving(false);
-    }
-  };
-
-  useImperativeHandle(ref, () => ({ save: handleSave }));
 
   return (
     <div className={styles.container}>
-      {pendingDocuments.length > 0 && (
+      {documents.length > 0 && (
         <div className={styles.pending}>
-          {pendingDocuments.map((document) => (
+          {documents.map((document) => (
             <div
               key={document.id}
               className={styles.pendingDocument}
@@ -407,6 +234,6 @@ export const DocumentUpload = forwardRef<
       </div>
     </div>
   );
-});
+};
 
 export default DocumentUpload;

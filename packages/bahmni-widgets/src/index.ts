@@ -8,14 +8,16 @@ export {
 // Widget Components
 export { DocumentPrintButton } from './documentPrintButton';
 export type { PrintOption } from './documentPrintButton';
-export { DocumentUpload, renderDocumentTile } from './documentUpload';
+export {
+  DocumentUpload,
+  getDefaultDocumentType,
+  renderDocumentTile,
+  revokeDocumentPreview,
+} from './documentUpload';
 export type {
   DocumentUploadProps,
-  DocumentUploadRef,
-  DocumentSaveSummary,
-  DocumentSaveFailure,
-  DocumentSaveTarget,
   DocumentTileData,
+  PendingDocument,
 } from './documentUpload';
 export { PatientDetails } from './patientDetails';
 export { AllergiesTable } from './allergies';
