@@ -31,7 +31,7 @@
   "COMMON_SEARCH_RESULTS_TABLE_TITLE": "Resultados de búsqueda",
   "COMMON_SEARCH_RESULTS_TABLE_TITLE_WITH_COUNT": "Resultados de búsqueda ({{total}})",
   "COMMON_SEARCH_SEARCH_BUTTON": "Buscar",
-  "COMMON_SEARCH_RESET_BUTTON": "Borrar todo",
+  "COMMON_SEARCH_RESET_BUTTON": "Borrar Buscar",
   "COMMON_SEARCH_SELECT_CONTEXT_PLACEHOLDER": "Seleccionar un contexto",
   "COMMON_SEARCH_SELECT_CONTEXT_TITLE": "Contexto de Búsqueda",
   "COMMON_SEARCH_SELECT_LOCATION_LABEL": "Ubicación",

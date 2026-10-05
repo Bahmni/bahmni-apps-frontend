@@ -1,4 +1,4 @@
-import { Button, Dropdown } from '@bahmni/design-system';
+import { Button, Dropdown, Link } from '@bahmni/design-system';
 import { useTranslation, UserLocation } from '@bahmni/services';
 import { useState } from 'react';
 import { CriterionRow, CriterionValue, SearchContextConfig } from '../models';
@@ -181,31 +181,33 @@ const SearchForm = ({
                 {t('COMMON_SEARCH_ADD_CRITERIA_BUTTON')}
               </Button>
             ) : null}
+          </div>
+          <div className={styles.footerActions}>
             {onReset && (
-              <Button
-                kind="ghost"
+              <Link
                 id="common-search-reset-button"
                 data-testid="common-search-reset-button-test-id"
                 onClick={handleReset}
               >
                 {t('COMMON_SEARCH_RESET_BUTTON')}
-              </Button>
+              </Link>
             )}
+            <Button
+              kind="primary"
+              id="common-search-search-button"
+              data-testid="common-search-search-button-test-id"
+              onClick={() => setRows(onSearch(rows, activeContext))}
+              disabled={
+                rows.length === 0 ||
+                rows.some(
+                  (r) =>
+                    r.validationError !== null || r.rangeOrderError !== null,
+                )
+              }
+            >
+              {t('COMMON_SEARCH_SEARCH_BUTTON')}
+            </Button>
           </div>
-          <Button
-            kind="primary"
-            id="common-search-search-button"
-            data-testid="common-search-search-button-test-id"
-            onClick={() => setRows(onSearch(rows, activeContext))}
-            disabled={
-              rows.length === 0 ||
-              rows.some(
-                (r) => r.validationError !== null || r.rangeOrderError !== null,
-              )
-            }
-          >
-            {t('COMMON_SEARCH_SEARCH_BUTTON')}
-          </Button>
         </div>
       </div>
     </div>
