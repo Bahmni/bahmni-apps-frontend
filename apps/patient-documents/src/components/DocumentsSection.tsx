@@ -117,7 +117,7 @@ export const DocumentsSection: React.FC<DocumentsSectionProps> = ({
     () => () =>
       Object.values(pendingByVisitRef.current)
         .flat()
-        .forEach(revokeDocumentPreview),
+        .forEach((document) => revokeDocumentPreview(document)),
     [],
   );
 
@@ -166,7 +166,7 @@ export const DocumentsSection: React.FC<DocumentsSectionProps> = ({
     const saved = new Set(savedIds);
     documents
       .filter((document) => saved.has(document.id))
-      .forEach(revokeDocumentPreview);
+      .forEach((document) => revokeDocumentPreview(document));
     setPendingByVisit((previous) => ({
       ...previous,
       [visitKey]: (previous[visitKey] ?? [])

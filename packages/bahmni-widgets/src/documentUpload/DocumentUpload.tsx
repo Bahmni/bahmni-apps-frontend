@@ -57,7 +57,7 @@ export const DocumentUpload: React.FC<DocumentUploadProps> = ({
   const discardPending = (id: string) => {
     documents
       .filter((pending) => pending.id === id)
-      .forEach(revokeDocumentPreview);
+      .forEach((pending) => revokeDocumentPreview(pending));
     onDocumentsChange(documents.filter((pending) => pending.id !== id));
   };
 
