@@ -49,10 +49,10 @@ You'll need a GitHub Personal Access Token to access the GitHub Container Regist
 
 ```bash
 # Clone the Bahmni Docker repository
-git clone git@github.com:bahnew/bahmni-docker.git
+git clone git@github.com:Bahmni/bahmni-docker.git
 # If you want to clone using the web URL
-# Clone Bahmni-docker from Bahnew repository(https://github.com/bahnew/bahmni-docker)
-# git clone https://github.com/bahnew/bahmni-docker.git
+# Clone Bahmni Docker from the Bahmni repository (https://github.com/Bahmni/bahmni-docker)
+# git clone https://github.com/Bahmni/bahmni-docker.git
 cd bahmni-docker
 
 # Clone the Bahmni Apps Frontend repository (in a separate terminal)
