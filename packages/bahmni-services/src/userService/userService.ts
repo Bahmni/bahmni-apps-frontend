@@ -4,7 +4,12 @@ import {
   BAHMNI_USER_COOKIE_NAME,
   BAHMNI_USER_LOCATION_COOKIE,
 } from '../constants/app';
-import { getCookieByName, decodeCookieValue } from '../utils';
+import {
+  getCookieByName,
+  decodeCookieValue,
+  encodeBase64,
+  decodeBase64,
+} from '../utils';
 import {
   USER_RESOURCE_URL,
   APP_SETTINGS_URL,
@@ -87,11 +92,7 @@ export const getAvailableLocations = async (): Promise<UserLocation[]> => {
   return response.results ?? [];
 };
 
-/**
- * Writes user properties without dropping the others: OpenMRS replaces the
- * whole userProperties map on update, so the current map is read and merged.
- * @throws Error when either API call fails
- */
+// OpenMRS may replace the whole userProperties map on update, so merge first
 const saveUserProperties = async (
   userUuid: string,
   properties: Record<string, string>,
@@ -129,30 +130,11 @@ export const updateSessionLocation = async (
   await post(UPDATE_SESSION_LOCATION_URL, { sessionLocation: locationUuid });
 };
 
-const toBase64 = (value: string): string =>
-  btoa(
-    encodeURIComponent(value).replace(/%([0-9A-F]{2})/g, (_, hex) =>
-      String.fromCharCode(Number.parseInt(hex, 16)),
-    ),
-  );
-
-const fromBase64 = (value: string): string =>
-  decodeURIComponent(
-    Array.from(
-      atob(value),
-      (c) => '%' + c.charCodeAt(0).toString(16).padStart(2, '0'),
-    ).join(''),
-  );
-
-/**
- * Encodes search criteria as base64 JSON (UTF-8 safe) for storage in a user property
- */
 export const encodeSearchCriteria = <T>(
   criteria: RecentSearchCriteria<T>,
-): string => toBase64(JSON.stringify(criteria));
+): string => encodeBase64(JSON.stringify(criteria));
 
 /**
- * Decodes a stored search criteria value.
  * @returns null for empty, malformed or unsupported-version values - never throws
  */
 export const decodeSearchCriteria = <T = unknown>(
@@ -160,7 +142,7 @@ export const decodeSearchCriteria = <T = unknown>(
 ): RecentSearchCriteria<T> | null => {
   if (!value) return null;
   try {
-    const parsed = JSON.parse(fromBase64(value));
+    const parsed = JSON.parse(decodeBase64(value));
     if (
       parsed?.version !== 1 ||
       typeof parsed.payload?.entity !== 'string' ||
@@ -174,12 +156,6 @@ export const decodeSearchCriteria = <T = unknown>(
   }
 };
 
-/**
- * Saves the user's most recently executed common-search criteria
- * @param userUuid - The UUID of the user
- * @param payload - The search entity and criteria (without pagination meta)
- * @throws Error when the API call fails
- */
 export const saveRecentSearchCriteria = async <T>(
   userUuid: string,
   payload: RecentSearchCriteria<T>['payload'],
@@ -193,11 +169,6 @@ export const saveRecentSearchCriteria = async <T>(
   });
 };
 
-/**
- * Clears the user's saved common-search criteria
- * @param userUuid - The UUID of the user
- * @throws Error when the API call fails
- */
 export const clearRecentSearchCriteria = async (
   userUuid: string,
 ): Promise<void> => {
@@ -206,9 +177,6 @@ export const clearRecentSearchCriteria = async (
   });
 };
 
-/**
- * Reads the saved common-search criteria from a fetched user
- */
 export const getRecentSearchCriteria = <T = unknown>(
   user: User,
 ): RecentSearchCriteria<T> | null =>

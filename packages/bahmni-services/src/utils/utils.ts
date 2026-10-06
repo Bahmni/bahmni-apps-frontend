@@ -460,3 +460,19 @@ export const formatCountry = (
     return code;
   }
 };
+
+// btoa/atob only handle Latin-1, so go through UTF-8 bytes to keep e.g. "José" intact
+export const encodeBase64 = (value: string): string =>
+  btoa(
+    encodeURIComponent(value).replace(/%([0-9A-F]{2})/g, (_, hex) =>
+      String.fromCharCode(Number.parseInt(hex, 16)),
+    ),
+  );
+
+export const decodeBase64 = (value: string): string =>
+  decodeURIComponent(
+    Array.from(
+      atob(value),
+      (c) => '%' + c.charCodeAt(0).toString(16).padStart(2, '0'),
+    ).join(''),
+  );

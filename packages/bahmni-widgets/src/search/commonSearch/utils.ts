@@ -27,6 +27,7 @@ import {
   FieldConfig,
   InputConfig,
   LookupOption,
+  RangeValue,
   ResolvedRow,
   ScalarValue,
   SearchCondition,
@@ -101,7 +102,8 @@ export const toSearchAuditEventType = (
 const isRangeInput = (input: InputConfig): boolean =>
   (input.kind === 'date' || input.kind === 'numeric') && !!input.rangeAllowed;
 
-const isLeaf = (c: SearchCondition): c is SearchConditionLeaf => 'field' in c;
+const isSingleCondition = (c: SearchCondition): c is SearchConditionLeaf =>
+  'field' in c;
 
 const isScalarValue = (v: CriterionValue): v is ScalarValue => 'value' in v;
 
@@ -542,27 +544,22 @@ export const validateConfigForCriteria = (
   return null;
 };
 
-const findLeaf = (
+const findConditionByField = (
   group: SearchConditionGroup,
   field: string,
   comparator?: SearchConditionLeaf['comparator'],
 ): SearchConditionLeaf | undefined =>
   group.conditions
-    .filter(isLeaf)
+    .filter(isSingleCondition)
     .find(
       (c) => c.field === field && (!comparator || c.comparator === comparator),
     );
 
-/**
- * Inverse of buildCondition: turns one persisted condition back into the
- * criterion id and value it was built from. Returns null when it no longer
- * matches the current config (or is the injected location filter).
- */
 const conditionToRow = (
   condition: SearchCondition,
   criteria: CriterionConfig[],
 ): { criterionKey: string; value: CriterionValue } | null => {
-  if (isLeaf(condition)) {
+  if (isSingleCondition(condition)) {
     if (condition.field === LOCATION_UUID_FIELD) return null;
     const criterion = criteria.find(
       (c) =>
@@ -575,24 +572,30 @@ const conditionToRow = (
       : null;
   }
 
-  const kindLeaf = condition.conditions
-    .filter(isLeaf)
+  const keyType = condition.conditions
+    .filter(isSingleCondition)
     .find((c) => c.field.endsWith(KEY_TYPE_KIND_SUFFIX));
-  if (kindLeaf) {
-    const key = kindLeaf.field.slice(0, -KEY_TYPE_KIND_SUFFIX.length);
-    const valueLeaf = findLeaf(condition, `${key}${KEY_TYPE_VALUE_SUFFIX}`);
-    const criterion = criteria.find(
-      (c) => c.field.key === key && c.field.keyType === kindLeaf.value,
+  if (keyType) {
+    const key = keyType.field.slice(0, -KEY_TYPE_KIND_SUFFIX.length);
+    const keyValue = findConditionByField(
+      condition,
+      `${key}${KEY_TYPE_VALUE_SUFFIX}`,
     );
-    return criterion && valueLeaf
-      ? { criterionKey: criterion.id!, value: { value: valueLeaf.value } }
+    const criterion = criteria.find(
+      (c) => c.field.key === key && c.field.keyType === keyType.value,
+    );
+    return criterion && keyValue
+      ? {
+          criterionKey: criterion.id!,
+          value: { value: keyValue.value },
+        }
       : null;
   }
 
   const from = condition.conditions
-    .filter(isLeaf)
+    .filter(isSingleCondition)
     .find((c) => c.comparator === 'ge');
-  const to = from && findLeaf(condition, from.field, 'le');
+  const to = from && findConditionByField(condition, from.field, 'le');
   const criterion =
     from &&
     criteria.find(
@@ -610,11 +613,6 @@ const conditionToRow = (
     : null;
 };
 
-/**
- * Rebuilds criterion rows from a persisted criteria group. Conditions whose
- * field is absent from the current config are dropped, as is the location
- * filter (always re-derived from the session location at search time).
- */
 export const conditionsToRows = (
   group: SearchConditionGroup,
   criteria: CriterionConfig[],
@@ -628,10 +626,6 @@ export const conditionsToRows = (
   });
 };
 
-/**
- * Restores rows from the saved search if it belongs to one of the available
- * contexts and at least one of its conditions is still usable.
- */
 export const hydrateRecentSearch = (
   recent: {
     payload: { entity: string; criteria: SearchConditionGroup };
