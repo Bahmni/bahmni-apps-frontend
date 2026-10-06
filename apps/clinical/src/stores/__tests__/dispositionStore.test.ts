@@ -7,6 +7,7 @@ const transferType = { value: 'TRANSFER', label: 'Transfer' };
 describe('useDispositionStore', () => {
   beforeEach(() => {
     act(() => {
+      useDispositionStore.getState().setTypeRequired(true);
       useDispositionStore.getState().reset();
     });
   });
@@ -18,6 +19,21 @@ describe('useDispositionStore', () => {
     expect(result.current.date).toBeNull();
     expect(result.current.notes).toBe('');
     expect(result.current.errors).toEqual({});
+    expect(result.current.isTypeRequired).toBe(true);
+  });
+
+  it('reset preserves the config-driven isTypeRequired flag', () => {
+    const { result } = renderHook(() => useDispositionStore());
+
+    act(() => {
+      result.current.setTypeRequired(false);
+      result.current.setSelectedType(admitType);
+    });
+    act(() => {
+      result.current.reset();
+    });
+
+    expect(result.current.isTypeRequired).toBe(false);
   });
 
   it('setSelectedType updates the selected type and clears notes', () => {
@@ -100,6 +116,22 @@ describe('useDispositionStore', () => {
 
       act(() => {
         result.current.setSelectedType(transferType);
+      });
+
+      let isValid = false;
+      act(() => {
+        isValid = result.current.validate();
+      });
+
+      expect(isValid).toBe(true);
+      expect(result.current.errors.type).toBeUndefined();
+    });
+
+    it('passes without a type selected when config marks type as not required', () => {
+      const { result } = renderHook(() => useDispositionStore());
+
+      act(() => {
+        result.current.setTypeRequired(false);
       });
 
       let isValid = false;

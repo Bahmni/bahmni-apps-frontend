@@ -8,8 +8,16 @@ import {
   Tile,
 } from '@bahmni/design-system';
 import { useTranslation } from '@bahmni/services';
-import React from 'react';
+import { usePatientUUID } from '@bahmni/widgets';
+import { useQuery } from '@tanstack/react-query';
+import React, { useEffect } from 'react';
+import { usePatientVisit } from '../../../hooks/usePatientVisit';
 import type { InputControl as ClinicalInputControlConfig } from '../../../providers/clinicalConfig/models';
+import {
+  fetchAdmissionStatus,
+  fetchDispositionTypes,
+  filterDispositionTypesByAdmissionStatus,
+} from '../../../services/dispositionService';
 import {
   useDispositionStore,
   type DispositionType,
@@ -19,13 +27,6 @@ import styles from './styles/Disposition.module.scss';
 interface DispositionProps {
   inputControlConfig?: ClinicalInputControlConfig;
 }
-
-const DEFAULT_DISPOSITION_TYPES: DispositionType[] = [
-  { value: 'ADMIT', label: 'Admit' },
-  { value: 'DISCHARGE', label: 'Discharge' },
-  { value: 'TRANSFER', label: 'Transfer' },
-  { value: 'UNDO_DISCHARGE', label: 'Undo Discharge' },
-];
 
 const DEFAULT_NOTES_MAX_LENGTH = 100;
 
@@ -40,12 +41,51 @@ const Disposition: React.FC<DispositionProps> = React.memo(
       setSelectedType,
       setDate,
       setNotes,
+      setTypeRequired,
     } = useDispositionStore();
 
-    const dispositionTypes =
-      (inputControlConfig?.metadata?.dispositionTypes as
-        | DispositionType[]
-        | undefined) ?? DEFAULT_DISPOSITION_TYPES;
+    const isTypeRequired =
+      inputControlConfig?.attributes?.find(
+        (attribute) => attribute.name === 'type',
+      )?.required ?? true;
+
+    useEffect(() => {
+      setTypeRequired(isTypeRequired);
+    }, [isTypeRequired, setTypeRequired]);
+
+    const configuredDispositionTypes = inputControlConfig?.metadata
+      ?.dispositionTypes as DispositionType[] | undefined;
+
+    const { data: fetchedDispositionTypes } = useQuery({
+      queryKey: ['dispositionTypes'],
+      queryFn: fetchDispositionTypes,
+    });
+
+    const patientUUID = usePatientUUID();
+    const { activeVisit } = usePatientVisit(patientUUID);
+
+    const { data: admissionStatus } = useQuery({
+      queryKey: ['dispositionAdmissionStatus', activeVisit?.id],
+      queryFn: () => fetchAdmissionStatus(activeVisit!.id!),
+      enabled: !!activeVisit?.id,
+    });
+
+    const availableDispositionTypes =
+      fetchedDispositionTypes && fetchedDispositionTypes.length > 0
+        ? fetchedDispositionTypes
+        : (configuredDispositionTypes ?? []);
+
+    const dispositionTypes = filterDispositionTypesByAdmissionStatus(
+      availableDispositionTypes,
+      admissionStatus ?? null,
+    );
+
+    useEffect(() => {
+      if (!date) {
+        setDate(new Date());
+      }
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     const notesMaxLength =
       (inputControlConfig?.metadata?.notesMaxLength as number | undefined) ??

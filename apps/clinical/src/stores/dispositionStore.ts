@@ -3,6 +3,7 @@ import { create } from 'zustand';
 export interface DispositionType {
   value: string;
   label: string;
+  conceptUuid?: string;
 }
 
 export interface DispositionState {
@@ -10,14 +11,21 @@ export interface DispositionState {
   date: Date | null;
   notes: string;
   errors: Record<string, string>;
+  isTypeRequired: boolean;
 
   setSelectedType: (type: DispositionType | null) => void;
   setDate: (date: Date | null) => void;
   setNotes: (notes: string) => void;
 
   /**
-   * Validates the current selection. Type is mandatory; Done is blocked
-   * without it (AC #9).
+   * Driven by standard-config's `attributes: [{ name: "type", required }]`
+   * entry for the disposition input control, not hardcoded here.
+   */
+  setTypeRequired: (required: boolean) => void;
+
+  /**
+   * Validates the current selection. Whether Type is mandatory comes from
+   * config via setTypeRequired (defaults to required).
    */
   validate: () => boolean;
 
@@ -36,6 +44,7 @@ export const useDispositionStore = create<DispositionState>((set, get) => ({
   date: null,
   notes: '',
   errors: {},
+  isTypeRequired: true,
 
   setSelectedType: (type: DispositionType | null) => {
     set((state) => {
@@ -53,12 +62,16 @@ export const useDispositionStore = create<DispositionState>((set, get) => ({
     set({ notes });
   },
 
+  setTypeRequired: (required: boolean) => {
+    set({ isTypeRequired: required });
+  },
+
   validate: () => {
     const state = get();
     const errors = { ...state.errors };
     let isValid = true;
 
-    if (!state.selectedType) {
+    if (state.isTypeRequired && !state.selectedType) {
       errors.type = 'DROPDOWN_VALUE_REQUIRED';
       isValid = false;
     } else {
@@ -75,7 +88,13 @@ export const useDispositionStore = create<DispositionState>((set, get) => ({
   },
 
   reset: () => {
-    set({ selectedType: null, date: null, notes: '', errors: {} });
+    set((state) => ({
+      selectedType: null,
+      date: null,
+      notes: '',
+      errors: {},
+      isTypeRequired: state.isTypeRequired,
+    }));
   },
 }));
 

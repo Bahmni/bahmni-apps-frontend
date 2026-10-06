@@ -1,22 +1,14 @@
-import { notificationService } from '@bahmni/services';
 import { useDispositionStore } from '../../../../stores/dispositionStore';
 import { getRegisteredInputControls } from '../../registry';
 
-jest.mock('@bahmni/services', () => ({
-  ...jest.requireActual('@bahmni/services'),
-  notificationService: {
-    showInfo: jest.fn(),
-    showSuccess: jest.fn(),
-    showWarning: jest.fn(),
-    showError: jest.fn(),
-  },
-}));
-
 jest.mock('../Disposition', () => () => null);
 
-const mockShowInfo = notificationService.showInfo as jest.MockedFunction<
-  typeof notificationService.showInfo
->;
+const mockContext = {
+  encounterSubject: { reference: 'Patient/patient-uuid' },
+  encounterReference: 'urn:uuid:encounter-uuid',
+  practitionerUUID: 'practitioner-uuid',
+  consultationDate: new Date('2024-01-01'),
+} as any;
 
 describe('disposition input control', () => {
   beforeEach(() => {
@@ -69,25 +61,38 @@ describe('disposition input control', () => {
     expect(getDispositionControl()!.hasData()).toBe(true);
   });
 
-  it('createBundleEntries() is a deliberate no-op (save deferred)', () => {
-    expect(getDispositionControl()!.createBundleEntries!({} as any)).toEqual(
+  it('createBundleEntries() returns no entries when nothing was selected', () => {
+    expect(getDispositionControl()!.createBundleEntries!(mockContext)).toEqual(
       [],
     );
   });
 
-  it('onSubmitSuccess() shows a "not implemented" notification when a type was selected', () => {
+  it('createBundleEntries() returns a ServiceRequest entry when a type was selected', () => {
+    useDispositionStore.getState().setSelectedType({
+      value: 'ADMIT',
+      label: 'Admit',
+      conceptUuid: 'admit-concept-uuid',
+    });
+    useDispositionStore.getState().setNotes('Admitting for observation');
+
+    const entries = getDispositionControl()!.createBundleEntries!(mockContext);
+
+    expect(entries).toHaveLength(1);
+    expect(entries[0].request?.method).toBe('POST');
+    const resource = entries[0].resource as any;
+    expect(resource.resourceType).toBe('ServiceRequest');
+    expect(resource.code?.coding?.[0]?.code).toBe('admit-concept-uuid');
+    expect(resource.note?.[0]?.text).toBe('Admitting for observation');
+  });
+
+  it('createBundleEntries() falls back to the disposition value when no conceptUuid is configured', () => {
     useDispositionStore
       .getState()
       .setSelectedType({ value: 'ADMIT', label: 'Admit' });
 
-    getDispositionControl()!.onSubmitSuccess!({} as any);
+    const entries = getDispositionControl()!.createBundleEntries!(mockContext);
 
-    expect(mockShowInfo).toHaveBeenCalledTimes(1);
-  });
-
-  it('onSubmitSuccess() does not notify when nothing was selected', () => {
-    getDispositionControl()!.onSubmitSuccess!({} as any);
-
-    expect(mockShowInfo).not.toHaveBeenCalled();
+    const resource = entries[0].resource as any;
+    expect(resource.code?.coding?.[0]?.code).toBe('ADMIT');
   });
 });
