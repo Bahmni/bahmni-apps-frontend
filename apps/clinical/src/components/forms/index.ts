@@ -6,6 +6,7 @@ import './medicationRequest';
 import './immunization';
 import './observations';
 import './stopMedications';
+import './disposition';
 
 export type {
   InputControl,

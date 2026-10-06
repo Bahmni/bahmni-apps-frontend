@@ -119,5 +119,6 @@ export function captureUpdatedResources(entries: InputControl[]) {
       hasData('immunizationWaiver'),
     serviceRequests,
     observationFormsWithBasedOn: extractId(observationFormsBasedOn?.basedOn),
+    disposition: hasData('disposition'),
   };
 }

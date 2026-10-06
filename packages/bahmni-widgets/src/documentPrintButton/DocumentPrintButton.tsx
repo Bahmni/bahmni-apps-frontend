@@ -24,6 +24,8 @@ export interface PrintOption {
   // TODO: shortcutKey is reserved for keyboard shortcut support — not yet implemented
   shortcutKey?: string;
   privileges?: string[];
+  // TODO: category is reserved for config-side print-option grouping — not yet implemented
+  category?: string;
 }
 
 interface DocumentPrintButtonProps {
