@@ -11,6 +11,7 @@ import { BAHMNI_HOME_PATH, useTranslation } from '@bahmni/services';
 import { UserGlobalAction } from '@bahmni/widgets';
 import React, { useCallback, useMemo } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { ReportList } from '../components/ReportList/ReportList';
 import { MY_REPORTS_TAB_PATH, REPORTS_TAB_PATH } from '../constants/app';
 import styles from './styles/ReportsPage.module.scss';
 
@@ -93,7 +94,7 @@ export const ReportsPage: React.FC = () => {
                 aria-label={t('REPORTS_TAB_LABEL')}
                 className={styles.panel}
               >
-                <p>{t('REPORTS_TAB_PLACEHOLDER')}</p>
+                <ReportList />
               </TabPanel>
               <TabPanel
                 id="my-reports-tab-panel"
