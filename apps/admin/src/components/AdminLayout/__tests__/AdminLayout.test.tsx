@@ -53,7 +53,7 @@ describe('AdminLayout', () => {
 
   it('links Admin and appends the current page when one is provided', () => {
     render(
-      <AdminLayout currentPage={{ id: 'csv-export', label: 'CSV Export' }}>
+      <AdminLayout breadcrumbLabel="CSV Export">
         <div />
       </AdminLayout>,
     );

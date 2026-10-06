@@ -25,14 +25,14 @@ jest.mock('@bahmni/widgets', () => ({
 jest.mock('../../components/AdminLayout', () => ({
   AdminLayout: ({
     children,
-    currentPage,
+    breadcrumbLabel,
   }: {
     children: React.ReactNode;
-    currentPage?: { id: string; label: string };
+    breadcrumbLabel?: string;
   }) => (
     <div data-testid="admin-layout-test-id">
       <nav>
-        <span data-testid="current-page-crumb">{currentPage?.label}</span>
+        <span data-testid="current-page-crumb">{breadcrumbLabel}</span>
       </nav>
       {children}
     </div>

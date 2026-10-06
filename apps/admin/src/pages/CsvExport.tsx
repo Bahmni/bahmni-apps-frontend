@@ -31,11 +31,6 @@ export const CsvExport: React.FC = () => {
   );
   const debouncedTerm = useDebounce(inputValue.trim(), SEARCH_DEBOUNCE_MS);
 
-  const currentPage = useMemo(
-    () => ({ id: 'csv-export', label: t('BREADCRUMB_CSV_EXPORT') }),
-    [t],
-  );
-
   const { data: searchResults = [] } = useQuery({
     queryKey: ['csvExportConceptSearch', debouncedTerm],
     queryFn: () => searchConceptsByQuery(debouncedTerm),
@@ -116,7 +111,7 @@ export const CsvExport: React.FC = () => {
   };
 
   return (
-    <AdminLayout currentPage={currentPage}>
+    <AdminLayout breadcrumbLabel={t('BREADCRUMB_CSV_EXPORT')}>
       <Tile
         id="admin-csv-export-page"
         data-testid="admin-csv-export-page-test-id"
