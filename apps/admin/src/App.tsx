@@ -12,6 +12,7 @@ import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { Suspense, useEffect, useState } from 'react';
 import { Routes } from 'react-router-dom';
 import styles from './App.module.scss';
+import { PrivilegeGuard } from './components/PrivilegeGuard';
 import { queryClientConfig } from './config/tanstackQuery';
 import { BAHMNI_ADMIN_NAMESPACE } from './constants/app';
 import { routes, renderRoutes } from './routes';
@@ -34,7 +35,7 @@ export function App() {
       }
     };
 
-    initializeApp();
+    void initializeApp();
   }, []);
 
   if (!isInitialized) {
@@ -49,7 +50,9 @@ export function App() {
               <UserActionProvider>
                 <NotificationServiceComponent />
                 <Suspense fallback={<Loading />}>
-                  <Routes>{renderRoutes(routes)}</Routes>
+                  <PrivilegeGuard>
+                    <Routes>{renderRoutes(routes)}</Routes>
+                  </PrivilegeGuard>
                 </Suspense>
                 <ReactQueryDevtools initialIsOpen={false} />
               </UserActionProvider>

@@ -86,14 +86,16 @@ export interface EncounterTypeRef {
  * Fetches visits for a given patient UUID from the FHIR R4 endpoint
  * @param patientUUID - The UUID of the patient
  * @param locationUuid - Optional location UUID to filter visits server-side
+ * @param count - Optional server-side page size, to bound the fetch to the most recent N visits
  * @returns Promise resolving to a FhirEncounterBundle
  */
 export async function getPatientVisits(
   patientUUID: string,
   locationUuid?: string,
+  count?: number,
 ): Promise<Bundle<Encounter>> {
   return await get<Bundle<Encounter>>(
-    PATIENT_VISITS_URL(patientUUID, locationUuid),
+    PATIENT_VISITS_URL(patientUUID, locationUuid, count),
   );
 }
 
@@ -101,13 +103,19 @@ export async function getPatientVisits(
  * Fetches and transforms visits for a given patient UUID
  * @param patientUUID - The UUID of the patient
  * @param locationUuid - Optional location UUID to filter visits server-side
+ * @param count - Optional server-side page size, to bound the fetch to the most recent N visits
  * @returns Promise resolving to an array of FhirEncounter
  */
 export async function getVisits(
   patientUUID: string,
   locationUuid?: string,
+  count?: number,
 ): Promise<Encounter[]> {
-  const fhirEncounterBundle = await getPatientVisits(patientUUID, locationUuid);
+  const fhirEncounterBundle = await getPatientVisits(
+    patientUUID,
+    locationUuid,
+    count,
+  );
   return (
     fhirEncounterBundle.entry
       ?.map((entry) => entry.resource)
@@ -121,10 +129,13 @@ export async function getVisits(
  * Walks every page (offset-based) so patients with many encounters are not truncated to the
  * server's default page size.
  * @param patientUUID - The UUID of the patient
+ * @param sinceDate - Optional ISO instant; when set, only encounters on/after this date are fetched
+ *   (FHIR `date=ge` filters on `Encounter.period`, not last-modified time)
  * @returns Promise resolving to an array of FHIR Encounters
  */
 export async function getPatientEncounters(
   patientUUID: string,
+  sinceDate?: string,
 ): Promise<Encounter[]> {
   const pageSize = 100;
   const encounters: Encounter[] = [];
@@ -132,7 +143,7 @@ export async function getPatientEncounters(
 
   for (;;) {
     const bundle = await get<Bundle<Encounter>>(
-      PATIENT_ENCOUNTERS_URL(patientUUID, pageSize, offset),
+      PATIENT_ENCOUNTERS_URL(patientUUID, pageSize, offset, sinceDate),
     );
     const page = (bundle.entry ?? [])
       .map((entry) => entry.resource)
@@ -146,6 +157,80 @@ export async function getPatientEncounters(
   }
 
   return encounters;
+}
+
+export interface EncounterWithVisit extends Encounter {
+  visit?: Encounter;
+}
+
+/**
+ * Extracts the parent visit id from an encounter's partOf reference ("Encounter/<id>").
+ */
+export function visitIdOf(encounter: Encounter): string | undefined {
+  return encounter.partOf?.reference?.split('/').pop();
+}
+
+/**
+ * Picks the visits that count as "recent": the active visit (no period.end) first, then the most
+ * recently ended visits by period.end, up to `count` in total. Ordering by period rather than by
+ * server `_lastUpdated` keeps an old visit that was edited recently from displacing a newer one.
+ */
+function selectRecentVisits(visits: Encounter[], count: number): Encounter[] {
+  const endTime = (visit: Encounter) =>
+    new Date(visit.period?.end ?? 0).getTime();
+  const active = visits.filter((visit) => !visit.period?.end);
+  const ended = visits
+    .filter((visit) => visit.period?.end)
+    .sort((a, b) => endTime(b) - endTime(a));
+  return [...active, ...ended].slice(0, count);
+}
+
+/**
+ * Fetches a patient's encounters scoped to their most recent visits (the active visit plus the
+ * latest ended ones, `visitCount` in total), newest first. Each encounter carries its parent
+ * `visit` (resolved via partOf, or itself when it is the visit-level encounter).
+ * @param patientUUID - The UUID of the patient
+ * @param visitCount - How many recent visits to scope to
+ */
+export async function getRecentVisitEncounters(
+  patientUUID: string,
+  visitCount: number,
+): Promise<EncounterWithVisit[]> {
+  const recentVisits = selectRecentVisits(
+    await getVisits(patientUUID),
+    visitCount,
+  );
+
+  const visitById = new Map<string, Encounter>();
+  recentVisits.forEach((visit) => {
+    if (visit.id) visitById.set(visit.id, visit);
+  });
+
+  // Encounters are fetched from the start of the oldest selected visit onwards.
+  const oldestStart = recentVisits
+    .map((visit) => visit.period?.start)
+    .filter((start): start is string => !!start)
+    .sort((a, b) => a.localeCompare(b))[0];
+  const sinceDate =
+    recentVisits.length >= visitCount && oldestStart
+      ? new Date(oldestStart).toISOString()
+      : undefined;
+
+  const encounters = await getPatientEncounters(patientUUID, sinceDate);
+  return [...encounters]
+    .sort((a, b) =>
+      (b.period?.start ?? '').localeCompare(a.period?.start ?? ''),
+    )
+    .map((encounter) => {
+      const visitId =
+        encounter.id && visitById.has(encounter.id)
+          ? encounter.id
+          : visitIdOf(encounter);
+      return {
+        ...encounter,
+        visit: visitId ? visitById.get(visitId) : undefined,
+      };
+    });
 }
 
 /**
