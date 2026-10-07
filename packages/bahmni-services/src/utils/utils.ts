@@ -460,3 +460,18 @@ export const formatCountry = (
     return code;
   }
 };
+
+export const encodeValue = (value: string): string =>
+  btoa(
+    encodeURIComponent(value).replace(/%([0-9A-F]{2})/g, (_, hex) =>
+      String.fromCharCode(Number.parseInt(hex, 16)),
+    ),
+  );
+
+export const decodeValue = (value: string): string =>
+  decodeURIComponent(
+    Array.from(
+      atob(value),
+      (c) => '%' + c.charCodeAt(0).toString(16).padStart(2, '0'),
+    ).join(''),
+  );
