@@ -958,25 +958,15 @@ describe('AllergiesForm', () => {
   });
 
   describe('Edit mode (encounterSessionStartContext)', () => {
-    const preloadedAllergies = [
-      {
-        id: 'pre-allergy-1',
-        entryId: 'pre-allergy-1',
-        display: 'Shellfish',
-        type: 'food',
-        selectedSeverity: null,
-        selectedReactions: [],
-        errors: {},
-        hasBeenValidated: false,
-        isModified: false as boolean | undefined,
+    const editPayload = {
+      action: {
+        type: 'update' as const,
+        resources: [{ resourceType: 'AllergyIntolerance', id: 'allergy-1' }],
       },
-    ];
+    };
 
-    it('isEditMode is true when encounterSessionStartContext has preloadedAllergies', () => {
-      renderAllergiesForm(
-        {},
-        { encounterSessionStartContext: { preloadedAllergies } },
-      );
+    it('isEditMode is true when action.type is update with AllergyIntolerance', () => {
+      renderAllergiesForm({}, { encounterSessionStartContext: editPayload });
 
       expect(
         screen.queryByTestId('allergies-search-combobox'),
@@ -984,10 +974,7 @@ describe('AllergiesForm', () => {
     });
 
     it('search ComboBox is NOT rendered when isEditMode is true', () => {
-      renderAllergiesForm(
-        {},
-        { encounterSessionStartContext: { preloadedAllergies } },
-      );
+      renderAllergiesForm({}, { encounterSessionStartContext: editPayload });
 
       expect(
         screen.queryByRole('combobox', { name: /search for allergies/i }),
@@ -1000,20 +987,17 @@ describe('AllergiesForm', () => {
       expect(getSearchCombobox()).toBeInTheDocument();
     });
 
-    it('search ComboBox IS rendered when encounterSessionStartContext has no preloadedAllergies', () => {
+    it('search ComboBox IS rendered when no action resources', () => {
       renderAllergiesForm(
         {},
-        { encounterSessionStartContext: { encounterType: 'Consultation' } },
+        { encounterSessionStartContext: { context: { encounterType: 'Consultation' } } },
       );
 
       expect(getSearchCombobox()).toBeInTheDocument();
     });
 
     it('title shows EDIT_ALLERGIES_FORM_TITLE translation key when isEditMode is true', () => {
-      renderAllergiesForm(
-        {},
-        { encounterSessionStartContext: { preloadedAllergies } },
-      );
+      renderAllergiesForm({}, { encounterSessionStartContext: editPayload });
 
       expect(screen.getByTestId('allergies-form-title')).toHaveTextContent(
         'EDIT_ALLERGIES_FORM_TITLE',

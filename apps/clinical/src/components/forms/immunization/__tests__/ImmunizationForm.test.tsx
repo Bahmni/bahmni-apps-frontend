@@ -117,7 +117,7 @@ describe('ImmunizationForm', () => {
     it('hides search combobox when basedOnReference exists and disableAdditionalAdministrations is true', () => {
       render(
         <ImmunizationForm
-          encounterSessionStartContext={{ basedOn: mockMedicationRequest }}
+          encounterSessionStartContext={{ context: { basedOn: mockMedicationRequest } }}
           inputControlConfig={mockAdministrationInputControlConfig}
         />,
       );
@@ -130,7 +130,7 @@ describe('ImmunizationForm', () => {
       ['history form type', undefined, mockImmunizationInputControlConfig],
       [
         'basedOnReference exists and disableAdditionalAdministrations is false',
-        { basedOn: mockMedicationRequestNoMedRef },
+        { context: { basedOn: mockMedicationRequestNoMedRef } },
         mockAdministrationInputControlConfigAllowed,
       ],
     ])('shows search combobox when %s', (_, context, config) => {
@@ -462,7 +462,7 @@ describe('ImmunizationForm', () => {
   });
 
   describe('basedOn pre-population', () => {
-    const consultationPayloadWithBasedOn = { basedOn: mockMedicationRequest };
+    const consultationPayloadWithBasedOn = { context: { basedOn: mockMedicationRequest } };
 
     it.each([
       ['basedOn is absent', {}, () => {}],
@@ -879,7 +879,7 @@ describe('ImmunizationForm', () => {
       [
         'combobox visible (basedOnReference present)',
         mockStore,
-        { basedOn: mockMedicationRequestNoMedRef },
+        { context: { basedOn: mockMedicationRequestNoMedRef } },
         mockAdministrationInputControlConfigAllowed,
       ],
     ])('matches snapshot with %s', (_, storeOverride, context, config) => {
