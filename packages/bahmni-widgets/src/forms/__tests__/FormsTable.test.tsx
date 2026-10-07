@@ -941,10 +941,15 @@ describe('FormsTable', () => {
         expect.objectContaining({
           type: 'startConsultation',
           detail: expect.objectContaining({
-            editOnly: 'observationForms',
-            editTitle: 'EDIT_OBSERVATION_FORM_TITLE',
-            sourceEncounterUuid: 'encounter-1',
-            formName: 'Vitals Form',
+            context: expect.objectContaining({
+              encounter: expect.objectContaining({ id: 'encounter-1' }),
+              formName: 'Vitals Form',
+              directFormMode: true,
+            }),
+            action: expect.objectContaining({
+              type: 'update',
+              resourceType: 'Observation',
+            }),
           }),
         }),
       );
@@ -1082,9 +1087,15 @@ describe('FormsTable', () => {
         expect.objectContaining({
           type: 'startConsultation',
           detail: expect.objectContaining({
-            editOnly: 'observationForms',
-            sourceEncounterUuid: 'encounter-1',
-            formName: 'Vitals Form',
+            context: expect.objectContaining({
+              encounter: expect.objectContaining({ id: 'encounter-1' }),
+              formName: 'Vitals Form',
+              directFormMode: true,
+            }),
+            action: expect.objectContaining({
+              type: 'update',
+              resourceType: 'Observation',
+            }),
           }),
         }),
       );

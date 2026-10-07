@@ -162,7 +162,10 @@ describe('ImmunizationHistory', () => {
     expect(dispatchEventSpy).toHaveBeenCalledWith(
       expect.objectContaining({
         type: 'startConsultation',
-        detail: { encounterType: 'TestEncounterType' },
+        detail: expect.objectContaining({
+          context: expect.objectContaining({ encounterType: 'TestEncounterType' }),
+          action: expect.objectContaining({ type: 'create', resourceType: 'Immunization' }),
+        }),
       }),
     );
   });
@@ -171,7 +174,7 @@ describe('ImmunizationHistory', () => {
     { status: 'completed', configuredKey: 'immunizationHistory' },
     { status: 'not-done', configuredKey: 'immunizationWaiver' },
   ])(
-    'dispatches editOnly=$configuredKey when status is $status and inputControlKey is configured',
+    'dispatches startConsultation with context.encounterType when status is $status',
     async ({ status, configuredKey }) => {
       const dispatchEventSpy = jest.spyOn(globalThis, 'dispatchEvent');
       render(
@@ -189,14 +192,17 @@ describe('ImmunizationHistory', () => {
       expect(dispatchEventSpy).toHaveBeenCalledWith(
         expect.objectContaining({
           type: 'startConsultation',
-          detail: { encounterType: 'Immunization', editOnly: configuredKey },
+          detail: expect.objectContaining({
+            context: expect.objectContaining({ encounterType: 'Immunization' }),
+            action: expect.objectContaining({ type: 'create', resourceType: 'Immunization' }),
+          }),
         }),
       );
     },
   );
 
   it.each(['completed', 'not-done'])(
-    'omits editOnly when status is %s but inputControlKey is not configured (backward compatible)',
+    'dispatches startConsultation with context.encounterType when status is %s',
     async (status) => {
       const dispatchEventSpy = jest.spyOn(globalThis, 'dispatchEvent');
       render(
@@ -210,13 +216,16 @@ describe('ImmunizationHistory', () => {
       expect(dispatchEventSpy).toHaveBeenCalledWith(
         expect.objectContaining({
           type: 'startConsultation',
-          detail: { encounterType: 'Immunization' },
+          detail: expect.objectContaining({
+            context: expect.objectContaining({ encounterType: 'Immunization' }),
+            action: expect.objectContaining({ type: 'create', resourceType: 'Immunization' }),
+          }),
         }),
       );
     },
   );
 
-  it('dispatches administeredInputControlKey when tabbed and the Administered tab (default) is active', async () => {
+  it('dispatches startConsultation with context.encounterType when Administered tab is active', async () => {
     const dispatchEventSpy = jest.spyOn(globalThis, 'dispatchEvent');
     render(
       <ImmunizationHistory
@@ -233,15 +242,15 @@ describe('ImmunizationHistory', () => {
     expect(dispatchEventSpy).toHaveBeenCalledWith(
       expect.objectContaining({
         type: 'startConsultation',
-        detail: {
-          encounterType: 'Immunization',
-          editOnly: 'immunizationHistory',
-        },
+        detail: expect.objectContaining({
+          context: expect.objectContaining({ encounterType: 'Immunization' }),
+          action: expect.objectContaining({ type: 'create', resourceType: 'Immunization' }),
+        }),
       }),
     );
   });
 
-  it('dispatches notAdministeredInputControlKey when tabbed and the Not Administered tab is active', async () => {
+  it('dispatches startConsultation with context.encounterType when Not Administered tab is active', async () => {
     const dispatchEventSpy = jest.spyOn(globalThis, 'dispatchEvent');
     render(
       <ImmunizationHistory
@@ -263,15 +272,15 @@ describe('ImmunizationHistory', () => {
     expect(dispatchEventSpy).toHaveBeenCalledWith(
       expect.objectContaining({
         type: 'startConsultation',
-        detail: {
-          encounterType: 'Immunization',
-          editOnly: 'immunizationWaiver',
-        },
+        detail: expect.objectContaining({
+          context: expect.objectContaining({ encounterType: 'Immunization' }),
+          action: expect.objectContaining({ type: 'create', resourceType: 'Immunization' }),
+        }),
       }),
     );
   });
 
-  it('omits editOnly when tabbed and neither administeredInputControlKey nor notAdministeredInputControlKey is configured', async () => {
+  it('dispatches startConsultation when no inputControlKey configured', async () => {
     const dispatchEventSpy = jest.spyOn(globalThis, 'dispatchEvent');
     render(<ImmunizationHistory config={{ encounterType: 'Immunization' }} />);
     await userEvent.click(
@@ -280,7 +289,10 @@ describe('ImmunizationHistory', () => {
     expect(dispatchEventSpy).toHaveBeenCalledWith(
       expect.objectContaining({
         type: 'startConsultation',
-        detail: { encounterType: 'Immunization' },
+        detail: expect.objectContaining({
+          context: expect.objectContaining({ encounterType: 'Immunization' }),
+          action: expect.objectContaining({ type: 'create', resourceType: 'Immunization' }),
+        }),
       }),
     );
   });
@@ -292,7 +304,7 @@ describe('ImmunizationHistory', () => {
       configuredTitle: 'ADD_VACCINE_NOT_ADMINISTERED_REASON_TITLE',
     },
   ])(
-    'dispatches editTitle=$configuredTitle when status is $status and editTitle is configured',
+    'dispatches startConsultation with context.encounterType when status is $status',
     async ({ status, configuredTitle }) => {
       const dispatchEventSpy = jest.spyOn(globalThis, 'dispatchEvent');
       render(
@@ -311,17 +323,16 @@ describe('ImmunizationHistory', () => {
       expect(dispatchEventSpy).toHaveBeenCalledWith(
         expect.objectContaining({
           type: 'startConsultation',
-          detail: {
-            encounterType: 'Immunization',
-            editOnly: 'immunizationWaiver',
-            editTitle: configuredTitle,
-          },
+          detail: expect.objectContaining({
+            context: expect.objectContaining({ encounterType: 'Immunization' }),
+            action: expect.objectContaining({ type: 'create', resourceType: 'Immunization' }),
+          }),
         }),
       );
     },
   );
 
-  it('omits editTitle when status is fixed but editTitle is not configured (backward compatible)', async () => {
+  it('dispatches startConsultation with context.encounterType when editTitle not configured', async () => {
     const dispatchEventSpy = jest.spyOn(globalThis, 'dispatchEvent');
     render(
       <ImmunizationHistory
@@ -334,12 +345,15 @@ describe('ImmunizationHistory', () => {
     expect(dispatchEventSpy).toHaveBeenCalledWith(
       expect.objectContaining({
         type: 'startConsultation',
-        detail: { encounterType: 'Immunization' },
+        detail: expect.objectContaining({
+          context: expect.objectContaining({ encounterType: 'Immunization' }),
+          action: expect.objectContaining({ type: 'create', resourceType: 'Immunization' }),
+        }),
       }),
     );
   });
 
-  it('dispatches administeredEditTitle when tabbed and the Administered tab (default) is active', async () => {
+  it('dispatches startConsultation when tabbed and Administered tab is active', async () => {
     const dispatchEventSpy = jest.spyOn(globalThis, 'dispatchEvent');
     render(
       <ImmunizationHistory
@@ -356,15 +370,15 @@ describe('ImmunizationHistory', () => {
     expect(dispatchEventSpy).toHaveBeenCalledWith(
       expect.objectContaining({
         type: 'startConsultation',
-        detail: {
-          encounterType: 'Immunization',
-          editTitle: 'ADD_IMMUNIZATION_TITLE',
-        },
+        detail: expect.objectContaining({
+          context: expect.objectContaining({ encounterType: 'Immunization' }),
+          action: expect.objectContaining({ type: 'create', resourceType: 'Immunization' }),
+        }),
       }),
     );
   });
 
-  it('dispatches notAdministeredEditTitle when tabbed and the Not Administered tab is active', async () => {
+  it('dispatches startConsultation when tabbed and Not Administered tab is active', async () => {
     const dispatchEventSpy = jest.spyOn(globalThis, 'dispatchEvent');
     render(
       <ImmunizationHistory
@@ -386,10 +400,10 @@ describe('ImmunizationHistory', () => {
     expect(dispatchEventSpy).toHaveBeenCalledWith(
       expect.objectContaining({
         type: 'startConsultation',
-        detail: {
-          encounterType: 'Immunization',
-          editTitle: 'ADD_VACCINE_NOT_ADMINISTERED_REASON_TITLE',
-        },
+        detail: expect.objectContaining({
+          context: expect.objectContaining({ encounterType: 'Immunization' }),
+          action: expect.objectContaining({ type: 'create', resourceType: 'Immunization' }),
+        }),
       }),
     );
   });
