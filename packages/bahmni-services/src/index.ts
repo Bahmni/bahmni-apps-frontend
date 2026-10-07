@@ -124,6 +124,7 @@ export {
   refreshQueries,
   parseQueryParams,
   formatUrl,
+  downloadBlob,
   getValueType,
   camelToScreamingSnakeCase,
   convertToSentenceCase,
@@ -195,10 +196,13 @@ export {
   searchFHIRConceptsByName,
   getConceptById,
   searchConceptByName,
+  searchConceptsByQuery,
   type ConceptSearch,
   type ConceptClass,
   type ConceptData,
+  type ConceptQueryResult,
 } from './conceptService';
+export { exportConceptSet } from './conceptSetExportService';
 export {
   getPatientMedications,
   getPatientMedicationBundle,
@@ -249,8 +253,14 @@ export {
   getDefaultDateFormat,
   saveUserLocation,
   updateSessionLocation,
+  encodeSearchCriteria,
+  decodeSearchCriteria,
+  saveRecentSearchCriteria,
+  clearRecentSearchCriteria,
+  getRecentSearchCriteria,
   type User,
   type UserLocation,
+  type RecentSearchCriteria,
   BAHMNI_USER_LOCATION_COOKIE,
 } from './userService';
 export { logout, validateSessionUser } from './authService';
