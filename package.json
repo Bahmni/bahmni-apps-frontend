@@ -118,7 +118,8 @@
     "path-to-regexp": "0.1.13",
     "picomatch": "4.0.4",
     "fast-uri": "3.1.7",
-    "immutable": "4.3.9"
+    "immutable": "4.3.9",
+    "proxy-addr": "2.0.8"
   },
   "workspaces": [
     "apps/*",

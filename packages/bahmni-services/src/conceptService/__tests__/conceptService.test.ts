@@ -14,11 +14,13 @@ import {
   getConceptById,
   searchConceptByName,
   getDisplayNameForConcept,
+  searchConceptsByQuery,
 } from '../conceptService';
 import {
   FHIR_VALUESET_URL,
   FHIR_VALUESET_FILTER_EXPAND_URL,
   CONCEPT_GET_URL,
+  CONCEPT_QUERY_URL,
 } from '../constants';
 
 jest.mock('../../api');
@@ -142,6 +144,14 @@ describe('conceptService', () => {
       expect(api.get).toHaveBeenCalledWith(CONCEPT_GET_URL(mockUUID));
       expect(api.get).toHaveBeenCalledWith(
         `/openmrs/ws/rest/v1/concept/${mockUUID}`,
+      );
+    });
+
+    it('should append an encoded custom view when provided', async () => {
+      await getConceptById(mockUUID, 'custom:(uuid,setMembers:(uuid))');
+
+      expect(api.get).toHaveBeenCalledWith(
+        `/openmrs/ws/rest/v1/concept/${mockUUID}?v=custom%3A(uuid%2CsetMembers%3A(uuid))`,
       );
     });
 
@@ -325,6 +335,34 @@ describe('conceptService', () => {
       const result = getDisplayNameForConcept(undefined);
 
       expect(result).toBeNull();
+    });
+  });
+
+  describe('searchConceptsByQuery', () => {
+    beforeEach(() => {
+      jest.clearAllMocks();
+    });
+
+    it('builds the legacy concept query URL with an encoded term', () => {
+      expect(CONCEPT_QUERY_URL('vital signs')).toBe(
+        '/openmrs/ws/rest/v1/concept?q=vital%20signs&v=custom%3A(uuid%2Cname)',
+      );
+    });
+
+    it('returns the results from the concept query endpoint', async () => {
+      const results = [{ uuid: 'uuid-1', name: { name: 'Vital signs' } }];
+      (api.get as jest.Mock).mockResolvedValue({ results });
+
+      const response = await searchConceptsByQuery('vit');
+
+      expect(api.get).toHaveBeenCalledWith(CONCEPT_QUERY_URL('vit'));
+      expect(response).toEqual(results);
+    });
+
+    it('returns an empty array when results are missing', async () => {
+      (api.get as jest.Mock).mockResolvedValue({});
+
+      expect(await searchConceptsByQuery('vit')).toEqual([]);
     });
   });
 });
