@@ -3,7 +3,6 @@ import {
   dispatchAuditEvent,
   encodeSearchCriteria,
   getConfig,
-  getCurrentUser,
   getCurrentUserPrivileges,
   getUserLoginLocation,
   post,
@@ -37,6 +36,14 @@ const mockPost = post as jest.Mock;
 const mockDispatchAuditEvent = dispatchAuditEvent as jest.Mock;
 
 const mockAddNotification = jest.fn();
+let mockActivePractitioner: {
+  user: { uuid: string; username: string; display: string } | null;
+  loading: boolean;
+};
+jest.mock('../../../activePractitioner', () => ({
+  useActivePractitioner: () => mockActivePractitioner,
+}));
+
 jest.mock('../../../notification', () => ({
   useNotification: () => ({ addNotification: mockAddNotification }),
 }));
@@ -46,7 +53,6 @@ jest.mock('@bahmni/services', () => ({
   getConfig: jest.fn(),
   getCurrentUserPrivileges: jest.fn(),
   getUserLoginLocation: jest.fn(),
-  getCurrentUser: jest.fn(),
   saveRecentSearchCriteria: jest.fn(),
   clearRecentSearchCriteria: jest.fn(),
   post: jest.fn(),
@@ -109,11 +115,10 @@ describe('CommonSearchWidget', () => {
     capturedSavedRows = undefined;
     capturedSavedContextKey = undefined;
     capturedOnReset = undefined;
-    (getCurrentUser as jest.Mock).mockResolvedValue({
-      uuid: 'user-1',
-      username: 'u',
-      display: 'U',
-    });
+    mockActivePractitioner = {
+      user: { uuid: 'user-1', username: 'u', display: 'U' },
+      loading: false,
+    };
     (saveRecentSearchCriteria as jest.Mock).mockResolvedValue(undefined);
     (clearRecentSearchCriteria as jest.Mock).mockResolvedValue(undefined);
     mockPost.mockResolvedValue({ results: [] });
@@ -770,7 +775,7 @@ describe('CommonSearchWidget', () => {
     });
 
     it('prefills the form from the saved criteria', async () => {
-      (getCurrentUser as jest.Mock).mockResolvedValue(savedUser());
+      mockActivePractitioner.user = savedUser();
       await renderWidget();
 
       expect(capturedSavedContextKey).toBe('patient');
@@ -782,20 +787,34 @@ describe('CommonSearchWidget', () => {
     });
 
     it('falls back to defaults when the saved value is malformed', async () => {
-      (getCurrentUser as jest.Mock).mockResolvedValue(
-        savedUser({ recentCommonSearchCriteria: 'garbage' }),
-      );
+      mockActivePractitioner.user = savedUser({
+        recentCommonSearchCriteria: 'garbage',
+      });
       await renderWidget();
 
       expect(capturedSavedRows).toBeUndefined();
     });
 
-    it('still renders when the user cannot be fetched', async () => {
-      (getCurrentUser as jest.Mock).mockRejectedValue(new Error('boom'));
+    it('still renders when the user could not be loaded', async () => {
+      mockActivePractitioner = { user: null, loading: false };
       await renderWidget();
 
       expect(capturedSavedRows).toBeUndefined();
       expect(capturedOnReset).toBeUndefined();
+    });
+
+    it('waits for the user before rendering the form', async () => {
+      mockActivePractitioner = { user: null, loading: true };
+      (getConfig as jest.Mock).mockResolvedValueOnce(
+        mockCommonSearchWidgetConfig,
+      );
+      render(
+        <CommonSearchWidget extensionParams={{ configUrl: '/api/config' }} />,
+        { wrapper },
+      );
+
+      await waitFor(() => expect(getConfig).toHaveBeenCalled());
+      expect(screen.queryByTestId('search-form')).not.toBeInTheDocument();
     });
 
     it('saves criteria without location or meta when a search runs', async () => {
@@ -829,7 +848,7 @@ describe('CommonSearchWidget', () => {
     });
 
     it('clears the saved criteria on reset', async () => {
-      (getCurrentUser as jest.Mock).mockResolvedValue(savedUser());
+      mockActivePractitioner.user = savedUser();
       await renderWidget();
       await act(async () => {
         capturedOnReset!();

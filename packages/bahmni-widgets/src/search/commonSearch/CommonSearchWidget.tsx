@@ -11,7 +11,6 @@ import {
   getCurrentUserPrivileges,
   getConfig,
   clearRecentSearchCriteria,
-  getCurrentUser,
   getRecentSearchCriteria,
   getUserLoginLocation,
   post,
@@ -21,6 +20,7 @@ import {
 } from '@bahmni/services';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useMemo, useRef, useState } from 'react';
+import { useActivePractitioner } from '../../activePractitioner';
 import { useNotification } from '../../notification';
 import { SearchWidgetProps } from '../models';
 import ResultsTable from './components/ResultsTable';
@@ -99,12 +99,8 @@ const CommonSearchWidget = ({ extensionParams }: SearchWidgetProps) => {
       timeout: 5000,
     });
 
-  const { isLoading: isUserLoading, data: user } = useQuery({
-    queryKey: ['commonSearchCurrentUser'],
-    queryFn: getCurrentUser,
-    enabled: !!config,
-    staleTime: Infinity,
-  });
+  const { user, loading } = useActivePractitioner();
+  const isUserLoading = loading && !user;
 
   const recentSearchQueryKey = ['recentSearchCriteria', user?.uuid];
   const { data: recentSearch } = useQuery({
