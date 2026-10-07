@@ -5,12 +5,12 @@ import {
   FORMAT_MIME_TYPES,
 } from '@bahmni/services';
 import {
+  endOfMonth,
   startOfMonth,
   startOfQuarter,
   startOfYear,
   subDays,
   subMonths,
-  lastDayOfMonth,
 } from 'date-fns';
 import { FORMAT_I18N_KEYS, type DatePreset } from './constants';
 import type {
@@ -66,16 +66,16 @@ export const presetToRange = (preset: DatePreset): [Date, Date] => {
       return [startOfMonth(today), today];
     case 'PREVIOUS_MONTH': {
       const previousMonth = subMonths(today, 1);
-      return [startOfMonth(previousMonth), lastDayOfMonth(previousMonth)];
+      return [startOfMonth(previousMonth), endOfMonth(previousMonth)];
     }
     case 'THIS_QUARTER':
       return [startOfQuarter(today), today];
     case 'THIS_YEAR':
       return [startOfYear(today), today];
     case 'LAST_7_DAYS':
-      return [subDays(today, 6), today];
+      return [subDays(today, 7), today];
     case 'LAST_30_DAYS':
-      return [subDays(today, 29), today];
+      return [subDays(today, 30), today];
     default:
       return [new Date(today), new Date(today)];
   }
@@ -92,8 +92,14 @@ export interface ValidateReportRunInput {
   format: FormatKey | null;
   startDate: Date | null;
   endDate: Date | null;
-  reportTemplateLocation: string | null;
+  templateLocation?: string | null;
 }
+
+export const resolveTemplateLocation = (
+  report: ReportDefinition & { id: string },
+  templateLocation?: string | null,
+): string | null =>
+  templateLocation ?? report.config?.macroTemplatePath ?? null;
 
 export const validateReportRun = (
   input: ValidateReportRunInput,
@@ -105,7 +111,7 @@ export const validateReportRun = (
     format,
     startDate,
     endDate,
-    reportTemplateLocation,
+    templateLocation,
   } = input;
 
   // Check 1: No format selected
@@ -118,14 +124,13 @@ export const validateReportRun = (
     };
   }
 
-  // Check 2: Custom Excel requires an uploaded or pre-configured macro template
+  // Check 2: Custom Excel requires an uploaded or pre-configured template
   if (
     format === 'CUSTOM EXCEL' &&
-    !reportTemplateLocation &&
-    !report.config?.macroTemplatePath
+    !resolveTemplateLocation(report, templateLocation)
   ) {
     return {
-      field: 'template',
+      field: 'format',
       message: t('REPORTS_MISSING_TEMPLATE_ERROR', {
         reportName: report.name,
       }),

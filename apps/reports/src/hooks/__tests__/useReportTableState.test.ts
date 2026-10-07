@@ -6,12 +6,14 @@ import type {
 } from '../../components/ReportList/models';
 import { useReportTableState } from '../useReportTableState';
 
+const mockUploadReportTemplate = jest.fn();
 jest.mock('@bahmni/services', () => ({
   ...jest.requireActual('@bahmni/services'),
   useTranslation: () => ({
     t: (key: string, options?: Record<string, unknown>) =>
       typeof options?.defaultValue === 'string' ? options.defaultValue : key,
   }),
+  uploadReportTemplate: (file: File) => mockUploadReportTemplate(file),
 }));
 
 jest.mock('@bahmni/widgets', () => ({
@@ -24,14 +26,9 @@ jest.mock('../useRunReport', () => ({
   useRunReport: () => ({ runReport: mockRunReport }),
 }));
 
-const mockQueueReportMutate = jest.fn();
+const mockQueueReport = jest.fn();
 jest.mock('../useQueueReport', () => ({
-  useQueueReport: () => ({ mutate: mockQueueReportMutate }),
-}));
-
-const mockUploadTemplateMutate = jest.fn();
-jest.mock('../useUploadReportTemplate', () => ({
-  useUploadReportTemplate: () => ({ mutate: mockUploadTemplateMutate }),
+  useQueueReport: () => ({ queueReport: mockQueueReport }),
 }));
 
 const mockUseNotification = useNotification as jest.MockedFunction<
@@ -42,7 +39,6 @@ const NO_FILTERS: AppliedFilters = {
   startDate: null,
   endDate: null,
   format: null,
-  reportTemplateLocation: null,
   version: 0,
 };
 
@@ -61,12 +57,16 @@ const reportB: ReportDefinition & { id: string } = {
 };
 
 describe('useReportTableState', () => {
+  const addNotification = jest.fn();
+
   beforeEach(() => {
     jest.clearAllMocks();
     mockRunReport.mockReturnValue(true);
+    mockQueueReport.mockResolvedValue(true);
+    mockUploadReportTemplate.mockResolvedValue('uploaded-template.xlsx');
     mockUseNotification.mockReturnValue({
       notifications: [],
-      addNotification: jest.fn(),
+      addNotification,
       removeNotification: jest.fn(),
       clearAllNotifications: jest.fn(),
     });
@@ -88,13 +88,12 @@ describe('useReportTableState', () => {
 
   it('falls back to the applied filters until a row override is set', () => {
     const { result } = renderHook(() =>
-      useReportTableState([reportA], NO_FILTERS, undefined),
+      useReportTableState([reportA], NO_FILTERS, ['PDF', 'CSV'], undefined),
     );
     expect(result.current.rowFilters(reportA.id)).toEqual({
       startDate: null,
       endDate: null,
       format: null,
-      reportTemplateLocation: null,
     });
 
     act(() => {
@@ -104,13 +103,13 @@ describe('useReportTableState', () => {
       startDate: null,
       endDate: null,
       format: 'CSV',
-      reportTemplateLocation: null,
     });
   });
 
   it('resets overrides and errors when appliedFilters.version changes', () => {
     const { result, rerender } = renderHook(
-      ({ filters }) => useReportTableState([reportA], filters, undefined),
+      ({ filters }) =>
+        useReportTableState([reportA], filters, ['PDF', 'CSV'], undefined),
       { initialProps: { filters: NO_FILTERS } },
     );
 
@@ -127,7 +126,12 @@ describe('useReportTableState', () => {
   it('does not let an earlier row-run timer clear a later run on a different row (race fix)', () => {
     jest.useFakeTimers();
     const { result } = renderHook(() =>
-      useReportTableState([reportA, reportB], NO_FILTERS, undefined),
+      useReportTableState(
+        [reportA, reportB],
+        NO_FILTERS,
+        ['PDF', 'CSV'],
+        undefined,
+      ),
     );
 
     runReportsWithFormat(result, reportA);
@@ -155,139 +159,113 @@ describe('useReportTableState', () => {
     jest.useRealTimers();
   });
 
-  describe('custom Excel template handling', () => {
-    const customExcelReport: ReportDefinition & { id: string } = {
-      id: 'report-custom',
-      name: 'Custom Excel Report',
-      type: 'visits',
-      config: { dateRangeRequired: false },
-    };
-
-    it('surfaces a template error and does not run when Custom Excel has no uploaded or pre-configured template', () => {
+  describe('handleQueueReport', () => {
+    it('queues the report and shows a success notification', async () => {
       const { result } = renderHook(() =>
-        useReportTableState([customExcelReport], NO_FILTERS, undefined),
+        useReportTableState([reportA], NO_FILTERS, ['PDF', 'CSV'], undefined),
       );
-
       act(() => {
-        result.current.updateRow(customExcelReport.id, {
-          format: 'CUSTOM EXCEL',
-        });
-      });
-      act(() => {
-        result.current.handleRunReport(customExcelReport);
+        result.current.updateRow(reportA.id, { format: 'PDF' });
       });
 
-      expect(result.current.errors(customExcelReport.id)?.template).toBe(
-        'REPORTS_MISSING_TEMPLATE_ERROR',
-      );
-      expect(mockRunReport).not.toHaveBeenCalled();
-    });
-
-    it('falls back to the pre-configured macro template path when none was uploaded', () => {
-      const preconfiguredReport: ReportDefinition & { id: string } = {
-        id: 'report-preconfigured',
-        name: 'Preconfigured Report',
-        type: 'visits',
-        config: { dateRangeRequired: false, macroTemplatePath: 'preset.xlsx' },
-      };
-      const { result } = renderHook(() =>
-        useReportTableState([preconfiguredReport], NO_FILTERS, undefined),
-      );
-
-      act(() => {
-        result.current.updateRow(preconfiguredReport.id, {
-          format: 'CUSTOM EXCEL',
-        });
-      });
-      act(() => {
-        result.current.handleRunReport(preconfiguredReport);
+      await act(async () => {
+        await result.current.handleQueueReport(reportA);
       });
 
-      expect(mockRunReport).toHaveBeenCalledWith(
-        preconfiguredReport,
-        'CUSTOM EXCEL',
+      expect(mockQueueReport).toHaveBeenCalledWith(
+        reportA,
+        'PDF',
         null,
         null,
         undefined,
-        'preset.xlsx',
+        null,
       );
+      expect(addNotification).toHaveBeenCalledWith({
+        title: 'REPORTS_QUEUE_SUCCESS_TITLE',
+        message: 'REPORTS_QUEUE_SUCCESS_MESSAGE',
+        type: 'success',
+      });
     });
 
-    it('clears the uploaded template and resets the format after a successful Custom Excel run', () => {
+    it('shows an error notification when queueing fails', async () => {
+      mockQueueReport.mockResolvedValue(false);
       const { result } = renderHook(() =>
-        useReportTableState([customExcelReport], NO_FILTERS, undefined),
+        useReportTableState([reportA], NO_FILTERS, ['PDF', 'CSV'], undefined),
       );
-
       act(() => {
-        result.current.updateRow(customExcelReport.id, {
-          format: 'CUSTOM EXCEL',
-          reportTemplateLocation: 'uploaded.xlsx',
-        });
-      });
-      act(() => {
-        result.current.handleRunReport(customExcelReport);
+        result.current.updateRow(reportA.id, { format: 'PDF' });
       });
 
-      expect(mockRunReport).toHaveBeenCalledWith(
-        customExcelReport,
-        'CUSTOM EXCEL',
-        null,
-        null,
-        undefined,
-        'uploaded.xlsx',
-      );
-      expect(result.current.rowFilters(customExcelReport.id)).toEqual({
-        startDate: null,
-        endDate: null,
-        format: null,
-        reportTemplateLocation: null,
+      await act(async () => {
+        await result.current.handleQueueReport(reportA);
       });
+
+      expect(addNotification).toHaveBeenCalledWith({
+        title: 'REPORTS_ERROR_TITLE',
+        message: 'REPORTS_QUEUE_ERROR_MESSAGE',
+        type: 'error',
+      });
+    });
+
+    it('does not queue when validation fails', async () => {
+      const { result } = renderHook(() =>
+        useReportTableState([reportA], NO_FILTERS, ['PDF', 'CSV'], undefined),
+      );
+
+      await act(async () => {
+        await result.current.handleQueueReport(reportA);
+      });
+
+      expect(mockQueueReport).not.toHaveBeenCalled();
+      expect(addNotification).toHaveBeenCalledWith(
+        expect.objectContaining({ title: 'REPORTS_VALIDATION_ERROR_TITLE' }),
+      );
     });
   });
 
-  describe('handleTemplateUpload', () => {
-    it('stores the uploaded template location on the row and clears its template error on success', () => {
+  describe('custom Excel template handling', () => {
+    const reportCustomExcel: ReportDefinition & { id: string } = {
+      id: 'report-custom-excel',
+      name: 'Custom Excel Report',
+      type: 'sql',
+      config: { dateRangeRequired: false },
+    };
+
+    it('uploads a template and stores its location on the row', async () => {
       const { result } = renderHook(() =>
-        useReportTableState([reportA], NO_FILTERS, undefined),
+        useReportTableState(
+          [reportCustomExcel],
+          NO_FILTERS,
+          ['PDF', 'CUSTOM EXCEL'],
+          undefined,
+        ),
       );
-      const file = new File(['contents'], 'template.xlsx');
+      const file = new File(['content'], 'template.xlsx');
 
-      act(() => {
-        result.current.handleTemplateUpload(reportA, file);
+      await act(async () => {
+        await result.current.handleTemplateUpload(reportCustomExcel, file);
       });
 
-      const [uploadedFile, callbacks] = mockUploadTemplateMutate.mock.calls[0];
-      expect(uploadedFile).toBe(file);
-
-      act(() => {
-        callbacks.onSuccess('uploaded.xlsx');
-      });
-
-      expect(result.current.rowFilters(reportA.id).reportTemplateLocation).toBe(
-        'uploaded.xlsx',
-      );
+      expect(mockUploadReportTemplate).toHaveBeenCalledWith(file);
+      expect(
+        result.current.rowFilters(reportCustomExcel.id).templateLocation,
+      ).toBe('uploaded-template.xlsx');
     });
 
-    it('shows an error notification when the upload fails', () => {
-      const addNotification = jest.fn();
-      mockUseNotification.mockReturnValue({
-        notifications: [],
-        addNotification,
-        removeNotification: jest.fn(),
-        clearAllNotifications: jest.fn(),
-      });
+    it('shows an error notification when the upload fails', async () => {
+      mockUploadReportTemplate.mockRejectedValue(new Error('boom'));
       const { result } = renderHook(() =>
-        useReportTableState([reportA], NO_FILTERS, undefined),
+        useReportTableState(
+          [reportCustomExcel],
+          NO_FILTERS,
+          ['PDF', 'CUSTOM EXCEL'],
+          undefined,
+        ),
       );
-      const file = new File(['contents'], 'template.xlsx');
+      const file = new File(['content'], 'template.xlsx');
 
-      act(() => {
-        result.current.handleTemplateUpload(reportA, file);
-      });
-
-      const [, callbacks] = mockUploadTemplateMutate.mock.calls[0];
-      act(() => {
-        callbacks.onError();
+      await act(async () => {
+        await result.current.handleTemplateUpload(reportCustomExcel, file);
       });
 
       expect(addNotification).toHaveBeenCalledWith({
@@ -295,117 +273,72 @@ describe('useReportTableState', () => {
         message: 'REPORTS_UPLOAD_ERROR',
         type: 'error',
       });
-    });
-  });
-
-  describe('handleQueueReport', () => {
-    const report = reportA;
-
-    it('validates before queueing and surfaces an error without calling the mutation', () => {
-      const { result } = renderHook(() =>
-        useReportTableState([report], NO_FILTERS, undefined),
-      );
-
-      act(() => {
-        result.current.handleQueueReport(report);
-      });
-
-      expect(result.current.errors(report.id)?.format).toBe(
-        'REPORTS_SELECT_FORMAT_ERROR',
-      );
-      expect(mockQueueReportMutate).not.toHaveBeenCalled();
+      expect(
+        result.current.rowFilters(reportCustomExcel.id).templateLocation,
+      ).toBeUndefined();
     });
 
-    it('calls the queue mutation with the resolved row filters and marks the row as queueing', () => {
+    it('fails validation and does not run when CUSTOM EXCEL has no template', () => {
       const { result } = renderHook(() =>
-        useReportTableState([report], NO_FILTERS, undefined),
+        useReportTableState(
+          [reportCustomExcel],
+          NO_FILTERS,
+          ['PDF', 'CUSTOM EXCEL'],
+          undefined,
+        ),
       );
-
       act(() => {
-        result.current.updateRow(report.id, { format: 'PDF' });
-      });
-      act(() => {
-        result.current.handleQueueReport(report);
-      });
-
-      expect(result.current.isQueueing(report.id)).toBe(true);
-      expect(mockQueueReportMutate).toHaveBeenCalledWith(
-        expect.objectContaining({
-          report,
-          format: 'PDF',
-          reportTemplateLocation: null,
-        }),
-        expect.objectContaining({
-          onSuccess: expect.any(Function),
-          onSettled: expect.any(Function),
-        }),
-      );
-    });
-
-    it('clears the queueing flag and resets the template on settle/success for Custom Excel', () => {
-      const { result } = renderHook(() =>
-        useReportTableState([report], NO_FILTERS, undefined),
-      );
-
-      act(() => {
-        result.current.updateRow(report.id, {
+        result.current.updateRow(reportCustomExcel.id, {
           format: 'CUSTOM EXCEL',
-          reportTemplateLocation: 'uploaded.xlsx',
         });
       });
+
       act(() => {
-        result.current.handleQueueReport(report);
+        result.current.handleRunReport(reportCustomExcel);
       });
 
-      const [, callbacks] = mockQueueReportMutate.mock.calls[0];
-      act(() => {
-        callbacks.onSuccess();
-        callbacks.onSettled();
-      });
-
-      expect(result.current.isQueueing(report.id)).toBe(false);
-      expect(result.current.rowFilters(report.id)).toEqual({
-        startDate: null,
-        endDate: null,
-        format: null,
-        reportTemplateLocation: null,
+      expect(mockRunReport).not.toHaveBeenCalled();
+      expect(addNotification).toHaveBeenCalledWith({
+        title: 'REPORTS_VALIDATION_ERROR_TITLE',
+        message: 'REPORTS_MISSING_TEMPLATE_ERROR',
+        type: 'error',
       });
     });
 
-    it('does not clobber a row the user changed while the queue request was in flight', () => {
+    it('resets the format and clears the template after a successful CUSTOM EXCEL run', async () => {
       const { result } = renderHook(() =>
-        useReportTableState([report], NO_FILTERS, undefined),
+        useReportTableState(
+          [reportCustomExcel],
+          NO_FILTERS,
+          ['PDF', 'CUSTOM EXCEL'],
+          undefined,
+        ),
       );
-
+      const file = new File(['content'], 'template.xlsx');
+      await act(async () => {
+        await result.current.handleTemplateUpload(reportCustomExcel, file);
+      });
       act(() => {
-        result.current.updateRow(report.id, {
+        result.current.updateRow(reportCustomExcel.id, {
           format: 'CUSTOM EXCEL',
-          reportTemplateLocation: 'uploaded.xlsx',
-        });
-      });
-      act(() => {
-        result.current.handleQueueReport(report);
-      });
-
-      // User edits the row again before the in-flight request resolves.
-      act(() => {
-        result.current.updateRow(report.id, {
-          format: 'PDF',
-          reportTemplateLocation: null,
         });
       });
 
-      const [, callbacks] = mockQueueReportMutate.mock.calls[0];
       act(() => {
-        callbacks.onSuccess();
+        result.current.handleRunReport(reportCustomExcel);
       });
 
-      expect(result.current.rowFilters(report.id)).toEqual({
-        startDate: null,
-        endDate: null,
-        format: 'PDF',
-        reportTemplateLocation: null,
-      });
+      expect(mockRunReport).toHaveBeenCalledWith(
+        reportCustomExcel,
+        'CUSTOM EXCEL',
+        null,
+        null,
+        undefined,
+        'uploaded-template.xlsx',
+      );
+      expect(result.current.rowFilters(reportCustomExcel.id)).toEqual(
+        expect.objectContaining({ format: 'PDF', templateLocation: null }),
+      );
     });
   });
 });

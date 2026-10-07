@@ -502,7 +502,6 @@ export type {
 export { getTasks } from './taskService';
 export {
   buildRunReportUrl,
-  buildScheduleReportUrl,
   formatDateForQuery,
   scheduleReport,
   uploadReportTemplate,

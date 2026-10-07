@@ -19,7 +19,7 @@
         },
         "enableReportQueue": {
           "type": "boolean",
-          "description": "Whether reports can be queued to run asynchronously and retrieved later from My Reports"
+          "description": "Whether reports can be queued (run asynchronously) in addition to running immediately"
         }
       },
       "additionalProperties": true

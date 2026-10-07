@@ -42,3 +42,5 @@ export const QUERY_KEYS = {
   reportsConfig: ['reportsConfig'],
   reportsAppConfig: ['reportsAppConfig'],
 } as const;
+
+export const CUSTOM_EXCEL_TEMPLATE_ACCEPT = ['.xls', '.xlsx'];

@@ -1,100 +1,69 @@
-import {
-  buildScheduleReportUrl,
-  dispatchAuditEvent,
-  getCurrentUser,
-  scheduleReport,
-} from '@bahmni/services';
-import { useNotification } from '@bahmni/widgets';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { renderHook, waitFor } from '@testing-library/react';
-import React, { type ReactNode } from 'react';
+import { dispatchAuditEvent, scheduleReport } from '@bahmni/services';
+import { useActivePractitioner } from '@bahmni/widgets';
+import { renderHook } from '@testing-library/react';
 import type { ReportDefinition } from '../../components/ReportList/models';
 import { useQueueReport } from '../useQueueReport';
 
 jest.mock('@bahmni/services', () => ({
   ...jest.requireActual('@bahmni/services'),
-  getCurrentUser: jest.fn(),
-  buildScheduleReportUrl: jest.fn(),
-  scheduleReport: jest.fn(),
   dispatchAuditEvent: jest.fn(),
-  useTranslation: () => ({ t: (key: string) => key }),
+  scheduleReport: jest.fn(),
 }));
 
 jest.mock('@bahmni/widgets', () => ({
   ...jest.requireActual('@bahmni/widgets'),
-  useNotification: jest.fn(),
+  useActivePractitioner: jest.fn(),
 }));
 
-const mockGetCurrentUser = getCurrentUser as jest.MockedFunction<
-  typeof getCurrentUser
->;
-const mockBuildScheduleReportUrl =
-  buildScheduleReportUrl as jest.MockedFunction<typeof buildScheduleReportUrl>;
-const mockScheduleReport = scheduleReport as jest.MockedFunction<
-  typeof scheduleReport
->;
 const mockDispatchAuditEvent = dispatchAuditEvent as jest.MockedFunction<
   typeof dispatchAuditEvent
 >;
-const mockUseNotification = useNotification as jest.MockedFunction<
-  typeof useNotification
+const mockScheduleReport = scheduleReport as jest.MockedFunction<
+  typeof scheduleReport
 >;
-const mockAddNotification = jest.fn();
-
-const report: ReportDefinition & { id: string } = {
-  id: 'r1',
-  name: 'OPD Visit Count',
-  type: 'visits',
-  config: { paperSize: 'A4' },
-};
+const mockUseActivePractitioner = useActivePractitioner as jest.MockedFunction<
+  typeof useActivePractitioner
+>;
 
 describe('useQueueReport', () => {
-  let queryClient: QueryClient;
-  let wrapper: ({ children }: { children: ReactNode }) => React.JSX.Element;
+  const report: ReportDefinition & { id: string } = {
+    id: 'r1',
+    name: 'OPD Visit Count',
+    type: 'visits',
+    config: { paperSize: 'A4' },
+  };
+
+  const activeUser = {
+    display: 'Super Man',
+    username: 'superman',
+    uuid: 'user-uuid',
+  };
 
   beforeEach(() => {
     jest.clearAllMocks();
-    queryClient = new QueryClient();
-    wrapper = ({ children }: { children: ReactNode }) =>
-      React.createElement(
-        QueryClientProvider,
-        { client: queryClient },
-        children,
-      );
-
-    mockGetCurrentUser.mockResolvedValue({
-      username: 'superman',
-      display: 'Superman',
-      uuid: 'user-uuid',
-    });
-    mockBuildScheduleReportUrl.mockReturnValue(
-      'https://example.com/bahmnireports/schedule?name=OPD+Visit+Count',
-    );
+    mockUseActivePractitioner.mockReturnValue({
+      user: activeUser,
+      practitioner: null,
+      loading: false,
+      error: null,
+      refetch: jest.fn(),
+    } as unknown as ReturnType<typeof useActivePractitioner>);
     mockScheduleReport.mockResolvedValue(undefined);
-    mockUseNotification.mockReturnValue({
-      notifications: [],
-      addNotification: mockAddNotification,
-      removeNotification: jest.fn(),
-      clearAllNotifications: jest.fn(),
-    });
   });
 
-  it('resolves the current user, builds the schedule URL, calls scheduleReport, shows a success notification, and dispatches an audit event', async () => {
-    const { result } = renderHook(() => useQueueReport(), { wrapper });
+  it('schedules the report with the current username, dispatches a RUN_REPORT audit event (same as the run action, per the ticket AC), and reports success', async () => {
+    const { result } = renderHook(() => useQueueReport());
     const startDate = new Date('2024-03-01');
     const endDate = new Date('2024-03-31');
 
-    result.current.mutate({
+    const queued = await result.current.queueReport(
       report,
-      format: 'PDF',
+      'PDF',
       startDate,
       endDate,
-      defaultPaperSize: 'A3',
-    });
+    );
 
-    await waitFor(() => expect(result.current.isSuccess).toBe(true));
-
-    expect(mockBuildScheduleReportUrl).toHaveBeenCalledWith(
+    expect(mockScheduleReport).toHaveBeenCalledWith(
       report.name,
       'PDF',
       'superman',
@@ -102,73 +71,87 @@ describe('useQueueReport', () => {
       endDate,
       report.config?.paperSize,
       undefined,
+      undefined,
     );
-    expect(mockScheduleReport).toHaveBeenCalledWith(
-      'https://example.com/bahmnireports/schedule?name=OPD+Visit+Count',
-    );
-    expect(mockAddNotification).toHaveBeenCalledWith({
-      title: 'REPORTS_QUEUE_SUCCESS_TITLE',
-      message: 'REPORTS_QUEUE_SUCCESS_MESSAGE',
-      type: 'success',
-    });
     expect(mockDispatchAuditEvent).toHaveBeenCalledWith({
       eventType: 'RUN_REPORT',
       messageParams: { reportName: report.name },
       module: 'MODULE_LABEL_REPORTS_KEY',
     });
+    expect(queued).toBe(true);
   });
 
-  it('passes the report template location through for Custom Excel', async () => {
-    const { result } = renderHook(() => useQueueReport(), { wrapper });
+  it('fails without scheduling when the current user cannot be resolved', async () => {
+    const consoleErrorSpy = jest
+      .spyOn(console, 'error')
+      .mockImplementation(() => {});
+    mockUseActivePractitioner.mockReturnValue({
+      user: null,
+      practitioner: null,
+      loading: false,
+      error: null,
+      refetch: jest.fn(),
+    } as unknown as ReturnType<typeof useActivePractitioner>);
+    const { result } = renderHook(() => useQueueReport());
 
-    result.current.mutate({
+    const queued = await result.current.queueReport(report, 'PDF');
+
+    expect(mockScheduleReport).not.toHaveBeenCalled();
+    expect(mockDispatchAuditEvent).not.toHaveBeenCalled();
+    expect(queued).toBe(false);
+
+    consoleErrorSpy.mockRestore();
+  });
+
+  it('passes the macroTemplateLocation through to scheduleReport', async () => {
+    const { result } = renderHook(() => useQueueReport());
+
+    await result.current.queueReport(
       report,
-      format: 'CUSTOM EXCEL',
-      reportTemplateLocation: 'uuid-template.xlsx',
-    });
+      'CUSTOM EXCEL',
+      undefined,
+      undefined,
+      undefined,
+      'uploaded-template.xlsx',
+    );
 
-    await waitFor(() => expect(result.current.isSuccess).toBe(true));
-
-    expect(mockBuildScheduleReportUrl).toHaveBeenCalledWith(
+    expect(mockScheduleReport).toHaveBeenCalledWith(
       report.name,
       'CUSTOM EXCEL',
       'superman',
       undefined,
       undefined,
       report.config?.paperSize,
-      'uuid-template.xlsx',
+      undefined,
+      'uploaded-template.xlsx',
     );
   });
 
-  it('shows an error notification and does not dispatch an audit event when scheduling fails', async () => {
-    mockScheduleReport.mockRejectedValue(new Error('network error'));
-    const { result } = renderHook(() => useQueueReport(), { wrapper });
+  it('reports failure and does not dispatch an audit event when scheduling throws', async () => {
+    const consoleErrorSpy = jest
+      .spyOn(console, 'error')
+      .mockImplementation(() => {});
+    mockScheduleReport.mockRejectedValue(new Error('boom'));
+    const { result } = renderHook(() => useQueueReport());
 
-    result.current.mutate({ report, format: 'PDF' });
+    const queued = await result.current.queueReport(report, 'PDF');
 
-    await waitFor(() => expect(result.current.isError).toBe(true));
-
-    expect(mockAddNotification).toHaveBeenCalledWith({
-      title: 'REPORTS_ERROR_TITLE',
-      message: 'REPORTS_QUEUE_ERROR_MESSAGE',
-      type: 'error',
-    });
+    expect(consoleErrorSpy).toHaveBeenCalledWith(
+      'Error queueing report:',
+      expect.any(Error),
+    );
     expect(mockDispatchAuditEvent).not.toHaveBeenCalled();
+    expect(queued).toBe(false);
+
+    consoleErrorSpy.mockRestore();
   });
 
-  it('shows an error notification when the current user cannot be resolved', async () => {
-    mockGetCurrentUser.mockResolvedValue(null);
-    const { result } = renderHook(() => useQueueReport(), { wrapper });
+  it('returns a stable queueReport reference across re-renders', () => {
+    const { result, rerender } = renderHook(() => useQueueReport());
+    const firstQueueReport = result.current.queueReport;
 
-    result.current.mutate({ report, format: 'PDF' });
+    rerender();
 
-    await waitFor(() => expect(result.current.isError).toBe(true));
-
-    expect(mockScheduleReport).not.toHaveBeenCalled();
-    expect(mockAddNotification).toHaveBeenCalledWith({
-      title: 'REPORTS_ERROR_TITLE',
-      message: 'REPORTS_QUEUE_ERROR_MESSAGE',
-      type: 'error',
-    });
+    expect(result.current.queueReport).toBe(firstQueueReport);
   });
 });

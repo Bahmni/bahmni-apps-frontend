@@ -14,22 +14,34 @@ export const formatDateForQuery = (date: Date | null): string | null => {
   return format(date, ISO_DATE_FORMAT);
 };
 
-const appendDateAndTemplateParams = (
-  params: URLSearchParams,
+const buildReportParams = (
+  reportName: string,
   reportFormat: FormatKey,
   startDate?: Date | null,
   endDate?: Date | null,
-  reportTemplateLocation?: string | null,
-): void => {
+  paperSize?: string,
+  appName: string = DEFAULT_APP_NAME,
+  macroTemplateLocation?: string | null,
+): URLSearchParams => {
+  const mimeType = FORMAT_MIME_TYPES[reportFormat];
+  const params = new URLSearchParams({
+    name: reportName,
+    responseType: mimeType,
+    paperSize: paperSize ?? DEFAULT_PAPER_SIZE,
+    appName,
+  });
+
   if (startDate) {
     params.append('startDate', formatDateForQuery(startDate) ?? '');
   }
   if (endDate) {
     params.append('endDate', formatDateForQuery(endDate) ?? '');
   }
-  if (reportTemplateLocation && reportFormat === 'CUSTOM EXCEL') {
-    params.append('macroTemplateLocation', reportTemplateLocation);
+  if (macroTemplateLocation) {
+    params.append('macroTemplateLocation', macroTemplateLocation);
   }
+
+  return params;
 };
 
 export const buildRunReportUrl = (
@@ -38,62 +50,49 @@ export const buildRunReportUrl = (
   startDate?: Date | null,
   endDate?: Date | null,
   paperSize?: string,
-  reportTemplateLocation?: string | null,
   appName: string = DEFAULT_APP_NAME,
+  macroTemplateLocation?: string | null,
 ): string => {
-  const mimeType = FORMAT_MIME_TYPES[reportFormat];
-  const params = new URLSearchParams({
-    name: reportName,
-    responseType: mimeType,
-    paperSize: paperSize ?? DEFAULT_PAPER_SIZE,
-    appName,
-  });
-  appendDateAndTemplateParams(
-    params,
+  const params = buildReportParams(
+    reportName,
     reportFormat,
     startDate,
     endDate,
-    reportTemplateLocation,
+    paperSize,
+    appName,
+    macroTemplateLocation,
   );
 
   return `${BAHMNI_REPORTS_URL}/report?${params.toString()}`;
 };
 
-export const buildScheduleReportUrl = (
+export const scheduleReport = (
   reportName: string,
   reportFormat: FormatKey,
   userName: string,
   startDate?: Date | null,
   endDate?: Date | null,
   paperSize?: string,
-  reportTemplateLocation?: string | null,
   appName: string = DEFAULT_APP_NAME,
-): string => {
-  const mimeType = FORMAT_MIME_TYPES[reportFormat];
-  const params = new URLSearchParams({
-    name: reportName,
-    responseType: mimeType,
-    paperSize: paperSize ?? DEFAULT_PAPER_SIZE,
-    appName,
-    userName,
-  });
-  appendDateAndTemplateParams(
-    params,
+  macroTemplateLocation?: string | null,
+): Promise<void> => {
+  const params = buildReportParams(
+    reportName,
     reportFormat,
     startDate,
     endDate,
-    reportTemplateLocation,
+    paperSize,
+    appName,
+    macroTemplateLocation,
   );
+  params.append('userName', userName);
 
-  return `${BAHMNI_REPORTS_URL}/schedule?${params.toString()}`;
+  return get<void>(`${BAHMNI_REPORTS_URL}/schedule?${params.toString()}`);
 };
-
-export const scheduleReport = (url: string): Promise<void> => get<void>(url);
 
 export const uploadReportTemplate = (file: File): Promise<string> => {
   const formData = new FormData();
   formData.append('file', file);
-  return post<string, FormData>(`${BAHMNI_REPORTS_URL}/upload`, formData, {
-    headers: { 'Content-Type': undefined },
-  });
+
+  return post<string, FormData>(`${BAHMNI_REPORTS_URL}/upload`, formData);
 };

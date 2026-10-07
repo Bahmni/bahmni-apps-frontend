@@ -1,72 +1,58 @@
-import {
-  AUDIT_LOG_EVENT_DETAILS,
-  buildScheduleReportUrl,
-  dispatchAuditEvent,
-  getCurrentUser,
-  scheduleReport,
-  useTranslation,
-  type AuditEventType,
-} from '@bahmni/services';
-import { useNotification } from '@bahmni/widgets';
-import { useMutation } from '@tanstack/react-query';
+import { AUDIT_LOG_EVENT_DETAILS, scheduleReport } from '@bahmni/services';
+import { useActivePractitioner } from '@bahmni/widgets';
+import { useCallback } from 'react';
 import type {
-  FormatKey,
   ReportDefinition,
+  FormatKey,
 } from '../components/ReportList/models';
-
-export interface QueueReportInput {
-  report: ReportDefinition & { id: string };
-  format: FormatKey;
-  startDate?: Date | null;
-  endDate?: Date | null;
-  defaultPaperSize?: string;
-  reportTemplateLocation?: string | null;
-}
+import { dispatchReportAuditEvent } from './reportAuditEvent';
 
 export const useQueueReport = () => {
-  const { t } = useTranslation();
-  const { addNotification } = useNotification();
+  const { user } = useActivePractitioner();
 
-  const mutation = useMutation({
-    mutationFn: async (input: QueueReportInput): Promise<string> => {
-      const user = await getCurrentUser();
-      if (!user) {
-        throw new Error('Unable to resolve the current user');
+  const queueReport = useCallback(
+    async (
+      report: ReportDefinition & { id: string },
+      format: FormatKey,
+      startDate?: Date | null,
+      endDate?: Date | null,
+      defaultPaperSize?: string,
+      macroTemplateLocation?: string | null,
+    ): Promise<boolean> => {
+      // Without a resolved username we can't attribute the scheduled report
+      // to anyone server-side — fail instead of silently scheduling it under
+      // an empty username (e.g. session cookie missing/expired).
+      if (!user?.username) {
+        // eslint-disable-next-line no-console
+        console.error('Error queueing report: no current user');
+        return false;
       }
 
-      const url = buildScheduleReportUrl(
-        input.report.name,
-        input.format,
-        user.username,
-        input.startDate,
-        input.endDate,
-        input.report.config?.paperSize ?? input.defaultPaperSize,
-        input.reportTemplateLocation,
-      );
-      await scheduleReport(url);
-      return input.report.name;
-    },
-    onSuccess: (reportName) => {
-      addNotification({
-        title: t('REPORTS_QUEUE_SUCCESS_TITLE'),
-        message: t('REPORTS_QUEUE_SUCCESS_MESSAGE', { reportName }),
-        type: 'success',
-      });
-      dispatchAuditEvent({
-        eventType: AUDIT_LOG_EVENT_DETAILS.RUN_REPORT
-          .eventType as AuditEventType,
-        messageParams: { reportName },
-        module: AUDIT_LOG_EVENT_DETAILS.RUN_REPORT.module,
-      });
-    },
-    onError: () => {
-      addNotification({
-        title: t('REPORTS_ERROR_TITLE'),
-        message: t('REPORTS_QUEUE_ERROR_MESSAGE'),
-        type: 'error',
-      });
-    },
-  });
+      try {
+        await scheduleReport(
+          report.name,
+          format,
+          user.username,
+          startDate,
+          endDate,
+          report.config?.paperSize ?? defaultPaperSize,
+          undefined,
+          macroTemplateLocation,
+        );
 
-  return mutation;
+        dispatchReportAuditEvent(
+          AUDIT_LOG_EVENT_DETAILS.RUN_REPORT,
+          report.name,
+        );
+        return true;
+      } catch (error) {
+        // eslint-disable-next-line no-console
+        console.error('Error queueing report:', error);
+        return false;
+      }
+    },
+    [user?.username],
+  );
+
+  return { queueReport };
 };

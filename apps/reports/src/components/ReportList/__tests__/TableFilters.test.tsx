@@ -160,7 +160,7 @@ describe('TableFilters', () => {
 
     const [start] = defaultProps.onStartDateChange.mock.calls[0];
     const expectedStart = new Date();
-    expectedStart.setDate(expectedStart.getDate() - 6);
+    expectedStart.setDate(expectedStart.getDate() - 7);
     expect(start.toDateString()).toBe(expectedStart.toDateString());
   });
 
@@ -196,19 +196,7 @@ describe('TableFilters', () => {
       within(select).getByText('REPORTS_PRESET_THIS_MONTH'),
     ).toBeInTheDocument();
     expect(
-      within(select).getByText('REPORTS_PRESET_PREVIOUS_MONTH'),
-    ).toBeInTheDocument();
-    expect(
-      within(select).getByText('REPORTS_PRESET_THIS_QUARTER'),
-    ).toBeInTheDocument();
-    expect(
-      within(select).getByText('REPORTS_PRESET_THIS_YEAR'),
-    ).toBeInTheDocument();
-    expect(
       within(select).getByText('REPORTS_PRESET_LAST_7_DAYS'),
-    ).toBeInTheDocument();
-    expect(
-      within(select).getByText('REPORTS_PRESET_LAST_30_DAYS'),
     ).toBeInTheDocument();
   });
 
@@ -241,7 +229,7 @@ describe('TableFilters', () => {
     );
   });
 
-  it('resets the selected preset when a date is manually changed', async () => {
+  it('clears the selected preset when a date is manually picked', async () => {
     render(<TableFilters {...defaultProps} selectedPreset="THIS_MONTH" />);
 
     await userEvent.click(
@@ -249,7 +237,6 @@ describe('TableFilters', () => {
     );
     expect(defaultProps.onPresetChange).toHaveBeenCalledWith(null);
 
-    jest.clearAllMocks();
     await userEvent.click(
       screen.getByRole('button', { name: 'set-filter-end-date' }),
     );

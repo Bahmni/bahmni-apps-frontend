@@ -1,4 +1,4 @@
-import { useTranslation } from '@bahmni/services';
+import { uploadReportTemplate, useTranslation } from '@bahmni/services';
 import { useNotification } from '@bahmni/widgets';
 import { useEffect, useState } from 'react';
 import type {
@@ -9,33 +9,35 @@ import type {
 } from '../components/ReportList/models';
 import {
   requiresDateRange,
+  resolveTemplateLocation,
   validateReportRun,
 } from '../components/ReportList/utils';
 import { useQueueReport } from './useQueueReport';
 import { useRunReport } from './useRunReport';
-import { useUploadReportTemplate } from './useUploadReportTemplate';
 
 export interface RowErrors {
   format?: string;
   startDate?: string;
   endDate?: string;
-  template?: string;
 }
 
 export const useReportTableState = (
   reports: Array<ReportDefinition & { id: string }>,
   appliedFilters: AppliedFilters,
+  availableFormats: FormatKey[],
   defaultPaperSize?: string,
 ) => {
   const { t } = useTranslation();
   const { addNotification } = useNotification();
   const { runReport } = useRunReport();
-  const { mutate: queueReportMutate } = useQueueReport();
-  const { mutate: uploadTemplateMutate } = useUploadReportTemplate();
+  const { queueReport } = useQueueReport();
   const [overrides, setOverrides] = useState<Record<string, ReportFilters>>({});
   const [rowErrors, setRowErrors] = useState<Record<string, RowErrors>>({});
   const [runningReportId, setRunningReportId] = useState<string | null>(null);
-  const [queueingReportId, setQueueingReportId] = useState<string | null>(null);
+  const [queuingReportId, setQueuingReportId] = useState<string | null>(null);
+  const [uploadingTemplateId, setUploadingTemplateId] = useState<string | null>(
+    null,
+  );
 
   useEffect(() => {
     setOverrides({});
@@ -47,7 +49,6 @@ export const useReportTableState = (
       startDate: appliedFilters.startDate,
       endDate: appliedFilters.endDate,
       format: appliedFilters.format,
-      reportTemplateLocation: null,
     };
 
   const updateRow = (id: string, patch: Partial<ReportFilters>) =>
@@ -63,29 +64,15 @@ export const useReportTableState = (
       return { ...prev, [id]: next };
     });
 
-  const translate = (key: string, options?: { reportName?: string }) =>
-    t(key, { defaultValue: key, ...options });
-
   const applyValidationErrors = (
     reportId: string,
     filters: ReportFilters,
     validationErr: NonNullable<ReturnType<typeof validateReportRun>>,
   ) => {
-    addNotification({
-      title: t('REPORTS_VALIDATION_ERROR_TITLE'),
-      message: validationErr.message,
-      type: 'error',
-    });
-
     if (validationErr.field === 'format') {
       setRowErrors((prev) => ({
         ...prev,
         [reportId]: { format: validationErr.message },
-      }));
-    } else if (validationErr.field === 'template') {
-      setRowErrors((prev) => ({
-        ...prev,
-        [reportId]: { template: validationErr.message },
       }));
     } else if (
       validationErr.field === 'startDate' ||
@@ -108,53 +95,8 @@ export const useReportTableState = (
     }
   };
 
-  const clearRowErrors = (reportId: string) =>
-    setRowErrors((prev) => {
-      if (!(reportId in prev)) return prev;
-      const next = { ...prev };
-      delete next[reportId];
-      return next;
-    });
-
-  const effectiveTemplateLocation = (
-    report: ReportDefinition & { id: string },
-    filters: ReportFilters,
-  ): string | null =>
-    filters.reportTemplateLocation ?? report.config?.macroTemplatePath ?? null;
-
-  // Reads and writes `overrides` atomically via the functional setState form,
-  // so it's safe to call from an async mutation callback whose closure was
-  // created on a stale render — unlike reading `rowFilters`/`updateRow`
-  // separately, this can't clobber an edit the user made while in flight.
-  const resetTemplateIfUnchangedSince = (
-    reportId: string,
-    submittedFormat: FormatKey | null,
-    submittedTemplateLocation: string | null,
-  ) => {
-    if (submittedFormat !== 'CUSTOM EXCEL') return;
-    setOverrides((prev) => {
-      const current = prev[reportId] ?? {
-        startDate: appliedFilters.startDate,
-        endDate: appliedFilters.endDate,
-        format: appliedFilters.format,
-        reportTemplateLocation: null,
-      };
-      if (
-        current.format !== submittedFormat ||
-        current.reportTemplateLocation !== submittedTemplateLocation
-      ) {
-        return prev;
-      }
-      return {
-        ...prev,
-        [reportId]: { ...current, format: null, reportTemplateLocation: null },
-      };
-    });
-  };
-
-  const handleRunReport = (report: ReportDefinition & { id: string }) => {
+  const validate = (report: ReportDefinition & { id: string }) => {
     const filters = rowFilters(report.id);
-    const templateLocation = effectiveTemplateLocation(report, filters);
     const validationErr = validateReportRun(
       {
         report,
@@ -162,17 +104,63 @@ export const useReportTableState = (
         format: filters.format,
         startDate: filters.startDate,
         endDate: filters.endDate,
-        reportTemplateLocation: templateLocation,
+        templateLocation: filters.templateLocation,
       },
-      translate,
+      (key: string, options?: { reportName?: string }) =>
+        t(key, { defaultValue: key, ...options }),
     );
+    return { filters, validationErr };
+  };
+
+  // Reset transient per-row state that's tied to the completed action's format
+  // (e.g. a CUSTOM EXCEL template is single-use). Row *errors* are cleared as
+  // soon as validation passes (see validateOrNotify) rather than here, so a
+  // stale message doesn't linger on the row if the run/queue action itself
+  // subsequently fails (popup blocked, server error, etc).
+  const resetAfterSuccessfulRun = (
+    reportId: string,
+    filters: ReportFilters,
+  ) => {
+    if (filters.format === 'CUSTOM EXCEL') {
+      updateRow(reportId, {
+        format: availableFormats[0] ?? null,
+        templateLocation: null,
+      });
+    }
+  };
+
+  // Validates the row, surfacing a notification + field-level error and
+  // returning null on failure. On success, clears any stale field errors for
+  // this row (regardless of whether the subsequent run/queue action itself
+  // succeeds) and returns the filters to act on.
+  const validateOrNotify = (
+    report: ReportDefinition & { id: string },
+  ): ReportFilters | null => {
+    const { filters, validationErr } = validate(report);
 
     if (validationErr) {
+      addNotification({
+        title: t('REPORTS_VALIDATION_ERROR_TITLE'),
+        message: validationErr.message,
+        type: 'error',
+      });
       applyValidationErrors(report.id, filters, validationErr);
-      return;
+      return null;
     }
 
-    clearRowErrors(report.id);
+    setRowErrors((prev) => {
+      if (!(report.id in prev)) return prev;
+      const next = { ...prev };
+      delete next[report.id];
+      return next;
+    });
+
+    return filters;
+  };
+
+  const handleRunReport = (report: ReportDefinition & { id: string }) => {
+    const filters = validateOrNotify(report);
+    if (!filters) return;
 
     setRunningReportId(report.id);
     const opened = runReport(
@@ -181,7 +169,7 @@ export const useReportTableState = (
       filters.startDate,
       filters.endDate,
       defaultPaperSize,
-      templateLocation,
+      resolveTemplateLocation(report, filters.templateLocation),
     );
 
     if (!opened) {
@@ -194,88 +182,72 @@ export const useReportTableState = (
       return;
     }
 
-    resetTemplateIfUnchangedSince(
-      report.id,
-      filters.format,
-      filters.reportTemplateLocation,
-    );
-
+    resetAfterSuccessfulRun(report.id, filters);
     setTimeout(() => {
       setRunningReportId((current) => (current === report.id ? null : current));
     }, 300);
   };
 
-  const handleQueueReport = (report: ReportDefinition & { id: string }) => {
-    const filters = rowFilters(report.id);
-    const templateLocation = effectiveTemplateLocation(report, filters);
-    const validationErr = validateReportRun(
-      {
-        report,
-        requiresDateRange: requiresDateRange(report),
-        format: filters.format,
-        startDate: filters.startDate,
-        endDate: filters.endDate,
-        reportTemplateLocation: templateLocation,
-      },
-      translate,
-    );
+  const handleQueueReport = async (
+    report: ReportDefinition & { id: string },
+  ) => {
+    const filters = validateOrNotify(report);
+    if (!filters) return;
 
-    if (validationErr) {
-      applyValidationErrors(report.id, filters, validationErr);
+    setQueuingReportId(report.id);
+    const queued = await queueReport(
+      report,
+      filters.format as FormatKey,
+      filters.startDate,
+      filters.endDate,
+      defaultPaperSize,
+      resolveTemplateLocation(report, filters.templateLocation),
+    );
+    setQueuingReportId(null);
+
+    if (!queued) {
+      addNotification({
+        title: t('REPORTS_ERROR_TITLE'),
+        message: t('REPORTS_QUEUE_ERROR_MESSAGE'),
+        type: 'error',
+      });
       return;
     }
 
-    clearRowErrors(report.id);
-
-    setQueueingReportId(report.id);
-    queueReportMutate(
-      {
-        report,
-        format: filters.format as FormatKey,
-        startDate: filters.startDate,
-        endDate: filters.endDate,
-        defaultPaperSize,
-        reportTemplateLocation: templateLocation,
-      },
-      {
-        onSuccess: () =>
-          resetTemplateIfUnchangedSince(
-            report.id,
-            filters.format,
-            filters.reportTemplateLocation,
-          ),
-        onSettled: () =>
-          setQueueingReportId((current) =>
-            current === report.id ? null : current,
-          ),
-      },
-    );
+    addNotification({
+      title: t('REPORTS_QUEUE_SUCCESS_TITLE'),
+      message: t('REPORTS_QUEUE_SUCCESS_MESSAGE', { reportName: report.name }),
+      type: 'success',
+    });
+    resetAfterSuccessfulRun(report.id, filters);
   };
 
-  const handleTemplateUpload = (
+  const handleTemplateUpload = async (
     report: ReportDefinition & { id: string },
     file: File,
   ) => {
-    uploadTemplateMutate(file, {
-      onSuccess: (reportTemplateLocation) => {
-        updateRow(report.id, { reportTemplateLocation });
-        clearRowFieldError(report.id, 'template');
-      },
-      onError: () => {
-        addNotification({
-          title: t('REPORTS_ERROR_TITLE'),
-          message: t('REPORTS_UPLOAD_ERROR'),
-          type: 'error',
-        });
-      },
-    });
+    setUploadingTemplateId(report.id);
+    try {
+      const templateLocation = await uploadReportTemplate(file);
+      updateRow(report.id, { templateLocation });
+      clearRowFieldError(report.id, 'format');
+    } catch {
+      addNotification({
+        title: t('REPORTS_ERROR_TITLE'),
+        message: t('REPORTS_UPLOAD_ERROR'),
+        type: 'error',
+      });
+    } finally {
+      setUploadingTemplateId(null);
+    }
   };
 
   return {
     rowFilters,
     errors: (id: string) => rowErrors[id],
     isRunning: (id: string) => runningReportId === id,
-    isQueueing: (id: string) => queueingReportId === id,
+    isQueuing: (id: string) => queuingReportId === id,
+    isUploadingTemplate: (id: string) => uploadingTemplateId === id,
     updateRow,
     clearRowFieldError,
     handleRunReport,

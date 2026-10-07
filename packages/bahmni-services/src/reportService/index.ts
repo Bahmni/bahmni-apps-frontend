@@ -1,6 +1,5 @@
 export {
   buildRunReportUrl,
-  buildScheduleReportUrl,
   formatDateForQuery,
   scheduleReport,
   uploadReportTemplate,
