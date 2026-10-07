@@ -990,7 +990,11 @@ describe('AllergiesForm', () => {
     it('search ComboBox IS rendered when no action resources', () => {
       renderAllergiesForm(
         {},
-        { encounterSessionStartContext: { context: { encounterType: 'Consultation' } } },
+        {
+          encounterSessionStartContext: {
+            context: { encounterType: 'Consultation' },
+          },
+        },
       );
 
       expect(getSearchCombobox()).toBeInTheDocument();

@@ -332,7 +332,9 @@ describe('ImmunizationForm Integration Tests', () => {
 
     render(
       <ImmunizationForm
-        encounterSessionStartContext={{ context: { basedOn: mockMedicationRequest } }}
+        encounterSessionStartContext={{
+          context: { basedOn: mockMedicationRequest },
+        }}
         inputControlConfig={mockAdministrationInputControlConfig}
       />,
       { wrapper: createWrapper() },
@@ -372,7 +374,9 @@ describe('ImmunizationForm Integration Tests', () => {
 
       render(
         <ImmunizationForm
-          encounterSessionStartContext={{ context: { basedOn: mockMedicationRequest } }}
+          encounterSessionStartContext={{
+            context: { basedOn: mockMedicationRequest },
+          }}
           inputControlConfig={mockAdministrationConfigWithCDSS}
         />,
         {

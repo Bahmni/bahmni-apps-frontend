@@ -163,8 +163,13 @@ describe('ImmunizationHistory', () => {
       expect.objectContaining({
         type: 'startConsultation',
         detail: expect.objectContaining({
-          context: expect.objectContaining({ encounterType: 'TestEncounterType' }),
-          action: expect.objectContaining({ type: 'create', resourceType: 'Immunization' }),
+          context: expect.objectContaining({
+            encounterType: 'TestEncounterType',
+          }),
+          action: expect.objectContaining({
+            type: 'create',
+            resourceType: 'Immunization',
+          }),
         }),
       }),
     );
@@ -194,7 +199,10 @@ describe('ImmunizationHistory', () => {
           type: 'startConsultation',
           detail: expect.objectContaining({
             context: expect.objectContaining({ encounterType: 'Immunization' }),
-            action: expect.objectContaining({ type: 'create', resourceType: 'Immunization' }),
+            action: expect.objectContaining({
+              type: 'create',
+              resourceType: 'Immunization',
+            }),
           }),
         }),
       );
@@ -218,7 +226,10 @@ describe('ImmunizationHistory', () => {
           type: 'startConsultation',
           detail: expect.objectContaining({
             context: expect.objectContaining({ encounterType: 'Immunization' }),
-            action: expect.objectContaining({ type: 'create', resourceType: 'Immunization' }),
+            action: expect.objectContaining({
+              type: 'create',
+              resourceType: 'Immunization',
+            }),
           }),
         }),
       );
@@ -244,7 +255,10 @@ describe('ImmunizationHistory', () => {
         type: 'startConsultation',
         detail: expect.objectContaining({
           context: expect.objectContaining({ encounterType: 'Immunization' }),
-          action: expect.objectContaining({ type: 'create', resourceType: 'Immunization' }),
+          action: expect.objectContaining({
+            type: 'create',
+            resourceType: 'Immunization',
+          }),
         }),
       }),
     );
@@ -274,7 +288,10 @@ describe('ImmunizationHistory', () => {
         type: 'startConsultation',
         detail: expect.objectContaining({
           context: expect.objectContaining({ encounterType: 'Immunization' }),
-          action: expect.objectContaining({ type: 'create', resourceType: 'Immunization' }),
+          action: expect.objectContaining({
+            type: 'create',
+            resourceType: 'Immunization',
+          }),
         }),
       }),
     );
@@ -291,7 +308,10 @@ describe('ImmunizationHistory', () => {
         type: 'startConsultation',
         detail: expect.objectContaining({
           context: expect.objectContaining({ encounterType: 'Immunization' }),
-          action: expect.objectContaining({ type: 'create', resourceType: 'Immunization' }),
+          action: expect.objectContaining({
+            type: 'create',
+            resourceType: 'Immunization',
+          }),
         }),
       }),
     );
@@ -325,7 +345,10 @@ describe('ImmunizationHistory', () => {
           type: 'startConsultation',
           detail: expect.objectContaining({
             context: expect.objectContaining({ encounterType: 'Immunization' }),
-            action: expect.objectContaining({ type: 'create', resourceType: 'Immunization' }),
+            action: expect.objectContaining({
+              type: 'create',
+              resourceType: 'Immunization',
+            }),
           }),
         }),
       );
@@ -347,7 +370,10 @@ describe('ImmunizationHistory', () => {
         type: 'startConsultation',
         detail: expect.objectContaining({
           context: expect.objectContaining({ encounterType: 'Immunization' }),
-          action: expect.objectContaining({ type: 'create', resourceType: 'Immunization' }),
+          action: expect.objectContaining({
+            type: 'create',
+            resourceType: 'Immunization',
+          }),
         }),
       }),
     );
@@ -372,7 +398,10 @@ describe('ImmunizationHistory', () => {
         type: 'startConsultation',
         detail: expect.objectContaining({
           context: expect.objectContaining({ encounterType: 'Immunization' }),
-          action: expect.objectContaining({ type: 'create', resourceType: 'Immunization' }),
+          action: expect.objectContaining({
+            type: 'create',
+            resourceType: 'Immunization',
+          }),
         }),
       }),
     );
@@ -402,7 +431,10 @@ describe('ImmunizationHistory', () => {
         type: 'startConsultation',
         detail: expect.objectContaining({
           context: expect.objectContaining({ encounterType: 'Immunization' }),
-          action: expect.objectContaining({ type: 'create', resourceType: 'Immunization' }),
+          action: expect.objectContaining({
+            type: 'create',
+            resourceType: 'Immunization',
+          }),
         }),
       }),
     );

@@ -117,7 +117,9 @@ describe('ImmunizationForm', () => {
     it('hides search combobox when basedOnReference exists and disableAdditionalAdministrations is true', () => {
       render(
         <ImmunizationForm
-          encounterSessionStartContext={{ context: { basedOn: mockMedicationRequest } }}
+          encounterSessionStartContext={{
+            context: { basedOn: mockMedicationRequest },
+          }}
           inputControlConfig={mockAdministrationInputControlConfig}
         />,
       );
@@ -462,7 +464,9 @@ describe('ImmunizationForm', () => {
   });
 
   describe('basedOn pre-population', () => {
-    const consultationPayloadWithBasedOn = { context: { basedOn: mockMedicationRequest } };
+    const consultationPayloadWithBasedOn = {
+      context: { basedOn: mockMedicationRequest },
+    };
 
     it.each([
       ['basedOn is absent', {}, () => {}],

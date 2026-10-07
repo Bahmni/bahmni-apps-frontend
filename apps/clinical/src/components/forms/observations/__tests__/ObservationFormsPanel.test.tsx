@@ -349,7 +349,9 @@ describe('ObservationFormsPanel', () => {
       render(
         <ObservationFormsPanel
           encounterSessionStartContext={{
-            context: { encounter: { resourceType: 'Encounter', id: 'encounter-uuid-1' } },
+            context: {
+              encounter: { resourceType: 'Encounter', id: 'encounter-uuid-1' },
+            },
             action: { type: 'update', resourceType: 'Observation' },
           }}
         />,
@@ -376,7 +378,10 @@ describe('ObservationFormsPanel', () => {
       render(
         <ObservationFormsPanel
           encounterSessionStartContext={{
-            context: { formName: 'Vitals', encounter: { resourceType: 'Encounter', id: 'encounter-uuid-1' } },
+            context: {
+              formName: 'Vitals',
+              encounter: { resourceType: 'Encounter', id: 'encounter-uuid-1' },
+            },
             action: { type: 'update', resourceType: 'Observation' },
             activeEncounter: { id: 'encounter-uuid-1' } as any,
           }}
@@ -414,7 +419,10 @@ describe('ObservationFormsPanel', () => {
             context: {
               formName: 'Vitals',
               encounter: { resourceType: 'Encounter', id: 'encounter-uuid-1' },
-              basedOn: { resourceType: 'Task', basedOn: [{ reference: 'ServiceRequest/service-request-42' }] },
+              basedOn: {
+                resourceType: 'Task',
+                basedOn: [{ reference: 'ServiceRequest/service-request-42' }],
+              },
             },
             action: { type: 'update', resourceType: 'Observation' },
             activeEncounter: { id: 'encounter-uuid-1' } as any,
@@ -460,7 +468,10 @@ describe('ObservationFormsPanel', () => {
       render(
         <ObservationFormsPanel
           encounterSessionStartContext={{
-            context: { formName: 'Vitals', encounter: { resourceType: 'Encounter', id: 'encounter-uuid-1' } },
+            context: {
+              formName: 'Vitals',
+              encounter: { resourceType: 'Encounter', id: 'encounter-uuid-1' },
+            },
             action: { type: 'update', resourceType: 'Observation' },
             activeEncounter: { id: 'encounter-uuid-1' } as any,
           }}
@@ -486,7 +497,10 @@ describe('ObservationFormsPanel', () => {
       render(
         <ObservationFormsPanel
           encounterSessionStartContext={{
-            context: { formName: 'Vitals', encounter: { resourceType: 'Encounter', id: 'encounter-uuid-1' } },
+            context: {
+              formName: 'Vitals',
+              encounter: { resourceType: 'Encounter', id: 'encounter-uuid-1' },
+            },
             action: { type: 'update', resourceType: 'Observation' },
             activeEncounter: { id: 'encounter-uuid-1' } as any,
           }}
@@ -502,7 +516,10 @@ describe('ObservationFormsPanel', () => {
       render(
         <ObservationFormsPanel
           encounterSessionStartContext={{
-            context: { formName: 'NonExistentForm', encounter: { resourceType: 'Encounter', id: 'encounter-uuid-1' } },
+            context: {
+              formName: 'NonExistentForm',
+              encounter: { resourceType: 'Encounter', id: 'encounter-uuid-1' },
+            },
             action: { type: 'update', resourceType: 'Observation' },
             activeEncounter: { id: 'encounter-uuid-1' } as any,
           }}
@@ -534,7 +551,10 @@ describe('ObservationFormsPanel', () => {
         ] as never);
 
       const sessionContext = {
-        context: { formName: 'Vitals', encounter: { resourceType: 'Encounter', id: 'encounter-uuid-1' } },
+        context: {
+          formName: 'Vitals',
+          encounter: { resourceType: 'Encounter', id: 'encounter-uuid-1' },
+        },
         action: { type: 'update', resourceType: 'Observation' },
         activeEncounter: { id: 'encounter-uuid-1' } as any,
       };
@@ -585,7 +605,10 @@ describe('ObservationFormsPanel', () => {
       render(
         <ObservationFormsPanel
           encounterSessionStartContext={{
-            context: { formName: 'Vitals', encounter: { resourceType: 'Encounter', id: 'encounter-uuid-1' } },
+            context: {
+              formName: 'Vitals',
+              encounter: { resourceType: 'Encounter', id: 'encounter-uuid-1' },
+            },
             action: { type: 'update', resourceType: 'Observation' },
             activeEncounter: { id: 'encounter-uuid-1' } as any,
           }}
@@ -638,7 +661,10 @@ describe('ObservationFormsPanel', () => {
       render(
         <ObservationFormsPanel
           encounterSessionStartContext={{
-            context: { formName: 'Vitals', encounter: { resourceType: 'Encounter', id: 'encounter-uuid-1' } },
+            context: {
+              formName: 'Vitals',
+              encounter: { resourceType: 'Encounter', id: 'encounter-uuid-1' },
+            },
             action: { type: 'update', resourceType: 'Observation' },
             activeEncounter: { id: 'encounter-uuid-1' } as any,
           }}
@@ -697,7 +723,10 @@ describe('ObservationFormsPanel', () => {
       render(
         <ObservationFormsPanel
           encounterSessionStartContext={{
-            context: { formName: 'Vitals', encounter: { resourceType: 'Encounter', id: 'encounter-uuid-1' } },
+            context: {
+              formName: 'Vitals',
+              encounter: { resourceType: 'Encounter', id: 'encounter-uuid-1' },
+            },
             action: { type: 'update', resourceType: 'Observation' },
             activeEncounter: { id: 'encounter-uuid-1' } as any,
           }}
@@ -743,7 +772,10 @@ describe('ObservationFormsPanel', () => {
       render(
         <ObservationFormsPanel
           encounterSessionStartContext={{
-            context: { formName: 'Vitals', encounter: { resourceType: 'Encounter', id: 'encounter-uuid-1' } },
+            context: {
+              formName: 'Vitals',
+              encounter: { resourceType: 'Encounter', id: 'encounter-uuid-1' },
+            },
             action: { type: 'update', resourceType: 'Observation' },
             activeEncounter: { id: 'encounter-uuid-1' } as any,
           }}
@@ -792,7 +824,10 @@ describe('ObservationFormsPanel', () => {
       render(
         <ObservationFormsPanel
           encounterSessionStartContext={{
-            context: { formName: 'Vitals', encounter: { resourceType: 'Encounter', id: 'encounter-uuid-1' } },
+            context: {
+              formName: 'Vitals',
+              encounter: { resourceType: 'Encounter', id: 'encounter-uuid-1' },
+            },
             action: { type: 'update', resourceType: 'Observation' },
             activeEncounter: { id: 'encounter-uuid-1' } as any,
           }}
@@ -809,7 +844,10 @@ describe('ObservationFormsPanel', () => {
       render(
         <ObservationFormsPanel
           encounterSessionStartContext={{
-            context: { formName: 'Vitals', encounter: { resourceType: 'Encounter', id: 'encounter-uuid-1' } },
+            context: {
+              formName: 'Vitals',
+              encounter: { resourceType: 'Encounter', id: 'encounter-uuid-1' },
+            },
             action: { type: 'update', resourceType: 'Observation' },
             // activeEncounter intentionally absent — undefined means mode not yet determined
           }}
@@ -851,7 +889,10 @@ describe('ObservationFormsPanel', () => {
       render(
         <ObservationFormsPanel
           encounterSessionStartContext={{
-            context: { formName: 'Vitals', encounter: { resourceType: 'Encounter', id: 'encounter-uuid-1' } },
+            context: {
+              formName: 'Vitals',
+              encounter: { resourceType: 'Encounter', id: 'encounter-uuid-1' },
+            },
             action: { type: 'update', resourceType: 'Observation' },
             activeEncounter: { id: 'session-different-uuid' } as any,
           }}
