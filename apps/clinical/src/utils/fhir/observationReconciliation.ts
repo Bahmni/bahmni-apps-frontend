@@ -1,4 +1,5 @@
 import { ComplexValue, Form2Observation } from '@bahmni/services';
+import type { Reference } from 'fhir/r4';
 
 /** Injects a synthetic voided DELETE entry for any obs present in `original` but missing from `transformed`. */
 export const injectMissingDeleteObs = (
@@ -70,21 +71,33 @@ export const restoreComplexValues = (
   transformed.forEach(restore);
 };
 
-/** Copies FHIR status (uuid-matched) from `existing` onto `transformed` — CarbonContainer's getValue() drops it, but PUT requires it. */
-export const mergeObservationStatuses = (
+export const mergeObsExistingData = (
   transformed: Form2Observation[],
   existing: Form2Observation[],
 ): void => {
   for (const obs of transformed) {
     if (!obs.uuid) continue;
     const match = existing.find((e) => e.uuid === obs.uuid);
-    if (match?.status) {
-      obs.status = match.status;
-    }
+    if (match?.status) obs.status = match.status;
+    if (match?.basedOn) obs.basedOn = match.basedOn;
     if (obs.groupMembers && match?.groupMembers) {
-      mergeObservationStatuses(obs.groupMembers, match.groupMembers);
+      mergeObsExistingData(obs.groupMembers, match.groupMembers);
     }
   }
+};
+
+export const findBasedOnFromObservations = (
+  observations: Form2Observation[] | undefined,
+): Reference | undefined => {
+  if (!observations) return undefined;
+  for (const obs of observations) {
+    if (obs.basedOn) return obs.basedOn;
+    if (obs.groupMembers) {
+      const found = findBasedOnFromObservations(obs.groupMembers);
+      if (found) return found;
+    }
+  }
+  return undefined;
 };
 
 /** Marks leaf observations matching the original snapshot as `unchanged`, so the bundle builder skips PUT-ing them. */

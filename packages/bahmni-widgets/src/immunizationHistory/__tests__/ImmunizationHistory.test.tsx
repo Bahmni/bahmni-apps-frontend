@@ -404,6 +404,33 @@ describe('ImmunizationHistory', () => {
     ).toBeInTheDocument();
   });
 
+  it.each([
+    {
+      status: 'completed',
+      expectedLabel: 'IMMUNIZATION_HISTORY_WIDGET_ADD_BUTTON',
+    },
+    {
+      status: 'not-done',
+      expectedLabel: 'IMMUNIZATION_HISTORY_WIDGET_ADD_WAIVER_BUTTON',
+    },
+    {
+      status: undefined,
+      expectedLabel: 'IMMUNIZATION_HISTORY_WIDGET_ADD_BUTTON',
+    },
+  ])(
+    'shows add button tooltip $expectedLabel when status is $status',
+    ({ status, expectedLabel }) => {
+      render(
+        <ImmunizationHistory
+          config={{ status, encounterType: 'Immunization' }}
+        />,
+      );
+      expect(
+        screen.getByRole('button', { name: expectedLabel }),
+      ).toBeInTheDocument();
+    },
+  );
+
   it('renders both tabs with correct labels', () => {
     render(<ImmunizationHistory config={{}} />);
     expect(

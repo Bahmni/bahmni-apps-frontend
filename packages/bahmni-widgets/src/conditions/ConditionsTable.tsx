@@ -116,6 +116,7 @@ const ConditionsTable: React.FC<WidgetProps> = ({
           messageParams: {
             conditionDisplay: conditionToMarkInactive.display,
             encounterUuid: encounter.id,
+            encounterType: encounterTypeName,
           },
         });
         dispatchConsultationSaved({

@@ -499,7 +499,7 @@ describe('ObservationFormsContainer', () => {
         <ObservationFormsContainer
           {...defaultProps}
           viewingForm={mockForm}
-          // Seed with ABNORMAL interpretation to populate statusSourceRef.
+          // Seed with ABNORMAL interpretation to populate initialObservationsRef.
           existingObservations={[
             {
               concept: { uuid: 'c1' },
@@ -947,7 +947,10 @@ describe('ObservationFormsContainer', () => {
       const pinContainer = pinIcon.parentElement;
 
       expect(pinContainer).toHaveClass('pinned');
-      expect(pinContainer).toHaveAttribute('title', 'Unpin form');
+      expect(pinContainer).toHaveAttribute(
+        'title',
+        'translated_OBSERVATION_FORMS_UNPIN_TOOLTIP',
+      );
     });
 
     it('should render the pin icon alongside the maximize/minimize toggle, not inside the title', () => {
@@ -982,7 +985,10 @@ describe('ObservationFormsContainer', () => {
       const pinContainer = pinIcon.parentElement;
 
       expect(pinContainer).toHaveClass('unpinned');
-      expect(pinContainer).toHaveAttribute('title', 'Pin form');
+      expect(pinContainer).toHaveAttribute(
+        'title',
+        'translated_OBSERVATION_FORMS_PIN_TOOLTIP',
+      );
     });
 
     it('should call updatePinnedForms when pin icon is clicked', () => {

@@ -124,7 +124,7 @@ export function useEncounterSession(
       setMatchReason([]);
       setError(null);
     }
-    fetchSessionState(signal);
+    void fetchSessionState(signal);
 
     return () => {
       signal.ignored = true;

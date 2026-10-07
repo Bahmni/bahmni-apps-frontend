@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { DataTable } from '../DataTable';
-import type { DataTableColumn } from '../types';
+import type { DataTableColumn, ManualPaginationConfig } from '../types';
 import '@testing-library/jest-dom';
 
 beforeAll(() => {
@@ -39,8 +39,7 @@ describe('DataTable pagination', () => {
         rows={manyRows}
         renderCell={renderCell}
         ariaLabel="Medications"
-        enablePagination
-        pageSize={5}
+        pagination={{ mode: 'default', pageSize: 5 }}
       />,
     );
 
@@ -58,8 +57,7 @@ describe('DataTable pagination', () => {
         rows={manyRows}
         renderCell={renderCell}
         ariaLabel="Medications"
-        enablePagination
-        pageSize={5}
+        pagination={{ mode: 'default', pageSize: 5 }}
       />,
     );
 
@@ -82,21 +80,98 @@ describe('DataTable pagination', () => {
     expect(screen.getAllByTestId(/^table-row-/)).toHaveLength(12);
   });
 
-  it('honors manualPagination by using totalItems instead of rows.length', () => {
-    const serverPageRows = manyRows.slice(0, 5);
-    render(
-      <DataTable
-        columns={baseColumns}
-        rows={serverPageRows}
-        renderCell={renderCell}
-        ariaLabel="Medications"
-        enablePagination
-        pageSize={5}
-        totalItems={200}
-        manualPagination
-      />,
-    );
-    expect(screen.getByText(/of 200 items?/i)).toBeInTheDocument();
+  describe('manual mode', () => {
+    const manualPagination = (
+      overrides: Partial<ManualPaginationConfig<Medication>> = {},
+    ): ManualPaginationConfig<Medication> => ({
+      mode: 'manual',
+      page: 1,
+      pageSize: 5,
+      totalItems: 200,
+      onPageChange: jest.fn(),
+      ...overrides,
+    });
+
+    it('should display the total item count provided by the parent', () => {
+      render(
+        <DataTable
+          columns={baseColumns}
+          rows={manyRows.slice(0, 5)}
+          renderCell={renderCell}
+          ariaLabel="Medications"
+          pagination={manualPagination()}
+        />,
+      );
+
+      expect(screen.getByText(/of 200 items?/i)).toBeInTheDocument();
+    });
+
+    it('should render all rows provided by the parent', () => {
+      render(
+        <DataTable
+          columns={baseColumns}
+          rows={manyRows.slice(0, 5)}
+          renderCell={renderCell}
+          ariaLabel="Medications"
+          pagination={manualPagination()}
+        />,
+      );
+
+      expect(screen.getAllByTestId(/^table-row-/)).toHaveLength(5);
+      expect(screen.getByText('Medication 1')).toBeInTheDocument();
+      expect(screen.getByText('Medication 5')).toBeInTheDocument();
+    });
+
+    it('should notify the parent when the user changes pages', async () => {
+      const user = userEvent.setup();
+      const onPageChange = jest.fn();
+      render(
+        <DataTable
+          columns={baseColumns}
+          rows={manyRows.slice(0, 5)}
+          renderCell={renderCell}
+          ariaLabel="Medications"
+          pagination={manualPagination({ onPageChange })}
+        />,
+      );
+
+      await user.click(screen.getByLabelText(/next page/i));
+
+      expect(onPageChange).toHaveBeenCalledTimes(1);
+      expect(onPageChange).toHaveBeenCalledWith(
+        2,
+        5,
+        expect.objectContaining({ resetColumnFilters: expect.any(Function) }),
+      );
+      expect(screen.getByText('Medication 1')).toBeInTheDocument();
+    });
+
+    it('should display the page specified by the parent', () => {
+      const { rerender } = render(
+        <DataTable
+          columns={baseColumns}
+          rows={manyRows.slice(0, 5)}
+          renderCell={renderCell}
+          ariaLabel="Medications"
+          pagination={manualPagination()}
+        />,
+      );
+
+      expect(screen.getByText(/^1–5 of 200 items?$/i)).toBeInTheDocument();
+
+      rerender(
+        <DataTable
+          columns={baseColumns}
+          rows={manyRows.slice(5, 10)}
+          renderCell={renderCell}
+          ariaLabel="Medications"
+          pagination={manualPagination({ page: 2 })}
+        />,
+      );
+
+      expect(screen.getByText(/^6–10 of 200 items?$/i)).toBeInTheDocument();
+      expect(screen.getByText('Medication 6')).toBeInTheDocument();
+    });
   });
 
   it('merges a custom pageSize into the page-size dropdown when it is not a default size', () => {
@@ -106,8 +181,7 @@ describe('DataTable pagination', () => {
         rows={manyRows}
         renderCell={renderCell}
         ariaLabel="Medications"
-        enablePagination
-        pageSize={7}
+        pagination={{ mode: 'default', pageSize: 7 }}
       />,
     );
 
@@ -127,8 +201,7 @@ describe('DataTable pagination', () => {
         rows={manyRows}
         renderCell={renderCell}
         ariaLabel="Medications"
-        enablePagination
-        pageSize={5}
+        pagination={{ mode: 'default', pageSize: 5 }}
       />,
     );
 

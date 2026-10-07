@@ -22,6 +22,7 @@ export const mockCommonSearchWidgetConfig: CommonSearchWidgetConfig = [
     locationAware: 'loggedInLocation',
     url: '/openmrs/ws/rest/v1/patient/search',
     pageSize: 20,
+    batchSize: 100,
     resultFields: mockResultFields,
     criteria: [
       {
@@ -46,6 +47,7 @@ export const mockMultiContextConfig: CommonSearchWidgetConfig = [
     locationAware: 'loggedInLocation',
     url: '/openmrs/ws/rest/v1/patient/search',
     pageSize: 20,
+    batchSize: 100,
     resultFields: mockResultFields,
     criteria: [
       {
@@ -66,7 +68,8 @@ export const mockMultiContextConfig: CommonSearchWidgetConfig = [
     requiredPrivileges: ['View Appointments'],
     locationAware: 'allowedLocation',
     url: '/openmrs/ws/rest/v1/appointment/search',
-    pageSize: 10,
+    pageSize: 20,
+    batchSize: 100,
     resultFields: mockResultFields,
     criteria: [
       {
@@ -91,6 +94,7 @@ export const mockCommonSearchWidgetConfigWithoutLocationAware: CommonSearchWidge
       requiredPrivileges: ['View Patients'],
       url: '/openmrs/ws/rest/v1/patientSearch',
       pageSize: 20,
+      batchSize: 100,
       resultFields: mockResultFields,
       criteria: [
         {
@@ -168,6 +172,7 @@ export const mockCommonSearchWidgetConfigWithRange: CommonSearchWidgetConfig = [
     locationAware: 'loggedInLocation',
     url: '/openmrs/ws/rest/v1/patient/search',
     pageSize: 20,
+    batchSize: 100,
     resultFields: mockResultFields,
     criteria: [mockNumericRangeCriterionConfig],
   },

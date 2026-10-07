@@ -4,7 +4,7 @@ import {
   BAHMNI_USER_COOKIE_NAME,
   BAHMNI_USER_LOCATION_COOKIE,
 } from '../constants/app';
-import { getCookieByName } from '../utils';
+import { getCookieByName, decodeCookieValue } from '../utils';
 import {
   USER_RESOURCE_URL,
   APP_SETTINGS_URL,
@@ -29,10 +29,7 @@ export async function getCurrentUser(): Promise<User | null> {
   }
   try {
     // Decode username from cookie value (handles URL encoding and quotes)
-    const username = decodeURIComponent(encodedUsername).replace(
-      /^"(.*)"$/,
-      '$1',
-    );
+    const username = decodeCookieValue(encodedUsername);
     // Get User from REST API
     const userResponse = await get<UserResponse>(USER_RESOURCE_URL(username));
     if (!userResponse.results || userResponse.results.length === 0) {
@@ -58,7 +55,7 @@ export const getUserLoginLocation = (): UserLocation => {
   if (!encodedUserLocation)
     throw new Error(i18next.t('ERROR_FETCHING_USER_LOCATION_DETAILS'));
   const userLocation: UserLocation = JSON.parse(
-    decodeURIComponent(encodedUserLocation).replace(/^"(.*)"$/, '$1'),
+    decodeCookieValue(encodedUserLocation),
   );
   if (!userLocation.uuid)
     throw new Error(i18next.t('ERROR_FETCHING_USER_LOCATION_DETAILS'));
