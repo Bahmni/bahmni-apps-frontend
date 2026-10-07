@@ -64,7 +64,9 @@ const ImmunizationForm = ({
     immunizationFormType === IMMUNIZATION_ADMINISTRATION_INPUT_CONTROL_KEY
       ? // New structured payload: context.basedOn; legacy: encounterSessionStartContext.basedOn
         ((encounterSessionStartContext?.context?.basedOn ??
-          encounterSessionStartContext?.basedOn) as MedicationRequest | undefined)
+          encounterSessionStartContext?.basedOn) as
+          | MedicationRequest
+          | undefined)
       : undefined;
 
   const basedOnReference = basedOn?.id;

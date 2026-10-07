@@ -57,8 +57,7 @@ const ObservationFormsPanel: React.FC<ObservationFormsPanelProps> = ({
       : activeEncounter?.id !== sourceEncounterUuid;
   // basedOn: new payload uses context.basedOn (Task), legacy uses encounterSessionStartContext.task
   const basedOnResource =
-    ctx?.basedOn ??
-    (encounterSessionStartContext?.task as Task | undefined);
+    ctx?.basedOn ?? (encounterSessionStartContext?.task as Task | undefined);
   const task = basedOnResource as Task | undefined;
   const basedOnRef = task?.basedOn?.[0]?.reference;
   const basedOnId = basedOnRef?.split('/').pop() ?? undefined;

@@ -335,6 +335,138 @@ describe('getActiveEntries', () => {
   });
 });
 
+describe('getActiveEntries — new context/action overload', () => {
+  const makeEntry = (
+    key: string,
+    overrides: Partial<InputControl> = {},
+  ): InputControl =>
+    makeMockEntry(key, {
+      encounterTypes: ['Consultation'],
+      ...overrides,
+    });
+
+  const encounterDetails = makeMockEntry('encounterDetails');
+  const allergies = makeEntry('allergies', {
+    handledResourceTypes: ['AllergyIntolerance'],
+  });
+  const medication = makeEntry('medication', {
+    handledResourceTypes: ['MedicationRequest'],
+  });
+  const stopMedications = makeEntry('stopMedications', {
+    handledActionTypes: ['delete'],
+    handledResourceTypes: ['MedicationRequest'],
+  });
+  const cancelVaccination = makeEntry('cancelVaccination', {
+    encounterTypes: ['Immunization Administration'],
+    handledActionTypes: ['delete'],
+    handledResourceTypes: ['MedicationRequest'],
+  });
+  const observationForms = makeEntry('observationForms', {
+    handledResourceTypes: ['Observation'],
+  });
+
+  const testRegistry: InputControl[] = [
+    encounterDetails,
+    allergies,
+    medication,
+    stopMedications,
+    cancelVaccination,
+    observationForms,
+  ];
+
+  it('no action — hides controls with handledActionTypes (action-only controls)', () => {
+    const result = getActiveEntries(testRegistry, undefined, undefined);
+    expect(result.find((e) => e.key === 'stopMedications')).toBeUndefined();
+    expect(result.find((e) => e.key === 'cancelVaccination')).toBeUndefined();
+    expect(result.find((e) => e.key === 'allergies')).toBeDefined();
+    expect(result.find((e) => e.key === 'medication')).toBeDefined();
+  });
+
+  it('no action with encounterType filters by encounter type', () => {
+    const result = getActiveEntries(
+      testRegistry,
+      { encounterType: 'Consultation' },
+      undefined,
+    );
+    expect(result.find((e) => e.key === 'cancelVaccination')).toBeUndefined();
+    expect(result.find((e) => e.key === 'allergies')).toBeDefined();
+  });
+
+  it('action.type delete — shows only controls with handledActionTypes delete', () => {
+    const result = getActiveEntries(testRegistry, undefined, {
+      type: 'delete',
+      resources: [{ resourceType: 'MedicationRequest', id: 'med-1' }],
+    });
+    expect(result.find((e) => e.key === 'stopMedications')).toBeDefined();
+    expect(result.find((e) => e.key === 'allergies')).toBeUndefined();
+    expect(result.find((e) => e.key === 'medication')).toBeUndefined();
+    expect(result.find((e) => e.key === 'encounterDetails')).toBeDefined();
+  });
+
+  it('action.type delete with encounterType disambiguates stop vs cancel', () => {
+    const stopResult = getActiveEntries(
+      testRegistry,
+      { encounterType: 'Consultation' },
+      { type: 'delete', resources: [{ resourceType: 'MedicationRequest' }] },
+    );
+    expect(stopResult.find((e) => e.key === 'stopMedications')).toBeDefined();
+    expect(stopResult.find((e) => e.key === 'cancelVaccination')).toBeUndefined();
+
+    const cancelResult = getActiveEntries(
+      testRegistry,
+      { encounterType: 'Immunization Administration' },
+      { type: 'delete', resources: [{ resourceType: 'MedicationRequest' }] },
+    );
+    expect(cancelResult.find((e) => e.key === 'cancelVaccination')).toBeDefined();
+    expect(cancelResult.find((e) => e.key === 'stopMedications')).toBeUndefined();
+  });
+
+  it('action.type update with AllergyIntolerance resource — shows only allergies control', () => {
+    const result = getActiveEntries(testRegistry, undefined, {
+      type: 'update',
+      resources: [{ resourceType: 'AllergyIntolerance', id: 'allergy-1' }],
+    });
+    expect(result.find((e) => e.key === 'allergies')).toBeDefined();
+    expect(result.find((e) => e.key === 'medication')).toBeUndefined();
+    expect(result.find((e) => e.key === 'encounterDetails')).toBeDefined();
+  });
+
+  it('action.type update with MedicationRequest resource — shows medication control', () => {
+    const result = getActiveEntries(testRegistry, undefined, {
+      type: 'update',
+      resources: [{ resourceType: 'MedicationRequest', id: 'med-1' }],
+    });
+    expect(result.find((e) => e.key === 'medication')).toBeDefined();
+    expect(result.find((e) => e.key === 'allergies')).toBeUndefined();
+    expect(result.find((e) => e.key === 'stopMedications')).toBeUndefined();
+  });
+
+  it('action.type create with Immunization resourceType — shows immunization controls', () => {
+    const immunizationHistory = makeEntry('immunizationHistory', {
+      encounterTypes: ['Immunization'],
+      handledResourceTypes: ['Immunization'],
+    });
+    const reg = [...testRegistry, immunizationHistory];
+    const result = getActiveEntries(
+      reg,
+      { encounterType: 'Immunization' },
+      { type: 'create', resourceType: 'Immunization' },
+    );
+    expect(result.find((e) => e.key === 'immunizationHistory')).toBeDefined();
+    expect(result.find((e) => e.key === 'allergies')).toBeUndefined();
+  });
+
+  it('context.encounter provides encounterType for filtering', () => {
+    const result = getActiveEntries(
+      testRegistry,
+      { encounter: { resourceType: 'Encounter', id: 'enc-1', status: 'in-progress', type: [{ coding: [{ display: 'Consultation' }] }] } },
+      undefined,
+    );
+    expect(result.find((e) => e.key === 'allergies')).toBeDefined();
+    expect(result.find((e) => e.key === 'cancelVaccination')).toBeUndefined();
+  });
+});
+
 describe('captureUpdatedResources', () => {
   it.each([
     [

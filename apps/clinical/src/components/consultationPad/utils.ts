@@ -80,15 +80,8 @@ export function getActiveEntries(
 ): InputControl[];
 export function getActiveEntries(
   registry: InputControl[],
-  contextOrEncounterType:
-    | ConsultationEventContext
-    | string
-    | null
-    | undefined,
-  actionOrEditOnlyKey:
-    | ConsultationEventAction
-    | string
-    | undefined,
+  contextOrEncounterType: ConsultationEventContext | string | null | undefined,
+  actionOrEditOnlyKey: ConsultationEventAction | string | undefined,
 ): InputControl[] {
   // Detect which overload is being used
   const isNewSignature =
@@ -141,9 +134,7 @@ function getActiveEntriesNew(
   // Derive encounterType from context
   const encounterType =
     context?.encounterType ??
-    (context?.encounter?.type?.[0]?.coding?.[0]?.display as
-      | string
-      | undefined);
+    (context?.encounter?.type?.[0]?.coding?.[0]?.display as string | undefined);
 
   // Step 1: Filter by encounterType
   const byEncounterType = registry.filter((entry) => {
@@ -155,8 +146,7 @@ function getActiveEntriesNew(
   // Step 2: No action — hide controls that are action-only (have handledActionTypes)
   if (!action) {
     return byEncounterType.filter(
-      (entry) =>
-        !entry.handledActionTypes?.length && !entry.onActionTriggered,
+      (entry) => !entry.handledActionTypes?.length && !entry.onActionTriggered,
     );
   }
 

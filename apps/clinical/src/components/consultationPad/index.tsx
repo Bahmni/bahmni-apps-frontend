@@ -32,10 +32,10 @@ import {
 } from '../../constants/errors';
 import { MEDICATIONS_INPUT_CONTROL_KEY } from '../../constants/medications';
 import type { EncounterSessionStartContext } from '../../events/startConsultation';
-import type { AllergyInputEntry } from '../../models/allergy';
 import { useActionAreaExpandProps } from '../../hooks/useActionAreaExpandProps';
 import { useClinicalAppData } from '../../hooks/useClinicalAppData';
 import { useEncounterConcepts } from '../../hooks/useEncounterConcepts';
+import type { AllergyInputEntry } from '../../models/allergy';
 import { useClinicalConfig } from '../../providers/clinicalConfig';
 import { useAllergyStore } from '../../stores/allergyStore';
 import { useEncounterDetailsStore } from '../../stores/encounterDetailsStore';
@@ -73,10 +73,9 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
   const action = encounterSessionStartContext.action;
 
   // Support both new structured payload and legacy flat fields for backward compat
-  const preloadedAllergies =
-    encounterSessionStartContext.preloadedAllergies as
-      | AllergyInputEntry[]
-      | undefined;
+  const preloadedAllergies = encounterSessionStartContext.preloadedAllergies as
+    | AllergyInputEntry[]
+    | undefined;
   const encounterType =
     context?.encounterType ??
     (encounterSessionStartContext.encounterType as string | undefined);
@@ -158,14 +157,24 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
     if (context !== undefined || action !== undefined) {
       // Merge encounterType from resolvedEncounterType into context
       const effectiveCtx = context
-        ? { ...context, encounterType: context.encounterType ?? encounterType ?? undefined }
+        ? {
+            ...context,
+            encounterType: context.encounterType ?? encounterType ?? undefined,
+          }
         : encounterType
           ? { encounterType }
           : undefined;
       return getActiveEntries(registry, effectiveCtx, action);
     }
     return getActiveEntries(registry, resolvedEncounterType!, editOnlyKey);
-  }, [registry, resolvedEncounterType, context, action, encounterType, editOnlyKey]);
+  }, [
+    registry,
+    resolvedEncounterType,
+    context,
+    action,
+    encounterType,
+    editOnlyKey,
+  ]);
 
   const subscribeAll = useCallback(
     (cb: () => void) => {
@@ -623,8 +632,7 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
   })();
 
   // isEditMode: true when editing existing resources (action.type === 'update' or legacy editOnly)
-  const isEditMode =
-    action?.type === 'update' || !!editOnlyKey;
+  const isEditMode = action?.type === 'update' || !!editOnlyKey;
   // For medication edit mode, check if the edit key targets medication
   const isMedicationEditMode =
     (action?.type === 'update' &&
