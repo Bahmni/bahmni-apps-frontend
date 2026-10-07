@@ -1,6 +1,8 @@
 import { QueryClient } from '@tanstack/react-query';
 import {
   capitalize,
+  encodeValue,
+  decodeValue,
   generateId,
   generateUUID,
   getCookieByName,
@@ -1450,5 +1452,24 @@ describe('formatCountry', () => {
     },
   ])('$label', ({ value, t, expected }) => {
     expect(formatCountry(value, t)).toBe(expected);
+  });
+});
+
+describe('Encode / Decode', () => {
+  it.each(['plain', '', 'José', '日本語 ✓', '{"a":"b"}'])(
+    'round-trips %p',
+    (value) => {
+      expect(decodeValue(encodeValue(value))).toBe(value);
+    },
+  );
+
+  it('matches standard base64 for ASCII', () => {
+    expect(encodeValue('hello')).toBe('aGVsbG8=');
+  });
+
+  it('keeps non-Latin-1 text decodable by other base64 tools', () => {
+    expect(Buffer.from(encodeValue('José'), 'base64').toString('utf8')).toBe(
+      'José',
+    );
   });
 });

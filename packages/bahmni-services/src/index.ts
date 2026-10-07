@@ -253,8 +253,14 @@ export {
   getDefaultDateFormat,
   saveUserLocation,
   updateSessionLocation,
+  encodeSearchCriteria,
+  decodeSearchCriteria,
+  saveRecentSearchCriteria,
+  clearRecentSearchCriteria,
+  getRecentSearchCriteria,
   type User,
   type UserLocation,
+  type RecentSearchCriteria,
   BAHMNI_USER_LOCATION_COOKIE,
 } from './userService';
 export { logout, validateSessionUser } from './authService';
