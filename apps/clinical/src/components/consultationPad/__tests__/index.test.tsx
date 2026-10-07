@@ -16,7 +16,6 @@ import { axe, toHaveNoViolations } from 'jest-axe';
 import { useClinicalAppData } from '../../../hooks/useClinicalAppData';
 import { useEncounterConcepts } from '../../../hooks/useEncounterConcepts';
 import { useClinicalConfig } from '../../../providers/clinicalConfig';
-import { useAllergyStore } from '../../../stores/allergyStore';
 import { useEncounterDetailsStore } from '../../../stores/encounterDetailsStore';
 import { useObservationFormsStore } from '../../../stores/observationFormsStore';
 import ConsultationPad from '../index';
@@ -134,7 +133,9 @@ const renderComponent = (
   render(
     <QueryClientProvider client={queryClient}>
       <ConsultationPad
-        encounterSessionStartContext={{ encounterType: 'Consultation' }}
+        encounterSessionStartContext={{
+          context: { encounterType: 'Consultation' },
+        }}
         onClose={jest.fn()}
         {...props}
       />
@@ -326,9 +327,11 @@ describe('ConsultationPad', () => {
 
       renderComponent({
         encounterSessionStartContext: {
-          encounterType: 'Consultation',
-          editOnly: 'observationForms',
-          sourceEncounterUuid: EDIT_ENCOUNTER_UUID,
+          context: {
+            encounterType: 'Consultation',
+            encounter: { resourceType: 'Encounter', id: EDIT_ENCOUNTER_UUID },
+          },
+          action: { type: 'update', resourceType: 'Observation' },
         },
       });
 
@@ -349,7 +352,9 @@ describe('ConsultationPad', () => {
   describe('encounterType prop validation', () => {
     it('renders error state when specified encounterType is not defined in configuration', () => {
       renderComponent({
-        encounterSessionStartContext: { encounterType: 'UnknownType' },
+        encounterSessionStartContext: {
+          context: { encounterType: 'UnknownType' },
+        },
       });
 
       expect(screen.getByText('Something went wrong')).toBeInTheDocument();
@@ -364,14 +369,16 @@ describe('ConsultationPad', () => {
       } as any);
 
       renderComponent({
-        encounterSessionStartContext: { encounterType: 'Consultation' },
+        encounterSessionStartContext: {
+          context: { encounterType: 'Consultation' },
+        },
       });
 
       expect(screen.queryByTestId('allergies-divider')).not.toBeInTheDocument();
     });
 
     it.each([
-      ['valid', { encounterType: 'Consultation' }],
+      ['valid', { context: { encounterType: 'Consultation' } }],
       ['not set', {}],
     ])(
       'does not show error state when encounterType is %s',
@@ -503,8 +510,10 @@ describe('ConsultationPad', () => {
 
       renderComponent({
         encounterSessionStartContext: {
-          encounterType: 'Consultation',
-          sourceEncounterUuid: 'missing-uuid',
+          context: {
+            encounterType: 'Consultation',
+            encounter: { resourceType: 'Encounter', id: 'missing-uuid' },
+          },
         },
       });
 
@@ -551,8 +560,10 @@ describe('ConsultationPad', () => {
 
       renderComponent({
         encounterSessionStartContext: {
-          encounterType: 'Consultation',
-          sourceEncounterUuid: 'existing-uuid',
+          context: {
+            encounterType: 'Consultation',
+            encounter: { resourceType: 'Encounter', id: 'existing-uuid' },
+          },
         },
       });
 
@@ -1086,73 +1097,54 @@ describe('ConsultationPad', () => {
     });
   });
 
-  describe('editTitle and editOnly (BAH-4652)', () => {
-    it('shows editTitle translated value when encounterSessionStartContext.editTitle is set', () => {
+  describe('ADR-aligned title derivation', () => {
+    it('shows "Continue" when context.encounter is present', () => {
       renderComponent({
         encounterSessionStartContext: {
-          encounterType: 'Consultation',
-          editTitle: 'EDIT_ALLERGIES_TITLE',
+          context: {
+            encounterType: 'Consultation',
+            encounter: {
+              resourceType: 'Encounter',
+              id: 'enc-123',
+              status: 'in-progress',
+            },
+          },
         },
       });
 
-      // i18n resolves 'EDIT_ALLERGIES_TITLE' → 'Edit Allergies' (from locale_en.json)
       expect(screen.getByTestId('action-area-title')).toHaveTextContent(
-        'Edit Allergies',
+        'Continue Consultation',
       );
     });
 
-    it('shows "New Consultation" when editTitle is not set', () => {
+    it('shows "New Consultation" when no context.encounter', () => {
       renderComponent({
-        encounterSessionStartContext: { encounterType: 'Consultation' },
+        encounterSessionStartContext: {
+          context: { encounterType: 'Consultation' },
+        },
       });
 
-      // i18n resolves 'CONSULTATION_ACTION_NEW' → 'New Consultation'
       expect(screen.getByTestId('action-area-title')).toHaveTextContent(
         'New Consultation',
       );
     });
 
-    it('calls getActiveEntries with editOnlyKey when encounterSessionStartContext.editOnly is set', () => {
+    it('calls getActiveEntries with context and action from structured payload', () => {
       renderComponent({
         encounterSessionStartContext: {
-          encounterType: 'Consultation',
-          editOnly: 'allergies',
+          context: { encounterType: 'Consultation' },
+          action: {
+            type: 'update',
+            resources: [{ resourceType: 'AllergyIntolerance', id: 'a1' }],
+          },
         },
       });
 
       expect(getActiveEntries).toHaveBeenCalledWith(
         expect.anything(),
-        expect.anything(),
-        'allergies',
+        expect.objectContaining({ encounterType: 'Consultation' }),
+        expect.objectContaining({ type: 'update' }),
       );
-    });
-
-    it('seeds allergyStore when preloadedAllergies prop is provided', () => {
-      const preloadSpy = jest.spyOn(
-        useAllergyStore.getState(),
-        'preloadAllergies',
-      );
-      const mockAllergies = [
-        {
-          id: 'allergen-1',
-          display: 'Peanut',
-          type: 'food',
-          selectedSeverity: null,
-          selectedReactions: [],
-          errors: {},
-          hasBeenValidated: false,
-        },
-      ];
-
-      renderComponent({
-        encounterSessionStartContext: {
-          encounterType: 'Consultation',
-          preloadedAllergies: mockAllergies as any,
-        },
-      });
-
-      expect(preloadSpy).toHaveBeenCalledWith(mockAllergies);
-      preloadSpy.mockRestore();
     });
   });
 

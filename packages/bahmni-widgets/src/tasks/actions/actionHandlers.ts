@@ -19,7 +19,6 @@ const handleLaunchFormAction = (
   globalThis.dispatchEvent(
     new CustomEvent('startConsultation', {
       detail: {
-        // New structured payload
         context: {
           encounterType: action.handlerConfig.encounterType,
           formName,
@@ -27,12 +26,6 @@ const handleLaunchFormAction = (
           basedOn: task.fhirResource,
         },
         action: { type: 'create', resourceType: 'Observation' },
-        // Legacy flat fields for backward compat
-        encounterType: action.handlerConfig.encounterType,
-        formName,
-        directFormMode: true,
-        editOnly: 'observationForms',
-        task: task.fhirResource,
       },
     }),
   );
@@ -79,7 +72,6 @@ const handleEditFormAction = async (
   globalThis.dispatchEvent(
     new CustomEvent('startConsultation', {
       detail: {
-        // New structured payload
         context: {
           encounter: sourceEncounterUuid
             ? { resourceType: 'Encounter', id: sourceEncounterUuid }
@@ -89,14 +81,6 @@ const handleEditFormAction = async (
           basedOn: task.fhirResource,
         },
         action: { type: 'update', resourceType: 'Observation' },
-        // Legacy flat fields for backward compat
-        encounterType: action.handlerConfig.encounterType,
-        editOnly: 'observationForms',
-        editTitle: 'EDIT_OBSERVATION_FORM_TITLE',
-        sourceEncounterUuid,
-        formName,
-        directFormMode: true,
-        task: task.fhirResource,
       },
     }),
   );

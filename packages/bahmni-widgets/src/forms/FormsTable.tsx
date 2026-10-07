@@ -280,19 +280,12 @@ const FormsTable: React.FC<WidgetProps> = ({
     globalThis.dispatchEvent(
       new CustomEvent(CONSULTATION_START_EVENT, {
         detail: {
-          // New structured payload
           context: {
             encounter: { resourceType: 'Encounter', id: record.encounterUuid },
             formName: record.formName,
             directFormMode: true,
           },
           action: { type: 'update', resourceType: 'Observation' },
-          // Legacy flat fields for backward compat
-          editOnly: 'observationForms',
-          editTitle: 'EDIT_OBSERVATION_FORM_TITLE',
-          sourceEncounterUuid: record.encounterUuid,
-          formName: record.formName,
-          directFormMode: true,
         },
       }),
     );

@@ -35,9 +35,7 @@ import type { EncounterSessionStartContext } from '../../events/startConsultatio
 import { useActionAreaExpandProps } from '../../hooks/useActionAreaExpandProps';
 import { useClinicalAppData } from '../../hooks/useClinicalAppData';
 import { useEncounterConcepts } from '../../hooks/useEncounterConcepts';
-import type { AllergyInputEntry } from '../../models/allergy';
 import { useClinicalConfig } from '../../providers/clinicalConfig';
-import { useAllergyStore } from '../../stores/allergyStore';
 import { useEncounterDetailsStore } from '../../stores/encounterDetailsStore';
 import { useObservationFormsStore } from '../../stores/observationFormsStore';
 import { InputControlRenderer } from '../forms';
@@ -71,27 +69,9 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
 }) => {
   const context = encounterSessionStartContext.context;
   const action = encounterSessionStartContext.action;
-
-  // Support both new structured payload and legacy flat fields for backward compat
-  const preloadedAllergies = encounterSessionStartContext.preloadedAllergies as
-    | AllergyInputEntry[]
-    | undefined;
-  const encounterType =
-    context?.encounterType ??
-    (encounterSessionStartContext.encounterType as string | undefined);
-  // editOnlyKey: legacy support — in new payloads use action instead
-  const editOnlyKey = encounterSessionStartContext.editOnly as
-    | string
-    | undefined;
-  const editTitle =
-    (context?.editTitle as string | undefined) ??
-    (encounterSessionStartContext.editTitle as string | undefined);
-  const sourceEncounterUuid =
-    context?.encounter?.id ??
-    (encounterSessionStartContext.sourceEncounterUuid as string | undefined);
-  const directFormMode =
-    context?.directFormMode ??
-    (encounterSessionStartContext.directFormMode as boolean | undefined);
+  const encounterType = context?.encounterType;
+  const sourceEncounterUuid = context?.encounter?.id;
+  const directFormMode = context?.directFormMode;
   const { t } = useTranslation();
   const { addNotification } = useNotification();
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -152,29 +132,17 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
   }, [encounterType, clinicalConfig]);
 
   const activeEntries = useMemo(() => {
-    // Use new structured API when context/action are present in payload,
-    // fall back to legacy (encounterType + editOnlyKey) for backward compat.
-    if (context !== undefined || action !== undefined) {
-      // Merge encounterType from resolvedEncounterType into context
-      const effectiveCtx = context
-        ? {
-            ...context,
-            encounterType: context.encounterType ?? encounterType ?? undefined,
-          }
-        : encounterType
-          ? { encounterType }
-          : undefined;
-      return getActiveEntries(registry, effectiveCtx, action);
-    }
-    return getActiveEntries(registry, resolvedEncounterType!, editOnlyKey);
-  }, [
-    registry,
-    resolvedEncounterType,
-    context,
-    action,
-    encounterType,
-    editOnlyKey,
-  ]);
+    const effectiveCtx = context
+      ? {
+          ...context,
+          encounterType:
+            context.encounterType ?? resolvedEncounterType ?? undefined,
+        }
+      : resolvedEncounterType
+        ? { encounterType: resolvedEncounterType }
+        : undefined;
+    return getActiveEntries(registry, effectiveCtx, action);
+  }, [registry, resolvedEncounterType, context, action]);
 
   const subscribeAll = useCallback(
     (cb: () => void) => {
@@ -301,33 +269,18 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
 
   // Seed medication store with FHIR resources for edit mode
   useEffect(() => {
-    // New structured payload: action.resources contains MedicationRequest resources for edit
-    const editMedicationsFromAction =
+    const editMedications =
       action?.type === 'update' &&
       action.resources?.every((r) => r.resourceType === 'MedicationRequest')
         ? (action.resources as MedicationRequest[])
-        : undefined;
-    // Legacy flat field fallback
-    const editMedications =
-      editMedicationsFromAction ??
-      (encounterSessionStartContext.editMedications as
-        | MedicationRequest[]
-        | undefined);
+        : [];
     const medStore = getMedicationRequestStore(MEDICATIONS_INPUT_CONTROL_KEY);
-    medStore
-      .getState()
-      .setPendingFhirEdits(editMedications?.length ? editMedications : []);
-  }, [action, encounterSessionStartContext.editMedications]);
+    medStore.getState().setPendingFhirEdits(editMedications);
+  }, [action]);
 
   useEffect(() => {
     return () => activeEntries.forEach((entry) => entry.reset());
   }, []);
-
-  useEffect(() => {
-    if (preloadedAllergies?.length) {
-      useAllergyStore.getState().preloadAllergies(preloadedAllergies);
-    }
-  }, [preloadedAllergies]);
 
   const buildComprehensiveCDSSBundle = useCallback((): Bundle => {
     const entries: BundleEntry[] = [];
@@ -336,7 +289,7 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
       if (entry.hasData() && entry.createBundleEntries) {
         const ctx: EncounterContext = {
           encounterSubject: {
-            reference: `Patient/${encounterSessionStartContext.patientUuid}`,
+            reference: `Patient/${patientId}`,
           },
           encounterReference: activeEncounter?.id ?? '',
           practitionerUUID: practitioner?.uuid ?? '',
@@ -631,14 +584,11 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
     );
   })();
 
-  // isEditMode: true when editing existing resources (action.type === 'update' or legacy editOnly)
-  const isEditMode = action?.type === 'update' || !!editOnlyKey;
-  // For medication edit mode, check if the edit key targets medication
+  const isEditMode = action?.type === 'update';
   const isMedicationEditMode =
-    (action?.type === 'update' &&
-      (action.resourceType === 'MedicationRequest' ||
-        action.resources?.[0]?.resourceType === 'MedicationRequest')) ||
-    editOnlyKey === MEDICATIONS_INPUT_CONTROL_KEY;
+    action?.type === 'update' &&
+    (action.resourceType === 'MedicationRequest' ||
+      action.resources?.[0]?.resourceType === 'MedicationRequest');
   const medStore = getMedicationRequestStore(MEDICATIONS_INPUT_CONTROL_KEY);
   const editChangesExist = useSyncExternalStore(
     (cb) => medStore.subscribe(cb),
@@ -663,8 +613,8 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
         title={
           hasError
             ? ''
-            : editTitle
-              ? t(editTitle)
+            : context?.encounter
+              ? t('CONSULTATION_ACTION_CONTINUE')
               : t('CONSULTATION_ACTION_NEW')
         }
         primaryButtonText={t('CONSULTATION_PAD_DONE_BUTTON')}

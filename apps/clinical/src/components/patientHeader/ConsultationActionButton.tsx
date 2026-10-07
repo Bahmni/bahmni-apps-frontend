@@ -44,11 +44,7 @@ const ConsultationActionButton: React.FC<ConsultationActionButtonProps> = ({
       onClick={() =>
         dispatchConsultationStart(
           editActiveEncounter && activeEncounter
-            ? {
-                context: { encounter: activeEncounter },
-                // Legacy flat field for backward compat
-                editTitle: 'CONSULTATION_ACTION_CONTINUE',
-              }
+            ? { context: { encounter: activeEncounter } }
             : {},
         )
       }

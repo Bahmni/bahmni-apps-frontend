@@ -1,12 +1,9 @@
-import { MEDICATIONS_INPUT_CONTROL_KEY } from '@bahmni/services';
 import { MedicationRequest } from 'fhir/r4';
-import { CANCEL_VACCINATION_INPUT_CONTROL_KEY } from '../constants';
 import { MedicationAction } from '../models';
 
 const handleStopAction = (
   action: MedicationAction,
   fhirResource?: MedicationRequest,
-  startDate?: string,
 ): void => {
   if (!fhirResource) return;
 
@@ -15,7 +12,6 @@ const handleStopAction = (
   globalThis.dispatchEvent(
     new CustomEvent('startConsultation', {
       detail: {
-        // New structured payload
         context: {
           encounterType: action.encounterType,
           encounter: encounterUuid
@@ -23,13 +19,6 @@ const handleStopAction = (
             : undefined,
         },
         action: { type: 'delete', resources: [fhirResource] },
-        // Legacy flat fields for backward compat
-        encounterType: action.encounterType,
-        stopMedication: fhirResource,
-        stopMedicationStartDate: startDate,
-        editOnly: 'stopMedications',
-        editTitle: 'STOP_MEDICATION_FORM_TITLE',
-        sourceEncounterUuid: encounterUuid,
       },
     }),
   );
@@ -38,7 +27,6 @@ const handleStopAction = (
 const handleCancelVaccinationAction = (
   action: MedicationAction,
   fhirResource?: MedicationRequest,
-  startDate?: string,
 ): void => {
   if (!fhirResource) return;
 
@@ -47,7 +35,6 @@ const handleCancelVaccinationAction = (
   globalThis.dispatchEvent(
     new CustomEvent('startConsultation', {
       detail: {
-        // New structured payload
         context: {
           encounterType: action.encounterType,
           encounter: encounterUuid
@@ -55,13 +42,6 @@ const handleCancelVaccinationAction = (
             : undefined,
         },
         action: { type: 'delete', resources: [fhirResource] },
-        // Legacy flat fields for backward compat
-        encounterType: action.encounterType,
-        stopMedication: fhirResource,
-        stopMedicationStartDate: startDate,
-        editOnly: CANCEL_VACCINATION_INPUT_CONTROL_KEY,
-        editTitle: 'CANCEL_VACCINATION_FORM_TITLE',
-        editEncounterUuid: encounterUuid,
       },
     }),
   );
@@ -73,12 +53,12 @@ export const handleAction = (
   startDate?: string,
 ): void => {
   if (action.type === 'stop') {
-    handleStopAction(action, fhirResource, startDate);
+    handleStopAction(action, fhirResource);
     return;
   }
 
   if (action.type === 'cancel') {
-    handleCancelVaccinationAction(action, fhirResource, startDate);
+    handleCancelVaccinationAction(action, fhirResource);
     return;
   }
 
@@ -86,15 +66,11 @@ export const handleAction = (
     globalThis.dispatchEvent(
       new CustomEvent('startConsultation', {
         detail: {
-          // New structured payload
           context: {
             encounterType: action.encounterType,
             basedOn: fhirResource,
           },
           action: { type: 'create', resourceType: 'Immunization' },
-          // Legacy flat fields for backward compat
-          encounterType: action.encounterType,
-          basedOn: fhirResource,
         },
       }),
     );
@@ -107,21 +83,16 @@ export const handleAction = (
     globalThis.dispatchEvent(
       new CustomEvent('startConsultation', {
         detail: {
-          // New structured payload
           context: {
             encounter: sourceEncounterUuid
               ? { resourceType: 'Encounter', id: sourceEncounterUuid }
               : undefined,
           },
           action: { type: 'update', resources: [fhirResource] },
-          // Legacy flat fields for backward compat
-          encounterType: action.encounterType,
-          editMedications: [fhirResource],
-          editOnly: MEDICATIONS_INPUT_CONTROL_KEY,
-          editTitle: 'MEDICATIONS_EDIT_FORM_TITLE',
-          sourceEncounterUuid,
         },
       }),
     );
   }
+
+  void startDate;
 };

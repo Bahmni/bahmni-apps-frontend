@@ -40,33 +40,21 @@ const ObservationFormsPanel: React.FC<ObservationFormsPanelProps> = ({
   const ctx = encounterSessionStartContext?.context;
   const act = encounterSessionStartContext?.action;
 
-  // Support both new structured payload (context/action) and legacy flat fields
-  const formName =
-    ctx?.formName ??
-    (encounterSessionStartContext?.formName as string | undefined);
-  const directFormMode =
-    ctx?.directFormMode ??
-    (encounterSessionStartContext?.directFormMode as boolean | undefined);
-  const sourceEncounterUuid =
-    ctx?.encounter?.id ??
-    (encounterSessionStartContext?.sourceEncounterUuid as string | undefined);
+  const formName = ctx?.formName;
+  const directFormMode = ctx?.directFormMode;
+  const sourceEncounterUuid = ctx?.encounter?.id;
   const activeEncounter = encounterSessionStartContext?.activeEncounter;
   const isCopyover: boolean | undefined =
     !sourceEncounterUuid || activeEncounter === undefined
       ? undefined
       : activeEncounter?.id !== sourceEncounterUuid;
-  // basedOn: new payload uses context.basedOn (Task), legacy uses encounterSessionStartContext.task
-  const basedOnResource =
-    ctx?.basedOn ?? (encounterSessionStartContext?.task as Task | undefined);
-  const task = basedOnResource as Task | undefined;
+  const task = ctx?.basedOn as Task | undefined;
   const basedOnRef = task?.basedOn?.[0]?.reference;
   const basedOnId = basedOnRef?.split('/').pop() ?? undefined;
-  // isEditObservationFormsMode: new payload uses action.type === 'update' + Observation, or legacy editOnly
   const isEditObservationFormsMode =
-    (act?.type === 'update' &&
-      (act.resourceType === 'Observation' ||
-        act.resources?.[0]?.resourceType === 'Observation')) ||
-    encounterSessionStartContext?.editOnly === 'observationForms';
+    act?.type === 'update' &&
+    (act.resourceType === 'Observation' ||
+      act.resources?.[0]?.resourceType === 'Observation');
   const isEditMode =
     isEditObservationFormsMode && !!sourceEncounterUuid && isCopyover === false;
   const isCopyoverMode =

@@ -7,7 +7,6 @@ export interface ConsultationEventContext {
   formName?: string;
   directFormMode?: boolean;
   isVisitActive?: boolean;
-  [key: string]: unknown;
 }
 
 export interface ConsultationEventAction {
@@ -20,10 +19,6 @@ export interface ConsultationEventPayload {
   context?: ConsultationEventContext;
   action?: ConsultationEventAction;
   activeEncounter?: Encounter | null;
-  patientUuid?: string;
-  // Legacy flat fields kept for backward compat during transition
-  [key: string]: unknown;
 }
 
-// Keep for backward compat in internal usage - alias
 export type EncounterSessionStartContext = ConsultationEventPayload;

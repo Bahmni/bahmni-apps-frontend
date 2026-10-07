@@ -163,7 +163,7 @@ const ConsultationPadContainer: React.FC<ConsultationPadContainerProps> = ({
     useEncounterDetailsStore
       .getState()
       .setRequestedEncounterType(
-        encounterSessionStartContext.encounterType ??
+        encounterSessionStartContext.context?.encounterType ??
           defaultEncounterType ??
           null,
       );
@@ -281,7 +281,10 @@ const ConsultationPadContainer: React.FC<ConsultationPadContainerProps> = ({
             <EncounterDetails
               encounterSessionStartContext={{
                 ...encounterSessionStartContext,
-                isVisitActive: false,
+                context: {
+                  ...encounterSessionStartContext.context,
+                  isVisitActive: false,
+                },
               }}
               inputControlConfig={encounterDetailsControl}
             />
