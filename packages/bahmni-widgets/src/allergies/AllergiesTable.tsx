@@ -83,6 +83,9 @@ const AllergiesTable: React.FC<WidgetProps> = ({
         globalThis.dispatchEvent(
           new CustomEvent(CONSULTATION_START_EVENT, {
             detail: {
+              // New structured payload
+              action: { type: 'update', resources: [target] },
+              // Legacy flat fields for backward compat
               editOnly: 'allergies',
               editTitle: 'EDIT_ALLERGIES_TITLE',
               preloadedAllergies: [mapAllergyToInputEntry(target)],

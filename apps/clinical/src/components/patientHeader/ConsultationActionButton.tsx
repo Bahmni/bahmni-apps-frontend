@@ -1,6 +1,7 @@
 import { Button, SkeletonPlaceholder } from '@bahmni/design-system';
 import { useTranslation } from '@bahmni/services';
 import { useHasPrivilege, CONSULTATION_PAD_PRIVILEGES } from '@bahmni/widgets';
+import type { Encounter } from 'fhir/r4';
 import React from 'react';
 import { dispatchConsultationStart } from '../../events/startConsultation';
 import styles from './styles/PatientHeader.module.scss';
@@ -9,12 +10,14 @@ interface ConsultationActionButtonProps {
   isActionAreaVisible: boolean;
   editActiveEncounter: boolean;
   isLoading: boolean;
+  activeEncounter?: Encounter | null;
 }
 
 const ConsultationActionButton: React.FC<ConsultationActionButtonProps> = ({
   isActionAreaVisible,
   editActiveEncounter,
   isLoading,
+  activeEncounter,
 }) => {
   const { t } = useTranslation();
   const canAddEncounter = useHasPrivilege(
@@ -40,8 +43,12 @@ const ConsultationActionButton: React.FC<ConsultationActionButtonProps> = ({
       disabled={isActionAreaVisible}
       onClick={() =>
         dispatchConsultationStart(
-          editActiveEncounter
-            ? { editTitle: 'CONSULTATION_ACTION_CONTINUE' }
+          editActiveEncounter && activeEncounter
+            ? {
+                context: { encounter: activeEncounter },
+                // Legacy flat field for backward compat
+                editTitle: 'CONSULTATION_ACTION_CONTINUE',
+              }
             : {},
         )
       }

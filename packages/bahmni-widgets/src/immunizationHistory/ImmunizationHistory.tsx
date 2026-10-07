@@ -110,6 +110,10 @@ const ImmunizationHistory: React.FC<WidgetProps> = ({ config }) => {
     globalThis.dispatchEvent(
       new CustomEvent('startConsultation', {
         detail: {
+          // New structured payload
+          context: { encounterType },
+          action: { type: 'create', resourceType: 'Immunization' },
+          // Legacy flat fields for backward compat
           encounterType,
           ...(editOnly ? { editOnly } : {}),
           ...(editTitle ? { editTitle } : {}),

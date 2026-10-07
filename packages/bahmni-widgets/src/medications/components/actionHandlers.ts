@@ -15,6 +15,15 @@ const handleStopAction = (
   globalThis.dispatchEvent(
     new CustomEvent('startConsultation', {
       detail: {
+        // New structured payload
+        context: {
+          encounterType: action.encounterType,
+          encounter: encounterUuid
+            ? { resourceType: 'Encounter', id: encounterUuid }
+            : undefined,
+        },
+        action: { type: 'delete', resources: [fhirResource] },
+        // Legacy flat fields for backward compat
         encounterType: action.encounterType,
         stopMedication: fhirResource,
         stopMedicationStartDate: startDate,
@@ -38,6 +47,15 @@ const handleCancelVaccinationAction = (
   globalThis.dispatchEvent(
     new CustomEvent('startConsultation', {
       detail: {
+        // New structured payload
+        context: {
+          encounterType: action.encounterType,
+          encounter: encounterUuid
+            ? { resourceType: 'Encounter', id: encounterUuid }
+            : undefined,
+        },
+        action: { type: 'delete', resources: [fhirResource] },
+        // Legacy flat fields for backward compat
         encounterType: action.encounterType,
         stopMedication: fhirResource,
         stopMedicationStartDate: startDate,
@@ -67,7 +85,17 @@ export const handleAction = (
   if (action.type === 'administer') {
     globalThis.dispatchEvent(
       new CustomEvent('startConsultation', {
-        detail: { encounterType: action.encounterType, basedOn: fhirResource },
+        detail: {
+          // New structured payload
+          context: {
+            encounterType: action.encounterType,
+            basedOn: fhirResource,
+          },
+          action: { type: 'create', resourceType: 'Immunization' },
+          // Legacy flat fields for backward compat
+          encounterType: action.encounterType,
+          basedOn: fhirResource,
+        },
       }),
     );
   }
@@ -79,6 +107,14 @@ export const handleAction = (
     globalThis.dispatchEvent(
       new CustomEvent('startConsultation', {
         detail: {
+          // New structured payload
+          context: {
+            encounter: sourceEncounterUuid
+              ? { resourceType: 'Encounter', id: sourceEncounterUuid }
+              : undefined,
+          },
+          action: { type: 'update', resources: [fhirResource] },
+          // Legacy flat fields for backward compat
           encounterType: action.encounterType,
           editMedications: [fhirResource],
           editOnly: MEDICATIONS_INPUT_CONTROL_KEY,

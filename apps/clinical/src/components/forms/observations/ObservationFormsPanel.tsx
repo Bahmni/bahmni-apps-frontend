@@ -37,20 +37,36 @@ const ObservationFormsPanel: React.FC<ObservationFormsPanelProps> = ({
   const { episodeOfCare } = useClinicalAppData();
   const episodeOfCareUuids = episodeOfCare.map((eoc) => eoc.uuid);
 
-  const formName = encounterSessionStartContext?.formName as string | undefined;
-  const directFormMode = encounterSessionStartContext?.directFormMode as
-    | boolean
-    | undefined;
-  const sourceEncounterUuid = encounterSessionStartContext?.sourceEncounterUuid;
+  const ctx = encounterSessionStartContext?.context;
+  const act = encounterSessionStartContext?.action;
+
+  // Support both new structured payload (context/action) and legacy flat fields
+  const formName =
+    ctx?.formName ??
+    (encounterSessionStartContext?.formName as string | undefined);
+  const directFormMode =
+    ctx?.directFormMode ??
+    (encounterSessionStartContext?.directFormMode as boolean | undefined);
+  const sourceEncounterUuid =
+    ctx?.encounter?.id ??
+    (encounterSessionStartContext?.sourceEncounterUuid as string | undefined);
   const activeEncounter = encounterSessionStartContext?.activeEncounter;
   const isCopyover: boolean | undefined =
     !sourceEncounterUuid || activeEncounter === undefined
       ? undefined
       : activeEncounter?.id !== sourceEncounterUuid;
-  const task = encounterSessionStartContext?.task as Task | undefined;
+  // basedOn: new payload uses context.basedOn (Task), legacy uses encounterSessionStartContext.task
+  const basedOnResource =
+    ctx?.basedOn ??
+    (encounterSessionStartContext?.task as Task | undefined);
+  const task = basedOnResource as Task | undefined;
   const basedOnRef = task?.basedOn?.[0]?.reference;
   const basedOnId = basedOnRef?.split('/').pop() ?? undefined;
+  // isEditObservationFormsMode: new payload uses action.type === 'update' + Observation, or legacy editOnly
   const isEditObservationFormsMode =
+    (act?.type === 'update' &&
+      (act.resourceType === 'Observation' ||
+        act.resources?.[0]?.resourceType === 'Observation')) ||
     encounterSessionStartContext?.editOnly === 'observationForms';
   const isEditMode =
     isEditObservationFormsMode && !!sourceEncounterUuid && isCopyover === false;

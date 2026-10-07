@@ -32,6 +32,7 @@ import {
 } from '../../constants/errors';
 import { MEDICATIONS_INPUT_CONTROL_KEY } from '../../constants/medications';
 import type { EncounterSessionStartContext } from '../../events/startConsultation';
+import type { AllergyInputEntry } from '../../models/allergy';
 import { useActionAreaExpandProps } from '../../hooks/useActionAreaExpandProps';
 import { useClinicalAppData } from '../../hooks/useClinicalAppData';
 import { useEncounterConcepts } from '../../hooks/useEncounterConcepts';
@@ -68,19 +69,30 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
   isActionAreaExpanded,
   onToggleActionAreaExpand,
 }) => {
-  const preloadedAllergies = encounterSessionStartContext.preloadedAllergies;
-  const encounterType = encounterSessionStartContext.encounterType;
+  const context = encounterSessionStartContext.context;
+  const action = encounterSessionStartContext.action;
+
+  // Support both new structured payload and legacy flat fields for backward compat
+  const preloadedAllergies =
+    encounterSessionStartContext.preloadedAllergies as
+      | AllergyInputEntry[]
+      | undefined;
+  const encounterType =
+    context?.encounterType ??
+    (encounterSessionStartContext.encounterType as string | undefined);
+  // editOnlyKey: legacy support — in new payloads use action instead
   const editOnlyKey = encounterSessionStartContext.editOnly as
     | string
     | undefined;
-  const editTitle = encounterSessionStartContext.editTitle as
-    | string
-    | undefined;
+  const editTitle =
+    (context?.editTitle as string | undefined) ??
+    (encounterSessionStartContext.editTitle as string | undefined);
   const sourceEncounterUuid =
-    encounterSessionStartContext.sourceEncounterUuid as string | undefined;
-  const directFormMode = encounterSessionStartContext.directFormMode as
-    | boolean
-    | undefined;
+    context?.encounter?.id ??
+    (encounterSessionStartContext.sourceEncounterUuid as string | undefined);
+  const directFormMode =
+    context?.directFormMode ??
+    (encounterSessionStartContext.directFormMode as boolean | undefined);
   const { t } = useTranslation();
   const { addNotification } = useNotification();
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -140,10 +152,20 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
     );
   }, [encounterType, clinicalConfig]);
 
-  const activeEntries = useMemo(
-    () => getActiveEntries(registry, resolvedEncounterType!, editOnlyKey),
-    [registry, resolvedEncounterType, editOnlyKey],
-  );
+  const activeEntries = useMemo(() => {
+    // Use new structured API when context/action are present in payload,
+    // fall back to legacy (encounterType + editOnlyKey) for backward compat.
+    if (context !== undefined || action !== undefined) {
+      // Merge encounterType from resolvedEncounterType into context
+      const effectiveCtx = context
+        ? { ...context, encounterType: context.encounterType ?? encounterType ?? undefined }
+        : encounterType
+          ? { encounterType }
+          : undefined;
+      return getActiveEntries(registry, effectiveCtx, action);
+    }
+    return getActiveEntries(registry, resolvedEncounterType!, editOnlyKey);
+  }, [registry, resolvedEncounterType, context, action, encounterType, editOnlyKey]);
 
   const subscribeAll = useCallback(
     (cb: () => void) => {
@@ -270,14 +292,23 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
 
   // Seed medication store with FHIR resources for edit mode
   useEffect(() => {
-    const editMedications = encounterSessionStartContext.editMedications as
-      | MedicationRequest[]
-      | undefined;
+    // New structured payload: action.resources contains MedicationRequest resources for edit
+    const editMedicationsFromAction =
+      action?.type === 'update' &&
+      action.resources?.every((r) => r.resourceType === 'MedicationRequest')
+        ? (action.resources as MedicationRequest[])
+        : undefined;
+    // Legacy flat field fallback
+    const editMedications =
+      editMedicationsFromAction ??
+      (encounterSessionStartContext.editMedications as
+        | MedicationRequest[]
+        | undefined);
     const medStore = getMedicationRequestStore(MEDICATIONS_INPUT_CONTROL_KEY);
     medStore
       .getState()
       .setPendingFhirEdits(editMedications?.length ? editMedications : []);
-  }, [encounterSessionStartContext.editMedications]);
+  }, [action, encounterSessionStartContext.editMedications]);
 
   useEffect(() => {
     return () => activeEntries.forEach((entry) => entry.reset());
@@ -591,13 +622,20 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
     );
   })();
 
-  const isEditMode = !!editOnlyKey;
+  // isEditMode: true when editing existing resources (action.type === 'update' or legacy editOnly)
+  const isEditMode =
+    action?.type === 'update' || !!editOnlyKey;
+  // For medication edit mode, check if the edit key targets medication
+  const isMedicationEditMode =
+    (action?.type === 'update' &&
+      (action.resourceType === 'MedicationRequest' ||
+        action.resources?.[0]?.resourceType === 'MedicationRequest')) ||
+    editOnlyKey === MEDICATIONS_INPUT_CONTROL_KEY;
   const medStore = getMedicationRequestStore(MEDICATIONS_INPUT_CONTROL_KEY);
   const editChangesExist = useSyncExternalStore(
     (cb) => medStore.subscribe(cb),
     () => {
-      if (!isEditMode || editOnlyKey !== MEDICATIONS_INPUT_CONTROL_KEY)
-        return true;
+      if (!isEditMode || !isMedicationEditMode) return true;
       return medStore.getState().hasEditChanges();
     },
   );

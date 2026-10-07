@@ -45,9 +45,16 @@ const StopMedicationForm: React.FC<StopMedicationFormProps> = React.memo(
     const { t } = useTranslation();
     const isCancelVaccination =
       inputControlConfig?.type === CANCEL_VACCINATION_INPUT_CONTROL_KEY;
-    const stopMedication = encounterSessionStartContext?.stopMedication as
-      | MedicationRequest
-      | undefined;
+    // New structured payload: action.resources[0] for delete action; legacy: stopMedication flat field
+    const stopMedication =
+      (encounterSessionStartContext?.action?.type === 'delete'
+        ? (encounterSessionStartContext?.action?.resources?.[0] as
+            | MedicationRequest
+            | undefined)
+        : undefined) ??
+      (encounterSessionStartContext?.stopMedication as
+        | MedicationRequest
+        | undefined);
     const {
       stopDate,
       stopReason,

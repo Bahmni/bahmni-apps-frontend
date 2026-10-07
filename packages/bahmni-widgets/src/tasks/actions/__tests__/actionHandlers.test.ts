@@ -115,13 +115,21 @@ describe('handleTaskAction', () => {
       expect(dispatchEventSpy).toHaveBeenCalledWith(
         expect.objectContaining({
           type: 'startConsultation',
-          detail: {
+          detail: expect.objectContaining({
+            // New structured payload
+            context: expect.objectContaining({
+              encounterType: 'consultation',
+              formName: 'Vitals',
+              directFormMode: true,
+            }),
+            action: { type: 'create', resourceType: 'Observation' },
+            // Legacy flat fields for backward compat
             encounterType: 'consultation',
             formName: 'Vitals',
             directFormMode: true,
             editOnly: 'observationForms',
             task: mockTaskViewModelWithInput.fhirResource,
-          },
+          }),
         }),
       );
     });

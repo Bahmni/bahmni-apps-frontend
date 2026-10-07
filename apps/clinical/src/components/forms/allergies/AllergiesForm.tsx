@@ -41,7 +41,15 @@ const AllergiesForm: React.FC<{
   encounterSessionStartContext?: EncounterSessionStartContext;
 }> = React.memo(({ encounterSessionStartContext }) => {
   // True when opened via the row/section edit button — search to add new allergy is hidden.
-  const isEditMode = !!encounterSessionStartContext?.preloadedAllergies;
+  // New structured payload: action.type === 'update' with AllergyIntolerance resources.
+  // Legacy: preloadedAllergies present.
+  const isEditMode =
+    (encounterSessionStartContext?.action?.type === 'update' &&
+      (encounterSessionStartContext?.action?.resources?.some(
+        (r) => r.resourceType === 'AllergyIntolerance',
+      ) ??
+        false)) ||
+    !!encounterSessionStartContext?.preloadedAllergies;
   const { t } = useTranslation();
   const patientUUID = usePatientUUID();
   const { addNotification } = useNotification();

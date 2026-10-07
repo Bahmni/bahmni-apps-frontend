@@ -23,10 +23,10 @@ describe('handleAction', () => {
     expect(dispatchSpy).toHaveBeenCalledWith(
       expect.objectContaining({
         type: 'startConsultation',
-        detail: {
+        detail: expect.objectContaining({
           encounterType: singleActionMock[0].encounterType,
           basedOn: fhirMedicationRequestMock,
-        },
+        }),
       }),
     );
   });
