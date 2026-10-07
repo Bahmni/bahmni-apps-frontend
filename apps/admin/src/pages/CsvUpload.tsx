@@ -31,13 +31,14 @@ export const CsvUpload: React.FC = () => {
   const [selectedType, setSelectedType] = useState<ImportType | null>(null);
   const { data: importedItems = [], isLoading, isError } = useImportedItems();
 
-  const successMessage = useCallback(
-    (fileName: string) => t('ADMIN_CSV_UPLOAD_SUCCESS_MESSAGE', { fileName }),
+  const notificationMessage = useCallback(
+    (fileName: string) =>
+      t('ADMIN_CSV_UPLOAD_NOTIFICATION_MESSAGE', { fileName }),
     [t],
   );
   const { upload, uploadState, isUploading } = useCsvUpload({
-    successTitle: t('ADMIN_CSV_UPLOAD_SUCCESS_TITLE'),
-    successMessage,
+    notificationTitle: t('ADMIN_CSV_UPLOAD_NOTIFICATION_TITLE'),
+    notificationMessage,
   });
 
   const columns: DataTableColumn<ImportedItem>[] = useMemo(

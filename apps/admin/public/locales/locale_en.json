@@ -67,6 +67,6 @@
   "ADMIN_CSV_UPLOADED_FILES_HEADER": "Uploaded Files",
   "ADMIN_CSV_UPLOAD_FILES_BUTTON": "Upload Files",
   "ADMIN_CSV_UPLOAD_PROGRESS_LABEL": "Uploading {{fileName}} ({{current}} of {{total}})",
-  "ADMIN_CSV_UPLOAD_SUCCESS_MESSAGE": "{{fileName}} uploaded successfully",
-  "ADMIN_CSV_UPLOAD_SUCCESS_TITLE": "Upload complete"
+  "ADMIN_CSV_UPLOAD_NOTIFICATION_MESSAGE": "{{fileName}} was uploaded. Check the Uploaded Files table for the import status.",
+  "ADMIN_CSV_UPLOAD_NOTIFICATION_TITLE": "File uploaded"
 }

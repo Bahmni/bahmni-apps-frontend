@@ -15,17 +15,18 @@ export interface UploadState {
 }
 
 interface UseCsvUploadOptions {
-  successTitle: string;
-  successMessage: (fileName: string) => string;
+  notificationTitle: string;
+  notificationMessage: (fileName: string) => string;
 }
 
 /**
- * Uploads files one at a time, as the legacy queue did. A failed file does not
+ * Uploads files one at a time, as the legacy queue did. The notification only says the
+ * upload request went through; the import outcome is shown in the history table. A failed file does not
  * stop the rest, and the history reloads once after the last file finishes.
  */
 export const useCsvUpload = ({
-  successTitle,
-  successMessage,
+  notificationTitle,
+  notificationMessage,
 }: UseCsvUploadOptions) => {
   const queryClient = useQueryClient();
   const { addNotification } = useNotification();
@@ -52,9 +53,9 @@ export const useCsvUpload = ({
             },
           );
           addNotification({
-            title: successTitle,
-            message: successMessage(file.name),
-            type: 'success',
+            title: notificationTitle,
+            message: notificationMessage(file.name),
+            type: 'info',
             timeout: 5000,
           });
         } catch {
@@ -66,7 +67,7 @@ export const useCsvUpload = ({
         queryKey: IMPORTED_ITEMS_QUERY_KEY,
       });
     },
-    [addNotification, queryClient, successTitle, successMessage],
+    [addNotification, queryClient, notificationTitle, notificationMessage],
   );
 
   return { upload, uploadState, isUploading: uploadState !== null };

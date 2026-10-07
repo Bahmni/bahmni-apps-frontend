@@ -27,8 +27,8 @@ const setup = () => {
   const hook = renderHook(
     () =>
       useCsvUpload({
-        successTitle: 'Done',
-        successMessage: (name) => `${name} ok`,
+        notificationTitle: 'Done',
+        notificationMessage: (name) => `${name} ok`,
       }),
     { wrapper },
   );
@@ -66,7 +66,7 @@ describe('useCsvUpload', () => {
     );
     expect(mockAddNotification).toHaveBeenCalledTimes(3);
     expect(mockAddNotification).toHaveBeenCalledWith(
-      expect.objectContaining({ type: 'success', message: 'a.csv ok' }),
+      expect.objectContaining({ type: 'info', message: 'a.csv ok' }),
     );
     expect(invalidate).toHaveBeenCalledTimes(1);
     expect(invalidate).toHaveBeenCalledWith({
