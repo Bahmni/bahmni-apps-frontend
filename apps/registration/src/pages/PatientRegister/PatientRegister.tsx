@@ -84,6 +84,7 @@ const PatientRegister = () => {
     addressInitialData,
     additionalIdentifiersInitialData,
     initialDobEstimated,
+    relationshipsInitialData,
     metadata: initialMetadata,
   } = usePatientDetails({
     patientUuid: patientUuidFromUrl,
@@ -136,13 +137,17 @@ const PatientRegister = () => {
     new Set(),
   );
 
-  // Dispatch audit event when page is viewed
+  // Dispatch audit event when page is viewed. Guarded against StrictMode's mount->cleanup->mount double-invoke firing this twice for one page view.
+  const hasDispatchedViewedNewPatientPage = useRef(false);
   useEffect(() => {
-    dispatchAuditEvent({
-      eventType: AUDIT_LOG_EVENT_DETAILS.VIEWED_NEW_PATIENT_PAGE
-        .eventType as AuditEventType,
-      module: AUDIT_LOG_EVENT_DETAILS.VIEWED_NEW_PATIENT_PAGE.module,
-    });
+    if (!hasDispatchedViewedNewPatientPage.current) {
+      dispatchAuditEvent({
+        eventType: AUDIT_LOG_EVENT_DETAILS.VIEWED_NEW_PATIENT_PAGE
+          .eventType as AuditEventType,
+        module: AUDIT_LOG_EVENT_DETAILS.VIEWED_NEW_PATIENT_PAGE.module,
+      });
+      hasDispatchedViewedNewPatientPage.current = true;
+    }
   }, []);
 
   const sections: RegistrationFormSection[] =
@@ -288,6 +293,7 @@ const PatientRegister = () => {
       additionalIdentifiersInitialData,
       initialDobEstimated,
       patientPhoto: patientPhoto ?? undefined,
+      relationshipsInitialData,
     }),
     [
       profileInitialData,
@@ -296,6 +302,7 @@ const PatientRegister = () => {
       additionalIdentifiersInitialData,
       initialDobEstimated,
       patientPhoto,
+      relationshipsInitialData,
     ],
   );
 

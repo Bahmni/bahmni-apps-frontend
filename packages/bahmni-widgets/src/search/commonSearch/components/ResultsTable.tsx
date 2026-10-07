@@ -1,5 +1,9 @@
 import { DataTable, Link } from '@bahmni/design-system';
-import type { DataTableColumn } from '@bahmni/design-system';
+import type {
+  DataTableColumn,
+  DataTableInstance,
+  DataTableSetDirection,
+} from '@bahmni/design-system';
 import { generateUUID, hasPrivilege, useTranslation } from '@bahmni/services';
 import jsonata from 'jsonata';
 import {
@@ -11,17 +15,39 @@ import {
 } from 'react';
 import { useUserPrivilege } from '../../../userPrivileges/useUserPrivilege';
 import { resolveNavigationURL } from '../../../utils/urlUtils';
-import { ActionConfig, ResultFieldConfig } from '../models';
+import { ActionConfig, CursorDirection, ResultFieldConfig } from '../models';
 import styles from '../styles/CommonSearchWidget.module.scss';
 import { needsDisplayKey, resultTransforms } from '../utils';
+
+interface ResultsTablePagination {
+  batchSize: number;
+  pageSize: number;
+  currentSet: number;
+  searchId: string;
+  hasNextSet: boolean;
+  hasPreviousSet: boolean;
+  onSetChange: (direction: CursorDirection) => void;
+}
 
 interface ResultsTableProps {
   resultFields: ResultFieldConfig[];
   results: unknown[];
   actions?: ActionConfig[];
+  cursorPagination?: ResultsTablePagination;
+  totalCount?: number;
 }
 
 type ResultRow = Record<string, unknown> & { id: string };
+
+const navigateSet = (
+  direction: DataTableSetDirection,
+  table: DataTableInstance<ResultRow>,
+  fetchSet: (direction: CursorDirection) => void,
+) => {
+  fetchSet(direction);
+  table.resetColumnFilters();
+  table.resetGlobalFilter();
+};
 
 type ResolvedField = { id: string; field: ResultFieldConfig };
 
@@ -79,6 +105,8 @@ const ResultsTable = ({
   resultFields,
   results,
   actions,
+  cursorPagination,
+  totalCount,
 }: ResultsTableProps) => {
   const { t } = useTranslation();
   const { userPrivileges } = useUserPrivilege();
@@ -178,18 +206,47 @@ const ResultsTable = ({
     [resolvedFields],
   );
 
+  const startPage = cursorPagination
+    ? cursorPagination.currentSet *
+        Math.max(
+          Math.ceil(cursorPagination.batchSize / cursorPagination.pageSize),
+          1,
+        ) +
+      1
+    : undefined;
+
   return (
     <DataTable
+      key={cursorPagination?.searchId}
       id="common-search-results-table"
       dataTestId="common-search-results-table"
       ariaLabel="common-search-results-table-aria-label"
-      title={t('COMMON_SEARCH_RESULTS_TABLE_TITLE')}
+      title={
+        totalCount === undefined
+          ? t('COMMON_SEARCH_RESULTS_TABLE_TITLE')
+          : t('COMMON_SEARCH_RESULTS_TABLE_TITLE_WITH_COUNT', {
+              total: totalCount,
+            })
+      }
       columns={columns}
       rows={rows}
       renderCell={renderCell}
       errorStateMessage={errorStateMessage}
       emptyStateMessage={t('COMMON_SEARCH_NO_RESULTS')}
       className={styles.dataTable}
+      pagination={
+        cursorPagination && {
+          mode: 'cursor',
+          pageSize: cursorPagination.pageSize,
+          startPage,
+          hasNext: cursorPagination.hasNextSet,
+          hasPrevious: cursorPagination.hasPreviousSet,
+          onSetChange: (direction, table) =>
+            navigateSet(direction, table, cursorPagination.onSetChange),
+          previousLabel: t('COMMON_SEARCH_PREVIOUS_SET'),
+          nextLabel: t('COMMON_SEARCH_NEXT_SET'),
+        }
+      }
     />
   );
 };

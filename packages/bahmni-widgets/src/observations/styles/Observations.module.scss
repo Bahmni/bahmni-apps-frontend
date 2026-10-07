@@ -33,3 +33,13 @@
     color: $text-primary;
   }
 }
+
+.wrapper {
+  display: flex;
+  flex-direction: column;
+  @include type-style("body-compact-01");
+}
+
+.secondary {
+  color: $text-secondary;
+}

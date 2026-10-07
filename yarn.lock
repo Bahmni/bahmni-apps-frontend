@@ -1058,10 +1058,10 @@
     "@babel/helper-string-parser" "^7.27.1"
     "@babel/helper-validator-identifier" "^7.27.1"
 
-"@bahmni/form2-controls@0.0.3-dev.89":
-  version "0.0.3-dev.89"
-  resolved "https://registry.yarnpkg.com/@bahmni/form2-controls/-/form2-controls-0.0.3-dev.89.tgz#ed36f39a3ab2263b8cf907705730987405e99ace"
-  integrity sha512-nfTjzKeEcAa3Z1HxU9eN0r+NOAElhJxUK/BRufQIL+WhaRoj0byEm6lR+BKoWEucymvZuOuzXcodUeGl9ZugOw==
+"@bahmni/form2-controls@1.0.1-dev.106":
+  version "1.0.1-dev.106"
+  resolved "https://registry.yarnpkg.com/@bahmni/form2-controls/-/form2-controls-1.0.1-dev.106.tgz#184b15d77e3ce6e340c2f3d80a57e97283ce493a"
+  integrity sha512-ks/n1RzR/3uI0n1cbf6eOT1SLugy0GlnQWSE7Ri9XmUGi2cmWQrDJH+QwBXVw8TSdCQ+Thd7Q65Z7wZErLFG0g==
   dependencies:
     ajv "^8.17.1"
     base64-inline-loader "^1.1.0"
@@ -8857,10 +8857,10 @@ fast-levenshtein@^2.0.6:
   resolved "https://registry.yarnpkg.com/fast-levenshtein/-/fast-levenshtein-2.0.6.tgz#3d8a5c66883a16a30ca8643e851f19baa7797917"
   integrity sha512-DCXu6Ifhqcks7TZKY3Hxp3y6qphY5SJZmrWMDrKcERSOXWQdMhU9Ig/PYrzyw/ul9jOIyh0N4M0tbC5hodg8dw==
 
-fast-uri@3.1.5, fast-uri@^3.0.1:
-  version "3.1.5"
-  resolved "https://registry.yarnpkg.com/fast-uri/-/fast-uri-3.1.5.tgz#610f37419a030270430cecd68d74e3d4d96725d0"
-  integrity sha512-gHwA1O9LDIcKunMKhObS/HimwtehO1nPUECKAu5TpKgaO19fcWEl4bliWe1jWxVFvIXztJjjQ4L8XQ1EU9f7Jw==
+fast-uri@3.1.7, fast-uri@^3.0.1:
+  version "3.1.7"
+  resolved "https://registry.yarnpkg.com/fast-uri/-/fast-uri-3.1.7.tgz#743157d957f3cbb4c65310e033dc2ad4ad7dc60a"
+  integrity sha512-dOvZVzjdZdz7phd9v6jCbwxrBW3fK6n8Rc0CtdmM4bumzMnxywBYhuph6J819RRw/ku+rLbelwfMunktuzVVHg==
 
 fastest-levenshtein@^1.0.12:
   version "1.0.16"

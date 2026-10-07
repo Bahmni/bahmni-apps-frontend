@@ -9,22 +9,17 @@ import {
   Printer,
 } from '@bahmni/design-system';
 import {
-  getFormattedError,
-  getUserPreferredLocale,
-  notificationService,
-  renderAsHtml,
+  getUserLoginLocation,
   useTranslation,
+  type UserLocation,
 } from '@bahmni/services';
 import { useState } from 'react';
-import { printViaIframe } from './printViaIframe';
+import { useActivePractitioner } from '../activePractitioner';
+import type { CategoryPicker, PrintOption } from './categoryPickers/types';
+import { CategorySelectionModal } from './CategorySelectionModal';
+import { getHandlerFor, printTemplate } from './printOptionHandlers';
 
-export interface PrintOption {
-  translationKey: string;
-  templateId: string;
-  // TODO: shortcutKey is reserved for keyboard shortcut support — not yet implemented
-  shortcutKey?: string;
-  privileges?: string[];
-}
+export type { PrintOption };
 
 interface DocumentPrintButtonProps {
   printOptions?: PrintOption[];
@@ -51,31 +46,50 @@ export const DocumentPrintButton = ({
 }: DocumentPrintButtonProps) => {
   const { t } = useTranslation();
   const [isPrinting, setIsPrinting] = useState(false);
+  const [activePicker, setActivePicker] = useState<{
+    picker: CategoryPicker<unknown>;
+    option: PrintOption;
+  } | null>(null);
+
+  const { practitioner } = useActivePractitioner();
+  const [userLocation] = useState<UserLocation | null>(() => {
+    try {
+      return getUserLoginLocation();
+    } catch {
+      return null;
+    }
+  });
 
   const items = printOptions ?? [];
 
-  const handlePrint = async (option: PrintOption) => {
-    setIsPrinting(true);
+  const enrichedContext: Record<string, string> = {
+    ...renderContext,
+    ...(practitioner?.uuid && { providerUuid: practitioner.uuid }),
+    ...(userLocation?.uuid && { locationUuid: userLocation.uuid }),
+  };
 
-    const data = getRenderData
-      ? await getRenderData(option.templateId)
-      : renderData;
+  const handleTrigger = (option: PrintOption) => {
+    getHandlerFor(option).trigger(option, {
+      renderContext: enrichedContext,
+      renderData,
+      getRenderData,
+      setIsPrinting,
+      openPicker: (picker, selectedOption) =>
+        setActivePicker({ picker, option: selectedOption }),
+    });
+  };
 
-    try {
-      const html = await renderAsHtml({
-        templateId: option.templateId,
-        format: 'html',
-        locale: getUserPreferredLocale(),
-        context: renderContext,
-        data,
-      });
-      await printViaIframe(html);
-    } catch (error) {
-      const { title, message } = getFormattedError(error);
-      notificationService.showError(title, message);
-    } finally {
-      setIsPrinting(false);
-    }
+  const handlePickerSelect = (item: unknown) => {
+    if (!activePicker) return;
+    const { picker, option } = activePicker;
+    const { context, data } = picker.resolveSelection(item, enrichedContext);
+    setActivePicker(null);
+    void printTemplate(
+      option,
+      context,
+      { renderData, getRenderData, setIsPrinting },
+      data,
+    );
   };
 
   if (items.length === 0) return null;
@@ -89,24 +103,20 @@ export const DocumentPrintButton = ({
     );
   }
 
-  if (iconOnly) {
-    if (items.length === 1) {
-      return (
-        <IconButton
-          label={t(items[0].translationKey) ?? iconLabel}
-          kind="ghost"
-          size={size ?? 'md'}
-          disabled={disabled}
-          testId={dataTestId}
-          autoAlign
-          onClick={() => handlePrint(items[0])}
-        >
-          <Printer />
-        </IconButton>
-      );
-    }
-
-    return (
+  const printButton = iconOnly ? (
+    items.length === 1 ? (
+      <IconButton
+        label={t(items[0].translationKey) ?? iconLabel}
+        kind="ghost"
+        size={size ?? 'md'}
+        disabled={disabled}
+        testId={dataTestId}
+        autoAlign
+        onClick={() => handleTrigger(items[0])}
+      >
+        <Printer />
+      </IconButton>
+    ) : (
       <OverflowMenu
         renderIcon={Printer}
         iconDescription={iconLabel}
@@ -120,20 +130,18 @@ export const DocumentPrintButton = ({
           <OverflowMenuItem
             key={item.templateId}
             itemText={t(item.translationKey)}
-            onClick={() => handlePrint(item)}
+            onClick={() => handleTrigger(item)}
           />
         ))}
       </OverflowMenu>
-    );
-  }
-
-  return items.length === 1 ? (
+    )
+  ) : items.length === 1 ? (
     <div>
       <Button
         size={size}
         disabled={disabled}
         data-testid={dataTestId}
-        onClick={() => handlePrint(items[0])}
+        onClick={() => handleTrigger(items[0])}
       >
         {t(items[0].translationKey)}
       </Button>
@@ -141,7 +149,7 @@ export const DocumentPrintButton = ({
   ) : (
     <ComboButton
       label={t(items[0].translationKey)}
-      onClick={() => handlePrint(items[0])}
+      onClick={() => handleTrigger(items[0])}
       size={size ?? 'lg'}
       disabled={disabled}
       data-testid={dataTestId}
@@ -150,9 +158,24 @@ export const DocumentPrintButton = ({
         <MenuItem
           key={item.templateId}
           label={t(item.translationKey)}
-          onClick={() => handlePrint(item)}
+          onClick={() => handleTrigger(item)}
         />
       ))}
     </ComboButton>
+  );
+
+  return (
+    <>
+      {printButton}
+      {activePicker && (
+        <CategorySelectionModal
+          open
+          picker={activePicker.picker}
+          context={enrichedContext}
+          onSelect={handlePickerSelect}
+          onCancel={() => setActivePicker(null)}
+        />
+      )}
+    </>
   );
 };

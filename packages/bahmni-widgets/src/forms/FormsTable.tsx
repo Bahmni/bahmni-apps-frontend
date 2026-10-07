@@ -12,8 +12,6 @@ import {
   getPatientFormData,
   FormResponseData,
   useTranslation,
-  fetchFormMetadata,
-  FormMetadata,
   getFormattedError,
   fetchObservationForms,
   ObservationForm,
@@ -115,7 +113,9 @@ const FormsTable: React.FC<WidgetProps> = ({
   // AND that privilege must be marked editable. Forms with no privileges are open to all.
   const canEditForm = useCallback(
     (formName: string): boolean => {
-      const form = publishedForms.find((f) => f.name === formName);
+      const form = publishedForms.find(
+        (f) => f.name.toLowerCase() === formName.toLowerCase(),
+      );
       if (!form?.privileges || form.privileges.length === 0) return true;
       if (!userPrivileges || userPrivileges.length === 0) return false;
       const userPrivilegeNames = new Set(userPrivileges.map((p) => p.name));
@@ -134,33 +134,6 @@ const FormsTable: React.FC<WidgetProps> = ({
     },
     [activeEncounterUuid, canEditForm],
   );
-
-  // Get form UUID by matching form name
-  const getFormUuidByName = useCallback(
-    (formName: string): string | undefined => {
-      const form = publishedForms.find((f) => f.name === formName);
-      return form?.uuid;
-    },
-    [publishedForms],
-  );
-
-  // Get the UUID for the selected form
-  const selectedFormUuid = useMemo(() => {
-    if (!selectedRecord) return undefined;
-    return getFormUuidByName(selectedRecord.formName);
-  }, [selectedRecord, getFormUuidByName]);
-
-  // Fetch form metadata when a record is selected
-  const {
-    data: formMetadata,
-    isLoading: isLoadingMetadata,
-    isError: isMetadataError,
-    error: metadataError,
-  } = useQuery<FormMetadata>({
-    queryKey: ['formMetadata', selectedFormUuid],
-    queryFn: () => fetchFormMetadata(selectedFormUuid!),
-    enabled: !!selectedFormUuid && isModalOpen,
-  });
 
   const {
     data: fhirObservationBundle,
@@ -210,90 +183,12 @@ const FormsTable: React.FC<WidgetProps> = ({
     });
   }, [fhirObservationBundle, selectedRecord?.formName]);
 
-  const controlOrder = useMemo(() => {
-    if (!formMetadata?.schema) return undefined;
-    const ids: string[] = [];
-    const collectIds = (controls: unknown[]) => {
-      (controls ?? []).forEach((ctrl: unknown) => {
-        const c = ctrl as { id?: number; controls?: unknown[] };
-        if (c.id != null) ids.push(String(c.id));
-        if (c.controls) collectIds(c.controls);
-      });
-    };
-    collectIds(
-      (formMetadata.schema as { controls?: unknown[] }).controls ?? [],
-    );
-    return ids.length > 0 ? ids : undefined;
-  }, [formMetadata]);
-
-  const sectionMap = useMemo(() => {
-    if (!formMetadata?.schema) return undefined;
-    const map: Record<string, string> = {};
-
-    const processControls = (
-      controls: unknown[],
-      currentSection: string | null,
-    ) => {
-      for (const ctrl of controls as {
-        id?: number;
-        type?: string;
-        label?: { value?: string };
-        controls?: unknown[];
-      }[]) {
-        if (ctrl.type === 'section') {
-          const sectionName = ctrl.label?.value ?? 'Section';
-          processControls(ctrl.controls ?? [], sectionName);
-        } else {
-          if (ctrl.id != null && currentSection) {
-            map[String(ctrl.id)] = currentSection;
-          }
-          if (ctrl.controls) {
-            processControls(ctrl.controls, currentSection);
-          }
-        }
-      }
-    };
-
-    processControls(
-      (formMetadata.schema as { controls?: unknown[] }).controls ?? [],
-      null,
-    );
-
-    return Object.keys(map).length > 0 ? map : undefined;
-  }, [formMetadata]);
-
-  const conceptDatatypeMap = useMemo(() => {
-    if (!formMetadata?.schema) return undefined;
-    const map: Record<string, string> = {};
-
-    const collectDatatypes = (controls: unknown[]) => {
-      (controls ?? []).forEach((ctrl: unknown) => {
-        const c = ctrl as {
-          concept?: { uuid?: string; datatype?: string };
-          controls?: unknown[];
-        };
-        if (c.concept?.uuid && c.concept?.datatype) {
-          map[c.concept.uuid] = c.concept.datatype;
-        }
-        if (c.controls) collectDatatypes(c.controls);
-      });
-    };
-
-    collectDatatypes(
-      (formMetadata.schema as { controls?: unknown[] }).controls ?? [],
-    );
-    return Object.keys(map).length > 0 ? map : undefined;
-  }, [formMetadata]);
-
   const modalErrorMessage = useMemo(() => {
-    if (metadataError) {
-      return getFormattedError(metadataError).message;
-    }
     if (formDataError) {
       return getFormattedError(formDataError).message;
     }
     return undefined;
-  }, [metadataError, formDataError]);
+  }, [formDataError]);
 
   // Base headers without Actions — shared across all groups.
   const baseHeaders = useMemo(
@@ -508,15 +403,13 @@ const FormsTable: React.FC<WidgetProps> = ({
         >
           <ObservationsRenderer
             observations={filteredObservations}
-            isLoading={isLoadingMetadata || isLoadingEncounterData}
-            isError={isMetadataError || isFormDataError}
+            isLoading={isLoadingEncounterData}
+            isError={isFormDataError}
             errorMessage={modalErrorMessage}
             emptyStateMessage={t('NO_FORM_DATA_AVAILABLE')}
             testIdPrefix={selectedRecord.formName}
             hideThumbnail={hideThumbnail}
-            controlOrder={controlOrder}
-            sectionMap={sectionMap}
-            conceptDatatypeMap={conceptDatatypeMap}
+            formName={selectedRecord.formName}
           />
         </Modal>
       )}
