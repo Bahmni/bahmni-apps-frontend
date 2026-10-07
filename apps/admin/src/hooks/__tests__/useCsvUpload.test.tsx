@@ -66,7 +66,7 @@ describe('useCsvUpload', () => {
     );
     expect(mockAddNotification).toHaveBeenCalledTimes(3);
     expect(mockAddNotification).toHaveBeenCalledWith(
-      expect.objectContaining({ type: 'info', message: 'a.csv ok' }),
+      expect.objectContaining({ type: 'success', message: 'a.csv ok' }),
     );
     expect(invalidate).toHaveBeenCalledTimes(1);
     expect(invalidate).toHaveBeenCalledWith({

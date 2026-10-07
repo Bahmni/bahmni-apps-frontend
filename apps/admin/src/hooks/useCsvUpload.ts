@@ -55,7 +55,7 @@ export const useCsvUpload = ({
           addNotification({
             title: notificationTitle,
             message: notificationMessage(file.name),
-            type: 'info',
+            type: 'success',
             timeout: 5000,
           });
         } catch {
