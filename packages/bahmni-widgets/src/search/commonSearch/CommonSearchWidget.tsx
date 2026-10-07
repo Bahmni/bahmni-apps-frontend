@@ -31,7 +31,7 @@ import {
   CommonSearchWidgetConfig,
   CriterionRow,
   CursorDirection,
-  RecentSearchCriteria,
+  RecentCommonSearch,
   SearchContextConfig,
   SearchResponse,
 } from './models';
@@ -110,18 +110,16 @@ const CommonSearchWidget = ({ extensionParams }: SearchWidgetProps) => {
   const { data: recentSearch } = useQuery({
     queryKey: recentSearchQueryKey,
     queryFn: () =>
-      getRecentSearchCriteria<RecentSearchCriteria['payload']['criteria']>(
-        user!,
-      ),
+      getRecentSearchCriteria<RecentCommonSearch['payload']['criteria']>(user!),
     enabled: !!user,
     staleTime: Infinity,
   });
 
   const saveRecentSearch = useMutation({
-    mutationFn: (payload: RecentSearchCriteria['payload']) =>
+    mutationFn: (payload: RecentCommonSearch['payload']) =>
       saveRecentSearchCriteria(user!.uuid, payload),
     onSuccess: (_, payload) =>
-      queryClient.setQueryData<RecentSearchCriteria>(recentSearchQueryKey, {
+      queryClient.setQueryData<RecentCommonSearch>(recentSearchQueryKey, {
         version: 1,
         savedAt: new Date().toISOString(),
         payload,

@@ -592,22 +592,26 @@ const conditionToRow = (
       : null;
   }
 
-  const from = condition.conditions
+  const conditionRangeFrom = condition.conditions
     .filter(isSingleCondition)
     .find((c) => c.comparator === 'ge');
-  const to = from && findConditionByField(condition, from.field, 'le');
+  const conditionRangeTo =
+    conditionRangeFrom &&
+    findConditionByField(condition, conditionRangeFrom.field, 'le');
   const criterion =
-    from &&
+    conditionRangeFrom &&
     criteria.find(
       (c) =>
-        c.field.key === from.field && !c.field.keyType && isRangeInput(c.input),
+        c.field.key === conditionRangeFrom.field &&
+        !c.field.keyType &&
+        isRangeInput(c.input),
     );
-  return criterion && from && to
+  return criterion && conditionRangeFrom && conditionRangeTo
     ? {
         criterionKey: criterion.id!,
         value: {
-          from: { value: from.value, comparator: null },
-          to: { value: to.value, comparator: null },
+          from: { value: conditionRangeFrom.value, comparator: null },
+          to: { value: conditionRangeTo.value, comparator: null },
         } satisfies RangeValue,
       }
     : null;

@@ -7,8 +7,8 @@ import {
 import {
   getCookieByName,
   decodeCookieValue,
-  encodeBase64,
-  decodeBase64,
+  encodeValue,
+  decodeValue,
 } from '../utils';
 import {
   USER_RESOURCE_URL,
@@ -132,17 +132,14 @@ export const updateSessionLocation = async (
 
 export const encodeSearchCriteria = <T>(
   criteria: RecentSearchCriteria<T>,
-): string => encodeBase64(JSON.stringify(criteria));
+): string => encodeValue(JSON.stringify(criteria));
 
-/**
- * @returns null for empty, malformed or unsupported-version values - never throws
- */
 export const decodeSearchCriteria = <T = unknown>(
   value: string | undefined,
 ): RecentSearchCriteria<T> | null => {
   if (!value) return null;
   try {
-    const parsed = JSON.parse(decodeBase64(value));
+    const parsed = JSON.parse(decodeValue(value));
     if (
       parsed?.version !== 1 ||
       typeof parsed.payload?.entity !== 'string' ||

@@ -1,4 +1,4 @@
-import type { RecentSearchCriteria as RecentSearchCriteriaBase } from '@bahmni/services';
+import type { RecentSearchCriteria } from '@bahmni/services';
 
 export type Comparator = 'eq' | 'ne' | 'gt' | 'lt' | 'ge' | 'le';
 
@@ -208,5 +208,4 @@ export interface SearchPage {
   prevCursor: string | null;
 }
 
-export type RecentSearchCriteria =
-  RecentSearchCriteriaBase<SearchConditionGroup>;
+export type RecentCommonSearch = RecentSearchCriteria<SearchConditionGroup>;

@@ -21,6 +21,6 @@ export {
   resolveComboBoxItems,
   formatGender,
   formatCountry,
-  encodeBase64,
-  decodeBase64,
+  encodeValue,
+  decodeValue,
 } from './utils';

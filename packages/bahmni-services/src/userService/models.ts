@@ -8,10 +8,6 @@ export interface User {
   userProperties?: Record<string, string>;
 }
 
-/**
- * Last executed common-search criteria persisted as a user property.
- * The payload is generic so services stays independent of the widgets' search types.
- */
 export interface RecentSearchCriteria<TCriteria = unknown> {
   version: 1;
   savedAt: string;
