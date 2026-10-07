@@ -85,6 +85,7 @@ export interface PatientAddress {
   countyDistrict?: string;
   stateProvince?: string;
   postalCode?: string;
+  country?: string;
 }
 
 export interface PatientIdentifier {
@@ -369,6 +370,15 @@ export interface PersonAttributeTypesResponse {
   results: PersonAttributeType[];
 }
 
+// One entry of the fhir2Extension.telecomAttributeTypeMap global property: declares that a
+// person attribute type should appear in Patient.telecom with the given system/use/rank.
+export interface TelecomAttributeTypeMapping {
+  attributeTypeUuid: string;
+  system: string;
+  use?: string;
+  rank?: number;
+}
+
 export interface RelationshipType {
   uuid: string;
   display: string;
@@ -415,6 +425,47 @@ export interface Relationship {
     resourceAlias?: string;
   }>;
   resourceVersion?: string;
+}
+
+export interface FhirRelatedPersonCoding {
+  system?: string;
+  code?: string;
+  display?: string;
+}
+
+export interface FhirRelatedPersonRelationship {
+  coding?: FhirRelatedPersonCoding[];
+  text?: string;
+}
+
+export interface FhirRelatedPersonExtension {
+  url: string;
+  valueReference?: { reference: string };
+}
+
+export interface FhirRelatedPersonName {
+  given?: string[];
+  family?: string;
+}
+
+export interface FhirRelatedPersonPeriod {
+  start?: string;
+  end?: string;
+}
+
+export interface FhirRelatedPerson {
+  resourceType: 'RelatedPerson';
+  id?: string;
+  patient: { reference: string };
+  relationship?: FhirRelatedPersonRelationship[];
+  extension?: FhirRelatedPersonExtension[];
+  name?: FhirRelatedPersonName[];
+  period?: FhirRelatedPersonPeriod;
+}
+
+export interface FhirRelatedPersonBundle {
+  resourceType: 'Bundle';
+  entry?: { resource?: FhirRelatedPerson }[];
 }
 
 export interface ExpectedFieldConfig {

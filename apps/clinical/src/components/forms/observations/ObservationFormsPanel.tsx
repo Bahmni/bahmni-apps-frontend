@@ -7,7 +7,7 @@ import {
   fetchFormUuidByObservationDate,
 } from '@bahmni/services';
 import { useActivePractitioner, usePatientUUID } from '@bahmni/widgets';
-import type { Bundle, Task } from 'fhir/r4';
+import type { Bundle, Task, Observation, Reference } from 'fhir/r4';
 import React, { useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { EncounterSessionStartContext } from '../../../events/startConsultation';
@@ -21,6 +21,11 @@ import styles from './styles/ObservationFormsContainer.module.scss';
 
 interface ObservationFormsPanelProps {
   encounterSessionStartContext?: EncounterSessionStartContext;
+}
+
+interface ObservationExistingData {
+  status?: string;
+  basedOn?: Reference;
 }
 
 const ObservationFormsPanel: React.FC<ObservationFormsPanelProps> = ({
@@ -220,19 +225,21 @@ const ObservationFormsPanel: React.FC<ObservationFormsPanelProps> = ({
         }
 
         if (form2Observations.length > 0) {
-          let observationsToStore: Form2Observation[];
+          let obsWithExistingData: Form2Observation[];
           if (isCopyoverMode) {
             // Copyover: strip UUIDs so submission creates new observation resources
             // instead of updating the old ones.
-            observationsToStore = stripObservationUuids(
+            obsWithExistingData = stripObservationUuids(
               form2Observations as Form2Observation[],
             );
           } else {
-            // Edit: preserve UUIDs and echo back FHIR status for PUT requests.
-            const statusByUuid = buildStatusMap(bundle as Bundle);
-            observationsToStore = enrichObservationsWithStatus(
+            // Edit: preserve UUIDs and echo back status + basedOn for PUT requests.
+            const existingDataByUuid = buildObsExistingDataMap(
+              bundle as Bundle,
+            );
+            obsWithExistingData = enrichObsWithExistingData(
               form2Observations as Form2Observation[],
-              statusByUuid,
+              existingDataByUuid,
             );
           }
 
@@ -244,7 +251,7 @@ const ObservationFormsPanel: React.FC<ObservationFormsPanelProps> = ({
               [formToOpen.uuid]: {
                 formUuid: formToOpen.uuid,
                 formName: formToOpen.name,
-                observations: observationsToStore,
+                observations: obsWithExistingData,
                 timestamp: Date.now(),
               },
             },
@@ -316,18 +323,19 @@ const ObservationFormsPanel: React.FC<ObservationFormsPanelProps> = ({
 
 export default ObservationFormsPanel;
 
-/** Build a map of observation uuid → FHIR status from a raw FHIR bundle. */
-function buildStatusMap(bundle: Bundle): Map<string, string> {
-  const map = new Map<string, string>();
+/** Extracts existing fields (status, basedOn) from a raw FHIR Observation bundle, keyed by uuid. */
+function buildObsExistingDataMap(
+  bundle: Bundle,
+): Map<string, ObservationExistingData> {
+  const map = new Map<string, ObservationExistingData>();
   bundle.entry?.forEach((entry) => {
     const resource = entry.resource;
-    if (
-      resource?.resourceType === 'Observation' &&
-      resource.id &&
-      (resource as { status?: string }).status
-    ) {
-      map.set(resource.id, (resource as { status: string }).status);
-    }
+    if (resource?.resourceType !== 'Observation' || !resource.id) return;
+    const obs = resource as Observation;
+    const existing: ObservationExistingData = {};
+    if (obs.status) existing.status = obs.status;
+    if (obs.basedOn?.[0]) existing.basedOn = obs.basedOn[0];
+    if (existing.status || existing.basedOn) map.set(resource.id, existing);
   });
   return map;
 }
@@ -349,25 +357,26 @@ function stripObservationUuids(
   });
 }
 
-/**
- * Recursively copies the FHIR status from the status map into each
- * Form2Observation that has a matching uuid.  This lets PUT requests
- * echo back exactly what OpenMRS currently has stored, avoiding the
- * "Editing the fields [status] on Obs is not allowed" error.
- */
-function enrichObservationsWithStatus(
+/** Recursively copies status + basedOn onto Form2Observations with a matching uuid.
+ *  status → OpenMRS rejects PUT without exact status ("Editing the fields [status] on Obs is not allowed").
+ *  basedOn → OpenMRS strips the ServiceRequest linkage if PUT omits it. */
+function enrichObsWithExistingData(
   observations: Form2Observation[],
-  statusByUuid: Map<string, string>,
+  existingDataByUuid: Map<string, ObservationExistingData>,
 ): Form2Observation[] {
   return observations.map((obs) => {
     const enriched: Form2Observation = { ...obs };
-    if (obs.uuid && statusByUuid.has(obs.uuid)) {
-      enriched.status = statusByUuid.get(obs.uuid);
+    if (obs.uuid) {
+      const existing = existingDataByUuid.get(obs.uuid);
+      if (existing) {
+        if (existing.status) enriched.status = existing.status;
+        if (existing.basedOn) enriched.basedOn = existing.basedOn;
+      }
     }
     if (obs.groupMembers) {
-      enriched.groupMembers = enrichObservationsWithStatus(
+      enriched.groupMembers = enrichObsWithExistingData(
         obs.groupMembers,
-        statusByUuid,
+        existingDataByUuid,
       );
     }
     return enriched;

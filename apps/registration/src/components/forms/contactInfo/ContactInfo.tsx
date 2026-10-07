@@ -21,6 +21,7 @@ import {
   validateAllFields,
   getValidationConfig,
 } from '../../common/personAttributeValidation';
+import { RequiredAsterisk } from '../../common/RequiredAsterisk';
 import styles from './styles/index.module.scss';
 
 export interface ContactInfoRef {
@@ -98,7 +99,7 @@ export const ContactInfo = ({ initialData, ref }: ContactInfoProps) => {
     return (
       <>
         {t(labelKey)}
-        {isRequired && <span className={styles.requiredAsterisk}>*</span>}
+        {isRequired && <RequiredAsterisk />}
       </>
     );
   };

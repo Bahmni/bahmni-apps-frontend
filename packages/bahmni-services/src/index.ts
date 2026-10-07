@@ -27,7 +27,13 @@ export {
   fetchPatientPhotoFromUrl,
   getPatientProfile,
   getPersonAttributeTypes,
+  getTelecomAttributeTypeMap,
   getRelationshipTypes,
+  getRelatedPersonsByPatient,
+  createRelatedPerson,
+  deleteRelatedPerson,
+  type FhirRelatedPerson,
+  type FhirRelatedPersonBundle,
   type FormattedPatientData,
   type PatientSearchResult,
   type PatientSearchResultBundle,
@@ -46,6 +52,7 @@ export {
   type PatientProfileResponse,
   type PersonAttributeType,
   type PersonAttributeTypesResponse,
+  type TelecomAttributeTypeMapping,
   type ConceptAnswer,
   type PersonAttributeConcept,
   type PatientSearchField,
@@ -99,8 +106,10 @@ export {
 } from './appointmentService';
 export {
   getFormattedError,
+  getErrorKind,
   PATIENT_NOT_FOUND_ERROR_KEY,
 } from './errorHandling';
+export type { ErrorKind } from './errorHandling';
 export {
   capitalize,
   generateId,
@@ -151,11 +160,19 @@ export {
   type AllergenType,
   type AllergyInputEntry,
   type AllergenConcept,
+  type SaveAllergyRequest,
+  type SaveAllergyResponse,
+  OPENMRS_ALLERGEN_TYPE,
+  isNonCodedAllergen,
+  OTHER_NON_CODED_ALLERGEN_UUID,
   mapAllergyToInputEntry,
   getAllergies,
   getFormattedAllergies,
   fetchAndFormatAllergenConcepts,
   fetchReactionConcepts,
+  fetchAllergySeverityConceptUUIDs,
+  fetchOtherNonCodedAllergenUUID,
+  saveAllergy,
 } from './allergyService';
 export {
   getConditions,
@@ -236,11 +253,12 @@ export {
   type UserLocation,
   BAHMNI_USER_LOCATION_COOKIE,
 } from './userService';
-export { logout } from './authService';
+export { logout, validateSessionUser } from './authService';
 export { USER_PINNED_PREFERENCE_URL } from './observationFormsService/constants';
 export {
   getPatientObservationsBundle,
   getPatientObservationsWithEncounterBundle,
+  getPatientLatestObservations,
   getPatientObservations,
   getObservationsBundleByEncounterUuid,
   groupObservationsByEncounter,
@@ -277,6 +295,9 @@ export {
   getEncounterByUuid,
   getVisits,
   getPatientEncounters,
+  getRecentVisitEncounters,
+  visitIdOf,
+  type EncounterWithVisit,
   getEncounterTypeByName,
   type EncounterTypeRef,
   shouldEnableEncounterFilter,
@@ -307,6 +328,13 @@ export {
   initializeAuditListener,
   type AuditEventType,
   logAuditEvent,
+  fetchAuditLogs,
+  parseAuditLogEntry,
+  parseAuditLogMessage,
+  interpolateMessage,
+  type AuditLogQueryParams,
+  type RawAuditLogEntry,
+  type AuditLogListEntry,
 } from './auditLogService';
 
 export {
@@ -338,12 +366,16 @@ export {
   OPENMRS_FHIR_R4,
   BAHMNI_HOME_PATH,
   BAHMNI_APP_BASE_PATH,
+  HOME_ROUTE_PATH,
+  BAHMNI_REPORTS_URL,
+  BASE_PATH,
 } from './constants/app';
 export {
   getCurrentUserPrivileges,
   hasPrivilege,
   type UserPrivilege,
   type SessionResponse,
+  type AccessDeniedRouteState,
 } from './privilegeService';
 export {
   fetchObservationForms,
@@ -411,15 +443,15 @@ export {
   getDocumentReferencePage,
   getDocumentTypes,
   getDocumentUploadMaxSizeMb,
-  createDocumentReference,
-  saveDocument,
+  saveDocuments,
   type DocumentReferencePage,
   type DocumentViewModel,
   type DocumentType,
   type DocumentSaveTarget,
   type CreateEncounterInVisit,
-  type CreateDocumentReferenceInput,
-  type SaveDocumentInput,
+  type DocumentPayload,
+  type SaveDocumentsInput,
+  type AttachToExistingEncounter,
   type DocumentReference,
 } from './documentReferenceService';
 
@@ -468,6 +500,15 @@ export type {
   TemplateListResponse,
 } from './templateService';
 export { getTasks } from './taskService';
+export {
+  buildRunReportUrl,
+  formatDateForQuery,
+  DEFAULT_APP_NAME,
+  DEFAULT_PAPER_SIZE,
+  DEFAULT_SUPPORTED_FORMATS,
+  FORMAT_MIME_TYPES,
+  type FormatKey,
+} from './reportService';
 export {
   groupExtensionsByPoint,
   filterExtensionsByPrivileges,

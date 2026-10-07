@@ -29,7 +29,7 @@ const mockGetValueType = getValueType as jest.MockedFunction<
 
 const mockTransformObservationToRowCell = jest.fn((obs, index) => ({
   index,
-  header: obs.display,
+  header: { display: obs.display },
   value: '120 mmHg',
   provider: 'Dr. Smith',
 }));
@@ -117,7 +117,7 @@ describe('ObsByEncounter', () => {
       mockGetValueType.mockReturnValue('Image');
       mockTransformObservationToRowCell.mockReturnValueOnce({
         index: 0,
-        header: 'X-Ray Image',
+        header: { display: 'X-Ray Image' },
         value: imagePath,
         provider: 'Dr. Smith',
       });
@@ -141,7 +141,7 @@ describe('ObsByEncounter', () => {
       mockGetValueType.mockReturnValue('Video');
       mockTransformObservationToRowCell.mockReturnValueOnce({
         index: 0,
-        header: 'Procedure Video',
+        header: { display: 'Procedure Video' },
         value: videoPath,
         provider: 'Dr. Smith',
       });
@@ -166,7 +166,7 @@ describe('ObsByEncounter', () => {
       mockGetValueType.mockReturnValue('Image');
       mockTransformObservationToRowCell.mockReturnValueOnce({
         index: 0,
-        header: 'X-Ray Image',
+        header: { display: 'X-Ray Image' },
         value: imagePath,
         provider: 'Dr. Smith',
       });
@@ -190,7 +190,7 @@ describe('ObsByEncounter', () => {
       mockGetValueType.mockReturnValue('string');
       mockTransformObservationToRowCell.mockReturnValueOnce({
         index: 0,
-        header: 'Temperature',
+        header: { display: 'Temperature' },
         value: '98.6°F',
         provider: 'Dr. Smith',
       });
@@ -210,7 +210,7 @@ describe('ObsByEncounter', () => {
       mockGetValueType.mockReturnValue('PDF');
       mockTransformObservationToRowCell.mockReturnValueOnce({
         index: 0,
-        header: 'Consultation Document',
+        header: { display: 'Consultation Document' },
         value: pdfPath,
         provider: 'Dr. Smith',
       });

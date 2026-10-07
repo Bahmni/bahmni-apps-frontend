@@ -964,3 +964,140 @@ export const buildFormObservation = (
     },
   ],
 });
+
+const buildObservation = (
+  id: string,
+  conceptName: string,
+  conceptCode: string,
+  value: number,
+  unit: string,
+  effectiveDateTime: string,
+  encounterRef: string,
+): Observation => ({
+  resourceType: 'Observation',
+  id,
+  status: 'final',
+  code: {
+    text: conceptName,
+    coding: [{ code: conceptCode, display: conceptName }],
+  },
+  valueQuantity: { value, unit },
+  effectiveDateTime,
+  encounter: { reference: encounterRef },
+});
+
+const buildEncounter = (
+  id: string,
+  startDateTime: string,
+  providerName: string,
+): Encounter => ({
+  resourceType: 'Encounter',
+  id,
+  status: 'finished',
+  class: { code: 'AMB' },
+  type: [{ coding: [{ display: 'Consultation' }] }],
+  period: { start: startDateTime },
+  participant: [{ individual: { display: providerName } }],
+});
+
+export const mockLatestObservationsBundle: Bundle<Observation | Encounter> = {
+  resourceType: 'Bundle',
+  type: 'searchset',
+  total: 3,
+  entry: [
+    {
+      fullUrl: 'http://localhost/openmrs/ws/fhir2/R4/Observation/obs-latest-1',
+      resource: buildObservation(
+        'obs-latest-1',
+        'Temperature',
+        'temp-uuid',
+        98.6,
+        '°F',
+        '2026-08-30T10:00:00+00:00',
+        'Encounter/enc-latest-1',
+      ),
+    },
+    {
+      fullUrl: 'http://localhost/openmrs/ws/fhir2/R4/Observation/obs-latest-2',
+      resource: buildObservation(
+        'obs-latest-2',
+        'Pulse',
+        'pulse-uuid',
+        72,
+        'beats/min',
+        '2026-08-30T10:00:00+00:00',
+        'Encounter/enc-latest-1',
+      ),
+    },
+    {
+      fullUrl: 'http://localhost/openmrs/ws/fhir2/R4/Encounter/enc-latest-1',
+      resource: buildEncounter(
+        'enc-latest-1',
+        '2026-08-30T10:00:00+00:00',
+        'Dr. Latest',
+      ),
+    },
+  ],
+};
+
+export const mockLatestObservationsWithMultipleEncounters: Bundle<
+  Observation | Encounter
+> = {
+  resourceType: 'Bundle',
+  type: 'searchset',
+  total: 5,
+  entry: [
+    {
+      fullUrl: 'http://localhost/openmrs/ws/fhir2/R4/Observation/obs-multi-1',
+      resource: buildObservation(
+        'obs-multi-1',
+        'Temperature',
+        'temp-uuid',
+        98.6,
+        '°F',
+        '2026-08-30T10:00:00+00:00',
+        'Encounter/enc-multi-1',
+      ),
+    },
+    {
+      fullUrl: 'http://localhost/openmrs/ws/fhir2/R4/Observation/obs-multi-2',
+      resource: buildObservation(
+        'obs-multi-2',
+        'Pulse',
+        'pulse-uuid',
+        80,
+        'beats/min',
+        '2026-08-29T10:00:00+00:00',
+        'Encounter/enc-multi-2',
+      ),
+    },
+    {
+      fullUrl: 'http://localhost/openmrs/ws/fhir2/R4/Observation/obs-multi-3',
+      resource: buildObservation(
+        'obs-multi-3',
+        'Blood Pressure',
+        'bp-uuid',
+        120,
+        'mmHg',
+        '2026-08-30T10:00:00+00:00',
+        'Encounter/enc-multi-1',
+      ),
+    },
+    {
+      fullUrl: 'http://localhost/openmrs/ws/fhir2/R4/Encounter/enc-multi-1',
+      resource: buildEncounter(
+        'enc-multi-1',
+        '2026-08-30T10:00:00+00:00',
+        'Dr. Multi',
+      ),
+    },
+    {
+      fullUrl: 'http://localhost/openmrs/ws/fhir2/R4/Encounter/enc-multi-2',
+      resource: buildEncounter(
+        'enc-multi-2',
+        '2026-08-29T10:00:00+00:00',
+        'Dr. Multi',
+      ),
+    },
+  ],
+};

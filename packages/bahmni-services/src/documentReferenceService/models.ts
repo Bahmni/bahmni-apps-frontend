@@ -1,3 +1,5 @@
+import { Encounter, Period } from 'fhir/r4';
+
 /**
  * Interface representing a single attachment within a document
  */
@@ -46,16 +48,22 @@ export interface CreateEncounterInVisit {
   visitUuid: string;
   encounterTypeUuid: string;
   encounterTypeDisplay?: string;
+  visitPeriod?: Period;
 }
 
-/** Where a document is attached: an existing encounter, or a new one created within a visit. */
+/** An existing document encounter to attach a batch to. */
+export interface AttachToExistingEncounter {
+  encounterUuid: string;
+  existingEncounter: Encounter;
+}
+
+/** Where a batch of documents is attached: an existing encounter, or a new one in a visit. */
 export type DocumentSaveTarget =
-  | { encounterUuid: string }
+  | AttachToExistingEncounter
   | { createEncounterInVisit: CreateEncounterInVisit };
 
-// Provide encounterUuid to attach to an existing encounter, or createEncounterInVisit to create one.
-export interface SaveDocumentInput {
-  patientUuid: string;
+/** A single document. url comes from the prior visitDocument upload call. */
+export interface DocumentPayload {
   url: string;
   contentType?: string;
   title?: string;
@@ -63,6 +71,14 @@ export interface SaveDocumentInput {
   typeDisplay?: string;
   description?: string;
   authorPractitionerUuid?: string;
-  encounterUuid?: string;
-  createEncounterInVisit?: CreateEncounterInVisit;
+}
+
+/**
+ * The save target is held once for the whole batch rather than repeated on every document, so a
+ * batch cannot describe two different targets and no runtime check is needed to reject one.
+ */
+export interface SaveDocumentsInput {
+  patientUuid: string;
+  target: DocumentSaveTarget;
+  documents: DocumentPayload[];
 }

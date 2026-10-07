@@ -158,6 +158,7 @@ const ViewFormData: React.FC<ViewFormDataProps> = ({
         </div>
         <ObservationsRenderer
           observations={group.observations}
+          formName={formName ?? undefined}
           testIdPrefix={`encounter-${group.encounterUuid}-observations`}
         />
       </div>

@@ -40,6 +40,15 @@ const getTitleByStatus = (status: ImmunizationStatus) => {
   }
 };
 
+const getAddButtonLabelByStatus = (status: ImmunizationStatus) => {
+  switch (status) {
+    case 'not-done':
+      return 'IMMUNIZATION_HISTORY_WIDGET_ADD_WAIVER_BUTTON';
+    default:
+      return 'IMMUNIZATION_HISTORY_WIDGET_ADD_BUTTON';
+  }
+};
+
 const ImmunizationHistory: React.FC<WidgetProps> = ({ config }) => {
   const { t } = useTranslation();
   const patientUUID = usePatientUUID();
@@ -180,7 +189,7 @@ const ImmunizationHistory: React.FC<WidgetProps> = ({ config }) => {
             autoAlign
             size="lg"
             kind="ghost"
-            label={t('IMMUNIZATION_HISTORY_WIDGET_ADD_BUTTON')}
+            label={t(getAddButtonLabelByStatus(status))}
             onClick={handleAddImmunization}
           >
             <Icon

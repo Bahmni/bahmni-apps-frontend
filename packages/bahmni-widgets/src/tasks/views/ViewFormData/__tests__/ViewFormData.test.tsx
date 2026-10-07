@@ -29,6 +29,17 @@ jest.mock('@bahmni/services', () => ({
   formatDateTime: jest.fn(),
 }));
 
+jest.mock('../../../../observationsRenderer/hooks/useFormSchemaData', () => ({
+  useFormSchemaData: jest.fn(() => ({
+    controlOrder: ['1', '2'],
+    sectionMap: { '1': 'Section 1' },
+    conceptDatatypeMap: { 'concept-1': 'Datetime' },
+    isLoading: false,
+    isError: false,
+    errorMessage: undefined,
+  })),
+}));
+
 jest.mock('../../../../observationsRenderer', () => ({
   ObservationsRenderer: jest.fn(({ observations, testIdPrefix }) => (
     <div data-testid={testIdPrefix}>
@@ -38,6 +49,10 @@ jest.mock('../../../../observationsRenderer', () => ({
     </div>
   )),
 }));
+
+const { ObservationsRenderer: mockObservationsRenderer } = jest.requireMock(
+  '../../../../observationsRenderer',
+);
 
 const mockGetObservationsBundleByEncounterUuid =
   getObservationsBundleByEncounterUuid as jest.MockedFunction<
@@ -498,6 +513,27 @@ describe('ViewFormData', () => {
           expect.any(Function),
           true,
         );
+      });
+    });
+  });
+
+  describe('Form schema (resolved at ObservationsRenderer level)', () => {
+    beforeEach(() => {
+      mockGetPatientObservationsBundle.mockResolvedValue(
+        mockObservationAndEncounterBundle as Bundle<Observation>,
+      );
+      mockGetEncounterByUuid.mockResolvedValue(mockEncounterWithProvider);
+    });
+
+    // ObservationsRenderer now resolves the schema internally when formName is provided.
+    // ViewFormData passes formName to each encounter group's ObservationsRenderer.
+    it('should pass formName to observations renderer', async () => {
+      renderComponent();
+
+      await waitFor(() => {
+        const lastCallProps = mockObservationsRenderer.mock.calls.at(-1)?.[0];
+        expect(lastCallProps.formName).toBeDefined();
+        expect(typeof lastCallProps.formName).toBe('string');
       });
     });
   });

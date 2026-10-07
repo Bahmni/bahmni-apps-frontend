@@ -3,8 +3,10 @@ import {
   searchConceptByName,
   useTranslation,
   getPatientObservationsWithEncounterBundle,
+  getPatientLatestObservations,
   useSubscribeConsultationSaved,
   ConsultationSavedEventPayload,
+  shouldEnableEncounterFilter,
 } from '@bahmni/services';
 import { useQuery, useQueries } from '@tanstack/react-query';
 import { useEffect, useMemo, useRef } from 'react';
@@ -17,6 +19,7 @@ import {
   extractObservationsFromBundle,
   groupObservationsByEncounter,
   sortObservationsByEncounterDate,
+  filterObservationsByLatestEncounter,
 } from './utils';
 
 export interface ObservationConfig {
@@ -24,6 +27,7 @@ export interface ObservationConfig {
   conceptUuid?: string[];
   titleTranslationKey?: string;
   hideThumbnail?: boolean;
+  scope?: 'all' | 'latest' | 'latest-encounter';
 }
 
 export const conceptUuidQueryKeys = (conceptName: string) =>
@@ -32,15 +36,30 @@ export const conceptUuidQueryKeys = (conceptName: string) =>
 export const observationsQueryKeys = (
   patientUUID: string,
   conceptUuids: string[],
-) => ['observations', patientUUID, ...conceptUuids] as const;
+  encounterUuids?: string[],
+  scope?: string,
+) =>
+  [
+    'observations',
+    patientUUID,
+    ...conceptUuids,
+    encounterUuids,
+    scope,
+  ] as const;
 
-const Observations: React.FC<WidgetProps> = ({ config }) => {
+const Observations: React.FC<WidgetProps> = ({
+  config,
+  episodeOfCareUuids,
+  encounterUuids,
+}) => {
   const observationConfig = config as ObservationConfig;
   const {
     conceptNames = [],
     conceptUuid = [],
     hideThumbnail = false,
+    scope = 'all',
   } = observationConfig;
+
   const notifiedIndices = useRef(new Set());
   const patientUUID = usePatientUUID();
   const { addNotification } = useNotification();
@@ -55,20 +74,20 @@ const Observations: React.FC<WidgetProps> = ({ config }) => {
   });
 
   useEffect(() => {
-    conceptQueries.forEach((query, index) => {
-      if (query.isError && !notifiedIndices.current.has(index)) {
-        const conceptName = conceptNames[index];
-        addNotification({
-          title: t('ERROR_DEFAULT_TITLE'),
-          message: t('ERROR_FETCHING_CONCEPT', { conceptName }),
-          type: 'error',
-        });
-        notifiedIndices.current.add(index);
-      } else if (!query.isError) {
-        notifiedIndices.current.delete(index);
-      }
-    });
-  }, [conceptQueries, conceptNames]);
+    const hasAnyError = conceptQueries.some((query) => query.isError);
+    const hasNotified = notifiedIndices.current.size > 0;
+
+    if (hasAnyError && !hasNotified) {
+      addNotification({
+        title: t('ERROR_DEFAULT_TITLE'),
+        message: t('ERROR_FETCHING_OBSERVATIONS'),
+        type: 'error',
+      });
+      notifiedIndices.current.add(0);
+    } else if (!hasAnyError && hasNotified) {
+      notifiedIndices.current.clear();
+    }
+  }, [conceptQueries, addNotification, t]);
 
   const fetchedUuids = useMemo(() => {
     return conceptQueries
@@ -85,17 +104,44 @@ const Observations: React.FC<WidgetProps> = ({ config }) => {
     return conceptQueries.every((query) => !query.isLoading);
   }, [conceptQueries, conceptNames.length]);
 
+  const useLastN = scope === 'latest' || scope === 'latest-encounter';
+
+  const emptyEncounterFilter = shouldEnableEncounterFilter(
+    episodeOfCareUuids,
+    encounterUuids,
+  );
+
   const {
     data: observations,
     isLoading: isLoadingObservations,
     isError: isObservationsError,
     refetch,
   } = useQuery({
-    queryKey: observationsQueryKeys(patientUUID!, allConceptUuids),
-    queryFn: () =>
-      getPatientObservationsWithEncounterBundle(patientUUID!, allConceptUuids),
+    queryKey: observationsQueryKeys(
+      patientUUID!,
+      allConceptUuids,
+      encounterUuids,
+      scope,
+    ),
+    queryFn: () => {
+      return useLastN
+        ? getPatientLatestObservations(
+            patientUUID!,
+            allConceptUuids,
+            encounterUuids,
+            true,
+          )
+        : getPatientObservationsWithEncounterBundle(
+            patientUUID!,
+            allConceptUuids,
+            encounterUuids,
+          );
+    },
     enabled:
-      !!patientUUID && allConceptUuids.length > 0 && areConceptQueriesComplete,
+      !!patientUUID &&
+      allConceptUuids.length > 0 &&
+      areConceptQueriesComplete &&
+      !emptyEncounterFilter,
   });
 
   // Smart refetch: only refetch if one of the updated concepts matches our configured concepts
@@ -130,10 +176,15 @@ const Observations: React.FC<WidgetProps> = ({ config }) => {
   const groupedData = useMemo(() => {
     if (!observations) return [];
 
-    const extractedObs = extractObservationsFromBundle(observations);
+    let extractedObs = extractObservationsFromBundle(observations);
+
+    if (scope === 'latest-encounter') {
+      extractedObs = filterObservationsByLatestEncounter(extractedObs);
+    }
+
     const grouped = groupObservationsByEncounter(extractedObs);
     return sortObservationsByEncounterDate(grouped);
-  }, [observations]);
+  }, [observations, scope]);
 
   const headers = [
     { key: 'name', header: 'name' },
@@ -191,7 +242,7 @@ const Observations: React.FC<WidgetProps> = ({ config }) => {
           ariaLabel={t('OBSERVATIONS')}
           loading={isLoading}
           errorStateMessage={errorMessage}
-          emptyStateMessage={emptyMessage}
+          emptyStateMessage={emptyMessage ?? t('NO_OBSERVATIONS_AVAILABLE')}
           dataTestId="observations-table"
         />
       )}

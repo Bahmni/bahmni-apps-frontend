@@ -41,6 +41,51 @@ const parseFHIRError = (outcome: FHIROperationOutcome): string | null => {
   return null;
 };
 
+const MAX_MESSAGE_LENGTH = 200;
+const extractBackendMessage = (data: unknown): string | undefined => {
+  if (!data || typeof data !== 'object') {
+    return undefined;
+  }
+  const responseData = data as Record<string, unknown>;
+  const backendError = responseData.error;
+  let message: string | undefined;
+  if (typeof backendError === 'string') {
+    message = backendError;
+  } else if (
+    typeof backendError === 'object' &&
+    backendError !== null &&
+    typeof (backendError as Record<string, unknown>).message === 'string'
+  ) {
+    message = (backendError as Record<string, unknown>).message as string;
+  } else if (typeof responseData.message === 'string') {
+    message = responseData.message;
+  }
+  if (message && message.length > MAX_MESSAGE_LENGTH) {
+    return message.substring(0, MAX_MESSAGE_LENGTH) + '...';
+  }
+  return message;
+};
+
+export type ErrorKind =
+  | 'unauthorized' // HTTP 401 — session already ended
+  | 'network' // no response received (offline / DNS / CORS)
+  | 'timeout' // request aborted because it timed out
+  | 'server' // HTTP 5xx
+  | 'unknown'; // anything else (non-Axios error, other 4xx, etc.)
+
+export const getErrorKind = (error: unknown): ErrorKind => {
+  if (axios.isAxiosError(error)) {
+    if (error.response) {
+      if (error.response.status === 401) return 'unauthorized';
+      if (error.response.status >= 500) return 'server';
+      return 'unknown';
+    }
+    if (error.code === 'ECONNABORTED') return 'timeout';
+    return 'network';
+  }
+  return 'unknown';
+};
+
 export const PATIENT_NOT_FOUND_ERROR_KEY = 'ERROR_PATIENT_NOT_FOUND';
 
 // A GET of a single FHIR patient resource, e.g. /ws/fhir2/R4/Patient/{uuid}.
@@ -113,10 +158,8 @@ export const getFormattedError = (
           }
 
           // Handle non-FHIR errors
-          const backendMessage =
-            responseData?.error?.message ?? responseData?.message;
           message =
-            backendMessage ??
+            extractBackendMessage(responseData) ??
             'Invalid input parameters. Please check your request and try again.';
           break;
         }
@@ -147,18 +190,18 @@ export const getFormattedError = (
           title = 'Server Error';
           message = 'The server encountered an error. Please try again later.';
           break;
-        default: {
+        default:
           title = 'Error';
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const responseData = axiosError.response.data as Record<string, any>;
           message =
-            responseData?.message ??
+            extractBackendMessage(axiosError.response.data) ??
             axiosError.message ??
             'An unknown error occurred';
-        }
       }
-    } else if (error instanceof Error) {
-      message = error.message;
+    } else if (axiosError.code === 'ECONNABORTED') {
+      // Request timed out — a real AxiosError has no `response` here.
+      // This must be checked before the generic network fallback below.
+      title = 'Request Timeout';
+      message = 'Request timed out. Please try again.';
     } else {
       title = 'Network Error';
       message =
