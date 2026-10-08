@@ -2,6 +2,8 @@ export {
   type FormatDateResult,
   type AgeDetails,
   calculateAge,
+  timeToMinutes,
+  addMinutesToTime,
   computeAgeDetails,
   formatDateTime,
   formatDateDistance,
