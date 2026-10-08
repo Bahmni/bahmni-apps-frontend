@@ -84,14 +84,14 @@ describe('scheduleReport', () => {
   it('should GET the schedule endpoint with report params and userName', async () => {
     (get as jest.Mock).mockResolvedValue(undefined);
 
-    await scheduleReport(
-      'Test Report',
-      'PDF',
-      'superman',
-      new Date('2024-03-01'),
-      new Date('2024-03-31'),
-      'A4',
-    );
+    await scheduleReport({
+      reportName: 'Test Report',
+      reportFormat: 'PDF',
+      userName: 'superman',
+      startDate: new Date('2024-03-01'),
+      endDate: new Date('2024-03-31'),
+      paperSize: 'A4',
+    });
 
     expect(get).toHaveBeenCalledTimes(1);
     const url = (get as jest.Mock).mock.calls[0][0];
@@ -104,16 +104,14 @@ describe('scheduleReport', () => {
   it('should include macroTemplateLocation when provided', async () => {
     (get as jest.Mock).mockResolvedValue(undefined);
 
-    await scheduleReport(
-      'Test Report',
-      'CUSTOM EXCEL',
-      'superman',
-      undefined,
-      undefined,
-      'A4',
-      'reports',
-      'abc-template.xlsx',
-    );
+    await scheduleReport({
+      reportName: 'Test Report',
+      reportFormat: 'CUSTOM EXCEL',
+      userName: 'superman',
+      paperSize: 'A4',
+      appName: 'reports',
+      macroTemplateLocation: 'abc-template.xlsx',
+    });
 
     const url = (get as jest.Mock).mock.calls[0][0];
     expect(url).toContain('macroTemplateLocation=abc-template.xlsx');

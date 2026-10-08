@@ -63,16 +63,15 @@ describe('useQueueReport', () => {
       endDate,
     );
 
-    expect(mockScheduleReport).toHaveBeenCalledWith(
-      report.name,
-      'PDF',
-      'superman',
+    expect(mockScheduleReport).toHaveBeenCalledWith({
+      reportName: report.name,
+      reportFormat: 'PDF',
+      userName: 'superman',
       startDate,
       endDate,
-      report.config?.paperSize,
-      undefined,
-      undefined,
-    );
+      paperSize: report.config?.paperSize,
+      macroTemplateLocation: undefined,
+    });
     expect(mockDispatchAuditEvent).toHaveBeenCalledWith({
       eventType: 'RUN_REPORT',
       messageParams: { reportName: report.name },
@@ -115,16 +114,15 @@ describe('useQueueReport', () => {
       'uploaded-template.xlsx',
     );
 
-    expect(mockScheduleReport).toHaveBeenCalledWith(
-      report.name,
-      'CUSTOM EXCEL',
-      'superman',
-      undefined,
-      undefined,
-      report.config?.paperSize,
-      undefined,
-      'uploaded-template.xlsx',
-    );
+    expect(mockScheduleReport).toHaveBeenCalledWith({
+      reportName: report.name,
+      reportFormat: 'CUSTOM EXCEL',
+      userName: 'superman',
+      startDate: undefined,
+      endDate: undefined,
+      paperSize: report.config?.paperSize,
+      macroTemplateLocation: 'uploaded-template.xlsx',
+    });
   });
 
   it('reports failure and does not dispatch an audit event when scheduling throws', async () => {

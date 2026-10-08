@@ -66,16 +66,27 @@ export const buildRunReportUrl = (
   return `${BAHMNI_REPORTS_URL}/report?${params.toString()}`;
 };
 
-export const scheduleReport = (
-  reportName: string,
-  reportFormat: FormatKey,
-  userName: string,
-  startDate?: Date | null,
-  endDate?: Date | null,
-  paperSize?: string,
-  appName: string = DEFAULT_APP_NAME,
-  macroTemplateLocation?: string | null,
-): Promise<void> => {
+export interface ScheduleReportInput {
+  reportName: string;
+  reportFormat: FormatKey;
+  userName: string;
+  startDate?: Date | null;
+  endDate?: Date | null;
+  paperSize?: string;
+  appName?: string;
+  macroTemplateLocation?: string | null;
+}
+
+export const scheduleReport = ({
+  reportName,
+  reportFormat,
+  userName,
+  startDate,
+  endDate,
+  paperSize,
+  appName = DEFAULT_APP_NAME,
+  macroTemplateLocation,
+}: ScheduleReportInput): Promise<void> => {
   const params = buildReportParams(
     reportName,
     reportFormat,

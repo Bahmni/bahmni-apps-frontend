@@ -107,6 +107,13 @@ export const ReportsTable = React.memo<ReportsTableProps>(
               const isCustomExcel = filters.format === 'CUSTOM EXCEL';
               const hasPreconfiguredTemplate =
                 !!report.config?.macroTemplatePath;
+              let templateFilenameStatus: 'uploading' | 'complete' | 'edit' =
+                'edit';
+              if (isUploadingTemplate(report.id)) {
+                templateFilenameStatus = 'uploading';
+              } else if (filters.templateLocation) {
+                templateFilenameStatus = 'complete';
+              }
 
               return (
                 <tr key={report.id}>
@@ -204,19 +211,13 @@ export const ReportsTable = React.memo<ReportsTableProps>(
                             'REPORTS_UPLOAD_TEMPLATE_BUTTON_LABEL',
                           )}
                           labelTitle={t('REPORTS_UPLOAD_TEMPLATE_LABEL')}
-                          filenameStatus={
-                            isUploadingTemplate(report.id)
-                              ? 'uploading'
-                              : filters.templateLocation
-                                ? 'complete'
-                                : 'edit'
-                          }
+                          filenameStatus={templateFilenameStatus}
                           onChange={(event, data) => {
                             const file =
                               data?.addedFiles?.[0]?.file ??
                               event?.target?.files?.[0];
                             if (file) {
-                              handleTemplateUpload(report, file);
+                              void handleTemplateUpload(report, file);
                             }
                           }}
                         />

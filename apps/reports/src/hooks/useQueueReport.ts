@@ -29,16 +29,15 @@ export const useQueueReport = () => {
       }
 
       try {
-        await scheduleReport(
-          report.name,
-          format,
-          user.username,
+        await scheduleReport({
+          reportName: report.name,
+          reportFormat: format,
+          userName: user.username,
           startDate,
           endDate,
-          report.config?.paperSize ?? defaultPaperSize,
-          undefined,
+          paperSize: report.config?.paperSize ?? defaultPaperSize,
           macroTemplateLocation,
-        );
+        });
 
         dispatchReportAuditEvent(
           AUDIT_LOG_EVENT_DETAILS.RUN_REPORT,
