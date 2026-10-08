@@ -1,10 +1,13 @@
 import { QueryClient } from '@tanstack/react-query';
 import {
   capitalize,
+  encodeValue,
+  decodeValue,
   generateId,
   generateUUID,
   getCookieByName,
   deleteCookie,
+  downloadBlob,
   isStringEmpty,
   getPriorityByOrder,
   groupByDate,
@@ -933,6 +936,45 @@ describe('common utility functions', () => {
     });
   });
 
+  describe('downloadBlob', () => {
+    const originalCreate = URL.createObjectURL;
+    const originalRevoke = URL.revokeObjectURL;
+
+    beforeEach(() => {
+      jest.useFakeTimers();
+      URL.createObjectURL = jest.fn(() => 'blob:mock-url');
+      URL.revokeObjectURL = jest.fn();
+    });
+
+    afterEach(() => {
+      jest.useRealTimers();
+      URL.createObjectURL = originalCreate;
+      URL.revokeObjectURL = originalRevoke;
+    });
+
+    it('clicks a temporary anchor with the filename and revokes the url after the click', () => {
+      const clickSpy = jest
+        .spyOn(HTMLAnchorElement.prototype, 'click')
+        .mockImplementation(function (this: HTMLAnchorElement) {
+          expect(this.download).toBe('Vital signs.zip');
+          expect(this.href).toBe('blob:mock-url');
+        });
+      const blob = new Blob(['zip-bytes']);
+
+      downloadBlob(blob, 'Vital signs.zip');
+
+      expect(URL.createObjectURL).toHaveBeenCalledWith(blob);
+      expect(clickSpy).toHaveBeenCalledTimes(1);
+      expect(document.querySelector('a[download]')).toBeNull();
+      expect(URL.revokeObjectURL).not.toHaveBeenCalled();
+
+      jest.runAllTimers();
+
+      expect(URL.revokeObjectURL).toHaveBeenCalledWith('blob:mock-url');
+      clickSpy.mockRestore();
+    });
+  });
+
   describe('formatUrl', () => {
     const original = window.location;
 
@@ -1410,5 +1452,24 @@ describe('formatCountry', () => {
     },
   ])('$label', ({ value, t, expected }) => {
     expect(formatCountry(value, t)).toBe(expected);
+  });
+});
+
+describe('Encode / Decode', () => {
+  it.each(['plain', '', 'José', '日本語 ✓', '{"a":"b"}'])(
+    'round-trips %p',
+    (value) => {
+      expect(decodeValue(encodeValue(value))).toBe(value);
+    },
+  );
+
+  it('matches standard base64 for ASCII', () => {
+    expect(encodeValue('hello')).toBe('aGVsbG8=');
+  });
+
+  it('keeps non-Latin-1 text decodable by other base64 tools', () => {
+    expect(Buffer.from(encodeValue('José'), 'base64').toString('utf8')).toBe(
+      'José',
+    );
   });
 });

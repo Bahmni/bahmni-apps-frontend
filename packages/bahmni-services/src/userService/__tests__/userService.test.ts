@@ -9,7 +9,9 @@ import {
   AVAILABLE_LOCATIONS_URL,
   APP_SETTINGS_URL,
   SAVE_USER_LOCATION_URL,
+  USER_PROPERTIES_URL,
   UPDATE_SESSION_LOCATION_URL,
+  RECENT_COMMON_SEARCH_CRITERIA_KEY,
 } from '../constants';
 import {
   getCurrentUser,
@@ -18,6 +20,11 @@ import {
   getAvailableLocations,
   saveUserLocation,
   updateSessionLocation,
+  encodeSearchCriteria,
+  decodeSearchCriteria,
+  saveRecentSearchCriteria,
+  clearRecentSearchCriteria,
+  getRecentSearchCriteria,
 } from '../userService';
 
 jest.mock('../../api');
@@ -350,6 +357,7 @@ describe('saveUserLocation', () => {
   });
 
   it('should post location to the correct URL', async () => {
+    (get as jest.Mock).mockResolvedValue({ userProperties: {} });
     (post as jest.Mock).mockResolvedValue({});
 
     await saveUserLocation('user-uuid-123', {
@@ -359,6 +367,29 @@ describe('saveUserLocation', () => {
 
     expect(post).toHaveBeenCalledWith(SAVE_USER_LOCATION_URL('user-uuid-123'), {
       userProperties: { loginLocation: 'loc-uuid-456' },
+    });
+  });
+
+  it('should keep other user properties such as the saved search', async () => {
+    (get as jest.Mock).mockResolvedValue({
+      userProperties: {
+        recentCommonSearchCriteria: 'abc',
+        loginLocation: 'old',
+      },
+    });
+    (post as jest.Mock).mockResolvedValue({});
+
+    await saveUserLocation('user-uuid-123', {
+      name: 'ICU',
+      uuid: 'loc-uuid-456',
+    });
+
+    expect(get).toHaveBeenCalledWith(USER_PROPERTIES_URL('user-uuid-123'));
+    expect(post).toHaveBeenCalledWith(SAVE_USER_LOCATION_URL('user-uuid-123'), {
+      userProperties: {
+        recentCommonSearchCriteria: 'abc',
+        loginLocation: 'loc-uuid-456',
+      },
     });
   });
 });
@@ -385,5 +416,88 @@ describe('updateSessionLocation', () => {
     await expect(updateSessionLocation('loc-uuid-456')).rejects.toThrow(
       'Network error',
     );
+  });
+});
+
+describe('recent search criteria', () => {
+  const criteria = {
+    version: 1 as const,
+    savedAt: '2026-10-01T00:00:00.000Z',
+    payload: {
+      entity: 'patient',
+      criteria: {
+        operator: 'AND',
+        conditions: [{ field: 'name', comparator: 'eq', value: 'José' }],
+      },
+    },
+  };
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+    (post as jest.Mock).mockReset();
+    (get as jest.Mock).mockResolvedValue({
+      userProperties: { loginLocation: 'loc-1' },
+    });
+  });
+
+  it('round-trips encode and decode, including non-ASCII', () => {
+    expect(decodeSearchCriteria(encodeSearchCriteria(criteria))).toEqual(
+      criteria,
+    );
+  });
+
+  it.each([
+    undefined,
+    '',
+    'not-base64!!',
+    btoa('not json'),
+    btoa('{"version":2}'),
+  ])('returns null when decoding %p', (value) => {
+    expect(decodeSearchCriteria(value)).toBeNull();
+  });
+
+  it('saves encoded criteria under the user property', async () => {
+    (post as jest.Mock).mockResolvedValue({});
+
+    await saveRecentSearchCriteria('user-uuid-123', criteria.payload);
+
+    expect(post).toHaveBeenCalledWith(SAVE_USER_LOCATION_URL('user-uuid-123'), {
+      userProperties: {
+        loginLocation: 'loc-1',
+        [RECENT_COMMON_SEARCH_CRITERIA_KEY]: expect.any(String),
+      },
+    });
+    const body = (post as jest.Mock).mock.calls[0][1];
+    const decoded = decodeSearchCriteria(
+      body.userProperties[RECENT_COMMON_SEARCH_CRITERIA_KEY],
+    );
+    expect(decoded?.payload).toEqual(criteria.payload);
+    expect(decoded?.version).toBe(1);
+  });
+
+  it('clears by posting an empty value', async () => {
+    (post as jest.Mock).mockResolvedValue({});
+
+    await clearRecentSearchCriteria('user-uuid-123');
+
+    expect(post).toHaveBeenCalledWith(SAVE_USER_LOCATION_URL('user-uuid-123'), {
+      userProperties: {
+        loginLocation: 'loc-1',
+        [RECENT_COMMON_SEARCH_CRITERIA_KEY]: '',
+      },
+    });
+  });
+
+  it('reads criteria from a user, or null when absent', () => {
+    const user = { display: 'd', username: 'u', uuid: 'x' };
+    expect(getRecentSearchCriteria(user)).toBeNull();
+    expect(
+      getRecentSearchCriteria({
+        ...user,
+        userProperties: {
+          [RECENT_COMMON_SEARCH_CRITERIA_KEY]: encodeSearchCriteria(criteria),
+        },
+      }),
+    ).toEqual(criteria);
   });
 });
