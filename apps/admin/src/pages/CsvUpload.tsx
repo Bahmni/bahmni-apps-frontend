@@ -132,7 +132,7 @@ export const CsvUpload: React.FC = () => {
               onChange={handleFilesSelected}
             />
           </div>
-          {uploadState && (
+          {uploadState?.showProgress && (
             <ProgressBar
               testId="admin-csv-upload-progress"
               className={styles.progress}

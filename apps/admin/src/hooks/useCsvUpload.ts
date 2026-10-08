@@ -2,6 +2,7 @@ import { ImportType, uploadImportFile } from '@bahmni/services';
 import { useNotification } from '@bahmni/widgets';
 import { useQueryClient } from '@tanstack/react-query';
 import { useCallback, useState } from 'react';
+import { PROGRESS_INDICATOR_MIN_FILE_SIZE_BYTES } from '../constants/app';
 import { IMPORTED_ITEMS_QUERY_KEY } from './useImportedItems';
 
 // Legacy sent this from the bahmni.admin.csv extension params; the default config leaves it empty.
@@ -12,6 +13,7 @@ export interface UploadState {
   fileIndex: number;
   fileCount: number;
   percent: number;
+  showProgress: boolean;
 }
 
 interface UseCsvUploadOptions {
@@ -40,6 +42,7 @@ export const useCsvUpload = ({
           fileIndex: index + 1,
           fileCount: files.length,
           percent: 0,
+          showProgress: file.size > PROGRESS_INDICATOR_MIN_FILE_SIZE_BYTES,
         });
         try {
           await uploadImportFile(

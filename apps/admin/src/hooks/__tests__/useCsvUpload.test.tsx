@@ -2,6 +2,7 @@ import { uploadImportFile } from '@bahmni/services';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { act, renderHook } from '@testing-library/react';
 import React from 'react';
+import { PROGRESS_INDICATOR_MIN_FILE_SIZE_BYTES } from '../../constants/app';
 import { useCsvUpload } from '../useCsvUpload';
 import { IMPORTED_ITEMS_QUERY_KEY } from '../useImportedItems';
 
@@ -17,6 +18,14 @@ const mockUpload = uploadImportFile as jest.MockedFunction<
   typeof uploadImportFile
 >;
 const importType = { key: 'concept', labelKey: 'K', url: '/upload/concept' };
+
+const largeFile = (name: string) => {
+  const file = new File(['x'], name);
+  Object.defineProperty(file, 'size', {
+    value: PROGRESS_INDICATOR_MIN_FILE_SIZE_BYTES + 1,
+  });
+  return file;
+};
 
 const setup = () => {
   const queryClient = new QueryClient();
@@ -104,7 +113,7 @@ describe('useCsvUpload', () => {
 
     let done: Promise<void> = Promise.resolve();
     act(() => {
-      done = result.current.upload([new File(['x'], 'big.csv')], importType);
+      done = result.current.upload([largeFile('big.csv')], importType);
     });
 
     expect(result.current.uploadState).toEqual({
@@ -112,6 +121,7 @@ describe('useCsvUpload', () => {
       fileIndex: 1,
       fileCount: 1,
       percent: 25,
+      showProgress: true,
     });
     expect(result.current.isUploading).toBe(true);
 
@@ -120,5 +130,17 @@ describe('useCsvUpload', () => {
       await done;
     });
     expect(result.current.uploadState).toBeNull();
+  });
+
+  it('does not flag progress for files of 50MB or less', () => {
+    mockUpload.mockImplementation(() => new Promise<void>(() => undefined));
+    const { result } = setup();
+
+    act(() => {
+      void result.current.upload([new File(['x'], 'small.csv')], importType);
+    });
+
+    expect(result.current.uploadState?.showProgress).toBe(false);
+    expect(result.current.isUploading).toBe(true);
   });
 });

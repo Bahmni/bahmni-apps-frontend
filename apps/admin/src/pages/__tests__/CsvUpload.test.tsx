@@ -126,11 +126,28 @@ describe('CsvUpload', () => {
       fileIndex: 2,
       fileCount: 3,
       percent: 40,
+      showProgress: true,
     });
     render(<CsvUpload />);
 
     expect(screen.getByText('Uploading big.csv (2 of 3)')).toBeInTheDocument();
     expect(screen.getByText('40%')).toBeInTheDocument();
+    expect(screen.getByTestId('admin-csv-upload-button')).toBeDisabled();
+  });
+
+  it('hides progress but still locks the controls for small files', () => {
+    setHooks([], {
+      fileName: 'small.csv',
+      fileIndex: 1,
+      fileCount: 1,
+      percent: 40,
+      showProgress: false,
+    });
+    render(<CsvUpload />);
+
+    expect(
+      screen.queryByTestId('admin-csv-upload-progress'),
+    ).not.toBeInTheDocument();
     expect(screen.getByTestId('admin-csv-upload-button')).toBeDisabled();
   });
 
