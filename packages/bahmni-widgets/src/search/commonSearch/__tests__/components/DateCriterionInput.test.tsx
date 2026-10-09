@@ -41,6 +41,37 @@ const setFlatpickrDate = (labelText: string, date: Date | null) => {
 describe('DateCriterionInput', () => {
   beforeEach(() => jest.clearAllMocks());
 
+  describe('retained values', () => {
+    // Midday keeps the local calendar day stable across timezones
+    const retainedFrom = '2026-10-01T12:00:00.000+0000';
+    const retainedTo = '2026-10-09T12:00:00.000+0000';
+
+    beforeEach(() => localStorage.setItem('default_dateFormat', 'dd/MM/yyyy'));
+    afterEach(() => localStorage.removeItem('default_dateFormat'));
+
+    it('displays a retained single date instead of misparsing the ISO string', () => {
+      renderInput(mockDateInput, {
+        from: { value: retainedFrom, comparator: null },
+      });
+      expect(
+        screen.getByLabelText('COMMON_SEARCH_CRITERION_LABEL'),
+      ).toHaveValue('01/10/2026');
+    });
+
+    it('displays retained from and to dates in range mode', () => {
+      renderInput(mockRangeDateInput, {
+        from: { value: retainedFrom, comparator: null },
+        to: { value: retainedTo, comparator: null },
+      });
+      expect(
+        screen.getByLabelText('COMMON_SEARCH_CRITERIA_DATE_INPUT_FIELD_FROM'),
+      ).toHaveValue('01/10/2026');
+      expect(
+        screen.getByLabelText('COMMON_SEARCH_CRITERIA_DATE_INPUT_FIELD_TO'),
+      ).toHaveValue('09/10/2026');
+    });
+  });
+
   describe('single mode', () => {
     it('renders one date input with COMMON_SEARCH_CRITERION_LABEL label', () => {
       renderInput();
