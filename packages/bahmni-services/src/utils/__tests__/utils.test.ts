@@ -1323,7 +1323,6 @@ describe('common utility functions', () => {
         scenario: 'isError is true',
         isLoading: false,
         isError: true,
-        testItems: items,
         expectedMessage: 'Failed to load',
       },
       {
@@ -1348,6 +1347,19 @@ describe('common utility functions', () => {
         ]);
       },
     );
+
+    it('should return a single disabled sentinel item when items is empty', () => {
+      const result = resolveComboBoxItems(
+        false,
+        false,
+        [],
+        toSentinel,
+        messages,
+      );
+      expect(result).toEqual([
+        { uuid: '', name: 'No items found', disabled: true },
+      ]);
+    });
 
     it('should return the original items when not loading, not errored, and items exist', () => {
       const result = resolveComboBoxItems(
