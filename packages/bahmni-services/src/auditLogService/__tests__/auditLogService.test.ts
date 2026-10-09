@@ -1,8 +1,8 @@
-import { post } from '../../api';
+import { get, post } from '../../api';
 import { isAuditLogEnabled } from '../../applicationConfigService';
-import { logAuditEvent } from '../auditLogService';
+import { fetchAuditLogs, logAuditEvent } from '../auditLogService';
 import { MODULE_LABELS, AUDIT_LOG_URL } from '../constants';
-import { AuditEventType } from '../models';
+import { AuditEventType, RawAuditLogEntry } from '../models';
 
 // Mock dependencies
 jest.mock('../../applicationConfigService');
@@ -12,9 +12,16 @@ const mockIsAuditLogEnabled = isAuditLogEnabled as jest.MockedFunction<
   typeof isAuditLogEnabled
 >;
 const mockPost = post as jest.MockedFunction<typeof post>;
+const mockGet = get as jest.MockedFunction<typeof get>;
+
+const TRANSLATIONS: Record<string, string> = {
+  VIEWED_CLINICAL_DASHBOARD_MESSAGE: 'Viewed clinical dashboard',
+  EDIT_ENCOUNTER_MESSAGE: 'Edited encounter',
+  VIEWED_RADIOLOGY_RESULTS_MESSAGE: 'Viewed radiology results',
+};
 
 jest.mock('i18next', () => ({
-  t: (key: string) => key,
+  t: (key: string) => TRANSLATIONS[key] ?? key,
 }));
 
 describe('auditLogService', () => {
@@ -48,7 +55,7 @@ describe('auditLogService', () => {
       expect(mockPost).toHaveBeenCalledWith(AUDIT_LOG_URL, {
         patientUuid: 'patient-456',
         eventType: 'VIEWED_CLINICAL_DASHBOARD',
-        message: 'VIEWED_CLINICAL_DASHBOARD_MESSAGE',
+        message: 'Viewed clinical dashboard',
         module: MODULE_LABELS.CLINICAL,
       });
     });
@@ -71,9 +78,23 @@ describe('auditLogService', () => {
       expect(mockPost).toHaveBeenCalledWith(AUDIT_LOG_URL, {
         patientUuid: 'patient-789',
         eventType: 'EDIT_ENCOUNTER',
-        message: `EDIT_ENCOUNTER_MESSAGE~${JSON.stringify(messageParams)}`,
+        message: `Edited encounter~${JSON.stringify(messageParams)}`,
         module: MODULE_LABELS.CLINICAL,
       });
+    });
+
+    it('should send the translated message instead of the raw i18n key', async () => {
+      mockIsAuditLogEnabled.mockResolvedValue(true);
+      mockPost.mockResolvedValue({});
+
+      await logAuditEvent('patient-radiology', 'VIEWED_RADIOLOGY_RESULTS');
+
+      expect(mockPost).toHaveBeenCalledWith(
+        AUDIT_LOG_URL,
+        expect.objectContaining({ message: 'Viewed radiology results' }),
+      );
+      const postedMessage = mockPost.mock.calls[0][1].message;
+      expect(postedMessage).not.toContain('_MESSAGE');
     });
 
     it('should handle unknown event types', async () => {
@@ -106,7 +127,7 @@ describe('auditLogService', () => {
       expect(mockPost).toHaveBeenCalledWith(AUDIT_LOG_URL, {
         patientUuid: 'patient-custom',
         eventType: 'VIEWED_CLINICAL_DASHBOARD',
-        message: 'VIEWED_CLINICAL_DASHBOARD_MESSAGE',
+        message: 'Viewed clinical dashboard',
         module: 'CUSTOM_MODULE',
       });
     });
@@ -125,9 +146,50 @@ describe('auditLogService', () => {
       expect(mockPost).toHaveBeenCalledWith(AUDIT_LOG_URL, {
         patientUuid: 'patient-undefined-params',
         eventType: 'VIEWED_CLINICAL_DASHBOARD',
-        message: 'VIEWED_CLINICAL_DASHBOARD_MESSAGE',
+        message: 'Viewed clinical dashboard',
         module: MODULE_LABELS.CLINICAL,
       });
+    });
+  });
+
+  describe('fetchAuditLogs', () => {
+    it('calls GET with the audit log URL and cleaned params', async () => {
+      const rawLogs: RawAuditLogEntry[] = [
+        {
+          auditLogId: 1,
+          dateCreated: '2024-01-01T00:00:00.000Z',
+          eventType: 'OPEN_VISIT',
+          userId: 'superman',
+          patientId: 'PID-1',
+          message: 'Opened a visit',
+          module: 'MODULE_LABEL_REGISTRATION_KEY',
+        },
+      ];
+      mockGet.mockResolvedValue(rawLogs);
+
+      const result = await fetchAuditLogs({
+        username: 'superman',
+        patientId: '',
+        startFrom: '2024-01-01',
+        defaultView: true,
+      });
+
+      expect(mockGet).toHaveBeenCalledWith(AUDIT_LOG_URL, {
+        params: {
+          username: 'superman',
+          startFrom: '2024-01-01',
+          defaultView: true,
+        },
+      });
+      expect(result).toEqual(rawLogs);
+    });
+
+    it('defaults to an empty params object when no filters are set', async () => {
+      mockGet.mockResolvedValue([]);
+
+      await fetchAuditLogs({});
+
+      expect(mockGet).toHaveBeenCalledWith(AUDIT_LOG_URL, { params: {} });
     });
   });
 });

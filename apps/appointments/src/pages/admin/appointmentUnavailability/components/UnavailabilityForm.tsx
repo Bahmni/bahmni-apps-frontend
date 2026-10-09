@@ -267,7 +267,6 @@ const UnavailabilityForm: React.FC<UnavailabilityFormProps> = ({
             invalidText={errors.startTime}
             placeholder="hh:mm"
             pattern="(1[012]|[0-9]):[0-5][0-9]"
-            use24HourFormat={false}
             className={styles.timePicker}
           >
             <TimePickerSelect
@@ -332,7 +331,6 @@ const UnavailabilityForm: React.FC<UnavailabilityFormProps> = ({
             invalidText={errors.dateTime ?? errors.endTime}
             placeholder="hh:mm"
             pattern="(1[012]|[0-9]):[0-5][0-9]"
-            use24HourFormat={false}
             className={styles.timePicker}
           >
             <TimePickerSelect

@@ -60,9 +60,13 @@ export const patch = async <T = unknown, D = unknown>(
 /**
  * HTTP DELETE request
  * @param url - The URL to send the DELETE request to
+ * @param options - Optional Axios request config
  * @returns Promise resolving to the response data
  */
-export const del = async <T = unknown>(url: string): Promise<T> => {
-  const response: AxiosResponse<T> = await client.delete(url);
+export const del = async <T = unknown>(
+  url: string,
+  options?: AxiosRequestConfig,
+): Promise<T> => {
+  const response: AxiosResponse<T> = await client.delete(url, options);
   return response.data;
 };

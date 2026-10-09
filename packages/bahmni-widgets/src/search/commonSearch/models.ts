@@ -1,3 +1,5 @@
+import type { RecentSearchCriteria } from '@bahmni/services';
+
 export type Comparator = 'eq' | 'ne' | 'gt' | 'lt' | 'ge' | 'le';
 
 export interface FieldConfig {
@@ -205,3 +207,5 @@ export interface SearchPage {
   nextCursor: string | null;
   prevCursor: string | null;
 }
+
+export type RecentCommonSearch = RecentSearchCriteria<SearchConditionGroup>;

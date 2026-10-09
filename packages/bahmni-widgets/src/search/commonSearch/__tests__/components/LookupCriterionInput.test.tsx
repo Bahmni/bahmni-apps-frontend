@@ -196,4 +196,24 @@ describe('LookupCriterionInput', () => {
       screen.queryByRole('option', { name: 'HIV Program' }),
     ).not.toBeInTheDocument();
   });
+
+  it('clears a restored value that is not available for the current location', async () => {
+    mockGetAllAppointmentServices.mockResolvedValue(mockAppointmentServices);
+    renderInput({ value: 'service-from-another-location' });
+
+    await waitFor(() => expect(mockOnChange).toHaveBeenCalledWith(null));
+  });
+
+  it('keeps a restored value that is available for the current location', async () => {
+    mockGetAllAppointmentServices.mockResolvedValue(mockAppointmentServices);
+    renderInput({ value: 'service-uuid-1' });
+
+    await waitFor(() =>
+      expect(mockGetAllAppointmentServices).toHaveBeenCalled(),
+    );
+    await waitFor(() =>
+      expect(screen.getByRole('combobox')).toHaveValue('TB Program'),
+    );
+    expect(mockOnChange).not.toHaveBeenCalledWith(null);
+  });
 });

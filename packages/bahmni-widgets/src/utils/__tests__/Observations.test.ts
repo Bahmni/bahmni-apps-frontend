@@ -9,6 +9,7 @@ import {
   sortObservationsByControlOrder,
   groupMultiSelectObservations,
   transformObservations,
+  deriveFormSchemaData,
 } from '../Observations';
 
 describe('Observations Utils', () => {
@@ -1044,6 +1045,67 @@ describe('Observations Utils', () => {
       expect(members[0].display).toBe('Systolic');
       expect(members[1].display).toBe('Diastolic');
       expect(members[2].display).toBe('Body position');
+    });
+  });
+
+  describe('form schema derivation (View mode <-> Add/Update mode parity)', () => {
+    const schemaWithSections = {
+      controls: [
+        {
+          id: 100,
+          type: 'section',
+          label: { value: 'Vitals' },
+          controls: [
+            { id: 1, concept: { uuid: 'concept-1', datatype: 'Numeric' } },
+            { id: 2, concept: { uuid: 'concept-2', datatype: 'Datetime' } },
+          ],
+        },
+        { id: 3, concept: { uuid: 'concept-3', datatype: 'Text' } },
+      ],
+    };
+
+    describe('deriveFormSchemaData', () => {
+      it('collects control ids in schema (Add/Update display) order, including nested ones', () => {
+        expect(deriveFormSchemaData(schemaWithSections).controlOrder).toEqual([
+          '100',
+          '1',
+          '2',
+          '3',
+        ]);
+      });
+
+      it('maps each leaf control id to its enclosing section label, excluding controls not nested under a section', () => {
+        expect(deriveFormSchemaData(schemaWithSections).sectionMap).toEqual({
+          '1': 'Vitals',
+          '2': 'Vitals',
+        });
+      });
+
+      it('maps each control concept uuid to its datatype, including nested ones', () => {
+        expect(
+          deriveFormSchemaData(schemaWithSections).conceptDatatypeMap,
+        ).toEqual({
+          'concept-1': 'Numeric',
+          'concept-2': 'Datetime',
+          'concept-3': 'Text',
+        });
+      });
+
+      it('returns undefined fields when the schema has no controls', () => {
+        expect(deriveFormSchemaData({ controls: [] })).toEqual({
+          controlOrder: undefined,
+          sectionMap: undefined,
+          conceptDatatypeMap: undefined,
+        });
+      });
+
+      it('returns undefined fields when the schema itself is undefined', () => {
+        expect(deriveFormSchemaData(undefined)).toEqual({
+          controlOrder: undefined,
+          sectionMap: undefined,
+          conceptDatatypeMap: undefined,
+        });
+      });
     });
   });
 });
