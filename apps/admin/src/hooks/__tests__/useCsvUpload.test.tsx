@@ -45,7 +45,12 @@ const setup = () => {
 };
 
 describe('useCsvUpload', () => {
-  beforeEach(() => jest.clearAllMocks());
+  beforeEach(() => {
+    jest.clearAllMocks();
+    // The hook logs failed uploads via console.error; silence it so it doesn't
+    // trip jest's console reporter.
+    jest.spyOn(console, 'error').mockImplementation(() => {});
+  });
 
   it('uploads files one at a time and reloads history once at the end', async () => {
     const order: string[] = [];
@@ -142,5 +147,17 @@ describe('useCsvUpload', () => {
 
     expect(result.current.uploadState?.showProgress).toBe(false);
     expect(result.current.isUploading).toBe(true);
+  });
+
+  it('does not notify when every file fails, but still reloads history once', async () => {
+    mockUpload.mockRejectedValue(new Error('500'));
+    const { result, invalidate } = setup();
+    const files = ['a.csv', 'b.csv'].map((n) => new File(['x'], n));
+
+    await act(() => result.current.upload(files, importType));
+
+    expect(mockUpload).toHaveBeenCalledTimes(2);
+    expect(mockAddNotification).not.toHaveBeenCalled();
+    expect(invalidate).toHaveBeenCalledTimes(1);
   });
 });

@@ -22,7 +22,18 @@ const item = (overrides: Partial<ImportedItem>): ImportedItem => ({
 describe('adminImportService utils', () => {
   it('flags an error only when records failed', () => {
     expect(hasImportError(item({ failedRecords: 0 }))).toBe(false);
-    expect(hasImportError(item({ failedRecords: 2 }))).toBe(true);
+    expect(
+      hasImportError(item({ failedRecords: 2, errorFileName: 'err.csv' })),
+    ).toBe(true);
+  });
+
+  it('does not flag an error when records failed but no error file exists', () => {
+    expect(
+      hasImportError(item({ failedRecords: 2, errorFileName: null })),
+    ).toBe(false);
+    expect(
+      hasImportError(item({ failedRecords: 2, errorFileName: 'err.csv' })),
+    ).toBe(true);
   });
 
   it('builds the error file URL under /uploaded-files/mrs', () => {

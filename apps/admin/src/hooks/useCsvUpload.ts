@@ -25,6 +25,11 @@ interface UseCsvUploadOptions {
  * Uploads files one at a time, as the legacy queue did. The notification only says the
  * upload request went through; the import outcome is shown in the history table. A failed file does not
  * stop the rest, and the history reloads once after the last file finishes.
+ *
+ * Unlike other data-mutation hooks (e.g. `useCreatePatient`), this hook receives the
+ * notification title/message as pre-translated strings rather than calling
+ * `useTranslation()` internally. The caller owns i18n so the hook stays
+ * translation-agnostic and easier to test without an i18n provider.
  */
 export const useCsvUpload = ({
   notificationTitle,
@@ -51,7 +56,7 @@ export const useCsvUpload = ({
             PATIENT_MATCHING_ALGORITHM,
             ({ loaded, total }) => {
               if (!total) return;
-              const percent = Math.round((loaded / total) * 100);
+              const percent = Math.min(100, Math.round((loaded / total) * 100));
               setUploadState((prev) => (prev ? { ...prev, percent } : prev));
             },
           );
@@ -61,8 +66,11 @@ export const useCsvUpload = ({
             type: 'success',
             timeout: 5000,
           });
-        } catch {
+        } catch (error) {
           // Legacy shows nothing for a failed request; the history table reports the outcome.
+          // Log it so a pure network failure (never reaching the server) still leaves a trace.
+          // eslint-disable-next-line no-console
+          console.error('CSV upload failed', file.name, error);
         }
       }
       setUploadState(null);

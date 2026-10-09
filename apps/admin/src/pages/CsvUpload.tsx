@@ -25,6 +25,9 @@ import styles from './styles/CsvUpload.module.scss';
 
 const DATE_TIME_FORMAT = 'dd MMM yyyy h:mm aaa';
 
+// Hoisted so the dropdown items array isn't reallocated on every render.
+const IMPORT_TYPE_OPTIONS: ImportType[] = [...IMPORT_TYPES];
+
 export const CsvUpload: React.FC = () => {
   const { t } = useTranslation();
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -69,10 +72,12 @@ export const CsvUpload: React.FC = () => {
               {t('ADMIN_CSV_ERROR_FILE_LINK')}
             </Link>
           ) : null;
+        case 'originalFileName':
+          return item.originalFileName;
+        case 'status':
+          return item.status;
         default:
-          return (item as unknown as Record<string, React.ReactNode>)[
-            columnKey
-          ];
+          return null;
       }
     },
     [t],
@@ -105,7 +110,7 @@ export const CsvUpload: React.FC = () => {
               titleText={t('ADMIN_CSV_FILE_TYPE_LABEL')}
               hideLabel
               label={t('ADMIN_CSV_FILE_TYPE_LABEL')}
-              items={[...IMPORT_TYPES]}
+              items={IMPORT_TYPE_OPTIONS}
               itemToString={(item: ImportType | null) =>
                 item ? t(item.labelKey) : ''
               }
@@ -126,6 +131,7 @@ export const CsvUpload: React.FC = () => {
             <input
               ref={fileInputRef}
               type="file"
+              accept=".csv,text/csv"
               multiple
               hidden
               data-testid="admin-csv-file-input"

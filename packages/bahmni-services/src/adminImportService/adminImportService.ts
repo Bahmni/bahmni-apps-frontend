@@ -1,5 +1,4 @@
-import { get } from '../api';
-import client from '../api/client';
+import { get, post } from '../api';
 import { ADMIN_IMPORT_STATUS_URL } from './constants';
 import { ImportedItem, UploadProgress } from './models';
 
@@ -13,6 +12,10 @@ export const getImportedItems = async (): Promise<ImportedItem[]> => {
 /**
  * Uploads one CSV file as multipart form data.
  * Field order matches the legacy page: patientMatchingAlgorithm, then file.
+ *
+ * Unlike `documentUploadService.uploadDocument` (which posts base64 JSON), this
+ * posts raw `FormData` because the admin import endpoints expect a multipart
+ * upload, matching the legacy AngularJS page's contract.
  */
 export const uploadImportFile = async (
   url: string,
@@ -23,7 +26,11 @@ export const uploadImportFile = async (
   const formData = new FormData();
   formData.append('patientMatchingAlgorithm', patientMatchingAlgorithm);
   formData.append('file', file);
-  await client.post(url, formData, {
+  await post(url, formData, {
+    // Explicitly set multipart/form-data. The shared axios client defaults
+    // `Content-Type` to `application/json`, and axios's transformRequest
+    // JSON-serializes a FormData body when it sees that content type, which
+    // would break the multipart upload (backend returns 500).
     headers: { 'Content-Type': 'multipart/form-data' },
     onUploadProgress: (event) =>
       onUploadProgress?.({ loaded: event.loaded, total: event.total }),

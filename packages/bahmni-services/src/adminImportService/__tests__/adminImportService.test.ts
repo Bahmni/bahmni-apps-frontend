@@ -1,16 +1,12 @@
-import { get } from '../../api';
-import client from '../../api/client';
+import { AxiosProgressEvent } from 'axios';
+import { get, post } from '../../api';
 import { getImportedItems, uploadImportFile } from '../adminImportService';
 import { ADMIN_IMPORT_STATUS_URL, IMPORT_TYPES } from '../constants';
 
 jest.mock('../../api');
-jest.mock('../../api/client', () => ({
-  __esModule: true,
-  default: { post: jest.fn() },
-}));
 
 const mockGet = get as jest.MockedFunction<typeof get>;
-const mockPost = client.post as jest.Mock;
+const mockPost = post as jest.MockedFunction<typeof post>;
 
 describe('adminImportService', () => {
   beforeEach(() => jest.clearAllMocks());
@@ -56,7 +52,10 @@ describe('adminImportService', () => {
     it('reports upload progress', async () => {
       const onProgress = jest.fn();
       mockPost.mockImplementation(async (_u, _b, config) => {
-        config.onUploadProgress({ loaded: 5, total: 10 });
+        config?.onUploadProgress?.({
+          loaded: 5,
+          total: 10,
+        } as AxiosProgressEvent);
       });
 
       await uploadImportFile('/u', new File(['x'], 'a.csv'), '', onProgress);

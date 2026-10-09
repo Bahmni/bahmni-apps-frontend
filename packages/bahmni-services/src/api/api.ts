@@ -19,13 +19,15 @@ export const get = async <T = unknown>(
  * HTTP POST request
  * @param url - The URL to send the POST request to
  * @param data - The data to send in the request body
+ * @param options - Optional Axios request config
  * @returns Promise resolving to the response data
  */
 export const post = async <T = unknown, D = unknown>(
   url: string,
   data: D,
+  options?: AxiosRequestConfig,
 ): Promise<T> => {
-  const response: AxiosResponse<T> = await client.post(url, data);
+  const response: AxiosResponse<T> = await client.post(url, data, options);
   return response.data;
 };
 
