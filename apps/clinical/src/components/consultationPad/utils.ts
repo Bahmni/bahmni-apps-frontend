@@ -86,6 +86,36 @@ export function getActiveEntries(
   });
 }
 
+/**
+ * Splits the active entries into those that submit directly (REST) and
+ * those that go through the encounter bundle. An entry may do both:
+ * controls that can only save part of their data through the bundle
+ * (allergies) declare hasBundleData() to say whether the bundle flow is
+ * still needed. hasBundleData() may be async (e.g. allergies awaits its
+ * install-specific concept uuid before deciding), so this resolves before
+ * createBundleEntries runs.
+ */
+export async function resolveSubmissionEntries(
+  activeEntries: InputControl[],
+): Promise<{
+  directSubmitEntries: InputControl[];
+  bundleEntries: InputControl[];
+}> {
+  const directSubmitEntries = activeEntries.filter(
+    (entry) => entry.hasData() && entry.onDirectSubmit,
+  );
+
+  const bundleEntries: InputControl[] = [];
+  for (const entry of activeEntries) {
+    const includesInBundle =
+      entry.hasData() &&
+      (!entry.onDirectSubmit || (await entry.hasBundleData?.()));
+    if (includesInBundle) bundleEntries.push(entry);
+  }
+
+  return { directSubmitEntries, bundleEntries };
+}
+
 export function captureUpdatedResources(entries: InputControl[]) {
   const serviceRequests: Record<string, boolean> = {};
   useServiceRequestStore

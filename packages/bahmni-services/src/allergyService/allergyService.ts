@@ -1,12 +1,23 @@
 import type { AllergyIntolerance, Bundle, Coding, ValueSet } from 'fhir/r4';
-import { get } from '../api';
+import { get, post } from '../api';
+import { APP_PROPERTY_URL } from '../applicationConfigService/constants';
 import { searchFHIRConcepts } from '../conceptService';
 import {
   PATIENT_ALLERGY_RESOURCE_URL,
+  PATIENT_ALLERGY_SAVE_URL,
   ALLERGEN_TYPES,
   ALLERGY_REACTION,
+  ALLERGY_SEVERITY_GLOBAL_PROPERTY,
+  OTHER_NON_CODED_ALLERGEN_GLOBAL_PROPERTY,
 } from './constants';
-import { AllergenConcept, AllergenType, FormattedAllergy } from './models';
+import {
+  AllergenConcept,
+  AllergenType,
+  FormattedAllergy,
+  SaveAllergyRequest,
+  SaveAllergyResponse,
+} from './models';
+import { setOtherNonCodedAllergenUuid } from './utils';
 
 /**
  * Extended Coding interface to include inactive property
@@ -150,12 +161,15 @@ export function formatAllergies(
       allergy.clinicalStatus?.coding?.[0]?.display ?? 'Unknown';
     const allergySeverity = allergy.reaction?.[0]?.severity ?? 'Unknown';
 
-    // Extract concept code from allergy.code.coding, fallback to resource id
-    const conceptCode =
-      allergy.code?.coding?.[0]?.code ?? allergy.id ?? 'unknown';
+    // The FHIR resource id is unique per record; the allergen concept code
+    // is not — every "Other, Non-Coded" allergy shares the same concept uuid,
+    // so using it as `id` collapses those rows together wherever `id` is used
+    // as a table/React key (SortableDataTable keys and maps rows by `id`).
+    const conceptCode = allergy.code?.coding?.[0]?.code ?? 'unknown';
 
     return {
-      id: conceptCode,
+      id: allergy.id ?? conceptCode,
+      conceptCode,
       resourceId: allergy.id,
       display: allergy.code?.text ?? '',
       category: allergy.category,
@@ -195,4 +209,83 @@ export async function getFormattedAllergies(
 ): Promise<FormattedAllergy[]> {
   const allergies = await getAllergies(patientUUID);
   return formatAllergies(allergies);
+}
+
+let severityConceptUUIDCache: Record<string, string> | null = null;
+
+/**
+ * Resolves the OpenMRS severity concept UUIDs for mild/moderate/severe from
+ * this install's `allergy.concept.severity.*` global properties.
+ *
+ * These are configurable per install, so they must be read from the backend
+ * rather than hardcoded — a hardcoded UUID that doesn't exist in a given
+ * install's dictionary makes the REST allergy API reject the save with a 400
+ * (ConversionException), not a graceful fallback.
+ */
+export async function fetchAllergySeverityConceptUUIDs(): Promise<
+  Record<string, string>
+> {
+  if (severityConceptUUIDCache) return severityConceptUUIDCache;
+
+  const entries = await Promise.all(
+    Object.entries(ALLERGY_SEVERITY_GLOBAL_PROPERTY).map(
+      async ([severityCode, property]) => {
+        const uuid = await get<string>(APP_PROPERTY_URL(property));
+        if (!uuid) {
+          throw new Error('ALLERGY_SEVERITY_CONCEPT_MISSING');
+        }
+        return [severityCode, uuid] as const;
+      },
+    ),
+  );
+
+  severityConceptUUIDCache = Object.fromEntries(entries);
+  return severityConceptUUIDCache;
+}
+
+let otherNonCodedAllergenUUIDCache: string | null = null;
+
+/**
+ * Resolves the Other, Non-Coded allergen concept uuid from this install's
+ * `allergy.concept.otherNonCoded` global property, following the same
+ * pattern as fetchAllergySeverityConceptUUIDs above and for the same reason:
+ * this concept id is configurable per install, so a hardcoded default can
+ * silently mismatch the install's actual dictionary. Updates the shared
+ * isNonCodedAllergen() check (utils.ts) once resolved.
+ */
+export async function fetchOtherNonCodedAllergenUUID(): Promise<string> {
+  if (otherNonCodedAllergenUUIDCache) return otherNonCodedAllergenUUIDCache;
+
+  const uuid = await get<string>(
+    APP_PROPERTY_URL(OTHER_NON_CODED_ALLERGEN_GLOBAL_PROPERTY),
+  );
+  if (!uuid) {
+    throw new Error('OTHER_NON_CODED_ALLERGEN_CONCEPT_MISSING');
+  }
+
+  otherNonCodedAllergenUUIDCache = uuid;
+  setOtherNonCodedAllergenUuid(uuid);
+  return otherNonCodedAllergenUUIDCache;
+}
+
+/**
+ * Saves an allergy through the OpenMRS REST allergy API.
+ *
+ * Used for allergies on the Other, Non-Coded concept: they need a free-text
+ * `nonCodedAllergen`, which fhir2's translator never reads from the FHIR
+ * resource, so the EncounterBundle path cannot persist them.
+ *
+ * @param patientUUID - The UUID of the patient
+ * @param allergy - The allergy payload in OpenMRS REST format
+ * @param allergyUUID - Existing allergy UUID; updates in place when given
+ */
+export async function saveAllergy(
+  patientUUID: string,
+  allergy: SaveAllergyRequest,
+  allergyUUID?: string,
+): Promise<SaveAllergyResponse> {
+  return await post<SaveAllergyResponse>(
+    PATIENT_ALLERGY_SAVE_URL(patientUUID, allergyUUID),
+    allergy,
+  );
 }

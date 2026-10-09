@@ -1,0 +1,10 @@
+@use '@carbon/react/scss/spacing' as *;
+@use '@carbon/react/scss/theme' as *;
+
+.main {
+  // Tiles are $layer-02 and are designed to read against $layer, the same
+  // way the home dashboard body does.
+  background-color: $layer;
+  padding-block: $spacing-10;
+  padding-inline: calc($spacing-12 + $spacing-09);
+}

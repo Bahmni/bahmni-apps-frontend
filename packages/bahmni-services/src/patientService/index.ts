@@ -19,6 +19,10 @@ export {
   getPatientProfile,
   getRelationshipTypes,
   getPersonAttributeTypes,
+  getTelecomAttributeTypeMap,
+  getRelatedPersonsByPatient,
+  createRelatedPerson,
+  deleteRelatedPerson,
 } from './patientService';
 export {
   type FormattedPatientData,
@@ -39,6 +43,7 @@ export {
   type PatientProfileResponse,
   type PersonAttributeType,
   type PersonAttributeTypesResponse,
+  type TelecomAttributeTypeMapping,
   type ConceptAnswer,
   type PersonAttributeConcept,
   type PatientSearchField,
@@ -46,6 +51,8 @@ export {
   type AppointmentSearchResult,
   type ExpectedFieldConfig,
   type SearchActionConfig,
+  type FhirRelatedPerson,
+  type FhirRelatedPersonBundle,
 } from './models';
 export {
   AttributeFormat,

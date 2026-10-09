@@ -30,6 +30,7 @@ jest.mock('@bahmni/services', () => ({
   ...jest.requireActual('@bahmni/services'),
   getFormattedAllergies: jest.fn(),
   getAllergies: jest.fn(),
+  fetchOtherNonCodedAllergenUUID: jest.fn().mockResolvedValue('other-uuid'),
   mapAllergyToInputEntry: jest.fn((fhir: any) => ({
     id: fhir.id,
     display: fhir.code?.text ?? '',
@@ -70,6 +71,7 @@ const mockAddNotification = jest.fn();
 
 const mockAllergy: FormattedAllergy = {
   id: 'allergy-1',
+  conceptCode: 'concept-peanut',
   display: 'Peanut Allergy',
   severity: AllergySeverity.moderate,
   category: ['food'],

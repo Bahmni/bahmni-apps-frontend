@@ -426,6 +426,32 @@ describe('DashboardContainer Component', () => {
       });
     });
 
+    it('should not dispatch a duplicate audit event when re-rendered with the same patient UUID', async () => {
+      const patientUuid = 'patient-123';
+      mockUsePatientUUID.mockReturnValue(patientUuid);
+
+      const { rerender } = renderDashboardContainerWithProvider(mockSections);
+
+      await waitFor(() => {
+        expect(mockDispatchAuditEvent).toHaveBeenCalledTimes(1);
+      });
+
+      rerender(
+        <QueryClientProvider
+          client={
+            new QueryClient({ defaultOptions: { queries: { retry: false } } })
+          }
+        >
+          <ClinicalAppProvider episodeUuids={['episode-1', 'episode-2']}>
+            <DashboardContainer sections={mockSections} scrollTrigger={1} />
+          </ClinicalAppProvider>
+        </QueryClientProvider>,
+      );
+
+      await waitFor(() => {});
+      expect(mockDispatchAuditEvent).toHaveBeenCalledTimes(1);
+    });
+
     it('should continue normal operation regardless of audit event dispatch result', async () => {
       const patientUuid = 'patient-123';
       mockUsePatientUUID.mockReturnValue(patientUuid);
