@@ -86,33 +86,12 @@ const ImmunizationHistory: React.FC<WidgetProps> = ({ config }) => {
     startEncounterPrivilege ?? ADD_IMMUNIZATIONS_PRIVILEGE,
   );
 
-  const resolveAddButtonInputControlKey = (): string | undefined => {
-    if (status === 'completed' || status === 'not-done') {
-      return widgetConfig?.inputControlKey;
-    }
-    return selectedIndex === 0
-      ? widgetConfig?.administeredInputControlKey
-      : widgetConfig?.notAdministeredInputControlKey;
-  };
-
-  const resolveAddButtonEditTitle = (): string | undefined => {
-    if (status === 'completed' || status === 'not-done') {
-      return widgetConfig?.editTitle;
-    }
-    return selectedIndex === 0
-      ? widgetConfig?.administeredEditTitle
-      : widgetConfig?.notAdministeredEditTitle;
-  };
-
   const handleAddImmunization = () => {
-    const editOnly = resolveAddButtonInputControlKey();
-    const editTitle = resolveAddButtonEditTitle();
     globalThis.dispatchEvent(
       new CustomEvent('startConsultation', {
         detail: {
-          encounterType,
-          ...(editOnly ? { editOnly } : {}),
-          ...(editTitle ? { editTitle } : {}),
+          context: { encounterType },
+          action: { type: 'create', resourceType: 'Immunization' },
         },
       }),
     );

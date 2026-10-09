@@ -109,24 +109,26 @@ describe('handleTaskAction', () => {
   });
 
   describe('launchForm action type', () => {
-    it('should dispatch startConsultation event with correct detail', () => {
+    it('should dispatch startConsultation event with context and action', () => {
       handleTaskAction(mockLaunchFormAction, mockTaskViewModelWithInput);
 
       expect(dispatchEventSpy).toHaveBeenCalledWith(
         expect.objectContaining({
           type: 'startConsultation',
-          detail: {
-            encounterType: 'consultation',
-            formName: 'Vitals',
-            directFormMode: true,
-            editOnly: 'observationForms',
-            task: mockTaskViewModelWithInput.fhirResource,
-          },
+          detail: expect.objectContaining({
+            context: expect.objectContaining({
+              encounterType: 'consultation',
+              formName: 'Vitals',
+              directFormMode: true,
+              basedOn: mockTaskViewModelWithInput.fhirResource,
+            }),
+            action: { type: 'create', resourceType: 'Observation' },
+          }),
         }),
       );
     });
 
-    it('should pass custom encounterType from handler config', () => {
+    it('should pass custom encounterType in context from handler config', () => {
       const customAction = {
         ...mockLaunchFormAction,
         handlerConfig: {
@@ -140,7 +142,7 @@ describe('handleTaskAction', () => {
       expect(dispatchEventSpy).toHaveBeenCalledWith(
         expect.objectContaining({
           detail: expect.objectContaining({
-            encounterType: 'emergency',
+            context: expect.objectContaining({ encounterType: 'emergency' }),
           }),
         }),
       );
@@ -151,17 +153,20 @@ describe('handleTaskAction', () => {
       ['Lab Tests', mockTaskViewModelWithLabForm],
       ['VITALS', mockTaskViewModelWithCaseInsensitiveForm],
       [null, mockTaskViewModelWithoutInput],
-    ])('should extract form name %s from task', (expectedFormName, task) => {
-      handleTaskAction(mockLaunchFormAction, task);
+    ])(
+      'should extract form name %s from task into context.formName',
+      (expectedFormName, task) => {
+        handleTaskAction(mockLaunchFormAction, task);
 
-      expect(dispatchEventSpy).toHaveBeenCalledWith(
-        expect.objectContaining({
-          detail: expect.objectContaining({
-            formName: expectedFormName,
+        expect(dispatchEventSpy).toHaveBeenCalledWith(
+          expect.objectContaining({
+            detail: expect.objectContaining({
+              context: expect.objectContaining({ formName: expectedFormName }),
+            }),
           }),
-        }),
-      );
-    });
+        );
+      },
+    );
   });
 
   describe('unknown action types', () => {

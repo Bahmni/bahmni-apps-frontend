@@ -1,5 +1,9 @@
 import type { Encounter } from 'fhir/r4';
 import { extractId } from '../../../../../packages/bahmni-widgets/src/utils/Observations';
+import type {
+  ConsultationEventAction,
+  ConsultationEventContext,
+} from '../../events/startConsultation';
 import type { ConsultationPad } from '../../providers/clinicalConfig/models';
 import { useServiceRequestStore, useObservationFormsStore } from '../../stores';
 import type { InputControl } from '../forms';
@@ -65,6 +69,42 @@ export function loadEncounterInputControls(
 
 export function getActiveEntries(
   registry: InputControl[],
+  context: ConsultationEventContext | undefined,
+  action: ConsultationEventAction | undefined,
+): InputControl[];
+/** @deprecated Use the (registry, context, action) overload instead. */
+export function getActiveEntries(
+  registry: InputControl[],
+  encounterType: string | null | undefined,
+  editOnlyKey: string | undefined,
+): InputControl[];
+export function getActiveEntries(
+  registry: InputControl[],
+  contextOrEncounterType: ConsultationEventContext | string | null | undefined,
+  actionOrEditOnlyKey: ConsultationEventAction | string | undefined,
+): InputControl[] {
+  // Detect which overload is being used
+  const isNewSignature =
+    contextOrEncounterType === undefined ||
+    contextOrEncounterType === null ||
+    typeof contextOrEncounterType === 'object';
+
+  if (isNewSignature) {
+    const context = contextOrEncounterType as
+      | ConsultationEventContext
+      | undefined;
+    const action = actionOrEditOnlyKey as ConsultationEventAction | undefined;
+    return getActiveEntriesNew(registry, context, action);
+  }
+
+  // Legacy signature: (registry, encounterType, editOnlyKey)
+  const encounterType = contextOrEncounterType as string;
+  const editOnlyKey = actionOrEditOnlyKey as string | undefined;
+  return getActiveEntriesLegacy(registry, encounterType, editOnlyKey);
+}
+
+function getActiveEntriesLegacy(
+  registry: InputControl[],
   encounterType: string,
   editOnlyKey?: string,
 ): InputControl[] {
@@ -81,6 +121,74 @@ export function getActiveEntries(
         entry.key === editOnlyKey ||
         entry.key === ENCOUNTER_DETAILS_INPUT_CONTROL_KEY
       );
+    }
+    return true;
+  });
+}
+
+function getActiveEntriesNew(
+  registry: InputControl[],
+  context: ConsultationEventContext | undefined,
+  action: ConsultationEventAction | undefined,
+): InputControl[] {
+  // Derive encounterType from context
+  const encounterType =
+    context?.encounterType ??
+    (context?.encounter?.type?.[0]?.coding?.[0]?.display as string | undefined);
+
+  // Step 1: Filter by encounterType
+  const byEncounterType = registry.filter((entry) => {
+    if (!entry.encounterTypes) return true;
+    if (!encounterType) return true;
+    return entry.encounterTypes.includes(encounterType);
+  });
+
+  // Step 2: No action — hide controls that are action-only (have handledActionTypes)
+  if (!action) {
+    return byEncounterType.filter(
+      (entry) => !entry.handledActionTypes?.length && !entry.onActionTriggered,
+    );
+  }
+
+  // Step 3: action.type === 'delete' — show ONLY controls with handledActionTypes containing 'delete'
+  if (action.type === 'delete') {
+    const resourceType =
+      action.resourceType ??
+      (action.resources?.[0] as { resourceType?: string } | undefined)
+        ?.resourceType;
+
+    return byEncounterType.filter((entry) => {
+      if (entry.key === ENCOUNTER_DETAILS_INPUT_CONTROL_KEY) return true;
+      if (!entry.handledActionTypes?.includes('delete')) return false;
+      // If resourceType is specified, also match handledResourceTypes
+      if (resourceType && entry.handledResourceTypes) {
+        return entry.handledResourceTypes.includes(resourceType);
+      }
+      return true;
+    });
+  }
+
+  // Step 4: action.type === 'create' | 'update' — exclude action-only (delete) controls
+  const resourceType =
+    action.resourceType ??
+    (action.resources?.[0] as { resourceType?: string } | undefined)
+      ?.resourceType;
+
+  return byEncounterType.filter((entry) => {
+    // Exclude delete-only controls
+    if (
+      entry.handledActionTypes?.length &&
+      !entry.handledActionTypes.includes(action.type)
+    ) {
+      return false;
+    }
+    // Exclude legacy onActionTriggered controls that are not action targets
+    if (entry.onActionTriggered && !entry.handledActionTypes?.length) {
+      return false;
+    }
+    // If resourceType is specified, filter to matching controls
+    if (resourceType && entry.handledResourceTypes) {
+      return entry.handledResourceTypes.includes(resourceType);
     }
     return true;
   });

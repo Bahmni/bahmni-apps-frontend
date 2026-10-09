@@ -383,8 +383,15 @@ describe('TaskActions', () => {
         expect.objectContaining({
           type: 'startConsultation',
           detail: expect.objectContaining({
-            task: mockTaskViewModelWithInput.fhirResource,
-            formName: 'Vitals',
+            context: expect.objectContaining({
+              basedOn: mockTaskViewModelWithInput.fhirResource,
+              formName: 'Vitals',
+              directFormMode: true,
+            }),
+            action: expect.objectContaining({
+              type: 'create',
+              resourceType: 'Observation',
+            }),
           }),
         }),
       );
@@ -542,11 +549,16 @@ describe('TaskActions', () => {
           expect.objectContaining({
             type: 'startConsultation',
             detail: expect.objectContaining({
-              editOnly: 'observationForms',
-              sourceEncounterUuid: FILL_ENCOUNTER_UUID,
-              formName: 'Vitals',
-              directFormMode: true,
-              task: mockTaskViewModelCompleted.fhirResource,
+              context: expect.objectContaining({
+                encounter: expect.objectContaining({ id: FILL_ENCOUNTER_UUID }),
+                formName: 'Vitals',
+                directFormMode: true,
+                basedOn: mockTaskViewModelCompleted.fhirResource,
+              }),
+              action: expect.objectContaining({
+                type: 'update',
+                resourceType: 'Observation',
+              }),
             }),
           }),
         );
@@ -678,7 +690,9 @@ describe('TaskActions', () => {
           expect.objectContaining({
             type: 'startConsultation',
             detail: expect.objectContaining({
-              sourceEncounterUuid: FILL_ENCOUNTER_UUID,
+              context: expect.objectContaining({
+                encounter: expect.objectContaining({ id: FILL_ENCOUNTER_UUID }),
+              }),
             }),
           }),
         );

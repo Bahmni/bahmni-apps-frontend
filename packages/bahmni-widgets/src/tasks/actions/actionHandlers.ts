@@ -19,11 +19,13 @@ const handleLaunchFormAction = (
   globalThis.dispatchEvent(
     new CustomEvent('startConsultation', {
       detail: {
-        encounterType: action.handlerConfig.encounterType,
-        formName,
-        directFormMode: true,
-        editOnly: 'observationForms',
-        task: task.fhirResource,
+        context: {
+          encounterType: action.handlerConfig.encounterType,
+          formName,
+          directFormMode: true,
+          basedOn: task.fhirResource,
+        },
+        action: { type: 'create', resourceType: 'Observation' },
       },
     }),
   );
@@ -70,13 +72,15 @@ const handleEditFormAction = async (
   globalThis.dispatchEvent(
     new CustomEvent('startConsultation', {
       detail: {
-        encounterType: action.handlerConfig.encounterType,
-        editOnly: 'observationForms',
-        editTitle: 'EDIT_OBSERVATION_FORM_TITLE',
-        sourceEncounterUuid,
-        formName,
-        directFormMode: true,
-        task: task.fhirResource,
+        context: {
+          encounter: sourceEncounterUuid
+            ? { resourceType: 'Encounter', id: sourceEncounterUuid }
+            : undefined,
+          formName,
+          directFormMode: true,
+          basedOn: task.fhirResource,
+        },
+        action: { type: 'update', resourceType: 'Observation' },
       },
     }),
   );
@@ -85,12 +89,12 @@ const handleEditFormAction = async (
 export const handleTaskAction = (
   action: TaskAction,
   task: TaskViewModel,
-  queryClient: QueryClient,
+  queryClient?: QueryClient,
 ): void | Promise<void> => {
   if (action.type === TaskActionType.LAUNCH_FORM) {
     return handleLaunchFormAction(action, task);
   }
   if (action.type === TaskActionType.EDIT_FORM) {
-    return handleEditFormAction(action, task, queryClient);
+    return handleEditFormAction(action, task, queryClient!);
   }
 };
