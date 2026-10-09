@@ -13,8 +13,6 @@ import {
   ValidationResult,
 } from './SearchStrategy.interface';
 
-export const APPOINTMENT_DATE_FIELD = 'appointmentDate';
-
 /**
  * Strategy for searching patients by appointment attributes
  */
@@ -63,7 +61,7 @@ export class AppointmentSearchStrategy implements SearchStrategy {
   ): Record<string, string> {
     const requestBody: Record<string, string> = {};
 
-    if (fieldsToSearch[0] === APPOINTMENT_DATE_FIELD) {
+    if (fieldsToSearch[0] === 'appointmentDate') {
       return this.buildDateSearchRequest(searchTerm);
     }
 

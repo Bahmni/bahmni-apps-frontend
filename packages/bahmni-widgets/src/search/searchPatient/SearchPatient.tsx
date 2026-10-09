@@ -13,7 +13,6 @@ import PatientSearchResults from './components/PatientSearchResults';
 import SearchPatientInput from './components/SearchPatientInput';
 import { SearchPatientConfig } from './models';
 import schema from './schema.json';
-import { APPOINTMENT_DATE_FIELD } from './strategies/AppointmentSearchStrategy';
 import {
   PatientSearchType,
   SearchContext,
@@ -121,7 +120,7 @@ const SearchPatient = ({ extensionParams }: SearchWidgetProps) => {
   };
 
   const isDateSearch = () =>
-    getSelectedField()?.fields[0] === APPOINTMENT_DATE_FIELD;
+    getSelectedField()?.fields[0] === 'appointmentDate';
 
   useEffect(() => {
     setPatientSearchData(data);
@@ -284,12 +283,9 @@ const SearchPatient = ({ extensionParams }: SearchWidgetProps) => {
     : undefined;
 
   const resultsFieldType = isAdvancedSearch ? selectedFieldType : '';
-  const selectedField = getSelectedField();
   const resultsSearchFields =
     resultsFieldType === 'appointment'
-      ? selectedField
-        ? [selectedField]
-        : []
+      ? (patientSearchConfig?.appointment ?? [])
       : (patientSearchConfig?.customAttributes ?? []);
 
   return (
