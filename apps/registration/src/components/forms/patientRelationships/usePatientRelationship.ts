@@ -197,7 +197,14 @@ export const usePatientRelationship = ({
     [clearSearch],
   );
 
-  const getData = useCallback(() => relationships, [relationships]);
+  const getData = useCallback(() => {
+    // Filter out completely empty rows - only save rows with at least some data
+    return relationships.filter((rel) => {
+      if (rel.isExisting || rel.isDeleted) return true;
+      // For new rows, include only if at least one required field is filled
+      return rel.relationshipType.trim() || rel.patientId.trim();
+    });
+  }, [relationships]);
 
   const validate = useCallback(
     () => validateRelationships(relationships),
