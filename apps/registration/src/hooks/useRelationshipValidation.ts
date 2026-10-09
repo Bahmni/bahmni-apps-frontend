@@ -1,4 +1,5 @@
 import { useTranslation, getRelationshipTypes } from '@bahmni/services';
+import { useNotification } from '@bahmni/widgets';
 import { useQuery } from '@tanstack/react-query';
 import { parseISO, startOfDay } from 'date-fns';
 import { useState, useEffect } from 'react';
@@ -17,6 +18,7 @@ export interface ValidationErrors {
 
 export const useRelationshipValidation = () => {
   const { t } = useTranslation();
+  const { addNotification } = useNotification();
 
   // Get cached data from localStorage to use as initial data
   const cachedData = getRelationshipTypesFromCache();
@@ -80,6 +82,29 @@ export const useRelationshipValidation = () => {
 
   const validateRelationships = (relationships: RelationshipData[]) => {
     let isValid = true;
+    const hasExistingRelationship = relationships.some((rel) => rel.isExisting);
+
+    if (!hasExistingRelationship) {
+      const hasAnyRelationship = relationships.some(
+        (rel) =>
+          !rel.isDeleted &&
+          (rel.relationshipType.trim() ||
+            rel.patientId.trim() ||
+            rel.tillDate.trim()),
+      );
+
+      if (!hasAnyRelationship) {
+        addNotification({
+          title: t('NOTIFICATION_ERROR_TITLE'),
+          message: t('REGISTRATION_RELATIONSHIP_REQUIRED'),
+          type: 'error',
+          timeout: 5000,
+        });
+        setValidationErrors({});
+        return false;
+      }
+    }
+
     const duplicateIds = getDuplicateIds(relationships);
     const newValidationErrors: ValidationErrors = {};
 

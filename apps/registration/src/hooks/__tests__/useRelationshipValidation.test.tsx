@@ -1,3 +1,4 @@
+import { useNotification } from '@bahmni/widgets';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { renderHook, act } from '@testing-library/react';
 import React from 'react';
@@ -16,8 +17,15 @@ jest.mock('@bahmni/services', () => ({
   ),
 }));
 
+jest.mock('@bahmni/widgets', () => ({
+  useNotification: jest.fn(),
+}));
+
+const mockUseNotification = useNotification as jest.Mock;
+
 describe('useRelationshipValidation', () => {
   let queryClient: QueryClient;
+  const mockAddNotification = jest.fn();
 
   beforeEach(() => {
     queryClient = new QueryClient({
@@ -26,6 +34,10 @@ describe('useRelationshipValidation', () => {
           retry: false,
         },
       },
+    });
+    mockAddNotification.mockClear();
+    mockUseNotification.mockReturnValue({
+      addNotification: mockAddNotification,
     });
   });
 
@@ -166,7 +178,6 @@ describe('useRelationshipValidation', () => {
         wrapper,
       });
 
-      // Pre-existing duplicate rows saved before backend validation was added
       const relationships: RelationshipData[] = [
         {
           id: 'rel-1',
@@ -359,6 +370,139 @@ describe('useRelationshipValidation', () => {
       expect(result.current.validationErrors['rel-3']).toEqual({
         patientId: 'REGISTRATION_RELATIONSHIP_ALREADY_EXISTS',
       });
+    });
+
+    it('should reject a brand new patient with no relationship data and notify', () => {
+      const { result } = renderHook(() => useRelationshipValidation(), {
+        wrapper,
+      });
+
+      const relationships: RelationshipData[] = [
+        {
+          id: 'rel-1',
+          relationshipType: '',
+          patientId: '',
+          tillDate: '',
+        },
+      ];
+
+      let isValid = false;
+      act(() => {
+        isValid = result.current.validateRelationships(relationships);
+      });
+
+      expect(isValid).toBe(false);
+      expect(result.current.validationErrors).toEqual({});
+      expect(mockAddNotification).toHaveBeenCalledWith(
+        expect.objectContaining({
+          message: 'REGISTRATION_RELATIONSHIP_REQUIRED',
+          type: 'error',
+        }),
+      );
+    });
+
+    it('should allow an existing patient to remove their last relationship without the mandatory notification', () => {
+      const { result } = renderHook(() => useRelationshipValidation(), {
+        wrapper,
+      });
+
+      const relationships: RelationshipData[] = [
+        {
+          id: 'rel-1',
+          relationshipType: 'parent-child-uuid',
+          patientId: 'P001',
+          patientUuid: 'uuid-1',
+          tillDate: '',
+          isExisting: true,
+          isDeleted: true,
+        },
+      ];
+
+      let isValid = false;
+      act(() => {
+        isValid = result.current.validateRelationships(relationships);
+      });
+
+      expect(isValid).toBe(true);
+      expect(mockAddNotification).not.toHaveBeenCalled();
+    });
+
+    it('should reject row with relationshipType but no patientId', () => {
+      const { result } = renderHook(() => useRelationshipValidation(), {
+        wrapper,
+      });
+
+      const relationships: RelationshipData[] = [
+        {
+          id: 'rel-1',
+          relationshipType: 'parent-child-uuid',
+          patientId: '',
+          patientUuid: '',
+          tillDate: '',
+        },
+      ];
+
+      let isValid = false;
+      act(() => {
+        isValid = result.current.validateRelationships(relationships);
+      });
+
+      expect(isValid).toBe(false);
+      expect(result.current.validationErrors['rel-1']).toEqual({
+        patientId: 'REGISTRATION_PATIENT_SELECTION_REQUIRED',
+      });
+    });
+
+    it('should reject row with patientId but no relationshipType', () => {
+      const { result } = renderHook(() => useRelationshipValidation(), {
+        wrapper,
+      });
+
+      const relationships: RelationshipData[] = [
+        {
+          id: 'rel-1',
+          relationshipType: '',
+          patientId: 'P001',
+          patientUuid: 'uuid-1',
+          tillDate: '',
+        },
+      ];
+
+      let isValid = false;
+      act(() => {
+        isValid = result.current.validateRelationships(relationships);
+      });
+
+      expect(isValid).toBe(false);
+      expect(result.current.validationErrors['rel-1']).toEqual({
+        relationshipType: 'REGISTRATION_RELATIONSHIP_TYPE_REQUIRED',
+      });
+    });
+
+    it('should filter out empty relationships when collecting data', () => {
+      const relationships: RelationshipData[] = [
+        {
+          id: 'rel-1',
+          relationshipType: '',
+          patientId: '',
+          tillDate: '',
+        },
+        {
+          id: 'rel-2',
+          relationshipType: 'parent-child-uuid',
+          patientId: 'P001',
+          patientUuid: 'uuid-1',
+          tillDate: '',
+        },
+      ];
+
+      const filteredData = relationships.filter((rel) => {
+        if (rel.isExisting || rel.isDeleted) return true;
+        return rel.relationshipType.trim() || rel.patientId.trim();
+      });
+
+      expect(filteredData).toHaveLength(1);
+      expect(filteredData[0].id).toBe('rel-2');
     });
   });
 
