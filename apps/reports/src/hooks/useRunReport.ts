@@ -1,14 +1,10 @@
-import {
-  AUDIT_LOG_EVENT_DETAILS,
-  buildRunReportUrl,
-  dispatchAuditEvent,
-  type AuditEventType,
-} from '@bahmni/services';
+import { AUDIT_LOG_EVENT_DETAILS, buildRunReportUrl } from '@bahmni/services';
 import { useCallback } from 'react';
 import type {
   ReportDefinition,
   FormatKey,
 } from '../components/ReportList/models';
+import { dispatchReportAuditEvent } from './reportAuditEvent';
 
 export const useRunReport = () => {
   const runReport = useCallback(
@@ -18,6 +14,7 @@ export const useRunReport = () => {
       startDate?: Date | null,
       endDate?: Date | null,
       defaultPaperSize?: string,
+      macroTemplateLocation?: string | null,
     ): boolean => {
       try {
         const url = buildRunReportUrl(
@@ -26,6 +23,8 @@ export const useRunReport = () => {
           startDate,
           endDate,
           report.config?.paperSize ?? defaultPaperSize,
+          undefined,
+          macroTemplateLocation,
         );
 
         // Passing 'noopener'/'noreferrer' in the window features string makes
@@ -41,12 +40,10 @@ export const useRunReport = () => {
 
         reportWindow.opener = null;
 
-        dispatchAuditEvent({
-          eventType: AUDIT_LOG_EVENT_DETAILS.RUN_REPORT
-            .eventType as AuditEventType,
-          messageParams: { reportName: report.name },
-          module: AUDIT_LOG_EVENT_DETAILS.RUN_REPORT.module,
-        });
+        dispatchReportAuditEvent(
+          AUDIT_LOG_EVENT_DETAILS.RUN_REPORT,
+          report.name,
+        );
         return true;
       } catch (error) {
         // eslint-disable-next-line no-console

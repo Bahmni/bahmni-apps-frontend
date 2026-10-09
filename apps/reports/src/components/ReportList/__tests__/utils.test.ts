@@ -1,5 +1,11 @@
 import { UserPrivilege } from '@bahmni/services';
-import { differenceInCalendarDays, isSameDay } from 'date-fns';
+import {
+  differenceInCalendarDays,
+  isSameDay,
+  startOfQuarter,
+  startOfYear,
+  subMonths,
+} from 'date-fns';
 import type { ReportDefinition, ReportsConfig } from '../models';
 import {
   filterReportsByPrivilege,
@@ -9,6 +15,7 @@ import {
   presetToRange,
   requiresDateRange,
   resolveSupportedFormats,
+  resolveTemplateLocation,
   validateReportRun,
   reportsConfigToArray,
   type ValidateReportRunInput,
@@ -187,6 +194,7 @@ describe('Report List Utils', () => {
         REPORTS_DATE_ORDER_ERROR: 'Start date cannot be later than end date',
         REPORTS_CSV_NOT_SUPPORTED_ERROR:
           'CSV format is not supported for concatenated reports',
+        REPORTS_MISSING_TEMPLATE_ERROR: `Workbook template should be selected for generating report: ${options?.reportName ?? ''}`,
       };
       return messages[key] || key;
     };
@@ -239,6 +247,51 @@ describe('Report List Utils', () => {
       const error = validateReportRun(input, mockT);
       expect(error?.field).toBe('endDate');
       expect(error?.message).toContain('later');
+    });
+
+    it('should fail when CUSTOM EXCEL selected without an uploaded or pre-configured template', () => {
+      const input: ValidateReportRunInput = {
+        report: { id: 'r1', name: 'Test', type: 'visits', config: {} },
+        requiresDateRange: false,
+        format: 'CUSTOM EXCEL',
+        startDate: null,
+        endDate: null,
+        templateLocation: null,
+      };
+      const error = validateReportRun(input, mockT);
+      expect(error?.message).toBe(
+        'Workbook template should be selected for generating report: Test',
+      );
+    });
+
+    it('should pass CUSTOM EXCEL validation when a template was uploaded', () => {
+      const input: ValidateReportRunInput = {
+        report: { id: 'r1', name: 'Test', type: 'visits', config: {} },
+        requiresDateRange: false,
+        format: 'CUSTOM EXCEL',
+        startDate: null,
+        endDate: null,
+        templateLocation: 'uuid-template.xlsx',
+      };
+      const error = validateReportRun(input, mockT);
+      expect(error).toBeNull();
+    });
+
+    it('should pass CUSTOM EXCEL validation when a template is pre-configured', () => {
+      const input: ValidateReportRunInput = {
+        report: {
+          id: 'r1',
+          name: 'Test',
+          type: 'visits',
+          config: { macroTemplatePath: 'preconfigured.xlsx' },
+        },
+        requiresDateRange: false,
+        format: 'CUSTOM EXCEL',
+        startDate: null,
+        endDate: null,
+      };
+      const error = validateReportRun(input, mockT);
+      expect(error).toBeNull();
     });
 
     it('should fail when CSV format used for concatenated report', () => {
@@ -298,10 +351,40 @@ describe('Report List Utils', () => {
       expect(isSameDay(end, today)).toBe(true);
     });
 
-    it('returns a 7-day inclusive range for LAST_7_DAYS', () => {
+    it('returns a 7-day-ago range for LAST_7_DAYS', () => {
       const [start, end] = presetToRange('LAST_7_DAYS');
       expect(isSameDay(end, new Date())).toBe(true);
-      expect(differenceInCalendarDays(end, start)).toBe(6);
+      expect(differenceInCalendarDays(end, start)).toBe(7);
+    });
+
+    it('returns a 30-day-ago range for LAST_30_DAYS', () => {
+      const [start, end] = presetToRange('LAST_30_DAYS');
+      expect(isSameDay(end, new Date())).toBe(true);
+      expect(differenceInCalendarDays(end, start)).toBe(30);
+    });
+
+    it('returns the start and end of last month for PREVIOUS_MONTH', () => {
+      const [start, end] = presetToRange('PREVIOUS_MONTH');
+      const previousMonth = subMonths(new Date(), 1);
+      expect(start.getDate()).toBe(1);
+      expect(start.getMonth()).toBe(previousMonth.getMonth());
+      expect(end.getMonth()).toBe(previousMonth.getMonth());
+      // end is the last day of that month, so the following day rolls into the next month
+      const dayAfterEnd = new Date(end);
+      dayAfterEnd.setDate(end.getDate() + 1);
+      expect(dayAfterEnd.getMonth()).not.toBe(end.getMonth());
+    });
+
+    it('returns the start of the quarter through today for THIS_QUARTER', () => {
+      const [start, end] = presetToRange('THIS_QUARTER');
+      expect(isSameDay(start, startOfQuarter(new Date()))).toBe(true);
+      expect(isSameDay(end, new Date())).toBe(true);
+    });
+
+    it('returns the start of the year through today for THIS_YEAR', () => {
+      const [start, end] = presetToRange('THIS_YEAR');
+      expect(isSameDay(start, startOfYear(new Date()))).toBe(true);
+      expect(isSameDay(end, new Date())).toBe(true);
     });
 
     it('returns today through today for TODAY', () => {
@@ -313,6 +396,35 @@ describe('Report List Utils', () => {
     it('returns independent Date instances for TODAY, not the same reference', () => {
       const [start, end] = presetToRange('TODAY');
       expect(start).not.toBe(end);
+    });
+  });
+
+  describe('resolveTemplateLocation', () => {
+    const report: ReportDefinition & { id: string } = {
+      id: 'r1',
+      name: 'Test',
+      type: 'visits',
+      config: { macroTemplatePath: 'preconfigured.xlsx' },
+    };
+
+    it('prefers the uploaded template location over the pre-configured one', () => {
+      expect(resolveTemplateLocation(report, 'uploaded.xlsx')).toBe(
+        'uploaded.xlsx',
+      );
+    });
+
+    it('falls back to the pre-configured macroTemplatePath', () => {
+      expect(resolveTemplateLocation(report, null)).toBe('preconfigured.xlsx');
+    });
+
+    it('returns null when neither is set', () => {
+      const noTemplateReport: ReportDefinition & { id: string } = {
+        id: 'r2',
+        name: 'Test 2',
+        type: 'visits',
+        config: {},
+      };
+      expect(resolveTemplateLocation(noTemplateReport, null)).toBeNull();
     });
   });
 

@@ -22,6 +22,7 @@ export interface ReportsAppConfig {
   config?: {
     supportedFormats?: string[];
     paperSize?: string;
+    enableReportQueue?: boolean;
   };
 }
 
@@ -29,6 +30,8 @@ export interface ReportFilters {
   startDate: Date | null;
   endDate: Date | null;
   format: FormatKey | null;
+  /** Uploaded custom-Excel template location, as returned by the upload endpoint. */
+  templateLocation?: string | null;
 }
 
 /** `version` bumps on every Apply/Reset so rows re-sync even when values are unchanged. */

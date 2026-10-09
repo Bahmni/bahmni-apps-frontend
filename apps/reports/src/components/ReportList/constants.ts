@@ -9,21 +9,38 @@ export const FORMAT_I18N_KEYS: Record<FormatKey, string> = {
   ODS: 'REPORTS_FORMAT_ODS',
 };
 
-export type DatePreset = 'TODAY' | 'THIS_MONTH' | 'LAST_7_DAYS';
+export type DatePreset =
+  | 'TODAY'
+  | 'THIS_MONTH'
+  | 'PREVIOUS_MONTH'
+  | 'THIS_QUARTER'
+  | 'THIS_YEAR'
+  | 'LAST_7_DAYS'
+  | 'LAST_30_DAYS';
 
 export const DATE_PRESETS: DatePreset[] = [
   'TODAY',
   'THIS_MONTH',
+  'PREVIOUS_MONTH',
+  'THIS_QUARTER',
+  'THIS_YEAR',
   'LAST_7_DAYS',
+  'LAST_30_DAYS',
 ];
 
 export const DATE_PRESET_I18N_KEYS: Record<DatePreset, string> = {
   TODAY: 'REPORTS_PRESET_TODAY',
   THIS_MONTH: 'REPORTS_PRESET_THIS_MONTH',
+  PREVIOUS_MONTH: 'REPORTS_PRESET_PREVIOUS_MONTH',
+  THIS_QUARTER: 'REPORTS_PRESET_THIS_QUARTER',
+  THIS_YEAR: 'REPORTS_PRESET_THIS_YEAR',
   LAST_7_DAYS: 'REPORTS_PRESET_LAST_7_DAYS',
+  LAST_30_DAYS: 'REPORTS_PRESET_LAST_30_DAYS',
 };
 
 export const QUERY_KEYS = {
   reportsConfig: ['reportsConfig'],
   reportsAppConfig: ['reportsAppConfig'],
 } as const;
+
+export const CUSTOM_EXCEL_TEMPLATE_ACCEPT = ['.xls', '.xlsx'];

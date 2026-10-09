@@ -9,7 +9,6 @@ import {
 } from './utils';
 
 const client: AxiosInstance = axios.create();
-client.defaults.headers.common['Content-Type'] = 'application/json';
 
 // Request interceptor
 client.interceptors.request.use(

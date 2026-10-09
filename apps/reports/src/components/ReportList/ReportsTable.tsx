@@ -2,6 +2,7 @@ import {
   DatePicker,
   DatePickerInput,
   Dropdown,
+  FileUploader,
   InlineLoading,
   OverflowMenu,
   OverflowMenuItem,
@@ -9,6 +10,7 @@ import {
 import { useTranslation } from '@bahmni/services';
 import React from 'react';
 import { useReportTableState } from '../../hooks/useReportTableState';
+import { CUSTOM_EXCEL_TEMPLATE_ACCEPT } from './constants';
 import type { AppliedFilters, FormatKey, ReportDefinition } from './models';
 import styles from './styles/ReportsTable.module.scss';
 import { formatItemToString, requiresDateRange } from './utils';
@@ -18,19 +20,35 @@ interface ReportsTableProps {
   appliedFilters: AppliedFilters;
   availableFormats: FormatKey[];
   defaultPaperSize?: string;
+  enableReportQueue?: boolean;
 }
 
 export const ReportsTable = React.memo<ReportsTableProps>(
-  ({ reports, appliedFilters, availableFormats, defaultPaperSize }) => {
+  ({
+    reports,
+    appliedFilters,
+    availableFormats,
+    defaultPaperSize,
+    enableReportQueue,
+  }) => {
     const { t } = useTranslation();
     const {
       rowFilters,
       errors,
       isRunning,
+      isQueuing,
+      isUploadingTemplate,
       updateRow,
       clearRowFieldError,
       handleRunReport,
-    } = useReportTableState(reports, appliedFilters, defaultPaperSize);
+      handleQueueReport,
+      handleTemplateUpload,
+    } = useReportTableState(
+      reports,
+      appliedFilters,
+      availableFormats,
+      defaultPaperSize,
+    );
 
     if (reports.length === 0) {
       return (
@@ -47,7 +65,11 @@ export const ReportsTable = React.memo<ReportsTableProps>(
 
     return (
       <div className={styles.tableContainer}>
-        <table className={styles.table} data-testid="reports-table">
+        <table
+          className={styles.table}
+          data-testid="reports-table"
+          aria-label={t('REPORTS_TABLE_ARIA_LABEL')}
+        >
           <thead>
             <tr>
               <th
@@ -81,6 +103,17 @@ export const ReportsTable = React.memo<ReportsTableProps>(
               const rowErrors = errors(report.id);
               const needsDates = requiresDateRange(report);
               const running = isRunning(report.id);
+              const queuing = isQueuing(report.id);
+              const isCustomExcel = filters.format === 'CUSTOM EXCEL';
+              const hasPreconfiguredTemplate =
+                !!report.config?.macroTemplatePath;
+              let templateFilenameStatus: 'uploading' | 'complete' | 'edit' =
+                'edit';
+              if (isUploadingTemplate(report.id)) {
+                templateFilenameStatus = 'uploading';
+              } else if (filters.templateLocation) {
+                templateFilenameStatus = 'complete';
+              }
 
               return (
                 <tr key={report.id}>
@@ -162,11 +195,42 @@ export const ReportsTable = React.memo<ReportsTableProps>(
                         clearRowFieldError(report.id, 'format');
                       }}
                     />
+                    {isCustomExcel &&
+                      (hasPreconfiguredTemplate ? (
+                        <p
+                          className={styles.preconfiguredTemplateLabel}
+                          data-testid={`preconfigured-template-${report.id}`}
+                        >
+                          {t('REPORTS_PRECONFIGURED_TEMPLATE_LABEL')}
+                        </p>
+                      ) : (
+                        <FileUploader
+                          testId={`template-uploader-${report.id}`}
+                          accept={CUSTOM_EXCEL_TEMPLATE_ACCEPT}
+                          buttonLabel={t(
+                            'REPORTS_UPLOAD_TEMPLATE_BUTTON_LABEL',
+                          )}
+                          labelTitle={t('REPORTS_UPLOAD_TEMPLATE_LABEL')}
+                          filenameStatus={templateFilenameStatus}
+                          onChange={(event, data) => {
+                            const file =
+                              data?.addedFiles?.[0]?.file ??
+                              event?.target?.files?.[0];
+                            if (file) {
+                              void handleTemplateUpload(report, file);
+                            }
+                          }}
+                        />
+                      ))}
                   </td>
                   <td className={styles.actionsColumn}>
-                    {running ? (
+                    {running || queuing ? (
                       <InlineLoading
-                        description={t('REPORTS_RUNNING_LOADING_LABEL')}
+                        description={t(
+                          running
+                            ? 'REPORTS_RUNNING_LOADING_LABEL'
+                            : 'REPORTS_QUEUEING_LOADING_LABEL',
+                        )}
                       />
                     ) : (
                       <OverflowMenu
@@ -174,9 +238,19 @@ export const ReportsTable = React.memo<ReportsTableProps>(
                         aria-label={t('REPORTS_ACTIONS_HEADER')}
                       >
                         <OverflowMenuItem
-                          itemText={t('REPORTS_RUN_BUTTON_LABEL')}
+                          itemText={t(
+                            enableReportQueue
+                              ? 'REPORTS_RUN_NOW_BUTTON_LABEL'
+                              : 'REPORTS_RUN_BUTTON_LABEL',
+                          )}
                           onClick={() => handleRunReport(report)}
                         />
+                        {enableReportQueue && (
+                          <OverflowMenuItem
+                            itemText={t('REPORTS_QUEUE_BUTTON_LABEL')}
+                            onClick={() => handleQueueReport(report)}
+                          />
+                        )}
                       </OverflowMenu>
                     )}
                   </td>

@@ -71,7 +71,10 @@ export const TableFilters: React.FC<TableFiltersProps> = ({
           datePickerType="single"
           dateFormat="d/m/Y"
           value={startDate ?? undefined}
-          onChange={(dates) => onStartDateChange(dates[0] ?? null)}
+          onChange={(dates) => {
+            onPresetChange(null);
+            onStartDateChange(dates[0] ?? null);
+          }}
         >
           <DatePickerInput
             id="filter-start-date"
@@ -85,7 +88,10 @@ export const TableFilters: React.FC<TableFiltersProps> = ({
           dateFormat="d/m/Y"
           minDate={startDate ?? undefined}
           value={endDate ?? undefined}
-          onChange={(dates) => onEndDateChange(dates[0] ?? null)}
+          onChange={(dates) => {
+            onPresetChange(null);
+            onEndDateChange(dates[0] ?? null);
+          }}
         >
           <DatePickerInput
             id="filter-end-date"
