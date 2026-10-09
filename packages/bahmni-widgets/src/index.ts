@@ -11,6 +11,9 @@ export type { PrintOption } from './documentPrintButton';
 export { DocumentUpload, renderDocumentTile } from './documentUpload';
 export type {
   DocumentUploadProps,
+  DocumentUploadRef,
+  DocumentSaveSummary,
+  DocumentSaveFailure,
   DocumentSaveTarget,
   DocumentTileData,
 } from './documentUpload';
@@ -34,6 +37,7 @@ export { TaskList } from './tasks';
 export { PatientProgramsTable } from './patientPrograms';
 export { ImmunizationHistory } from './immunizationHistory';
 export { ProgramDetails } from './programDetails';
+export { VisitsTable } from './visits';
 export { extractFormName } from './observations';
 
 export {
@@ -61,6 +65,7 @@ export {
 export { useDebounce } from './commandPalette/useDebounce';
 export { usePatientUUID } from './hooks/usePatientUUID';
 export { usePatientPhoto } from './hooks/usePatientPhoto';
+export { useFormSchemaData } from './observationsRenderer/hooks/useFormSchemaData';
 export { useUserPrivilege } from './userPrivileges/useUserPrivilege';
 export { useHasPrivilege } from './userPrivileges/useHasPrivilege';
 
@@ -119,5 +124,12 @@ export {
   LocationProvider,
   LocationSelector,
 } from './location';
+
+// Module Tiles
+export {
+  AppTile,
+  ModuleTileGrid,
+  MODULE_TILES_SKELETON_COUNT,
+} from './moduleTiles';
 
 export { deriveFormSchemaData } from './utils/Observations';

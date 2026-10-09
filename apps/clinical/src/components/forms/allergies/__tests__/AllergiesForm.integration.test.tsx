@@ -151,6 +151,7 @@ describe('AllergiesForm Integration Tests', () => {
         display: 'Penicillin',
         type: 'medication',
       }),
+      undefined,
     );
   });
 

@@ -9,7 +9,7 @@ export const TASKS_URL = (
   let url = baseUrl;
 
   if (patientUuid) {
-    url += `&subject:Patient=${patientUuid}`;
+    url += `&subject=${patientUuid}`;
   }
 
   if (basedOnReference) {

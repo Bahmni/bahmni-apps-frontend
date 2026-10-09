@@ -305,22 +305,30 @@ exports[`SearchForm Snapshot matches snapshot 1`] = `
         data-testid="common-search-footer-test-id"
         id="common-search-footer"
       >
-        <button
-          class="cds--btn cds--btn--tertiary"
-          data-testid="common-search-add-criterion-button-test-id"
-          id="common-search-add-criterion-button"
-          type="button"
+        <div
+          class="footerActions"
         >
-          COMMON_SEARCH_ADD_CRITERIA_BUTTON
-        </button>
-        <button
-          class="cds--btn cds--btn--primary"
-          data-testid="common-search-search-button-test-id"
-          id="common-search-search-button"
-          type="button"
+          <button
+            class="cds--btn cds--btn--tertiary"
+            data-testid="common-search-add-criterion-button-test-id"
+            id="common-search-add-criterion-button"
+            type="button"
+          >
+            COMMON_SEARCH_ADD_CRITERIA_BUTTON
+          </button>
+        </div>
+        <div
+          class="footerActions"
         >
-          COMMON_SEARCH_SEARCH_BUTTON
-        </button>
+          <button
+            class="cds--btn cds--btn--primary"
+            data-testid="common-search-search-button-test-id"
+            id="common-search-search-button"
+            type="button"
+          >
+            COMMON_SEARCH_SEARCH_BUTTON
+          </button>
+        </div>
       </div>
     </div>
   </div>
