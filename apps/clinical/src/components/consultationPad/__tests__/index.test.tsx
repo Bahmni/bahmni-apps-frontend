@@ -1097,7 +1097,7 @@ describe('ConsultationPad', () => {
     });
   });
 
-  describe('ADR-aligned title derivation', () => {
+  describe('Pad title derivation', () => {
     it('shows "Continue" when context.encounter is present', () => {
       renderComponent({
         encounterSessionStartContext: {
