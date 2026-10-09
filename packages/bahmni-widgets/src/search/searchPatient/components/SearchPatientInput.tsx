@@ -1,4 +1,11 @@
-import { Button, Dropdown, Search, Tag } from '@bahmni/design-system';
+import {
+  Button,
+  DatePicker,
+  DatePickerInput,
+  Dropdown,
+  Search,
+  Tag,
+} from '@bahmni/design-system';
 import { useTranslation } from '@bahmni/services';
 import styles from '../styles/SearchPatient.module.scss';
 
@@ -11,8 +18,11 @@ interface SearchPatientInputProps {
   validationError: string;
   dropdownItems: string[];
   selectedDropdownItem: string;
+  isDateSearch: boolean;
+  appointmentDate: Date | null;
   onNameChange: (value: string) => void;
   onAdvanceChange: (value: string) => void;
+  onDateChange: (date: Date | null) => void;
   onNameSearch: () => void;
   onAdvanceSearch: () => void;
   onNameClear: () => void;
@@ -29,8 +39,11 @@ const SearchPatientInput = ({
   validationError,
   dropdownItems,
   selectedDropdownItem,
+  isDateSearch,
+  appointmentDate,
   onNameChange,
   onAdvanceChange,
+  onDateChange,
   onNameSearch,
   onAdvanceSearch,
   onNameClear,
@@ -83,23 +96,39 @@ const SearchPatientInput = ({
       <div className={styles.searchPatient}>
         <div className={styles.advanceSearchContainer}>
           <div className={styles.advanceInputWrapper}>
-            <Search
-              id="advance-search-input"
-              testId="advance-search-input"
-              labelText="Advance Search"
-              placeholder={t('SEARCH_BY_CUSTOM_ATTRIBUTE', {
-                attribute: String(selectedDropdownItem),
-              })}
-              value={advanceSearchInput}
-              onChange={(e) => onAdvanceChange(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.code === 'Enter') {
-                  onAdvanceSearch();
-                }
-              }}
-              onClear={onAdvanceClear}
-              inputMode="numeric"
-            />
+            {isDateSearch ? (
+              <DatePicker
+                datePickerType="single"
+                value={appointmentDate ?? ''}
+                className={styles.dateSearchPicker}
+                onChange={(dates: Date[]) => onDateChange(dates[0] ?? null)}
+              >
+                <DatePickerInput
+                  id="advance-search-date-input"
+                  data-testid="advance-search-date-input"
+                  labelText=""
+                  hideLabel
+                />
+              </DatePicker>
+            ) : (
+              <Search
+                id="advance-search-input"
+                testId="advance-search-input"
+                labelText="Advance Search"
+                placeholder={t('SEARCH_BY_CUSTOM_ATTRIBUTE', {
+                  attribute: String(selectedDropdownItem),
+                })}
+                value={advanceSearchInput}
+                onChange={(e) => onAdvanceChange(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.code === 'Enter') {
+                    onAdvanceSearch();
+                  }
+                }}
+                onClear={onAdvanceClear}
+                inputMode="numeric"
+              />
+            )}
             {validationError && (
               <div
                 className={styles.errorMessage}
@@ -126,7 +155,12 @@ const SearchPatientInput = ({
           size="md"
           id="advance-search-button"
           testId="advance-search-button"
-          disabled={isLoading || advanceSearchInput.trim().length === 0}
+          disabled={
+            isLoading ||
+            (isDateSearch
+              ? !appointmentDate
+              : advanceSearchInput.trim().length === 0)
+          }
           className={styles.searchButton}
           onClick={onAdvanceSearch}
         >

@@ -56,6 +56,15 @@
   position: relative;
 }
 
+.dateSearchPicker {
+  flex: 1 1 auto;
+
+  :global(.cds--date-picker-container),
+  :global(.cds--date-picker__input) {
+    width: 100%;
+  }
+}
+
 .errorMessage {
   position: absolute;
   top: 100%;
@@ -144,7 +153,7 @@
 }
 
 .actionButton {
-  @include type-style('body-compact-01');
+  @include type-style("body-compact-01");
   border: 1px solid;
   display: flex;
   width: 8.8rem !important;

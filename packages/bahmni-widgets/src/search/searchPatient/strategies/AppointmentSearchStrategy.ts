@@ -13,6 +13,8 @@ import {
   ValidationResult,
 } from './SearchStrategy.interface';
 
+export const APPOINTMENT_DATE_FIELD = 'appointmentDate';
+
 /**
  * Strategy for searching patients by appointment attributes
  */
@@ -61,6 +63,10 @@ export class AppointmentSearchStrategy implements SearchStrategy {
   ): Record<string, string> {
     const requestBody: Record<string, string> = {};
 
+    if (fieldsToSearch[0] === APPOINTMENT_DATE_FIELD) {
+      return this.buildDateSearchRequest(searchTerm);
+    }
+
     // Add the search field (e.g., appointmentNumber)
     if (fieldsToSearch.length > 0) {
       requestBody[fieldsToSearch[0]] = searchTerm.trim();
@@ -73,6 +79,21 @@ export class AppointmentSearchStrategy implements SearchStrategy {
     requestBody.startDate = oneYearAgo.toISOString();
 
     return requestBody;
+  }
+
+  /**
+   * Build a same-day range from a 'yyyy-MM-dd' local date, sent as UTC ISO
+   * timestamps since the backend stores appointments in UTC
+   */
+  private buildDateSearchRequest(searchTerm: string): Record<string, string> {
+    const [year, month, day] = searchTerm.trim().split('-').map(Number);
+    const startOfDay = new Date(year, month - 1, day, 0, 0, 0, 0);
+    const endOfDay = new Date(year, month - 1, day, 23, 59, 59, 999);
+
+    return {
+      startDate: startOfDay.toISOString(),
+      endDate: endOfDay.toISOString(),
+    };
   }
 
   /**

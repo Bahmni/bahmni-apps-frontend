@@ -2,10 +2,12 @@ import {
   getConfig,
   searchPatientByNameOrId,
   searchPatientByCustomAttribute,
+  searchAppointmentsByAttribute,
 } from '@bahmni/services';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { format } from 'date-fns';
 import { axe, toHaveNoViolations } from 'jest-axe';
 import { MemoryRouter } from 'react-router-dom';
 import { useNotification } from '../../../notification';
@@ -25,6 +27,7 @@ jest.mock('@bahmni/services', () => ({
   getConfig: jest.fn(),
   searchPatientByNameOrId: jest.fn(),
   searchPatientByCustomAttribute: jest.fn(),
+  searchAppointmentsByAttribute: jest.fn(),
 }));
 jest.mock('../../../notification');
 jest.mock('../../../userPrivileges/useUserPrivilege');
@@ -625,5 +628,86 @@ describe('SearchPatient', () => {
     });
     const results = await axe(container);
     expect(results).toHaveNoViolations();
+  });
+
+  describe('appointment date search', () => {
+    const DATE_OPTION = 'APPOINTMENT_SEARCH_DROPDOWN_DATE';
+
+    const appointmentConfig: SearchPatientConfig = {
+      customAttributes: [],
+      appointment: [
+        {
+          translationKey: DATE_OPTION,
+          fields: ['appointmentDate'],
+          columnTranslationKeys: ['APPOINTMENT_SEARCH_HEADER_DATE'],
+          type: 'appointment' as const,
+          actions: [],
+        },
+      ],
+    };
+
+    const selectOption = async (name: string) => {
+      await waitFor(() => {
+        expect(screen.getByTestId('search-patient-tile')).toBeInTheDocument();
+      });
+      await userEvent.click(
+        screen.getByRole('combobox', {
+          name: /PATIENT_SEARCH_ATTRIBUTE_SELECTOR/,
+        }),
+      );
+      await userEvent.click(await screen.findByRole('option', { name }));
+    };
+
+    beforeEach(() => {
+      (searchAppointmentsByAttribute as jest.Mock).mockResolvedValue([]);
+    });
+
+    it('shows a date picker pre-filled with today instead of the text input and enables search by default', async () => {
+      renderSearchPatient(appointmentConfig);
+      await selectOption(DATE_OPTION);
+
+      const dateInput = screen.getByTestId('advance-search-date-input');
+      expect(dateInput).toBeInTheDocument();
+      expect(dateInput).toHaveValue(format(new Date(), 'MM/dd/yyyy'));
+      expect(
+        screen.queryByTestId('advance-search-input'),
+      ).not.toBeInTheDocument();
+      expect(screen.getByTestId('advance-search-button')).toBeEnabled();
+    });
+
+    it('searches the selected day as a local start/end of day range', async () => {
+      renderSearchPatient(appointmentConfig);
+      await selectOption(DATE_OPTION);
+
+      const today = new Date();
+      const expectedStart = new Date(
+        today.getFullYear(),
+        today.getMonth(),
+        today.getDate(),
+        0,
+        0,
+        0,
+        0,
+      ).toISOString();
+      const expectedEnd = new Date(
+        today.getFullYear(),
+        today.getMonth(),
+        today.getDate(),
+        23,
+        59,
+        59,
+        999,
+      ).toISOString();
+
+      await userEvent.click(screen.getByTestId('advance-search-button'));
+
+      await waitFor(() =>
+        expect(searchAppointmentsByAttribute).toHaveBeenCalledTimes(1),
+      );
+      expect(searchAppointmentsByAttribute).toHaveBeenCalledWith({
+        startDate: expectedStart,
+        endDate: expectedEnd,
+      });
+    });
   });
 });
