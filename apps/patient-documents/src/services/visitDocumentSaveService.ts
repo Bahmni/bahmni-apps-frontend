@@ -8,17 +8,33 @@ import {
   saveDocuments,
   uploadDocument,
 } from '@bahmni/services';
-import type { PendingDocument } from '@bahmni/widgets';
 
 export interface DocumentSaveFailure {
   fileName: string;
   message: string;
 }
 
+/**
+ * The data the save needs per document. Deliberately owned here rather than reusing an upload
+ * widget's view model, so this service stays reusable by any caller with files and owes nothing
+ * to the widget package; callers map their own state into this shape.
+ */
+export interface DocumentSaveInput {
+  /** Identifies the document in the caller's state and in {@link VisitDocumentSaveResult}. */
+  id: string;
+  file: File;
+  fileName: string;
+  contentType: string;
+  documentType: DocumentType | null;
+  note: string;
+  /** Upload url when the bytes were already uploaded, so a retry does not upload again. */
+  uploadedUrl?: string;
+}
+
 export interface VisitDocumentSaveResult {
-  /** Ids of the pending documents that are now saved. */
+  /** Ids of the input documents that are now saved. */
   savedIds: string[];
-  /** Upload url per pending document id, so a retry after a failed save does not upload again. */
+  /** Upload url per document id, so a retry after a failed save does not upload again. */
   uploadedUrls: Record<string, string>;
   failures: DocumentSaveFailure[];
 }
@@ -27,7 +43,7 @@ interface SaveVisitDocumentsInput {
   patientUuid: string;
   encounterTypeName: string;
   target: DocumentSaveTarget;
-  documents: PendingDocument[];
+  documents: DocumentSaveInput[];
   defaultDocumentType: DocumentType | null;
   authorPractitionerUuid?: string;
 }
@@ -58,7 +74,7 @@ export async function saveVisitDocuments({
         : uploadDocument(document.file, encounterTypeName, patientUuid),
     ),
   );
-  const uploaded: PendingDocument[] = [];
+  const uploaded: DocumentSaveInput[] = [];
   documents.forEach((document, index) => {
     const upload = uploads[index];
     if (upload.status === 'fulfilled') {

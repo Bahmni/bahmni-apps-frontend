@@ -1,5 +1,7 @@
-import type { PendingDocument } from '@bahmni/widgets';
-import { saveVisitDocuments } from '../visitDocumentSaveService';
+import {
+  DocumentSaveInput,
+  saveVisitDocuments,
+} from '../visitDocumentSaveService';
 
 jest.mock('@bahmni/services', () => ({
   ...jest.requireActual('@bahmni/services'),
@@ -32,21 +34,19 @@ const LAB_REPORT = { id: 'type-1', label: 'Lab Report' };
 
 const pending = (
   fileName: string,
-  overrides: Partial<PendingDocument> = {},
-): PendingDocument => ({
+  overrides: Partial<DocumentSaveInput> = {},
+): DocumentSaveInput => ({
   id: `pending-${fileName}`,
   file: new File([new Uint8Array(4)], fileName, { type: 'image/png' }),
-  url: `blob:http://localhost/${fileName}`,
   fileName,
   contentType: 'image/png',
   documentType: null,
   note: '',
-  isNoteVisible: false,
   ...overrides,
 });
 
 const save = (
-  documents: PendingDocument[],
+  documents: DocumentSaveInput[],
   target:
     | typeof EXISTING_ENCOUNTER_TARGET
     | typeof CREATE_ENCOUNTER_TARGET = EXISTING_ENCOUNTER_TARGET,

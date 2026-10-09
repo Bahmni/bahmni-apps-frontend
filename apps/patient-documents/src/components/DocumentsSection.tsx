@@ -23,7 +23,7 @@ import {
 } from '@bahmni/widgets';
 import { InlineLoading, TextArea } from '@carbon/react';
 import { useQuery } from '@tanstack/react-query';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { BAHMNI_PATIENT_DOCUMENTS_NAMESPACE } from '../constants/app';
 import {
@@ -31,6 +31,7 @@ import {
   VisitDocumentGroup,
 } from '../hooks/useVisitDocuments';
 import {
+  DocumentSaveInput,
   saveVisitDocuments,
   VisitDocumentSaveResult,
 } from '../services/visitDocumentSaveService';
@@ -74,6 +75,17 @@ const saveTargetOf = (
           visitPeriod: group.visit.period,
         },
       };
+
+/** Strips the widget's UI-only state, so the save service owes nothing to the widget package. */
+const toDocumentSaveInput = (document: PendingDocument): DocumentSaveInput => ({
+  id: document.id,
+  file: document.file,
+  fileName: document.fileName,
+  contentType: document.contentType,
+  documentType: document.documentType,
+  note: document.note,
+  uploadedUrl: document.uploadedUrl,
+});
 
 export const DocumentsSection: React.FC<DocumentsSectionProps> = ({
   patientUuid,
@@ -242,7 +254,7 @@ export const DocumentsSection: React.FC<DocumentsSectionProps> = ({
             patientUuid,
             encounterTypeName: documentEncounterType.name,
             target: saveTargetOf(group, documentEncounterType),
-            documents,
+            documents: documents.map(toDocumentSaveInput),
             defaultDocumentType,
             authorPractitionerUuid: practitioner?.uuid,
           });
@@ -262,9 +274,9 @@ export const DocumentsSection: React.FC<DocumentsSectionProps> = ({
     queryFn: () => getDocumentTypes(topLevelConcept!),
     enabled: !!topLevelConcept,
   });
-  const defaultDocumentType = getDefaultDocumentType(
-    documentTypes ?? [],
-    defaultOption,
+  const defaultDocumentType = useMemo(
+    () => getDefaultDocumentType(documentTypes ?? [], defaultOption),
+    [documentTypes, defaultOption],
   );
 
   // Document types populate an optional dropdown, so a failure must not block upload — but the
