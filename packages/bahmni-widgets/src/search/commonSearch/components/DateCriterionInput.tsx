@@ -11,6 +11,11 @@ interface Props {
   rangeOrderError: string | null;
 }
 
+// Flatpickr parses string values with the display format (e.g. d/m/Y), which
+// mangles ISO strings retained from a saved search. Pass a Date instead.
+const toPickerValue = (iso: string | null | undefined): Date | '' =>
+  iso ? new Date(iso) : '';
+
 const DateCriterionInput = ({
   input,
   value,
@@ -34,7 +39,7 @@ const DateCriterionInput = ({
         >
           <DatePicker
             datePickerType="single"
-            value={value?.from.value ?? ''}
+            value={toPickerValue(value?.from.value)}
             onChange={(dates: Date[]) =>
               onChange({
                 from: {
@@ -64,7 +69,7 @@ const DateCriterionInput = ({
         >
           <DatePicker
             datePickerType="single"
-            value={value?.to?.value ?? ''}
+            value={toPickerValue(value?.to?.value)}
             onChange={(dates: Date[]) =>
               onChange({
                 from: {
@@ -102,7 +107,7 @@ const DateCriterionInput = ({
     <div id="date-criterion-input" data-testid="date-criterion-input-test-id">
       <DatePicker
         datePickerType="single"
-        value={value?.from.value ?? ''}
+        value={toPickerValue(value?.from.value)}
         className={styles.datePicker}
         onChange={(dates: Date[]) => {
           const iso = dates[0]?.toISOString() ?? null;
