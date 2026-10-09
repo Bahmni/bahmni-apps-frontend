@@ -263,6 +263,17 @@ describe('ModuleTileGrid', () => {
     expect(screen.getByText('Reports')).toBeInTheDocument();
   });
 
+  it('falls back to the module label when its translation key is missing', async () => {
+    mockGetVisibleModules.mockResolvedValue(mockModules);
+
+    renderGrid();
+
+    await waitFor(() => {
+      expect(screen.getByText('Clinical')).toBeInTheDocument();
+    });
+    expect(screen.queryByText('LABEL_CLINICAL')).not.toBeInTheDocument();
+  });
+
   it('applies a host-supplied className to the outer container', async () => {
     mockGetVisibleModules.mockResolvedValue(mockModules);
 

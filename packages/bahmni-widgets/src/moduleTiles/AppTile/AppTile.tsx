@@ -13,11 +13,19 @@ interface AppTileProps {
   label: string;
   icon: string;
   url: string;
+  /** Shown when `label` has no translation in any loaded locale. */
+  fallbackLabel?: string;
 }
 
-export const AppTile: React.FC<AppTileProps> = ({ id, label, icon, url }) => {
+export const AppTile: React.FC<AppTileProps> = ({
+  id,
+  label,
+  icon,
+  url,
+  fallbackLabel,
+}) => {
   const { t } = useTranslation();
-  const translatedLabel = t(label);
+  const translatedLabel = t(label, { defaultValue: fallbackLabel });
 
   return (
     <ClickableTile
