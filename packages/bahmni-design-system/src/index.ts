@@ -180,6 +180,7 @@ export {
   type TableExpandedRowProps,
 } from './atoms/tableExpandedRow';
 export { InlineLoading, type InlineLoadingProps } from './atoms/inlineLoading';
+export { ProgressBar, type ProgressBarProps } from './atoms/progressBar';
 export { OverflowMenu, type OverflowMenuProps } from './atoms/overflowMenu';
 export {
   OverflowMenuItem,
