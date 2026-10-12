@@ -1,0 +1,42 @@
+.contributors {
+  position: absolute;
+  width: 18em;
+  height: 50em;
+  bottom: 0;
+  left: 50%;
+  margin-left: -9em;
+  // Old page used 350% of the browser default 16px; Carbon's base size is smaller.
+  font-family: 'Times New Roman', Times, serif;
+  font-size: 56px;
+  font-weight: bold;
+  line-height: normal;
+  letter-spacing: normal;
+  text-align: justify;
+  overflow: hidden;
+  transform-origin: 50% 100%;
+  transform: perspective(300px) rotateX(25deg);
+}
+
+.contributorList {
+  position: absolute;
+  text-align: justify;
+  top: 100%;
+  animation: scroll 150s linear 1s infinite;
+
+  // Carbon's reset zeroes paragraph margins and resets font; restore browser defaults.
+  p {
+    margin: 1em 0;
+    font: inherit;
+    letter-spacing: inherit;
+  }
+}
+
+@keyframes scroll {
+  0% {
+    top: 100%;
+  }
+
+  100% {
+    top: -250%;
+  }
+}

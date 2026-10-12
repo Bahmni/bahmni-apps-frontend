@@ -8,11 +8,22 @@ const HomePage = lazy(() =>
   })),
 );
 
+const Credits = lazy(() =>
+  import('../components/Credits').then((module) => ({
+    default: module.Credits,
+  })),
+);
+
 export const routes: Routes = [
   {
     path: '/',
     component: HomePage,
     name: 'Home',
+  },
+  {
+    path: '/credits',
+    component: Credits,
+    name: 'Credits',
   },
 ];
 
