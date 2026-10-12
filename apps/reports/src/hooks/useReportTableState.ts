@@ -122,8 +122,10 @@ export const useReportTableState = (
     filters: ReportFilters,
   ) => {
     if (filters.format === 'CUSTOM EXCEL') {
+      const nextFormat =
+        availableFormats.find((format) => format !== 'CUSTOM EXCEL') ?? null;
       updateRow(reportId, {
-        format: availableFormats[0] ?? null,
+        format: nextFormat,
         templateLocation: null,
       });
     }

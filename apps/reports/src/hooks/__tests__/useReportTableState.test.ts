@@ -340,5 +340,33 @@ describe('useReportTableState', () => {
         expect.objectContaining({ format: 'PDF', templateLocation: null }),
       );
     });
+
+    it('does not fall back onto CUSTOM EXCEL itself when it is first in availableFormats', async () => {
+      const { result } = renderHook(() =>
+        useReportTableState(
+          [reportCustomExcel],
+          NO_FILTERS,
+          ['CUSTOM EXCEL', 'PDF'],
+          undefined,
+        ),
+      );
+      const file = new File(['content'], 'template.xlsx');
+      await act(async () => {
+        await result.current.handleTemplateUpload(reportCustomExcel, file);
+      });
+      act(() => {
+        result.current.updateRow(reportCustomExcel.id, {
+          format: 'CUSTOM EXCEL',
+        });
+      });
+
+      act(() => {
+        result.current.handleRunReport(reportCustomExcel);
+      });
+
+      expect(result.current.rowFilters(reportCustomExcel.id)).toEqual(
+        expect.objectContaining({ format: 'PDF', templateLocation: null }),
+      );
+    });
   });
 });
