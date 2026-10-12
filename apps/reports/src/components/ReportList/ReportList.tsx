@@ -24,7 +24,6 @@ const NO_FILTERS: AppliedFilters = {
   startDate: null,
   endDate: null,
   format: null,
-  reportTemplateLocation: null,
   version: 0,
 };
 
@@ -81,7 +80,6 @@ export const ReportList: React.FC = () => {
       startDate,
       endDate,
       format,
-      reportTemplateLocation: null,
       version: prev.version + 1,
     }));
   };
