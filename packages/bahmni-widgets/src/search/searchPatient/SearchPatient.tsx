@@ -284,7 +284,6 @@ const SearchPatient = ({ extensionParams }: SearchWidgetProps) => {
 
   const resultsFieldType = isAdvancedSearch ? selectedFieldType : '';
   const selectedField = getSelectedField();
-  // Appointment entries repeat the same result columns, so only the searched one is used
   const resultsSearchFields =
     resultsFieldType === 'appointment'
       ? selectedField
