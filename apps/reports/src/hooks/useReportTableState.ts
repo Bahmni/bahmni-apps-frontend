@@ -203,7 +203,7 @@ export const useReportTableState = (
       defaultPaperSize,
       resolveTemplateLocation(report, filters.templateLocation),
     );
-    setQueuingReportId(null);
+    setQueuingReportId((current) => (current === report.id ? null : current));
 
     if (!queued) {
       addNotification({
@@ -238,7 +238,9 @@ export const useReportTableState = (
         type: 'error',
       });
     } finally {
-      setUploadingTemplateId(null);
+      setUploadingTemplateId((current) =>
+        current === report.id ? null : current,
+      );
     }
   };
 
