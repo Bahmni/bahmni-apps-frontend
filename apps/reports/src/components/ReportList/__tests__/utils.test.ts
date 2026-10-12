@@ -1,11 +1,5 @@
 import { UserPrivilege } from '@bahmni/services';
-import {
-  differenceInCalendarDays,
-  isSameDay,
-  startOfQuarter,
-  startOfYear,
-  subMonths,
-} from 'date-fns';
+import { differenceInCalendarDays, isSameDay, subMonths } from 'date-fns';
 import type { ReportDefinition, ReportsConfig } from '../models';
 import {
   filterReportsByPrivilege,
@@ -375,16 +369,58 @@ describe('Report List Utils', () => {
       expect(dayAfterEnd.getMonth()).not.toBe(end.getMonth());
     });
 
-    it('returns the start of the quarter through today for THIS_QUARTER', () => {
-      const [start, end] = presetToRange('THIS_QUARTER');
-      expect(isSameDay(start, startOfQuarter(new Date()))).toBe(true);
-      expect(isSameDay(end, new Date())).toBe(true);
+    describe('THIS_QUARTER', () => {
+      afterEach(() => {
+        jest.useRealTimers();
+      });
+
+      it('returns the start of the quarter through today', () => {
+        jest.useFakeTimers().setSystemTime(new Date('2024-08-15T12:00:00'));
+        const [start, end] = presetToRange('THIS_QUARTER');
+        expect(isSameDay(start, new Date('2024-07-01'))).toBe(true);
+        expect(isSameDay(end, new Date('2024-08-15'))).toBe(true);
+      });
+
+      it('includes the Feb 29 leap day when today falls on it', () => {
+        jest.useFakeTimers().setSystemTime(new Date('2024-02-29T12:00:00'));
+        const [start, end] = presetToRange('THIS_QUARTER');
+        expect(isSameDay(start, new Date('2024-01-01'))).toBe(true);
+        expect(isSameDay(end, new Date('2024-02-29'))).toBe(true);
+      });
+
+      it('rolls over to the new quarter on a Jan/Dec quarter boundary', () => {
+        jest.useFakeTimers().setSystemTime(new Date('2024-01-01T12:00:00'));
+        const [start, end] = presetToRange('THIS_QUARTER');
+        expect(isSameDay(start, new Date('2024-01-01'))).toBe(true);
+        expect(isSameDay(end, new Date('2024-01-01'))).toBe(true);
+      });
     });
 
-    it('returns the start of the year through today for THIS_YEAR', () => {
-      const [start, end] = presetToRange('THIS_YEAR');
-      expect(isSameDay(start, startOfYear(new Date()))).toBe(true);
-      expect(isSameDay(end, new Date())).toBe(true);
+    describe('THIS_YEAR', () => {
+      afterEach(() => {
+        jest.useRealTimers();
+      });
+
+      it('returns the start of the year through today', () => {
+        jest.useFakeTimers().setSystemTime(new Date('2024-08-15T12:00:00'));
+        const [start, end] = presetToRange('THIS_YEAR');
+        expect(isSameDay(start, new Date('2024-01-01'))).toBe(true);
+        expect(isSameDay(end, new Date('2024-08-15'))).toBe(true);
+      });
+
+      it('returns a single-day range on Jan 1', () => {
+        jest.useFakeTimers().setSystemTime(new Date('2024-01-01T12:00:00'));
+        const [start, end] = presetToRange('THIS_YEAR');
+        expect(isSameDay(start, new Date('2024-01-01'))).toBe(true);
+        expect(isSameDay(end, new Date('2024-01-01'))).toBe(true);
+      });
+
+      it('does not roll into the next year on Dec 31', () => {
+        jest.useFakeTimers().setSystemTime(new Date('2023-12-31T12:00:00'));
+        const [start, end] = presetToRange('THIS_YEAR');
+        expect(isSameDay(start, new Date('2023-01-01'))).toBe(true);
+        expect(isSameDay(end, new Date('2023-12-31'))).toBe(true);
+      });
     });
 
     it('returns today through today for TODAY', () => {
