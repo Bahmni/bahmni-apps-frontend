@@ -205,6 +205,7 @@ export const ReportsTable = React.memo<ReportsTableProps>(
                         </p>
                       ) : (
                         <FileUploader
+                          key={`${report.id}-${filters.templateLocation ?? 'empty'}`}
                           testId={`template-uploader-${report.id}`}
                           accept={CUSTOM_EXCEL_TEMPLATE_ACCEPT}
                           buttonLabel={t(
