@@ -285,6 +285,7 @@ export {
   groupObservationsByEncounter,
   type EncounterGroup,
 } from './observationService';
+export { getBundle } from './fhirBundle';
 export {
   getCurrentProvider,
   fetchAllProviders,
