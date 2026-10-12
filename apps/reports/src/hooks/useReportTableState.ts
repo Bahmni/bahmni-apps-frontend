@@ -233,7 +233,9 @@ export const useReportTableState = (
       const templateLocation = await uploadReportTemplate(file);
       updateRow(report.id, { templateLocation });
       clearRowFieldError(report.id, 'format');
-    } catch {
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.error('Error uploading template:', error);
       addNotification({
         title: t('REPORTS_ERROR_TITLE'),
         message: t('REPORTS_UPLOAD_ERROR'),
