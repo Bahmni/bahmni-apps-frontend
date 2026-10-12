@@ -4,7 +4,7 @@ import type {
   ReportDefinition,
   FormatKey,
 } from '../components/ReportList/models';
-import { dispatchReportAuditEvent } from './reportAuditEvent';
+import { dispatchReportAuditEvent } from '../utils/reportAuditEvent';
 
 export const useRunReport = () => {
   const runReport = useCallback(
