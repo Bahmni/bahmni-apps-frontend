@@ -41,4 +41,10 @@ describe('adminImportService utils', () => {
       '/uploaded-files/mrs/err/a.csv',
     );
   });
+
+  it('encodes special characters per path segment in the error file URL', () => {
+    expect(getImportErrorFileUrl(item({ errorFileName: 'err/a#b.csv' }))).toBe(
+      '/uploaded-files/mrs/err/a%23b.csv',
+    );
+  });
 });

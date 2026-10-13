@@ -186,4 +186,43 @@ describe('CsvUpload', () => {
       '/uploaded-files/mrs/partial-err.csv',
     );
   });
+
+  it('shows a summary without download instructions when no error file exists', () => {
+    setHooks([
+      item({
+        id: '1',
+        status: 'COMPLETED_WITH_ERRORS',
+        failedRecords: 2,
+        errorFileName: null,
+      }),
+    ]);
+    render(<CsvUpload />);
+
+    const table = screen.getByTestId('admin-csv-uploaded-files-table');
+    expect(within(table).getByText('Some records failed.')).toBeInTheDocument();
+    expect(
+      within(table).queryByText(
+        'Some records failed. Download the Error File for details.',
+      ),
+    ).not.toBeInTheDocument();
+    expect(within(table).queryByRole('link')).not.toBeInTheDocument();
+  });
+
+  it('translates known history statuses', () => {
+    setHooks([
+      item({ id: '1', status: 'COMPLETED' }),
+      item({ id: '2', status: 'COMPLETED_WITH_ERRORS' }),
+      item({ id: '3', status: 'ERROR' }),
+      item({ id: '4', status: 'IN_PROGRESS' }),
+    ]);
+    render(<CsvUpload />);
+
+    const table = screen.getByTestId('admin-csv-uploaded-files-table');
+    expect(within(table).getByText('Completed')).toBeInTheDocument();
+    expect(
+      within(table).getByText('Completed with errors'),
+    ).toBeInTheDocument();
+    expect(within(table).getByText('Error')).toBeInTheDocument();
+    expect(within(table).getByText('In progress')).toBeInTheDocument();
+  });
 });

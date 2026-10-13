@@ -28,6 +28,15 @@ const DATE_TIME_FORMAT = 'dd MMM yyyy h:mm aaa';
 // Hoisted so the dropdown items array isn't reallocated on every render.
 const IMPORT_TYPE_OPTIONS: ImportType[] = [...IMPORT_TYPES];
 
+// Maps backend import statuses to their localized label keys. Unknown statuses
+// fall back to the raw value.
+const STATUS_LABEL_KEYS: Record<string, string> = {
+  COMPLETED: 'ADMIN_CSV_STATUS_COMPLETED',
+  COMPLETED_WITH_ERRORS: 'ADMIN_CSV_STATUS_COMPLETED_WITH_ERRORS',
+  ERROR: 'ADMIN_CSV_STATUS_ERROR',
+  IN_PROGRESS: 'ADMIN_CSV_STATUS_IN_PROGRESS',
+};
+
 export const CsvUpload: React.FC = () => {
   const { t } = useTranslation();
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -63,9 +72,12 @@ export const CsvUpload: React.FC = () => {
             .formattedResult;
         case 'errorMessage':
           if (item.errorMessage) return item.errorMessage;
-          return item.status === STATUS_COMPLETED_WITH_ERRORS
-            ? t('ADMIN_CSV_ERROR_SUMMARY_MESSAGE')
-            : '';
+          if (item.status === STATUS_COMPLETED_WITH_ERRORS) {
+            return hasImportError(item)
+              ? t('ADMIN_CSV_ERROR_SUMMARY_MESSAGE')
+              : t('ADMIN_CSV_ERROR_SUMMARY_NO_FILE_MESSAGE');
+          }
+          return '';
         case 'download':
           return hasImportError(item) ? (
             <Link href={getImportErrorFileUrl(item)}>
@@ -75,7 +87,9 @@ export const CsvUpload: React.FC = () => {
         case 'originalFileName':
           return item.originalFileName;
         case 'status':
-          return item.status;
+          return STATUS_LABEL_KEYS[item.status]
+            ? t(STATUS_LABEL_KEYS[item.status])
+            : item.status;
         default:
           return null;
       }
