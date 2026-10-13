@@ -111,7 +111,7 @@ export class AttributeSearchStrategy implements SearchStrategy {
    * Allows only digits and optional leading '+'
    */
   private validatePhoneNumber(input: string): ValidationResult {
-    const hasPlusAtStart = input.length > 0 && input[0] === '+';
+    const hasPlusAtStart = input.startsWith('+');
     const numericValue = input.replace(/[^0-9]/g, '');
     const formattedValue = hasPlusAtStart ? '+' + numericValue : numericValue;
 
@@ -130,7 +130,7 @@ export class AttributeSearchStrategy implements SearchStrategy {
    * Format phone number to contain only digits and optional leading '+'
    */
   private formatPhoneNumber(input: string): string {
-    const hasPlusAtStart = input.length > 0 && input[0] === '+';
+    const hasPlusAtStart = input.startsWith('+');
     const numericValue = input.replace(/[^0-9]/g, '');
     return hasPlusAtStart ? '+' + numericValue : numericValue;
   }
