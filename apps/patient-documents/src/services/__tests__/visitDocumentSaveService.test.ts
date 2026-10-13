@@ -93,9 +93,13 @@ describe('saveVisitDocuments', () => {
       target: EXISTING_ENCOUNTER_TARGET,
       documents: [
         {
-          url: 'server/new-url.png',
-          contentType: 'image/png',
-          title: 'doc.png',
+          files: [
+            {
+              url: 'server/new-url.png',
+              contentType: 'image/png',
+              title: 'doc.png',
+            },
+          ],
           typeCode: 'type-1',
           typeDisplay: 'Lab Report',
           description: undefined,
@@ -145,9 +149,12 @@ describe('saveVisitDocuments', () => {
     // One call, so the batch shares a single new document encounter.
     expect(saveDocuments).toHaveBeenCalledTimes(1);
     expect(saveDocuments.mock.calls[0][0].documents).toEqual([
-      expect.objectContaining({ title: 'scan.png', description: undefined }),
       expect.objectContaining({
-        title: 'report.pdf',
+        files: [expect.objectContaining({ title: 'scan.png' })],
+        description: undefined,
+      }),
+      expect.objectContaining({
+        files: [expect.objectContaining({ title: 'report.pdf' })],
         description: 'second only',
       }),
     ]);
@@ -162,7 +169,9 @@ describe('saveVisitDocuments', () => {
     const result = await save([pending('scan.png'), pending('report.pdf')]);
 
     expect(saveDocuments.mock.calls[0][0].documents).toEqual([
-      expect.objectContaining({ title: 'scan.png' }),
+      expect.objectContaining({
+        files: [expect.objectContaining({ title: 'scan.png' })],
+      }),
     ]);
     expect(result).toEqual({
       savedIds: ['pending-scan.png'],
@@ -220,7 +229,9 @@ describe('saveVisitDocuments', () => {
 
     expect(uploadDocument).not.toHaveBeenCalled();
     expect(saveDocuments.mock.calls[0][0].documents).toEqual([
-      expect.objectContaining({ url: 'patient/stored-once.png' }),
+      expect.objectContaining({
+        files: [expect.objectContaining({ url: 'patient/stored-once.png' })],
+      }),
     ]);
   });
 

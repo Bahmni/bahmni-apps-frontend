@@ -99,9 +99,13 @@ export async function saveVisitDocuments({
       documents: uploaded.map((document) => {
         const type = document.documentType ?? defaultDocumentType;
         return {
-          url: uploadedUrls[document.id],
-          contentType: document.contentType,
-          title: document.fileName,
+          files: [
+            {
+              url: uploadedUrls[document.id],
+              contentType: document.contentType,
+              title: document.fileName,
+            },
+          ],
           typeCode: type?.id,
           typeDisplay: type?.label,
           description: document.note.trim() || undefined,
