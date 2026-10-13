@@ -1,6 +1,7 @@
 import { getFhirObservations } from '@bahmni/form2-controls';
 import { Form2Observation } from '@bahmni/services';
 import { Reference } from 'fhir/r4';
+import { markClearedExistingObsAsVoided } from '../observationReconciliation';
 import { createObservationEntries } from '../observationResourceCreator';
 
 jest.mock('@bahmni/form2-controls', () => ({
@@ -500,6 +501,33 @@ describe('createObservationEntries', () => {
       );
 
       expect(entries).toHaveLength(0);
+    });
+  });
+
+  describe('cleared conditional field end-to-end', () => {
+    it('emits DELETE (not PUT) for a previously-saved leaf whose value was cleared by a form condition', () => {
+      // Simulate: Form2 setValue(null) left a uuid-bearing obs with null value in the transformed list.
+      // markClearedExistingObsAsVoided runs first, then createObservationEntries must emit DELETE.
+      const obs: Form2Observation = {
+        concept: { uuid: 'interpreter-name-concept' },
+        value: null,
+        uuid: 'interpreter-name-obs-uuid',
+      };
+
+      markClearedExistingObsAsVoided([obs]);
+
+      const entries = createObservationEntries(
+        [obs],
+        subject,
+        encounter,
+        performer,
+      );
+
+      expect(entries).toHaveLength(1);
+      expect(entries[0].request?.method).toBe('DELETE');
+      expect(entries[0].request?.url).toBe(
+        'Observation/interpreter-name-obs-uuid',
+      );
     });
   });
 });
