@@ -108,6 +108,11 @@ const SearchPatientInput = ({
                   data-testid="advance-search-date-input"
                   labelText=""
                   hideLabel
+                  onKeyDownCapture={(e: React.KeyboardEvent) => {
+                    if (e.key === 'Enter') {
+                      setTimeout(onAdvanceSearch, 0);
+                    }
+                  }}
                 />
               </DatePicker>
             ) : (

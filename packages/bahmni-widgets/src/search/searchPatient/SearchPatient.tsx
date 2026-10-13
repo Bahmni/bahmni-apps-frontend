@@ -195,7 +195,6 @@ const SearchPatient = ({ extensionParams }: SearchWidgetProps) => {
   const handleDateChange = (date: Date | null) => {
     if (!date) return;
     setAppointmentDate(date);
-    setSearchTerm(toLocalDateString(date));
   };
 
   const handleAdvanceSearch = () => {
