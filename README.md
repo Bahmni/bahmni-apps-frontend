@@ -21,7 +21,7 @@ Bahmni is an open-source healthcare information system designed to serve healthc
 
 ### Upgrading from Bahmni Lite 1.x
 
-If you are upgrading from Bahmni Lite 1.x, refer to the [Setup Guide](docs/setup-guide.md) for environment and Docker configuration changes. Node.js v22 is now required (previously v18).
+If you are upgrading from Bahmni Lite 1.x, refer to the [Setup Guide](docs/setup-guide.md) for environment and Docker configuration changes. Node.js v22.x or later is recommended (previously v18.x).
 
 ---
 
