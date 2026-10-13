@@ -1,6 +1,22 @@
 import { ComplexValue, Form2Observation } from '@bahmni/services';
 import type { Reference } from 'fhir/r4';
 
+/** Flips existing (uuid-bearing) leaf observations whose value was explicitly cleared to voided, so the bundle builder emits DELETE instead of a PUT with no value[x]. */
+export const markClearedExistingObsAsVoided = (
+  transformed: Form2Observation[],
+): void => {
+  for (const obs of transformed) {
+    if (obs.groupMembers?.length) {
+      markClearedExistingObsAsVoided(obs.groupMembers);
+      continue;
+    }
+    if (obs.uuid && !obs.voided && (obs.value == null || obs.value === '')) {
+      obs.voided = true;
+      obs.value = null;
+    }
+  }
+};
+
 /** Injects a synthetic voided DELETE entry for any obs present in `original` but missing from `transformed`. */
 export const injectMissingDeleteObs = (
   transformed: Form2Observation[],

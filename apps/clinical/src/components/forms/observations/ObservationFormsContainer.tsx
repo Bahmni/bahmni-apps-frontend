@@ -50,6 +50,7 @@ import {
   extractVersionFromFormFieldPath,
   findBasedOnFromObservations,
   injectMissingDeleteObs,
+  markClearedExistingObsAsVoided,
   markUnchangedObservations,
   mergeObsExistingData,
   restoreComplexValues,
@@ -379,6 +380,7 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
               )
             : [];
 
+        markClearedExistingObsAsVoided(transformedObservations);
         mergeObsExistingData(
           transformedObservations,
           initialObservationsRef.current,
@@ -456,6 +458,7 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
       setValidationErrorMessage(null);
 
       try {
+        markClearedExistingObsAsVoided(transformedObservations);
         mergeObsExistingData(
           transformedObservations,
           initialObservationsRef.current,
@@ -530,6 +533,7 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
         transformedObservations,
       );
 
+      markClearedExistingObsAsVoided(transformedObservations);
       mergeObsExistingData(
         transformedObservations,
         initialObservationsRef.current,

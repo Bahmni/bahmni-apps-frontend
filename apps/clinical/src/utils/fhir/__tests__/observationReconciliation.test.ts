@@ -2,6 +2,7 @@ import {
   extractVersionFromFormFieldPath,
   findBasedOnFromObservations,
   injectMissingDeleteObs,
+  markClearedExistingObsAsVoided,
   markUnchangedObservations,
   mergeObsExistingData,
   restoreComplexValues,
@@ -334,6 +335,77 @@ describe('markUnchangedObservations', () => {
     const original = [dateTimeObs('obs-1', '2024-03-15T10:30:00')];
     markUnchangedObservations(transformed, original);
     expect(transformed[0].unchanged).toBeUndefined();
+  });
+});
+
+describe('markClearedExistingObsAsVoided', () => {
+  const leaf = (
+    uuid: string | undefined,
+    value: unknown,
+    extra: Record<string, unknown> = {},
+  ) => ({
+    concept: { uuid: 'c1' },
+    value,
+    obsDatetime: '2024-01-01',
+    formNamespace: 'Bahmni',
+    uuid,
+    ...extra,
+  });
+
+  it('voids a leaf obs with uuid and value: null', () => {
+    const obs = leaf('obs-1', null);
+    markClearedExistingObsAsVoided([obs]);
+    expect(obs.voided).toBe(true);
+    expect(obs.value).toBeNull();
+  });
+
+  it('voids a leaf obs with uuid and value: empty string', () => {
+    const obs = leaf('obs-1', '');
+    markClearedExistingObsAsVoided([obs]);
+    expect(obs.voided).toBe(true);
+    expect(obs.value).toBeNull();
+  });
+
+  it('does not void a new obs without uuid (no-op)', () => {
+    const obs = leaf(undefined, null);
+    markClearedExistingObsAsVoided([obs]);
+    expect((obs as { voided?: boolean }).voided).toBeUndefined();
+  });
+
+  it('does not void a leaf obs with uuid that still carries a real value (no-op)', () => {
+    const obs = leaf('obs-1', 'some value');
+    markClearedExistingObsAsVoided([obs]);
+    expect((obs as { voided?: boolean }).voided).toBeUndefined();
+    expect(obs.value).toBe('some value');
+  });
+
+  it('is idempotent — does not change an obs already voided', () => {
+    const obs = leaf('obs-1', null, { voided: true });
+    markClearedExistingObsAsVoided([obs]);
+    expect(obs.voided).toBe(true);
+    expect(obs.value).toBeNull();
+  });
+
+  it('does not touch the obsGroup parent, voids a cleared child leaf, and leaves a valued child untouched', () => {
+    const clearedChild = leaf('child-cleared', null);
+    const valuedChild = leaf('child-valued', 42);
+    const parent = {
+      concept: { uuid: 'grp' },
+      value: null,
+      obsDatetime: '2024-01-01',
+      formNamespace: 'Bahmni',
+      uuid: 'grp-1',
+      groupMembers: [clearedChild, valuedChild],
+    };
+    markClearedExistingObsAsVoided([parent]);
+    // Parent is skipped (has non-empty groupMembers)
+    expect((parent as { voided?: boolean }).voided).toBeUndefined();
+    // Cleared child is voided
+    expect(clearedChild.voided).toBe(true);
+    expect(clearedChild.value).toBeNull();
+    // Valued child is untouched
+    expect((valuedChild as { voided?: boolean }).voided).toBeUndefined();
+    expect(valuedChild.value).toBe(42);
   });
 });
 
