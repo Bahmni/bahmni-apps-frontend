@@ -675,6 +675,39 @@ describe('SearchPatient', () => {
       expect(screen.getByTestId('advance-search-button')).toBeEnabled();
     });
 
+    it('searches the selected date when Enter is pressed in the date picker', async () => {
+      renderSearchPatient(appointmentConfig);
+      await selectOption(DATE_OPTION);
+
+      const today = new Date();
+      await userEvent.click(screen.getByTestId('advance-search-date-input'));
+      await userEvent.keyboard('{enter}');
+
+      await waitFor(() =>
+        expect(searchAppointmentsByAttribute).toHaveBeenCalledTimes(1),
+      );
+      expect(searchAppointmentsByAttribute).toHaveBeenCalledWith({
+        startDate: new Date(
+          today.getFullYear(),
+          today.getMonth(),
+          today.getDate(),
+          0,
+          0,
+          0,
+          0,
+        ).toISOString(),
+        endDate: new Date(
+          today.getFullYear(),
+          today.getMonth(),
+          today.getDate(),
+          23,
+          59,
+          59,
+          999,
+        ).toISOString(),
+      });
+    });
+
     it('searches the selected day as a local start/end of day range', async () => {
       renderSearchPatient(appointmentConfig);
       await selectOption(DATE_OPTION);
