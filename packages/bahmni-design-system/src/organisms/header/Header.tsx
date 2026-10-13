@@ -72,6 +72,7 @@ export const Header: React.FC<HeaderProps> = React.memo(
               key={item.id}
               href={item.href}
               isCurrentPage={item.isCurrentPage}
+              onClick={item.onClick}
             >
               {item.label}
             </BreadcrumbItem>

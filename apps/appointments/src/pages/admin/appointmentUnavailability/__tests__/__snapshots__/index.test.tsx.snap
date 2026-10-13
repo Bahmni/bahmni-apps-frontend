@@ -94,7 +94,7 @@ exports[`AppointmentUnavailabilityPage Snapshot should match snapshot with empty
             >
               <section
                 aria-label="appointment-unavailability-actions-table-action-data-table-aria-label"
-                class="_actionDataTableBody_mn1ph_1 cds--data-table-container"
+                class="_actionDataTableBody_3w0pu_1 cds--data-table-container"
                 data-testid="appointment-unavailability-actions-table-action-data-table-test-id"
                 id="appointment-unavailability-actions-table-action-data-table"
               >
@@ -127,7 +127,7 @@ exports[`AppointmentUnavailabilityPage Snapshot should match snapshot with empty
                   </div>
                 </section>
                 <p
-                  class="_sortableDataTableBodyEmpty_1w499_26"
+                  class="_sortableDataTableBodyEmpty_my1j8_32"
                   data-testid="appointment-unavailability-actions-table-sortable-data-table-test-id-empty"
                 >
                   No Service Unavailabilities found
@@ -236,7 +236,7 @@ exports[`AppointmentUnavailabilityPage Snapshot should match snapshot with unava
             >
               <section
                 aria-label="appointment-unavailability-actions-table-action-data-table-aria-label"
-                class="_actionDataTableBody_mn1ph_1 cds--data-table-container"
+                class="_actionDataTableBody_3w0pu_1 cds--data-table-container"
                 data-testid="appointment-unavailability-actions-table-action-data-table-test-id"
                 id="appointment-unavailability-actions-table-action-data-table"
               >
@@ -269,7 +269,7 @@ exports[`AppointmentUnavailabilityPage Snapshot should match snapshot with unava
                   </div>
                 </section>
                 <div
-                  class="sortable-data-table _sortableDataTableBody_1w499_1"
+                  class="sortable-data-table _sortableDataTableBody_my1j8_1"
                   data-testid="appointment-unavailability-actions-table-sortable-data-table-test-id"
                 >
                   <div

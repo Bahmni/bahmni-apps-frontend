@@ -6,17 +6,22 @@ import { useUserPrivilege } from '@bahmni/widgets';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { mockAppointmentServices } from '../__mocks__/mocks';
 import {
   ADMIN_TAB_PRIVILEGE,
   MANAGE_APPOINTMENT_SERVICES_PRIVILEGE,
-} from '../constants';
+} from '../../../../constants/app';
+import { mockAppointmentServices } from '../__mocks__/mocks';
 import AllServicesPage from '../index';
 
 jest.mock('@bahmni/services', () => ({
   ...jest.requireActual('@bahmni/services'),
   getAllAppointmentServices: jest.fn(),
   deleteAppointmentService: jest.fn(),
+}));
+
+jest.mock('react-router-dom', () => ({
+  ...jest.requireActual('react-router-dom'),
+  useNavigate: () => jest.fn(),
 }));
 
 const mockAddNotification = jest.fn();

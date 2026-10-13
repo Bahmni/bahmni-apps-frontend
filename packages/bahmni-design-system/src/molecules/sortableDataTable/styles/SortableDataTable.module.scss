@@ -9,6 +9,12 @@
     color: $text-primary !important;
     height: $spacing-10;
     align-content: start;
+    input {
+      background-color: $layer-01 !important;
+    }
+    select {
+      background-color: $layer-01 !important;
+    }
   }
   th,
   th * {

@@ -24,3 +24,5 @@ export const IndexPage: React.FC = () => {
     </AppointmentsLayout>
   );
 };
+
+export default IndexPage;
