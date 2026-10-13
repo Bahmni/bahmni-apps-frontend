@@ -12,6 +12,9 @@ import { useNotification } from '../../notification';
 import DocumentsTable from '../DocumentsTable';
 
 jest.mock('../../notification');
+jest.mock('../../userPrivileges/useHasPrivilege', () => ({
+  useHasPrivilege: jest.fn(() => true),
+}));
 jest.mock('../../hooks/usePatientUUID', () => ({
   usePatientUUID: jest.fn(() => 'test-patient-uuid'),
 }));
@@ -589,6 +592,35 @@ describe('DocumentsTable Integration', () => {
 
     // All 3 documents should be fetchable from service
     expect(mockedGetDocumentReferencePage).toHaveBeenCalled();
+  });
+
+  it('refetches documents when a consultation saved documents for this patient', async () => {
+    let capturedCallback: ((payload: any) => void) | undefined;
+    (useSubscribeConsultationSaved as jest.Mock).mockImplementation(
+      (cb: (payload: any) => void) => {
+        capturedCallback = cb;
+      },
+    );
+    mockedGetDocumentReferencePage.mockResolvedValue(
+      wrapPage([prescriptionDoc]),
+    );
+
+    renderComponent();
+
+    await waitFor(() => {
+      expect(screen.getByText('Prescription_2024')).toBeInTheDocument();
+    });
+
+    act(() => {
+      capturedCallback?.({
+        patientUUID: 'test-patient-uuid',
+        updatedResources: { documents: true },
+      });
+    });
+
+    await waitFor(() => {
+      expect(mockedGetDocumentReferencePage).toHaveBeenCalledTimes(2);
+    });
   });
 
   it('does not refetch documents when consultation saved for a different patient', async () => {

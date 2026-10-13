@@ -2,6 +2,7 @@ import {
   getFileTypeCategory,
   buildDocumentUrl,
   createDocumentHeaders,
+  buildAttachmentsPrintHtml,
 } from '../utils';
 
 describe('Documents Utils', () => {
@@ -118,6 +119,33 @@ describe('Documents Utils', () => {
         key: 'uploadedOn',
         header: 'DOCUMENTS_UPLOADED_ON',
       });
+    });
+  });
+
+  describe('buildAttachmentsPrintHtml', () => {
+    it('renders images as img and pdfs as embed, one page each', () => {
+      const html = buildAttachmentsPrintHtml(
+        [
+          { url: '1/a.png', contentType: 'image/png' },
+          { url: '1/b.pdf', contentType: 'application/pdf' },
+        ],
+        'Doc',
+      );
+
+      expect(html).toContain('<img src="http://localhost/openmrs/auth?');
+      expect(html).toContain('a.png');
+      expect(html).toContain('<embed');
+      expect(html.match(/class="attachment"/g)).toHaveLength(2);
+    });
+
+    it('escapes the title', () => {
+      const html = buildAttachmentsPrintHtml(
+        [{ url: '1/a.png', contentType: 'image/png' }],
+        '<script>"x"</script>',
+      );
+
+      expect(html).not.toContain('<script>');
+      expect(html).toContain('&lt;script&gt;&quot;x&quot;&lt;/script&gt;');
     });
   });
 });

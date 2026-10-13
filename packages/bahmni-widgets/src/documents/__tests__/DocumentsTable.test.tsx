@@ -1,3 +1,4 @@
+import { useSubscribeConsultationSaved } from '@bahmni/services';
 import {
   QueryClient,
   QueryClientProvider,
@@ -6,12 +7,18 @@ import {
 import { render, screen, act, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { axe, toHaveNoViolations } from 'jest-axe';
+import { printViaIframe } from '../../documentPrintButton/printViaIframe';
 import { useNotification } from '../../notification';
+import { useHasPrivilege } from '../../userPrivileges/useHasPrivilege';
 import DocumentsTable from '../DocumentsTable';
 
 expect.extend(toHaveNoViolations);
 
 jest.mock('../../notification');
+jest.mock('../../userPrivileges/useHasPrivilege');
+jest.mock('../../documentPrintButton/printViaIframe', () => ({
+  printViaIframe: jest.fn(),
+}));
 jest.mock('../../hooks/usePatientUUID', () => ({
   usePatientUUID: jest.fn(() => 'test-patient-uuid'),
 }));
@@ -155,6 +162,7 @@ describe('DocumentsTable', () => {
       },
     });
     jest.clearAllMocks();
+    (useHasPrivilege as jest.Mock).mockReturnValue(true);
     (useNotification as jest.Mock).mockReturnValue({
       addNotification: mockAddNotification,
     });
@@ -1060,6 +1068,145 @@ describe('DocumentsTable', () => {
       expect(
         screen.getAllByText('Test Document').length,
       ).toBeGreaterThanOrEqual(2);
+    });
+  });
+
+  describe('Add document action', () => {
+    const addAction = {
+      type: 'add',
+      label: 'DOCUMENTS_ADD_ACTION',
+      encounterType: 'Patient Document',
+      editTitle: 'DOCUMENTS_UPLOAD_TITLE',
+      requiredPrivilege: ['Add Encounters'],
+    };
+
+    it('does not render the add button when no action is configured', () => {
+      (useQuery as jest.Mock).mockReturnValue(mockQueryData());
+
+      renderComponent({ config: defaultConfig });
+
+      expect(screen.queryByTestId('documents-add-button')).toBeNull();
+    });
+
+    it('hides the add button without the required privilege', () => {
+      (useHasPrivilege as jest.Mock).mockReturnValue(false);
+      (useQuery as jest.Mock).mockReturnValue(mockQueryData());
+
+      renderComponent({ config: { ...defaultConfig, actions: [addAction] } });
+
+      expect(screen.queryByTestId('documents-add-button')).toBeNull();
+    });
+
+    it('shows the add button in the widget header next to the title', () => {
+      (useQuery as jest.Mock).mockReturnValue(mockQueryData());
+
+      renderComponent({ config: { ...defaultConfig, actions: [addAction] } });
+
+      expect(screen.getByTestId('documents-header')).toContainElement(
+        screen.getByTestId('documents-add-button'),
+      );
+    });
+
+    it('dispatches startConsultation for the documents control on click', async () => {
+      const user = userEvent.setup();
+      const listener = jest.fn();
+      globalThis.addEventListener('startConsultation', listener);
+      (useQuery as jest.Mock).mockReturnValue(mockQueryData());
+
+      renderComponent({ config: { ...defaultConfig, actions: [addAction] } });
+      await user.click(screen.getByTestId('documents-add-button'));
+
+      globalThis.removeEventListener('startConsultation', listener);
+      expect(listener).toHaveBeenCalledTimes(1);
+      expect((listener.mock.calls[0][0] as CustomEvent).detail).toEqual({
+        encounterType: 'Patient Document',
+        editOnly: 'documents',
+        editTitle: 'DOCUMENTS_UPLOAD_TITLE',
+      });
+    });
+  });
+
+  describe('Refresh after consultation saved', () => {
+    it('refetches when documents were saved for this patient', () => {
+      const refetch = jest.fn();
+      (useQuery as jest.Mock).mockReturnValue(
+        mockQueryData([mockPdfDocument], { refetch }),
+      );
+
+      renderComponent({ config: defaultConfig });
+      const handler = (useSubscribeConsultationSaved as jest.Mock).mock
+        .calls[0][0];
+
+      handler({
+        patientUUID: 'other-patient',
+        updatedResources: { documents: true },
+      });
+      handler({
+        patientUUID: 'test-patient-uuid',
+        updatedResources: { documents: false },
+      });
+      expect(refetch).not.toHaveBeenCalled();
+
+      handler({
+        patientUUID: 'test-patient-uuid',
+        updatedResources: { documents: true },
+      });
+      expect(refetch).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  describe('Notes', () => {
+    it('shows a notes tooltip only for documents with a description', () => {
+      (useQuery as jest.Mock).mockReturnValue(
+        mockQueryData([
+          { ...mockPdfDocument, description: 'Signed by patient' },
+          mockImageDocument,
+        ]),
+      );
+
+      renderComponent({ config: defaultConfig });
+
+      expect(screen.getByTestId('document-notes-doc-1')).toBeInTheDocument();
+      expect(screen.queryByTestId('document-notes-doc-2')).toBeNull();
+    });
+  });
+
+  describe('Printing', () => {
+    beforeEach(() => {
+      (globalThis.fetch as jest.Mock).mockResolvedValue({
+        ok: true,
+        status: 200,
+      });
+    });
+
+    it('prints a single attachment', async () => {
+      const user = userEvent.setup();
+      (useQuery as jest.Mock).mockReturnValue(mockQueryData([mockPdfDocument]));
+
+      renderComponent({ config: defaultConfig });
+      await user.click(screen.getByText('DOCUMENTS_VIEW_ATTACHMENTS'));
+      await user.click(await screen.findByTestId('print-attachment-0'));
+
+      expect(printViaIframe).toHaveBeenCalledTimes(1);
+      expect((printViaIframe as jest.Mock).mock.calls[0][0]).toContain(
+        '100/test-document.pdf',
+      );
+      expect(screen.queryByTestId('print-all-attachments')).toBeNull();
+    });
+
+    it('prints all attachments of a multi-attachment document', async () => {
+      const user = userEvent.setup();
+      (useQuery as jest.Mock).mockReturnValue(
+        mockQueryData([mockMultiAttachmentDocument]),
+      );
+
+      renderComponent({ config: defaultConfig });
+      await user.click(screen.getByText('DOCUMENTS_VIEW_ATTACHMENTS'));
+      await user.click(await screen.findByTestId('print-all-attachments'));
+
+      const html = (printViaIframe as jest.Mock).mock.calls[0][0];
+      expect(html).toContain('lab-page1.pdf');
+      expect(html).toContain('lab-page2.pdf');
     });
   });
 });

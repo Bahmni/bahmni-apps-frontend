@@ -1,17 +1,46 @@
-import { SortableDataTable, Modal, Link } from '@bahmni/design-system';
+import {
+  Button,
+  Icon,
+  ICON_SIZE,
+  IconButton,
+  Link,
+  Modal,
+  SortableDataTable,
+  Tile,
+  TooltipIcon,
+} from '@bahmni/design-system';
 import {
   useTranslation,
   formatDateTime,
   getDocumentReferencePage,
+  useSubscribeConsultationSaved,
   DocumentViewModel,
 } from '@bahmni/services';
+import { Printer } from '@carbon/icons-react';
 import { useQuery } from '@tanstack/react-query';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { printViaIframe } from '../documentPrintButton/printViaIframe';
 import { usePatientUUID } from '../hooks/usePatientUUID';
 import { useNotification } from '../notification';
-import { WidgetProps } from '../registry/model';
+import { WidgetActionConfig, WidgetProps } from '../registry/model';
+import { useHasPrivilege } from '../userPrivileges/useHasPrivilege';
 import styles from './styles/DocumentsTable.module.scss';
-import { buildDocumentUrl, createDocumentHeaders } from './utils';
+import {
+  buildAttachmentsPrintHtml,
+  buildDocumentUrl,
+  createDocumentHeaders,
+  PrintableAttachment,
+} from './utils';
+
+const CONSULTATION_START_EVENT = 'startConsultation';
+const ADD_DOCUMENT_ACTION_TYPE = 'add';
+const DOCUMENTS_INPUT_CONTROL_KEY = 'documents';
+
+interface AddDocumentActionConfig extends WidgetActionConfig {
+  encounterType?: string;
+  editOnly?: string;
+  editTitle?: string;
+}
 
 const DEFAULT_DOCUMENT_FIELDS = [
   'documentIdentifier',
@@ -45,6 +74,16 @@ const DocumentsTable: React.FC<WidgetProps> = ({ config, encounterUuids }) => {
   const { t } = useTranslation();
   const { addNotification } = useNotification();
 
+  const addAction = useMemo(
+    () =>
+      (config?.actions as AddDocumentActionConfig[] | undefined)?.find(
+        (action) => action.type === ADD_DOCUMENT_ACTION_TYPE,
+      ),
+    [config?.actions],
+  );
+  const hasAddPrivilege = useHasPrivilege(addAction?.requiredPrivilege);
+  const showAddAction = !!addAction && hasAddPrivilege;
+
   const configPageSize = Number(config?.pageSize) || 5;
 
   const [currentPage, setCurrentPage] = useState(1);
@@ -66,7 +105,20 @@ const DocumentsTable: React.FC<WidgetProps> = ({ config, encounterUuids }) => {
     setFailedAttachments((prev) => new Set(prev).add(index));
   }, []);
 
-  const { data, isLoading, isError, error } = useQuery({
+  const handleAddDocument = useCallback(() => {
+    if (!addAction) return;
+    globalThis.dispatchEvent(
+      new CustomEvent(CONSULTATION_START_EVENT, {
+        detail: {
+          encounterType: addAction.encounterType,
+          editOnly: addAction.editOnly ?? DOCUMENTS_INPUT_CONTROL_KEY,
+          ...(addAction.editTitle ? { editTitle: addAction.editTitle } : {}),
+        },
+      }),
+    );
+  }, [addAction]);
+
+  const { data, isLoading, isError, error, refetch } = useQuery({
     queryKey: [
       'documents',
       patientUUID!,
@@ -83,6 +135,18 @@ const DocumentsTable: React.FC<WidgetProps> = ({ config, encounterUuids }) => {
         currentPage,
       ),
   });
+
+  useSubscribeConsultationSaved(
+    (payload) => {
+      if (
+        payload.patientUUID === patientUUID &&
+        payload.updatedResources.documents
+      ) {
+        refetch();
+      }
+    },
+    [patientUUID, refetch],
+  );
 
   useEffect(() => {
     if (data) {
@@ -187,13 +251,45 @@ const DocumentsTable: React.FC<WidgetProps> = ({ config, encounterUuids }) => {
     [selectedDoc],
   );
 
+  const printAttachments = useCallback(
+    (attachments: PrintableAttachment[]) => {
+      if (!selectedDoc) return;
+      void printViaIframe(
+        buildAttachmentsPrintHtml(attachments, selectedDoc.documentIdentifier),
+      );
+    },
+    [selectedDoc],
+  );
+
+  const printableAttachments = useMemo(
+    () =>
+      normalizedAttachments.filter(
+        (attachment, index) =>
+          buildDocumentUrl(attachment.url) !== '#' &&
+          !failedAttachments.has(index),
+      ),
+    [normalizedAttachments, failedAttachments],
+  );
+
   const renderCell = useCallback(
     (doc: DocumentViewModel, cellId: string) => {
       switch (cellId) {
         case 'documentIdentifier':
           return <span>{doc.documentIdentifier}</span>;
         case 'documentType':
-          return doc.documentType ?? t('DOCUMENTS_NOT_AVAILABLE');
+          return (
+            <div className={styles.documentTypeCell}>
+              <span>{doc.documentType ?? t('DOCUMENTS_NOT_AVAILABLE')}</span>
+              {doc.description && (
+                <TooltipIcon
+                  iconName="fa-file-lines"
+                  content={doc.description}
+                  ariaLabel={doc.description}
+                  testId={`document-notes-${doc.id}`}
+                />
+              )}
+            </div>
+          );
         case 'uploadedOn': {
           const formattedDate = formatDateTime(
             doc.uploadedOn,
@@ -227,6 +323,21 @@ const DocumentsTable: React.FC<WidgetProps> = ({ config, encounterUuids }) => {
 
   return (
     <>
+      {showAddAction && (
+        <Tile className={styles.header} testId="documents-header">
+          <p>{t('DOCUMENTS_TABLE_HEADING')}</p>
+          <IconButton
+            autoAlign
+            size="lg"
+            kind="ghost"
+            label={t(addAction.label)}
+            testId="documents-add-button"
+            onClick={handleAddDocument}
+          >
+            <Icon id="documents-add-icon" name="fa-plus" size={ICON_SIZE.LG} />
+          </IconButton>
+        </Tile>
+      )}
       <div data-testid="documents-table">
         <SortableDataTable
           headers={headers}
@@ -258,6 +369,18 @@ const DocumentsTable: React.FC<WidgetProps> = ({ config, encounterUuids }) => {
           testId="document-view-modal"
         >
           <div className={styles.documentViewerContainer}>
+            {printableAttachments.length > 1 && (
+              <Button
+                kind="tertiary"
+                size="sm"
+                className={styles.printAllButton}
+                renderIcon={Printer}
+                testId="print-all-attachments"
+                onClick={() => printAttachments(printableAttachments)}
+              >
+                {t('DOCUMENTS_PRINT_ALL')}
+              </Button>
+            )}
             {normalizedAttachments.map((attachment, index) => {
               const url = buildDocumentUrl(attachment.url);
               const isPdf = attachment.contentType
@@ -291,11 +414,26 @@ const DocumentsTable: React.FC<WidgetProps> = ({ config, encounterUuids }) => {
                   className={styles.attachmentItem}
                   data-testid={`attachment-item-${index}`}
                 >
-                  {normalizedAttachments.length > 1 && (
-                    <p className={styles.attachmentCounter}>
-                      {index + 1}/{normalizedAttachments.length}
-                    </p>
-                  )}
+                  <div className={styles.attachmentHeader}>
+                    {normalizedAttachments.length > 1 ? (
+                      <p className={styles.attachmentCounter}>
+                        {index + 1}/{normalizedAttachments.length}
+                      </p>
+                    ) : (
+                      <span />
+                    )}
+                    <IconButton
+                      kind="ghost"
+                      size="sm"
+                      label={t('DOCUMENTS_PRINT_ATTACHMENT', {
+                        index: index + 1,
+                      })}
+                      testId={`print-attachment-${index}`}
+                      onClick={() => printAttachments([attachment])}
+                    >
+                      <Printer />
+                    </IconButton>
+                  </div>
                   {isImg ? (
                     <img
                       src={url}
