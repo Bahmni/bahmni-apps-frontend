@@ -25,7 +25,10 @@ export const AppTile: React.FC<AppTileProps> = ({
   fallbackLabel,
 }) => {
   const { t } = useTranslation();
-  const translatedLabel = t(label, { defaultValue: fallbackLabel });
+  const translatedLabel = t(
+    label,
+    fallbackLabel ? { defaultValue: fallbackLabel } : undefined,
+  );
 
   return (
     <ClickableTile

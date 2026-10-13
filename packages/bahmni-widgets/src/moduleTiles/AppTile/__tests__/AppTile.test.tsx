@@ -2,7 +2,7 @@ import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import i18n from 'i18next';
 import { axe, toHaveNoViolations } from 'jest-axe';
 import { AppTile } from '../AppTile';
-import { bedsTileProps, defaultProps } from './__mocks__/AppTileMocks';
+import { fallbackLabelProps, defaultProps } from './__mocks__/AppTileMocks';
 
 expect.extend(toHaveNoViolations);
 
@@ -40,7 +40,7 @@ describe('AppTile', () => {
     expect(screen.queryByRole('img')).not.toBeInTheDocument();
   });
 
-  describe('beds tile', () => {
+  describe('fallback label', () => {
     afterEach(async () => {
       cleanup();
       i18n.removeResourceBundle('es', 'translation');
@@ -53,13 +53,14 @@ describe('AppTile', () => {
       });
       await i18n.changeLanguage('es');
 
-      render(<AppTile {...bedsTileProps} />);
+      render(<AppTile {...fallbackLabelProps} />);
 
       expect(screen.getByText('Camas')).toBeInTheDocument();
     });
 
-    it('shows the fallback label instead of the raw key when no locale has the key', () => {
-      render(<AppTile {...bedsTileProps} />);
+    it('shows the fallback label instead of the raw key when no locale has the key', async () => {
+      await i18n.changeLanguage('en');
+      render(<AppTile {...fallbackLabelProps} />);
 
       expect(screen.getByText('Beds')).toBeInTheDocument();
       expect(
@@ -67,8 +68,17 @@ describe('AppTile', () => {
       ).not.toBeInTheDocument();
     });
 
+    it('shows the raw key rather than a blank tile when the fallback label is empty', async () => {
+      await i18n.changeLanguage('en');
+      render(<AppTile {...fallbackLabelProps} fallbackLabel="" />);
+
+      expect(
+        screen.getByRole('link', { name: 'MODULE_LABEL_BEDS_KEY' }),
+      ).toBeInTheDocument();
+    });
+
     it('links to the bed management OWA as a plain anchor so the browser does a full navigation', () => {
-      render(<AppTile {...bedsTileProps} />);
+      render(<AppTile {...fallbackLabelProps} />);
 
       const tile = screen.getByRole('link', { name: 'Beds' });
       expect(tile.tagName).toBe('A');

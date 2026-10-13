@@ -5,7 +5,7 @@ export const defaultProps = {
   url: '/bahmni/registration',
 };
 
-export const bedsTileProps = {
+export const fallbackLabelProps = {
   id: 'bahmni.admin.adt',
   label: 'MODULE_LABEL_BEDS_KEY',
   fallbackLabel: 'Beds',

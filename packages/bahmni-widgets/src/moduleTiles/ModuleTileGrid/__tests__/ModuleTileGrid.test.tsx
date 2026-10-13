@@ -1,7 +1,8 @@
 import { getVisibleModules } from '@bahmni/services';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { render, screen, waitFor } from '@testing-library/react';
+import { cleanup, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import i18n from 'i18next';
 import { axe, toHaveNoViolations } from 'jest-axe';
 import { useUserPrivilege } from '../../../userPrivileges/useUserPrivilege';
 import { ModuleTileGrid } from '../ModuleTileGrid';
@@ -272,6 +273,29 @@ describe('ModuleTileGrid', () => {
       expect(screen.getByText('Clinical')).toBeInTheDocument();
     });
     expect(screen.queryByText('LABEL_CLINICAL')).not.toBeInTheDocument();
+  });
+
+  describe('when the translation key has a translation', () => {
+    afterEach(async () => {
+      cleanup();
+      i18n.removeResourceBundle('es', 'translation');
+      await i18n.changeLanguage('en');
+    });
+
+    it('renders the translated label instead of the module label fallback', async () => {
+      i18n.addResourceBundle('es', 'translation', {
+        LABEL_CLINICAL: 'Clínica',
+      });
+      await i18n.changeLanguage('es');
+      mockGetVisibleModules.mockResolvedValue(mockModules);
+
+      renderGrid();
+
+      await waitFor(() => {
+        expect(screen.getByText('Clínica')).toBeInTheDocument();
+      });
+      expect(screen.queryByText('Clinical')).not.toBeInTheDocument();
+    });
   });
 
   it('applies a host-supplied className to the outer container', async () => {
