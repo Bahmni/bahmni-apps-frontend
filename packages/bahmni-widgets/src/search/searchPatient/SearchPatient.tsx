@@ -193,14 +193,14 @@ const SearchPatient = ({ extensionParams }: SearchWidgetProps) => {
   };
 
   const handleDateChange = (date: Date | null) => {
+    if (!date) return;
     setAppointmentDate(date);
-    setSearchTerm('');
+    setSearchTerm(toLocalDateString(date));
   };
 
   const handleAdvanceSearch = () => {
     if (isDateSearch()) {
       if (!appointmentDate) return;
-      setValidationError('');
       setSearchTerm(toLocalDateString(appointmentDate));
       setIsAdvancedSearch(true);
       return;
@@ -284,11 +284,10 @@ const SearchPatient = ({ extensionParams }: SearchWidgetProps) => {
 
   const resultsFieldType = isAdvancedSearch ? selectedFieldType : '';
   const selectedField = getSelectedField();
+  const appointmentSearchFields = selectedField ? [selectedField] : [];
   const resultsSearchFields =
     resultsFieldType === 'appointment'
-      ? selectedField
-        ? [selectedField]
-        : []
+      ? appointmentSearchFields
       : (patientSearchConfig?.customAttributes ?? []);
 
   return (

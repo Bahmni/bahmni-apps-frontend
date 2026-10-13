@@ -662,7 +662,7 @@ describe('SearchPatient', () => {
       (searchAppointmentsByAttribute as jest.Mock).mockResolvedValue([]);
     });
 
-    it('shows a date picker pre-filled with today instead of the text input and enables search by default', async () => {
+    it('shows a date picker pre-filled with today instead of the text input when appointment date is selected', async () => {
       renderSearchPatient(appointmentConfig);
       await selectOption(DATE_OPTION);
 
