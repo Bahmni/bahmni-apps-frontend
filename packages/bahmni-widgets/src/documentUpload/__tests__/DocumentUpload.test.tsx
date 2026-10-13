@@ -322,3 +322,133 @@ describe('DocumentUpload', () => {
     });
   });
 });
+
+describe('DocumentUpload in fileOnly mode', () => {
+  const pendingFile = (
+    name: string,
+    extra: Partial<PendingDocument> = {},
+  ): PendingDocument => ({
+    id: `pending-${name}`,
+    file: new File(['x'], name, { type: 'image/png' }),
+    url: `blob:http://localhost/${name}`,
+    fileName: name,
+    contentType: 'image/png',
+    documentType: null,
+    note: '',
+    isNoteVisible: false,
+    ...extra,
+  });
+
+  const FileOnlyHarness = ({
+    initial = [],
+    canSelectFiles,
+    supportedFileTypes,
+  }: {
+    initial?: PendingDocument[];
+    canSelectFiles?: () => boolean;
+    supportedFileTypes?: string[];
+  }) => {
+    const [documents, setDocuments] = useState<PendingDocument[]>(initial);
+    return (
+      <DocumentUpload
+        fileOnly
+        documents={documents}
+        onDocumentsChange={(next) => {
+          mockDocumentsChange(next);
+          setDocuments(next);
+        }}
+        canSelectFiles={canSelectFiles}
+        supportedFileTypes={supportedFileTypes}
+      />
+    );
+  };
+
+  const renderFileOnly = (
+    props: React.ComponentProps<typeof FileOnlyHarness> = {},
+  ) =>
+    render(
+      <QueryClientProvider client={queryClient()}>
+        <FileOnlyHarness {...props} />
+      </QueryClientProvider>,
+    );
+
+  const fileInput = () =>
+    document.querySelector('input[type="file"]') as HTMLInputElement;
+
+  const pick = (...files: File[]) =>
+    fireEvent.change(fileInput(), { target: { files } });
+
+  beforeEach(() => jest.clearAllMocks());
+
+  it('shows no document type or note controls', () => {
+    renderFileOnly({ initial: [pendingFile('scan.png')] });
+
+    expect(screen.queryByTestId('document-type-dropdown')).toBeNull();
+    expect(screen.queryByText('DOCUMENT_UPLOAD_ADD_NOTE')).toBeNull();
+    expect(screen.getByText('scan.png')).toBeInTheDocument();
+  });
+
+  it('adds accepted files to the controlled list', async () => {
+    renderFileOnly();
+    await screen.findByText('DOCUMENT_UPLOAD_HELP');
+
+    pick(new File(['x'], 'a.png', { type: 'image/png' }));
+
+    expect(await screen.findByText('a.png')).toBeInTheDocument();
+    expect(mockDocumentsChange).toHaveBeenCalledWith([
+      expect.objectContaining({ fileName: 'a.png', documentType: null }),
+    ]);
+  });
+
+  it('rejects files outside the configured extensions and notifies', async () => {
+    renderFileOnly({ supportedFileTypes: ['.pdf'] });
+
+    pick(new File(['x'], 'a.png', { type: 'image/png' }));
+
+    expect(mockDocumentsChange).not.toHaveBeenCalled();
+    expect(mockAddNotification).toHaveBeenCalledWith(
+      expect.objectContaining({ title: 'DOCUMENT_UPLOAD_INVALID_TYPE_TITLE' }),
+    );
+  });
+
+  it('restricts the file picker to the configured extensions', () => {
+    renderFileOnly({ supportedFileTypes: ['pdf', '.PNG'] });
+
+    expect(fileInput()).toHaveAttribute('accept', '.pdf,.png');
+  });
+
+  it('removes a file and releases its preview', () => {
+    renderFileOnly({ initial: [pendingFile('a.png'), pendingFile('b.png')] });
+
+    fireEvent.click(
+      screen.getAllByRole('button', { name: 'DOCUMENT_UPLOAD_REMOVE_FILE' })[0],
+    );
+
+    expect(screen.queryByText('a.png')).toBeNull();
+    expect(screen.getByText('b.png')).toBeInTheDocument();
+    expect(URL.revokeObjectURL).toHaveBeenCalledWith(
+      'blob:http://localhost/a.png',
+    );
+  });
+
+  it('shows upload progress and failures per file', () => {
+    renderFileOnly({
+      initial: [
+        pendingFile('a.png', { status: 'uploading' }),
+        pendingFile('b.png', { status: 'error', error: 'Server said no' }),
+        pendingFile('c.png', { status: 'uploaded' }),
+      ],
+    });
+
+    expect(screen.getByText('DOCUMENT_UPLOAD_UPLOADING')).toBeInTheDocument();
+    expect(screen.getByRole('alert')).toHaveTextContent('Server said no');
+  });
+
+  it('keeps the file dialog from opening when canSelectFiles returns false', () => {
+    const canSelectFiles = jest.fn().mockReturnValue(false);
+    renderFileOnly({ canSelectFiles });
+
+    expect(fireEvent.click(fileInput())).toBe(false);
+    expect(canSelectFiles).toHaveBeenCalledTimes(1);
+  });
+});

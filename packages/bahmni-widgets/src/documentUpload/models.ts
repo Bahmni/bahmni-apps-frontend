@@ -10,6 +10,10 @@ export interface PendingDocument {
   note: string;
   isNoteVisible: boolean;
   uploadedUrl?: string;
+  /** Set by consumers that upload on selection, so the file list can show progress and failure. */
+  status?: 'uploading' | 'uploaded' | 'error';
+  /** Why the upload failed, when status is 'error'. */
+  error?: string;
 }
 
 /**
@@ -22,4 +26,13 @@ export interface DocumentUploadProps {
   documentTypes?: DocumentType[];
   defaultOption?: string | null;
   isSaving?: boolean;
+  /**
+   * Shows only the files (thumbnail, name, remove) without a type or note per file, for consumers
+   * that describe the files elsewhere, such as one document made of several files.
+   */
+  fileOnly?: boolean;
+  /** Extensions such as ".pdf". Any image, video or PDF is accepted when not set. */
+  supportedFileTypes?: string[];
+  /** Return false to keep the file dialog from opening, e.g. while a precondition is unmet. */
+  canSelectFiles?: () => boolean;
 }

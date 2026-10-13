@@ -1,18 +1,24 @@
-import { Button, Dropdown, IconButton, Link } from '@bahmni/design-system';
+import {
+  Button,
+  Dropdown,
+  IconButton,
+  Link,
+  ThumbnailFileUploader,
+} from '@bahmni/design-system';
 import { DocumentType, getDocumentUploadMaxSizeMb } from '@bahmni/services';
 import { Close } from '@carbon/icons-react';
 import { InlineLoading, TextArea } from '@carbon/react';
 import { useQuery } from '@tanstack/react-query';
 import React, { useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useNotification } from '../notification';
 import styles from './__styles__/DocumentUpload.module.scss';
-import { FILE_INPUT_ACCEPT, MAX_NOTE_LENGTH } from './constants';
+import { MAX_NOTE_LENGTH } from './constants';
 import { DocumentUploadProps, PendingDocument } from './models';
 import { renderDocumentTile } from './renderDocumentTile';
+import { useFileSelection } from './useFileSelection';
 import {
+  formatFileTypes,
   getDefaultDocumentType,
-  isAcceptedFileType,
   revokeDocumentPreview,
 } from './utils';
 
@@ -26,9 +32,11 @@ export const DocumentUpload: React.FC<DocumentUploadProps> = ({
   documentTypes = [],
   defaultOption,
   isSaving = false,
+  fileOnly = false,
+  supportedFileTypes,
+  canSelectFiles,
 }) => {
-  const { t } = useTranslation();
-  const { addNotification } = useNotification();
+  const { t, i18n } = useTranslation();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Max size comes solely from the bahmni.documentUpload.maxFileSizeInMB setting; when it is not
@@ -36,6 +44,11 @@ export const DocumentUpload: React.FC<DocumentUploadProps> = ({
   const { data: maxFileSizeMb } = useQuery({
     queryKey: ['documentUploadMaxSizeMb'],
     queryFn: getDocumentUploadMaxSizeMb,
+  });
+
+  const { accept, selectFiles } = useFileSelection({
+    supportedFileTypes,
+    maxFileSizeMb,
   });
 
   const defaultDocumentType = getDefaultDocumentType(
@@ -61,6 +74,44 @@ export const DocumentUpload: React.FC<DocumentUploadProps> = ({
     onDocumentsChange(documents.filter((pending) => pending.id !== id));
   };
 
+  const uploadHelpText = () => {
+    const types = supportedFileTypes?.length
+      ? formatFileTypes(accept, i18n.language)
+      : undefined;
+    if (types && maxFileSizeMb !== undefined) {
+      return t('DOCUMENT_UPLOAD_HELP_WITH_TYPES', {
+        size: maxFileSizeMb,
+        types,
+      });
+    }
+    if (types) {
+      return t('DOCUMENT_UPLOAD_SUPPORTED_TYPES_LIST', { types });
+    }
+    return maxFileSizeMb === undefined
+      ? t('DOCUMENT_UPLOAD_SUPPORTED_TYPES')
+      : t('DOCUMENT_UPLOAD_HELP', { size: maxFileSizeMb });
+  };
+
+  const fileStatusText = (document: PendingDocument) => {
+    if (document.status === 'uploading') return t('DOCUMENT_UPLOAD_UPLOADING');
+    if (document.status === 'error') {
+      return document.error ?? t('DOCUMENT_UPLOAD_FAILED_TITLE');
+    }
+    return undefined;
+  };
+
+  const toPendingDocuments = (files: File[]): PendingDocument[] =>
+    files.map((file) => ({
+      id: `pending-${nextPendingId++}`,
+      file,
+      url: URL.createObjectURL(file),
+      fileName: file.name,
+      contentType: file.type,
+      documentType: null,
+      note: '',
+      isNoteVisible: false,
+    }));
+
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(event.target.files ?? []);
     // Cleared so picking the same file again still raises a change event.
@@ -69,57 +120,51 @@ export const DocumentUpload: React.FC<DocumentUploadProps> = ({
       return;
     }
 
-    const accepted: PendingDocument[] = [];
-    const unsupported: string[] = [];
-    const tooLarge: string[] = [];
-
-    files.forEach((file) => {
-      if (!isAcceptedFileType(file.type)) {
-        unsupported.push(file.name);
-        return;
-      }
-      if (
-        maxFileSizeMb !== undefined &&
-        file.size > maxFileSizeMb * 1000 * 1000
-      ) {
-        tooLarge.push(file.name);
-        return;
-      }
-      accepted.push({
-        id: `pending-${nextPendingId++}`,
-        file,
-        url: URL.createObjectURL(file),
-        fileName: file.name,
-        contentType: file.type,
-        documentType: null,
-        note: '',
-        isNoteVisible: false,
-      });
-    });
-
-    if (unsupported.length > 0) {
-      addNotification({
-        title: t('DOCUMENT_UPLOAD_INVALID_TYPE_TITLE'),
-        message: t('DOCUMENT_UPLOAD_INVALID_TYPE_MESSAGE'),
-        type: 'error',
-        timeout: 5000,
-      });
-    }
-    if (tooLarge.length > 0) {
-      addNotification({
-        title: t('DOCUMENT_UPLOAD_SIZE_EXCEEDED_TITLE'),
-        message: t('DOCUMENT_UPLOAD_SIZE_EXCEEDED_MESSAGE', {
-          size: maxFileSizeMb,
-        }),
-        type: 'error',
-        timeout: 5000,
-      });
-    }
+    const accepted = toPendingDocuments(selectFiles(files));
 
     if (accepted.length > 0) {
       onDocumentsChange([...documents, ...accepted]);
     }
   };
+
+  if (fileOnly) {
+    return (
+      <ThumbnailFileUploader
+        id="document-upload"
+        testId="document-upload"
+        title={t('DOCUMENT_UPLOAD_TITLE')}
+        description={uploadHelpText()}
+        buttonLabel={t('DOCUMENT_UPLOAD_BUTTON')}
+        listLabel={t('DOCUMENT_UPLOAD_FILES_LIST')}
+        accept={accept}
+        disabled={isSaving}
+        canBrowse={canSelectFiles}
+        onFilesSelected={(files) => {
+          const accepted = toPendingDocuments(selectFiles(files));
+          if (accepted.length > 0) {
+            onDocumentsChange([...documents, ...accepted]);
+          }
+        }}
+        onRemove={discardPending}
+        getRemoveLabel={(name) => t('DOCUMENT_UPLOAD_REMOVE_FILE', { name })}
+        items={documents.map((document) => ({
+          id: document.id,
+          name: document.fileName,
+          status: document.status === 'uploaded' ? undefined : document.status,
+          statusText: fileStatusText(document),
+          thumbnail: renderDocumentTile({
+            id: document.id,
+            src: document.url,
+            title: document.fileName,
+            contentType: document.contentType,
+            ariaLabel: t('DOCUMENT_UPLOAD_PREVIEW_FILE', {
+              name: document.fileName,
+            }),
+          }),
+        }))}
+      />
+    );
+  }
 
   return (
     <div className={styles.container}>
@@ -220,7 +265,7 @@ export const DocumentUpload: React.FC<DocumentUploadProps> = ({
           ref={fileInputRef}
           type="file"
           multiple
-          accept={FILE_INPUT_ACCEPT}
+          accept={accept.join(',')}
           className={styles.hiddenInput}
           data-testid="document-file-input"
           onChange={handleFileSelect}
