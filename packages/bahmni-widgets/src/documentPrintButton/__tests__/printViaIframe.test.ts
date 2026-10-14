@@ -1,4 +1,4 @@
-import { printViaIframe } from '../printViaIframe';
+import { printPdfViaIframe, printViaIframe } from '../printViaIframe';
 
 interface MockImg {
   complete: boolean;
@@ -210,6 +210,88 @@ describe('printViaIframe', () => {
     fireIframeLoad();
     await promise;
 
+    expect(mockPrint).not.toHaveBeenCalled();
+  });
+});
+
+describe('printPdfViaIframe', () => {
+  const OBJECT_URL = 'blob:http://localhost/pdf';
+
+  beforeEach(() => {
+    jest.useFakeTimers();
+    global.URL.createObjectURL = jest.fn(() => OBJECT_URL);
+    global.URL.revokeObjectURL = jest.fn();
+    global.fetch = jest.fn().mockResolvedValue({
+      ok: true,
+      status: 200,
+      blob: jest.fn().mockResolvedValue(new Blob(['%PDF'])),
+    });
+  });
+
+  afterEach(() => {
+    jest.useRealTimers();
+  });
+
+  const startPrint = async () => {
+    const promise = printPdfViaIframe('http://localhost/doc.pdf');
+    await flushMicrotasks();
+    await flushMicrotasks();
+    fireIframeLoad();
+    await flushMicrotasks();
+    jest.advanceTimersByTime(500);
+    await promise;
+  };
+
+  it('loads the pdf into its own frame from a same-origin blob and prints it', async () => {
+    await startPrint();
+
+    expect(global.fetch).toHaveBeenCalledWith('http://localhost/doc.pdf', {
+      credentials: 'same-origin',
+    });
+    expect(mockIframe.src).toBe(OBJECT_URL);
+    expect(mockFocus).toHaveBeenCalled();
+    expect(mockPrint).toHaveBeenCalled();
+  });
+
+  it('does not sandbox the frame, which would blank the pdf viewer', async () => {
+    await startPrint();
+
+    expect(mockIframe.setAttribute).not.toHaveBeenCalledWith(
+      'sandbox',
+      expect.anything(),
+    );
+  });
+
+  it('waits for the viewer to render before printing', async () => {
+    const promise = printPdfViaIframe('http://localhost/doc.pdf');
+    await flushMicrotasks();
+    await flushMicrotasks();
+    fireIframeLoad();
+    await flushMicrotasks();
+
+    expect(mockPrint).not.toHaveBeenCalled();
+
+    jest.advanceTimersByTime(500);
+    await promise;
+    expect(mockPrint).toHaveBeenCalled();
+  });
+
+  it('removes the frame and releases the blob after the print dialog closes', async () => {
+    await startPrint();
+    expect(mockRemove).not.toHaveBeenCalled();
+
+    fireAfterprint();
+
+    expect(mockRemove).toHaveBeenCalled();
+    expect(URL.revokeObjectURL).toHaveBeenCalledWith(OBJECT_URL);
+  });
+
+  it('rejects without creating a frame when the pdf cannot be fetched', async () => {
+    (global.fetch as jest.Mock).mockResolvedValue({ ok: false, status: 404 });
+
+    await expect(printPdfViaIframe('http://localhost/x.pdf')).rejects.toThrow(
+      '404',
+    );
     expect(mockPrint).not.toHaveBeenCalled();
   });
 });

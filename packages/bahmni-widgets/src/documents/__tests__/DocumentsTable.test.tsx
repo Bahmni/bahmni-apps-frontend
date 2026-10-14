@@ -7,7 +7,10 @@ import {
 import { render, screen, act, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { axe, toHaveNoViolations } from 'jest-axe';
-import { printViaIframe } from '../../documentPrintButton/printViaIframe';
+import {
+  printPdfViaIframe,
+  printViaIframe,
+} from '../../documentPrintButton/printViaIframe';
 import { useNotification } from '../../notification';
 import { useHasPrivilege } from '../../userPrivileges/useHasPrivilege';
 import DocumentsTable from '../DocumentsTable';
@@ -18,6 +21,7 @@ jest.mock('../../notification');
 jest.mock('../../userPrivileges/useHasPrivilege');
 jest.mock('../../documentPrintButton/printViaIframe', () => ({
   printViaIframe: jest.fn(),
+  printPdfViaIframe: jest.fn(),
 }));
 jest.mock('../../hooks/usePatientUUID', () => ({
   usePatientUUID: jest.fn(() => 'test-patient-uuid'),
@@ -1179,7 +1183,7 @@ describe('DocumentsTable', () => {
       });
     });
 
-    it('prints a single attachment', async () => {
+    it('prints a single pdf attachment through the pdf printer', async () => {
       const user = userEvent.setup();
       (useQuery as jest.Mock).mockReturnValue(mockQueryData([mockPdfDocument]));
 
@@ -1187,14 +1191,32 @@ describe('DocumentsTable', () => {
       await user.click(screen.getByText('DOCUMENTS_VIEW_ATTACHMENTS'));
       await user.click(await screen.findByTestId('print-attachment-0'));
 
-      expect(printViaIframe).toHaveBeenCalledTimes(1);
-      expect((printViaIframe as jest.Mock).mock.calls[0][0]).toContain(
-        '100/test-document.pdf',
+      expect(printPdfViaIframe).toHaveBeenCalledTimes(1);
+      expect(printPdfViaIframe).toHaveBeenCalledWith(
+        'http://localhost/openmrs/auth?requested_document=/document_images/100/test-document.pdf',
       );
+      expect(printViaIframe).not.toHaveBeenCalled();
       expect(screen.queryByTestId('print-all-attachments')).toBeNull();
     });
 
-    it('prints all attachments of a multi-attachment document', async () => {
+    it('prints an image attachment as html', async () => {
+      const user = userEvent.setup();
+      (useQuery as jest.Mock).mockReturnValue(
+        mockQueryData([mockImageDocument]),
+      );
+
+      renderComponent({ config: defaultConfig });
+      await user.click(screen.getByText('DOCUMENTS_VIEW_ATTACHMENTS'));
+      await user.click(await screen.findByTestId('print-attachment-0'));
+
+      expect(printViaIframe).toHaveBeenCalledTimes(1);
+      expect((printViaIframe as jest.Mock).mock.calls[0][0]).toContain(
+        '100/xray-image.jpg',
+      );
+      expect(printPdfViaIframe).not.toHaveBeenCalled();
+    });
+
+    it('prints every pdf of a multi-attachment document', async () => {
       const user = userEvent.setup();
       (useQuery as jest.Mock).mockReturnValue(
         mockQueryData([mockMultiAttachmentDocument]),
@@ -1204,9 +1226,59 @@ describe('DocumentsTable', () => {
       await user.click(screen.getByText('DOCUMENTS_VIEW_ATTACHMENTS'));
       await user.click(await screen.findByTestId('print-all-attachments'));
 
+      await waitFor(() => expect(printPdfViaIframe).toHaveBeenCalledTimes(2));
+      expect((printPdfViaIframe as jest.Mock).mock.calls[0][0]).toContain(
+        'lab-page1.pdf',
+      );
+      expect((printPdfViaIframe as jest.Mock).mock.calls[1][0]).toContain(
+        'lab-page2.pdf',
+      );
+      expect(printViaIframe).not.toHaveBeenCalled();
+    });
+
+    it('prints images together and pdfs one by one when printing all', async () => {
+      const user = userEvent.setup();
+      (useQuery as jest.Mock).mockReturnValue(
+        mockQueryData([
+          {
+            ...mockMultiAttachmentDocument,
+            attachments: [
+              { url: '100/a.jpg', contentType: 'image/jpeg' },
+              { url: '100/b.pdf', contentType: 'application/pdf' },
+              { url: '100/c.png', contentType: 'image/png' },
+            ],
+          },
+        ]),
+      );
+
+      renderComponent({ config: defaultConfig });
+      await user.click(screen.getByText('DOCUMENTS_VIEW_ATTACHMENTS'));
+      await user.click(await screen.findByTestId('print-all-attachments'));
+
+      await waitFor(() => expect(printPdfViaIframe).toHaveBeenCalledTimes(1));
       const html = (printViaIframe as jest.Mock).mock.calls[0][0];
-      expect(html).toContain('lab-page1.pdf');
-      expect(html).toContain('lab-page2.pdf');
+      expect(html).toContain('a.jpg');
+      expect(html).toContain('c.png');
+      expect(html).not.toContain('b.pdf');
+    });
+
+    it('tells the user when printing fails', async () => {
+      const user = userEvent.setup();
+      (printPdfViaIframe as jest.Mock).mockRejectedValueOnce(new Error('404'));
+      (useQuery as jest.Mock).mockReturnValue(mockQueryData([mockPdfDocument]));
+
+      renderComponent({ config: defaultConfig });
+      await user.click(screen.getByText('DOCUMENTS_VIEW_ATTACHMENTS'));
+      await user.click(await screen.findByTestId('print-attachment-0'));
+
+      await waitFor(() =>
+        expect(mockAddNotification).toHaveBeenCalledWith(
+          expect.objectContaining({
+            message: 'DOCUMENTS_ERROR_LOADING_ATTACHMENT',
+            type: 'error',
+          }),
+        ),
+      );
     });
   });
 });

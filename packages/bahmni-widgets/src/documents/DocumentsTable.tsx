@@ -19,7 +19,10 @@ import {
 import { Printer } from '@carbon/icons-react';
 import { useQuery } from '@tanstack/react-query';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { printViaIframe } from '../documentPrintButton/printViaIframe';
+import {
+  printPdfViaIframe,
+  printViaIframe,
+} from '../documentPrintButton/printViaIframe';
 import { usePatientUUID } from '../hooks/usePatientUUID';
 import { useNotification } from '../notification';
 import { WidgetActionConfig, WidgetProps } from '../registry/model';
@@ -29,7 +32,9 @@ import {
   buildAttachmentsPrintHtml,
   buildDocumentUrl,
   createDocumentHeaders,
+  isPdfAttachment,
   PrintableAttachment,
+  toPrintUrl,
 } from './utils';
 
 const CONSULTATION_START_EVENT = 'startConsultation';
@@ -252,13 +257,28 @@ const DocumentsTable: React.FC<WidgetProps> = ({ config, encounterUuids }) => {
   );
 
   const printAttachments = useCallback(
-    (attachments: PrintableAttachment[]) => {
+    async (attachments: PrintableAttachment[]) => {
       if (!selectedDoc) return;
-      void printViaIframe(
-        buildAttachmentsPrintHtml(attachments, selectedDoc.documentIdentifier),
-      );
+      const images = attachments.filter((a) => !isPdfAttachment(a));
+      const pdfs = attachments.filter(isPdfAttachment);
+      try {
+        if (images.length > 0) {
+          await printViaIframe(
+            buildAttachmentsPrintHtml(images, selectedDoc.documentIdentifier),
+          );
+        }
+        for (const pdf of pdfs) {
+          await printPdfViaIframe(toPrintUrl(pdf.url));
+        }
+      } catch {
+        addNotification({
+          title: t('ERROR_DEFAULT_TITLE'),
+          message: t('DOCUMENTS_ERROR_LOADING_ATTACHMENT'),
+          type: 'error',
+        });
+      }
     },
-    [selectedDoc],
+    [selectedDoc, addNotification, t],
   );
 
   const printableAttachments = useMemo(

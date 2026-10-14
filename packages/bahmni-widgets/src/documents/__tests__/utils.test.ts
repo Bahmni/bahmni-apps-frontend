@@ -123,18 +123,19 @@ describe('Documents Utils', () => {
   });
 
   describe('buildAttachmentsPrintHtml', () => {
-    it('renders images as img and pdfs as embed, one page each', () => {
+    it('renders each image as an img on its own page', () => {
       const html = buildAttachmentsPrintHtml(
         [
           { url: '1/a.png', contentType: 'image/png' },
-          { url: '1/b.pdf', contentType: 'application/pdf' },
+          { url: '1/b.jpg', contentType: 'image/jpeg' },
         ],
         'Doc',
       );
 
       expect(html).toContain('<img src="http://localhost/openmrs/auth?');
       expect(html).toContain('a.png');
-      expect(html).toContain('<embed');
+      expect(html).toContain('b.jpg');
+      expect(html).not.toContain('<embed');
       expect(html.match(/class="attachment"/g)).toHaveLength(2);
     });
 
