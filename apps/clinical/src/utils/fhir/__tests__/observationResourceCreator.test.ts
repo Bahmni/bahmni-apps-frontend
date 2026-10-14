@@ -506,15 +506,22 @@ describe('createObservationEntries', () => {
 
   describe('cleared conditional field end-to-end', () => {
     it('emits DELETE (not PUT) for a previously-saved leaf whose value was cleared by a form condition', () => {
-      // Simulate: Form2 setValue(null) left a uuid-bearing obs with null value in the transformed list.
-      // markClearedExistingObsAsVoided runs first, then createObservationEntries must emit DELETE.
+      // Form2 setValue(null) leaves a uuid-bearing obs with null value.
+      // markClearedExistingObsAsVoided detects the cleared transition, then createObservationEntries emits DELETE.
+      const original: Form2Observation[] = [
+        {
+          concept: { uuid: 'interpreter-name-concept' },
+          value: 'John Smith',
+          uuid: 'interpreter-name-obs-uuid',
+        },
+      ];
       const obs: Form2Observation = {
         concept: { uuid: 'interpreter-name-concept' },
         value: null,
         uuid: 'interpreter-name-obs-uuid',
       };
 
-      markClearedExistingObsAsVoided([obs]);
+      markClearedExistingObsAsVoided([obs], original);
 
       const entries = createObservationEntries(
         [obs],
@@ -527,6 +534,61 @@ describe('createObservationEntries', () => {
       expect(entries[0].request?.method).toBe('DELETE');
       expect(entries[0].request?.url).toBe(
         'Observation/interpreter-name-obs-uuid',
+      );
+    });
+
+    it('emits DELETE for a cleared grouped child and leaves the parent untouched, end-to-end', () => {
+      // cleared child inside a group → only child gets DELETE, parent is untouched.
+      const groupObs: Form2Observation = {
+        concept: { uuid: 'grp-concept' },
+        value: null,
+        uuid: 'parent-uuid',
+        groupMembers: [
+          {
+            concept: { uuid: 'child-cleared-concept' },
+            value: null,
+            uuid: 'child-cleared-uuid',
+          },
+          {
+            concept: { uuid: 'child-kept-concept' },
+            value: 42,
+            uuid: 'child-kept-uuid',
+            unchanged: true,
+          },
+        ],
+      };
+      const original: Form2Observation[] = [
+        {
+          ...groupObs,
+          groupMembers: [
+            {
+              concept: { uuid: 'child-cleared-concept' },
+              value: 'yes',
+              uuid: 'child-cleared-uuid',
+            },
+            {
+              concept: { uuid: 'child-kept-concept' },
+              value: 42,
+              uuid: 'child-kept-uuid',
+            },
+          ],
+        },
+      ];
+
+      markClearedExistingObsAsVoided([groupObs], original);
+
+      const entries = createObservationEntries(
+        [groupObs],
+        subject,
+        encounter,
+        performer,
+      );
+
+      expect(entries).toHaveLength(1);
+      expect(entries[0].fullUrl).toBe('Observation/child-cleared-uuid');
+      expect(entries[0].request?.method).toBe('DELETE');
+      expect(entries.some((e) => e.fullUrl === 'Observation/parent-uuid')).toBe(
+        false,
       );
     });
   });
