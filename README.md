@@ -37,6 +37,21 @@ If you are upgrading from Bahmni Lite 1.x, refer to the [Setup Guide](docs/setup
 - **PWA Support** — Offline-ready Progressive Web App via Workbox
 - **FHIR R4** — Healthcare interoperability standards for API communication
 
+## Applications
+
+This monorepo contains the following application modules:
+
+| Module | Description |
+|--------|-------------|
+| `admin` | Administration and system configuration module |
+| `appointments` | Appointment scheduling and calendar management |
+| `clinical` | Clinical encounter documentation and patient consultation |
+| `command-palette` | Quick-access command palette for keyboard-driven navigation across modules |
+| `home` | Application home screen and module launcher |
+| `patient-documents` | Patient document upload, viewing, and management |
+| `registration` | Patient registration and demographic data management |
+| `reports` | Reporting, analytics, and data export module |
+
 ## Prerequisites
 
 - Node.js (v22.x or later recommended)
@@ -61,8 +76,14 @@ For a comprehensive setup guide including development environments, Docker confi
 - [Project Structure](docs/project-structure.md) - A high-level overview of the project structure
 - [i18n Guide](docs/i18n-guide.md) - Internationalization implementation details
 - [Sortable Data Table Guide](docs/sortable-data-table-guide.md) - Usage of the sortable data table component
+- [Data Table Guide](docs/data-table-guide.md) - Usage and customization of the data table component
 - [Global Notification Guide](docs/global-notification-guide.md) - Using the notification system
+- [Command Palette Guide](docs/command-palette-guide.md) - Implementing and extending the command palette
+- [Header with Side Nav Guide](docs/header-with-side-nav-guide.md) - Configuring the header and side navigation
+- [Consultation Event System](docs/consultation-event-system.md) - Inter-module event communication during consultations
 - [CDSS Implementation Guide](docs/CDSS-Implementation-guide.md) - Clinical Decision Support System integration
+- [Bahmni Colour Token System](docs/bahmni-colour-token-system.md) - Design tokens and theming guide
+- [Bahmni Icon Guide](docs/bahmni-icon-guide.md) - Using and contributing icons
 
 ### Building for Production
 
@@ -113,14 +134,17 @@ For a more detailed explanation of the project structure and architecture, see [
 - [Carbon Design System](https://carbondesignsystem.com/) — IBM's design system
 - [Nx](https://nx.dev/) — Monorepo build system and tooling
 - [Webpack](https://webpack.js.org/) — Module bundler
+- [Vite](https://vitejs.dev/) — Fast build tool used for library packages
 - [React Router](https://reactrouter.com/) (v7) — Routing library
+- [Zustand](https://zustand-demo.pmnd.rs/) — Lightweight client-side state management
+- [TanStack Query](https://tanstack.com/query) (v5) — Server state management and data fetching
 - [i18next](https://www.i18next.com/) — Internationalization framework
 - [Jest](https://jestjs.io/) — Testing framework
 - [React Testing Library](https://testing-library.com/docs/react-testing-library/intro/) — React testing utilities
+- [Storybook](https://storybook.js.org/) — Isolated component development and visual testing
 - [ESLint](https://eslint.org/) — Code quality tool
 - [Prettier](https://prettier.io/) — Code formatter
 - [Workbox](https://developers.google.com/web/tools/workbox) — PWA tooling
-- [TanStack Query](https://tanstack.com/query) (v5) — Server state management
 
 ## License
 
