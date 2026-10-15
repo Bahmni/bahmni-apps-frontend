@@ -86,4 +86,59 @@ describe('FileUploaderItem', () => {
     expect(screen.getByText('Upload failed')).toBeInTheDocument();
     expect(screen.getByText('Server said no')).toBeInTheDocument();
   });
+
+  describe('thumbnail', () => {
+    it('shows the thumbnail beside the file bar', () => {
+      render(
+        <FileUploaderItem
+          testId="item"
+          uuid="u1"
+          name="scan.png"
+          status="edit"
+          thumbnail={<img src="blob:scan" alt="" data-testid="preview" />}
+        />,
+      );
+
+      expect(screen.getByText('scan.png')).toBeInTheDocument();
+      expect(screen.getByTestId('item-thumbnail')).toContainElement(
+        screen.getByTestId('preview'),
+      );
+    });
+
+    it('draws the item exactly as before when there is no thumbnail', () => {
+      const { container } = render(
+        <FileUploaderItem
+          testId="item"
+          uuid="u1"
+          name="scan.png"
+          status="edit"
+        />,
+      );
+
+      expect(screen.queryByTestId('item-thumbnail')).toBeNull();
+      expect(container.querySelector('.itemWithThumbnail')).toBeNull();
+    });
+
+    it('keeps removing and errors working with a thumbnail', () => {
+      const onDelete = jest.fn();
+      render(
+        <FileUploaderItem
+          uuid="u1"
+          name="scan.png"
+          status="edit"
+          iconDescription="Remove"
+          invalid
+          errorSubject="Upload failed"
+          errorBody="Server said no"
+          thumbnail={<span>preview</span>}
+          onDelete={onDelete}
+        />,
+      );
+
+      fireEvent.click(screen.getByRole('button', { name: /Remove/ }));
+
+      expect(onDelete).toHaveBeenCalledTimes(1);
+      expect(screen.getByText('Server said no')).toBeInTheDocument();
+    });
+  });
 });

@@ -318,6 +318,38 @@ describe('DocumentUpload', () => {
       );
     });
 
+    it('shows a thumbnail beside each file: the image itself, or a document icon for anything else', () => {
+      renderWidget({
+        initial: [
+          entry('e1', {
+            files: [
+              pendingFile('scan.png'),
+              pendingFile('report.pdf', { contentType: 'application/pdf' }),
+              pendingFile('clip.mp4', { contentType: 'video/mp4' }),
+              pendingFile('notes.bin', {
+                contentType: 'application/octet-stream',
+              }),
+            ],
+          }),
+        ],
+      });
+
+      const thumbnails = Array.from(
+        document.querySelectorAll('[class*="thumbnail"]'),
+      );
+      expect(thumbnails).toHaveLength(4);
+      expect(thumbnails[0].querySelector('img')).toHaveAttribute(
+        'src',
+        'blob:http://localhost/scan.png',
+      );
+      thumbnails
+        .slice(1)
+        .forEach((thumbnail) =>
+          expect(thumbnail.querySelector('svg')).not.toBeNull(),
+        );
+      expect(thumbnails[1].querySelector('img')).toBeNull();
+    });
+
     it('shows a failed upload with its reason, and no removal while uploading', () => {
       renderWidget({
         initial: [

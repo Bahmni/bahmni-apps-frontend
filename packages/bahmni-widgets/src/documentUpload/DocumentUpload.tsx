@@ -2,6 +2,7 @@ import {
   BoxWHeader,
   Button,
   Column,
+  DocumentView,
   Dropdown,
   FileUploaderButton,
   FileUploaderItem,
@@ -40,6 +41,15 @@ const withoutError = (
   errors: DocumentEntryErrors,
   field: keyof DocumentEntryErrors,
 ): DocumentEntryErrors => ({ ...errors, [field]: undefined });
+
+// What a picked file looks like beside its name: the image itself, or the same document icon the
+// file tiles use for anything that is not an image.
+const FileThumbnail: React.FC<{ file: PendingDocument }> = ({ file }) =>
+  file.contentType.startsWith('image/') ? (
+    <img src={file.url} alt="" />
+  ) : (
+    <DocumentView size={24} aria-hidden="true" />
+  );
 
 const toPendingDocuments = (files: File[]): PendingDocument[] =>
   files.map((file) => ({
@@ -195,6 +205,7 @@ const DocumentEntryCard: React.FC<DocumentEntryCardProps> = ({
               key={file.id}
               uuid={file.id}
               name={file.fileName}
+              thumbnail={<FileThumbnail file={file} />}
               status={file.status === 'uploading' ? 'uploading' : 'edit'}
               iconDescription={t('DOCUMENT_UPLOAD_REMOVE_FILE')}
               invalid={file.status === 'error'}

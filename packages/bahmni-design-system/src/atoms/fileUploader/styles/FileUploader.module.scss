@@ -1,0 +1,36 @@
+@use "@carbon/react/scss/colors" as *;
+@use "@carbon/react/scss/spacing" as *;
+
+// A file with a preview: the thumbnail square sits beside the usual Carbon file bar and is as tall
+// as it.
+.itemWithThumbnail {
+  display: flex;
+  align-items: stretch;
+  gap: $spacing-03;
+  max-inline-size: 100%;
+}
+
+.thumbnail {
+  position: relative;
+  display: flex;
+  flex: 0 0 $spacing-09;
+  align-items: center;
+  justify-content: center;
+  inline-size: $spacing-09;
+  overflow: hidden;
+  background-color: $blue-10;
+
+  // Out of the layout, so the picture's own shape never makes the square taller than the file bar.
+  img {
+    position: absolute;
+    inset: 0;
+    inline-size: 100%;
+    block-size: 100%;
+    object-fit: cover;
+  }
+}
+
+.item {
+  flex: 1;
+  min-inline-size: 0;
+}
