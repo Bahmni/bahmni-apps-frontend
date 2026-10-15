@@ -1,5 +1,5 @@
-import type { DocumentType } from '@bahmni/services';
-import type { PendingDocument } from './models';
+import { generateUUID, type DocumentType } from '@bahmni/services';
+import type { DocumentEntry, PendingDocument } from './models';
 
 export const isAcceptedFileType = (mimeType: string): boolean =>
   mimeType.startsWith('image/') ||
@@ -56,3 +56,19 @@ export const formatFileTypes = (
   new Intl.ListFormat(locale, { style: 'long', type: 'conjunction' }).format(
     dottedExtensions,
   );
+
+export const createEmptyDocumentEntry = (): DocumentEntry => ({
+  id: generateUUID(),
+  documentType: null,
+  documentId: '',
+  note: '',
+  files: [],
+  errors: {},
+});
+
+/** An entry nothing has been entered into, which is ignored rather than validated or saved. */
+export const isDocumentEntryEmpty = (entry: DocumentEntry): boolean =>
+  !entry.documentType &&
+  !entry.documentId.trim() &&
+  !entry.note.trim() &&
+  entry.files.length === 0;

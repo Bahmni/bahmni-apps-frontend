@@ -1,14 +1,13 @@
 import type { DocumentType } from '@bahmni/services';
 
+/** A file picked for a document, previewable locally before and after it is uploaded. */
 export interface PendingDocument {
   id: string;
   file: File;
+  /** Local object URL used to preview the file. */
   url: string;
   fileName: string;
   contentType: string;
-  documentType: DocumentType | null;
-  note: string;
-  isNoteVisible: boolean;
   uploadedUrl?: string;
   /** Set by consumers that upload on selection, so the file list can show progress and failure. */
   status?: 'uploading' | 'uploaded' | 'error';
@@ -16,23 +15,39 @@ export interface PendingDocument {
   error?: string;
 }
 
+export interface DocumentEntryErrors {
+  documentType?: string;
+  documentId?: string;
+  files?: string;
+}
+
+/** One document being added: a type, an optional identifier, a note, and the files that make it up. */
+export interface DocumentEntry {
+  id: string;
+  documentType: DocumentType | null;
+  documentId: string;
+  note: string;
+  files: PendingDocument[];
+  /** Translation keys of the messages to show under each field. */
+  errors: DocumentEntryErrors;
+}
+
 /**
- * Controlled: the consumer owns the pending documents and saving them. The widget only selects,
- * edits and discards them, so it holds no state a remount could lose.
+ * Controlled: the consumer owns the documents and saving them. The widget lists them, edits them
+ * through onDocumentsChange, and always shows at least one, so it holds no state a remount could lose.
  */
 export interface DocumentUploadProps {
-  documents: PendingDocument[];
-  onDocumentsChange: (documents: PendingDocument[]) => void;
+  documents: DocumentEntry[];
+  onDocumentsChange: (documents: DocumentEntry[]) => void;
   documentTypes?: DocumentType[];
-  defaultOption?: string | null;
-  isSaving?: boolean;
-  /**
-   * Shows only the files (thumbnail, name, remove) without a type or note per file, for consumers
-   * that describe the files elsewhere, such as one document made of several files.
-   */
-  fileOnly?: boolean;
+  /** Shown as the type of a document that has none chosen. */
+  defaultDocumentType?: DocumentType | null;
+  isDocumentTypeRequired?: boolean;
+  showDocumentId?: boolean;
+  isDocumentIdRequired?: boolean;
   /** Extensions such as ".pdf". Any image, video or PDF is accepted when not set. */
   supportedFileTypes?: string[];
-  /** Return false to keep the file dialog from opening, e.g. while a precondition is unmet. */
-  canSelectFiles?: () => boolean;
+  /** Heading of the box the documents are listed in; they are listed without a box when not set. */
+  documentsTitle?: string;
+  isSaving?: boolean;
 }

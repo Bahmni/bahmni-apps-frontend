@@ -3,6 +3,8 @@ import {
   createBundleEntry,
   generateUUID,
 } from '@bahmni/services';
+import { isDocumentEntryEmpty } from '@bahmni/widgets';
+import type { DocumentEntry, DocumentEntryErrors } from '@bahmni/widgets';
 import type { BundleEntry, Reference } from 'fhir/r4';
 import type { InputControlAttributes } from '../../../providers/clinicalConfig/models';
 import {
@@ -14,32 +16,7 @@ import {
   DOCUMENTS_UPLOAD_IN_PROGRESS_ERROR,
   DOCUMENTS_UPLOAD_REQUIRED_ERROR,
 } from './constants';
-import type {
-  CreateDocumentBundleEntriesParams,
-  DocumentEntry,
-  DocumentEntryErrors,
-} from './models';
-
-export const withoutError = (
-  errors: DocumentEntryErrors,
-  field: keyof DocumentEntryErrors,
-): DocumentEntryErrors => ({ ...errors, [field]: undefined });
-
-export const createEmptyEntry = (): DocumentEntry => ({
-  id: generateUUID(),
-  documentType: null,
-  documentId: '',
-  note: '',
-  files: [],
-  errors: {},
-});
-
-/** An entry the user has not touched is ignored rather than validated or saved. */
-export const isEntryEmpty = (entry: DocumentEntry): boolean =>
-  !entry.documentType &&
-  !entry.documentId.trim() &&
-  !entry.note.trim() &&
-  entry.files.length === 0;
+import type { CreateDocumentBundleEntriesParams } from './models';
 
 const isRequired = (
   name: string,
@@ -93,7 +70,7 @@ export const createDocumentBundleEntries = ({
   practitionerUUID,
 }: CreateDocumentBundleEntriesParams): BundleEntry[] =>
   entries
-    .filter((entry) => !isEntryEmpty(entry))
+    .filter((entry) => !isDocumentEntryEmpty(entry))
     .map((entry) =>
       createBundleEntry(
         `urn:uuid:${generateUUID()}`,

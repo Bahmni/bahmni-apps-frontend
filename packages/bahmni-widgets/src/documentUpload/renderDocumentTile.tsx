@@ -6,7 +6,6 @@ export interface DocumentTileData {
   src: string;
   title: string;
   contentType?: string;
-  ariaLabel?: string;
 }
 
 export const renderDocumentTile = ({
@@ -14,25 +13,13 @@ export const renderDocumentTile = ({
   src,
   title,
   contentType,
-  ariaLabel,
 }: DocumentTileData): React.ReactElement => {
   const type = (contentType ?? '').toLowerCase();
   if (type.includes('image')) {
-    return (
-      <ImageTile id={id} imageSrc={src} alt={title} ariaLabel={ariaLabel} />
-    );
+    return <ImageTile id={id} imageSrc={src} alt={title} />;
   }
   if (type.includes('video')) {
-    return (
-      <VideoTile
-        id={id}
-        videoSrc={src}
-        modalTitle={title}
-        ariaLabel={ariaLabel}
-      />
-    );
+    return <VideoTile id={id} videoSrc={src} modalTitle={title} />;
   }
-  return (
-    <FileTile id={id} src={src} modalTitle={title} ariaLabel={ariaLabel} />
-  );
+  return <FileTile id={id} src={src} modalTitle={title} />;
 };

@@ -1,5 +1,6 @@
-import type { DocumentEntry } from '../models';
-import { createDocumentBundleEntries, createEmptyEntry } from '../utils';
+import type { DocumentEntry } from '@bahmni/widgets';
+import { createEmptyDocumentEntry } from '@bahmni/widgets';
+import { createDocumentBundleEntries } from '../utils';
 
 const uploadedFile = (name: string, contentType: string) => ({
   id: `id-${name}`,
@@ -15,7 +16,7 @@ const uploadedFile = (name: string, contentType: string) => ({
 });
 
 const entry = (overrides: Partial<DocumentEntry> = {}): DocumentEntry => ({
-  ...createEmptyEntry(),
+  ...createEmptyDocumentEntry(),
   documentType: { id: 'type-uuid', label: 'Consent form' },
   documentId: ' DOC-1 ',
   note: ' signed ',
@@ -89,7 +90,7 @@ describe('createDocumentBundleEntries', () => {
     };
 
     const bundleEntries = build([
-      createEmptyEntry(),
+      createEmptyDocumentEntry(),
       entry({ files: [uploadedFile('a.png', 'image/png'), pending] }),
     ]);
 

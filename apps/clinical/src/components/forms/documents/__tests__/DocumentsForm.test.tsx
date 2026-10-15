@@ -1,6 +1,5 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { act, render, screen, waitFor } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
 import type { InputControl } from '../../../../providers/clinicalConfig/models';
 import DocumentsForm from '../DocumentsForm';
 import { useDocumentsStore } from '../store';
@@ -12,57 +11,56 @@ jest.mock('@bahmni/services', () => ({
   uploadDocument: jest.fn().mockResolvedValue({ url: '100/scan.png' }),
 }));
 
-// The picker itself is covered in @bahmni/widgets; here it only needs to drive the card.
+interface StubWidgetProps {
+  documents: Array<{
+    id: string;
+    documentId: string;
+    files: Array<{ fileName: string }>;
+    errors: Record<string, string>;
+  }>;
+  onDocumentsChange: (documents: unknown[]) => void;
+  documentTypes: Array<{ id: string; label: string }>;
+  isDocumentTypeRequired: boolean;
+  showDocumentId: boolean;
+  isDocumentIdRequired: boolean;
+  supportedFileTypes?: string[];
+  documentsTitle?: string;
+}
+
+// The widget itself is covered in @bahmni/widgets; here it only needs to drive the form.
 jest.mock('@bahmni/widgets', () => ({
   ...jest.requireActual('@bahmni/widgets'),
-  DocumentUpload: ({
-    documents,
-    onDocumentsChange,
-    canSelectFiles,
-    supportedFileTypes,
-  }: {
-    documents: Array<{ id: string; fileName: string }>;
-    onDocumentsChange: (documents: unknown[]) => void;
-    canSelectFiles: () => boolean;
-    supportedFileTypes?: string[];
-  }) => (
+  DocumentUpload: (props: StubWidgetProps) => (
     <div
       data-testid="document-upload"
-      data-types={supportedFileTypes?.join(',')}
+      data-title={props.documentsTitle}
+      data-types={props.supportedFileTypes?.join(',')}
+      data-type-count={props.documentTypes.length}
+      data-show-id={String(props.showDocumentId)}
+      data-type-required={String(props.isDocumentTypeRequired)}
+      data-id-required={String(props.isDocumentIdRequired)}
     >
+      <span data-testid="document-count">{props.documents.length}</span>
+      <span data-testid="errors">
+        {props.documents.flatMap((d) => Object.values(d.errors)).join(',')}
+      </span>
       <button
-        onClick={() => {
-          if (canSelectFiles()) {
-            onDocumentsChange([
-              ...documents,
-              {
-                id: `pending-${documents.length}`,
-                file: new globalThis.File(['x'], 'scan.png', {
-                  type: 'image/png',
-                }),
-                url: 'blob:preview',
-                fileName: 'scan.png',
-                contentType: 'image/png',
-                documentType: null,
-                note: '',
-                isNoteVisible: false,
-              },
-            ]);
-          }
-        }}
+        onClick={() =>
+          props.onDocumentsChange([
+            ...props.documents,
+            {
+              id: `doc-${props.documents.length}`,
+              documentType: null,
+              documentId: 'DOC-77',
+              note: '',
+              files: [],
+              errors: {},
+            },
+          ])
+        }
       >
-        pick
+        add-document
       </button>
-      {documents.map((document) => (
-        <button
-          key={document.id}
-          onClick={() =>
-            onDocumentsChange(documents.filter((d) => d.id !== document.id))
-          }
-        >
-          remove {document.fileName}
-        </button>
-      ))}
     </div>
   ),
 }));
@@ -109,115 +107,62 @@ describe('DocumentsForm', () => {
     ]);
   });
 
-  it('opens with one empty document card under the configured title', () => {
+  it('renders the configured title and the documents widget under it', () => {
     renderForm();
 
     expect(screen.getByText('DOCUMENTS_INPUT_CONTROL_LABEL')).toBeVisible();
-    expect(screen.getByText('DOCUMENTS_ADDED_DOCUMENT_TYPE')).toBeVisible();
-    expect(state().entries).toHaveLength(1);
-    expect(screen.getAllByTestId(/^document-entry-/)).toHaveLength(1);
+    expect(screen.getByTestId('document-upload')).toHaveAttribute(
+      'data-title',
+      'DOCUMENTS_ADDED_DOCUMENT_TYPE',
+    );
   });
 
-  it('loads the document types from the configured concept set', async () => {
+  it('configures the widget from the control config', () => {
+    renderForm();
+
+    const widget = screen.getByTestId('document-upload');
+    expect(widget).toHaveAttribute('data-types', '.pdf,.png');
+    expect(widget).toHaveAttribute('data-show-id', 'true');
+    expect(widget).toHaveAttribute('data-type-required', 'true');
+    expect(widget).toHaveAttribute('data-id-required', 'true');
+  });
+
+  it('loads the document types from the configured concept set into the widget', async () => {
     renderForm();
 
     await waitFor(() =>
       expect(getDocumentTypesByConceptUuid).toHaveBeenCalledWith('set-uuid'),
     );
-  });
-
-  it('passes the configured file types on to the picker', () => {
-    renderForm();
-
-    expect(screen.getByTestId('document-upload')).toHaveAttribute(
-      'data-types',
-      '.pdf,.png',
+    await waitFor(() =>
+      expect(screen.getByTestId('document-upload')).toHaveAttribute(
+        'data-type-count',
+        '2',
+      ),
     );
   });
 
-  it('adds another card with "Add more" and removes a card with its close button', async () => {
+  it('keeps the documents the widget reports in the store', async () => {
     renderForm();
+    expect(screen.getByTestId('document-count')).toHaveTextContent('0');
 
-    await userEvent.click(screen.getByTestId('documents-add-more'));
-    expect(screen.getAllByTestId(/^document-entry-/)).toHaveLength(2);
+    act(() => screen.getByText('add-document').click());
 
-    await userEvent.click(screen.getAllByRole('button', { name: /close/i })[0]);
-    expect(screen.getAllByTestId(/^document-entry-/)).toHaveLength(1);
-  });
-
-  it('keeps a card on screen after the last one is removed', async () => {
-    renderForm();
-
-    await userEvent.click(screen.getAllByRole('button', { name: /close/i })[0]);
-
-    expect(screen.getAllByTestId(/^document-entry-/)).toHaveLength(1);
-  });
-
-  it('blocks choosing files until a document type is selected', async () => {
-    renderForm();
-
-    await userEvent.click(screen.getByRole('button', { name: 'pick' }));
-
-    expect(screen.getByText('DOCUMENTS_SELECT_DOCUMENT_TYPE')).toBeVisible();
-    expect(state().entries[0].files).toEqual([]);
-  });
-
-  it('stores the identifier typed into the card', async () => {
-    renderForm();
-
-    await userEvent.type(
-      screen.getByTestId(`document-id-${state().entries[0].id}`),
-      'DOC-77',
-    );
-
+    expect(state().entries).toHaveLength(1);
     expect(state().entries[0].documentId).toBe('DOC-77');
+    expect(screen.getByTestId('document-count')).toHaveTextContent('1');
   });
 
-  it('reveals the note field from "Add note" and clears the note when it is closed', async () => {
+  it('shows the validation errors the store raises through the widget', async () => {
     renderForm();
+    act(() => screen.getByText('add-document').click());
 
-    await userEvent.click(screen.getByText('DOCUMENTS_ADD_NOTE'));
-    const note = screen.getByPlaceholderText('DOCUMENTS_NOTE_PLACEHOLDER');
-    await userEvent.type(note, 'signed copy');
-    expect(state().entries[0].note).toBe('signed copy');
-
-    await userEvent.click(
-      screen
-        .getByTestId(`document-entry-${state().entries[0].id}`)
-        .querySelector('button[aria-label*="lose"]') as HTMLElement,
-    );
-
-    expect(state().entries[0].note).toBe('');
-    expect(screen.getByText('DOCUMENTS_ADD_NOTE')).toBeVisible();
-  });
-
-  it('attaches a picked file to the card and lets it be removed', async () => {
-    renderForm();
-    const id = state().entries[0].id;
     act(() => {
-      state().updateDocumentType(id, { id: 'type-1', label: 'Consent form' });
-    });
-
-    await userEvent.click(screen.getByRole('button', { name: 'pick' }));
-    await userEvent.click(
-      await screen.findByRole('button', { name: 'remove scan.png' }),
-    );
-
-    expect(state().entries[0].files).toEqual([]);
-  });
-
-  it('shows the validation errors the store raises', async () => {
-    renderForm();
-    act(() => {
-      state().updateNote(state().entries[0].id, 'note only');
       state().validateAll();
     });
 
-    expect(
-      await screen.findByText('DOCUMENTS_SELECT_DOCUMENT_TYPE'),
-    ).toBeVisible();
-    expect(screen.getByText('DOCUMENTS_UPLOAD_A_DOCUMENT')).toBeVisible();
-    expect(screen.getByText('INPUT_VALUE_REQUIRED')).toBeVisible();
+    const errors = await screen.findByTestId('errors');
+    expect(errors).toHaveTextContent('DOCUMENTS_SELECT_DOCUMENT_TYPE');
+    expect(errors).toHaveTextContent('DOCUMENTS_UPLOAD_A_DOCUMENT');
   });
 
   it('tells the user when the document types cannot be loaded', async () => {

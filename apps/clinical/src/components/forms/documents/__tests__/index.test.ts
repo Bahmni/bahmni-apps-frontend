@@ -1,3 +1,4 @@
+import { createEmptyDocumentEntry } from '@bahmni/widgets';
 import { clearRegistry, getRegisteredInputControls } from '../../registry';
 import { DOCUMENTS_INPUT_CONTROL_KEY } from '../constants';
 import { useDocumentsStore } from '../store';
@@ -8,6 +9,13 @@ jest.mock('@bahmni/services', () => ({
   ...jest.requireActual('@bahmni/services'),
   uploadDocument: jest.fn(),
 }));
+
+const addEntry = (documentId = '') => {
+  const entry = { ...createEmptyDocumentEntry(), documentId };
+  const store = useDocumentsStore.getState();
+  store.setEntries([...store.entries, entry]);
+  return entry.id;
+};
 
 const loadControl = () =>
   getRegisteredInputControls().find(
@@ -27,18 +35,18 @@ describe('documents input control registration', () => {
 
   it('reports data only once a card has been touched', () => {
     const control = loadControl();
-    const id = useDocumentsStore.getState().addEntry();
+    addEntry();
     expect(control.hasData()).toBe(false);
 
-    useDocumentsStore.getState().updateDocumentId(id, 'DOC-1');
+    useDocumentsStore.getState().reset();
+    addEntry('DOC-1');
 
     expect(control.hasData()).toBe(true);
   });
 
   it('validates through the store', () => {
     const control = loadControl();
-    const id = useDocumentsStore.getState().addEntry();
-    useDocumentsStore.getState().updateDocumentId(id, 'DOC-1');
+    addEntry('DOC-1');
 
     expect(control.validate()).toBe(false);
   });
@@ -48,18 +56,16 @@ describe('documents input control registration', () => {
     const listener = jest.fn();
     const unsubscribe = control.subscribe(listener);
 
-    useDocumentsStore.getState().addEntry();
+    addEntry();
     unsubscribe();
-    useDocumentsStore.getState().addEntry();
+    addEntry();
 
     expect(listener).toHaveBeenCalledTimes(1);
   });
 
   it('builds one DocumentReference per card for the encounter', () => {
     const control = loadControl();
-    const store = useDocumentsStore.getState();
-    const id = store.addEntry();
-    store.updateDocumentId(id, 'DOC-1');
+    addEntry('DOC-1');
 
     const entries = control.createBundleEntries!({
       encounterSubject: { reference: 'Patient/patient-uuid' },
@@ -74,7 +80,7 @@ describe('documents input control registration', () => {
 
   it('resets the store', () => {
     const control = loadControl();
-    useDocumentsStore.getState().addEntry();
+    addEntry();
 
     control.reset();
 

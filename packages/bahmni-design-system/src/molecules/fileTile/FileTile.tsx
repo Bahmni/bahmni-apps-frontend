@@ -9,8 +9,6 @@ export interface FileTileProps {
   src: string;
   id: string;
   className?: string;
-  /** Accessible name of the thumbnail button; defaults to a generated id-based label. */
-  ariaLabel?: string;
   modalTitle?: string;
   onModalOpen?: () => void;
   onModalClose?: () => void;
@@ -20,7 +18,6 @@ export const FileTile: React.FC<FileTileProps> = ({
   src,
   id,
   className,
-  ariaLabel,
   modalTitle,
   onModalOpen,
   onModalClose,
@@ -43,7 +40,7 @@ export const FileTile: React.FC<FileTileProps> = ({
       <button
         id={id}
         data-testid={`${id}-test-id`}
-        aria-label={ariaLabel ?? `${id}-aria-label`}
+        aria-label={`${id}-aria-label`}
         type="button"
         className={classNames(styles.fileTileButton, className)}
         onClick={handleThumbnailClick}
@@ -64,7 +61,6 @@ export const FileTile: React.FC<FileTileProps> = ({
           passiveModal
           size="lg"
           id="modalIdForActionAreaLayout"
-          portalId={'main-display-area'}
           testId={`${id}-modal-test-id`}
         >
           <div className={styles.modalIframeContainer}>

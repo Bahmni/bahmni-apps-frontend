@@ -10,8 +10,6 @@ export interface VideoTileProps {
   id: string;
   hideThumbnail?: boolean;
   className?: string;
-  /** Accessible name of the thumbnail button; defaults to a generated id-based label. */
-  ariaLabel?: string;
   modalTitle?: string;
   onModalOpen?: () => void;
   onModalClose?: () => void;
@@ -22,7 +20,6 @@ export const VideoTile: React.FC<VideoTileProps> = ({
   id,
   hideThumbnail = false,
   className,
-  ariaLabel,
   modalTitle,
   onModalOpen,
   onModalClose,
@@ -45,7 +42,7 @@ export const VideoTile: React.FC<VideoTileProps> = ({
       <button
         id={id}
         data-testid={`${id}-test-id`}
-        aria-label={ariaLabel ?? `${id}-aria-label`}
+        aria-label={`${id}-aria-label`}
         type="button"
         className={classNames(styles.thumbnailButton, className, {
           [styles.hideThumbnail]: hideThumbnail,

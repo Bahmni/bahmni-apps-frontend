@@ -1,12 +1,12 @@
-import { BoxWHeader, Button, SelectedItem } from '@bahmni/design-system';
 import {
   getDocumentTypesByConceptUuid,
   useTranslation,
 } from '@bahmni/services';
+import { DocumentUpload } from '@bahmni/widgets';
 import { useQuery } from '@tanstack/react-query';
 import React, { useEffect } from 'react';
 import type { InputControl as ClinicalInputControlConfig } from '../../../providers/clinicalConfig/models';
-import { DocumentEntryCard } from './components';
+import { DOCUMENT_ID_ATTRIBUTE, DOCUMENT_TYPE_ATTRIBUTE } from './constants';
 import { useDocumentsStore } from './store';
 import styles from './styles/DocumentsForm.module.scss';
 
@@ -18,7 +18,7 @@ const DocumentsForm: React.FC<DocumentsFormProps> = ({
   inputControlConfig,
 }) => {
   const { t } = useTranslation();
-  const { entries, addEntry, removeEntry, setAttributes } = useDocumentsStore();
+  const { entries, setEntries, setAttributes } = useDocumentsStore();
   const {
     metadata,
     attributes,
@@ -30,6 +30,9 @@ const DocumentsForm: React.FC<DocumentsFormProps> = ({
   const supportedFileTypes = metadata?.supportedFileTypes as
     | string[]
     | undefined;
+  const isRequired = (name: string, requiredByDefault = false) =>
+    attributes?.find((attribute) => attribute.name === name)?.required ??
+    requiredByDefault;
 
   const { data: documentTypes = [], isError } = useQuery({
     queryKey: ['documentTypes', documentTypeConceptSetUuid],
@@ -41,13 +44,6 @@ const DocumentsForm: React.FC<DocumentsFormProps> = ({
   useEffect(() => {
     setAttributes(attributes);
   }, [attributes, setAttributes]);
-
-  // A document is always being filled in; "Add more" is for the next one.
-  useEffect(() => {
-    if (entries.length === 0) {
-      addEntry();
-    }
-  }, [entries.length, addEntry]);
 
   return (
     <div
@@ -61,30 +57,16 @@ const DocumentsForm: React.FC<DocumentsFormProps> = ({
           {t('DOCUMENTS_ERROR_LOADING_DOCUMENT_TYPES')}
         </div>
       )}
-      <BoxWHeader title={t('DOCUMENTS_ADDED_DOCUMENT_TYPE')}>
-        {entries.map((entry) => (
-          <SelectedItem
-            key={entry.id}
-            className={styles.selectedItem}
-            onClose={() => removeEntry(entry.id)}
-          >
-            <DocumentEntryCard
-              entry={entry}
-              documentTypes={documentTypes}
-              attributes={attributes}
-              supportedFileTypes={supportedFileTypes}
-            />
-          </SelectedItem>
-        ))}
-      </BoxWHeader>
-      <Button
-        kind="tertiary"
-        className={styles.addMore}
-        testId="documents-add-more"
-        onClick={addEntry}
-      >
-        {t('DOCUMENTS_ADD_MORE')}
-      </Button>
+      <DocumentUpload
+        documents={entries}
+        onDocumentsChange={setEntries}
+        documentTypes={documentTypes}
+        isDocumentTypeRequired={isRequired(DOCUMENT_TYPE_ATTRIBUTE, true)}
+        showDocumentId
+        isDocumentIdRequired={isRequired(DOCUMENT_ID_ATTRIBUTE)}
+        supportedFileTypes={supportedFileTypes}
+        documentsTitle={t('DOCUMENTS_ADDED_DOCUMENT_TYPE')}
+      />
     </div>
   );
 };

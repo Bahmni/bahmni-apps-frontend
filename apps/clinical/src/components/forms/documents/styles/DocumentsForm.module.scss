@@ -19,31 +19,3 @@
   @include type-style("body-compact-02");
   color: $text-error;
 }
-
-.selectedItem {
-  border-top: 0;
-  border-left: 0;
-  border-right: 0;
-  border-bottom: 1px solid $border-subtle-02;
-  padding-bottom: $spacing-06;
-}
-
-.column {
-  margin-top: $spacing-04;
-  margin-left: 0;
-}
-
-.textArea {
-  margin-block-start: -1rem;
-  margin-inline-start: 0;
-}
-
-.fileError {
-  @include type-style("helper-text-01");
-  margin-block-start: $spacing-03;
-  color: $text-error;
-}
-
-.addMore {
-  align-self: flex-start;
-}

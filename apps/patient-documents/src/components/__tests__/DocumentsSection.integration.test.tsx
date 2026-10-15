@@ -36,6 +36,15 @@ global.URL.revokeObjectURL = jest.fn();
 
 const mockAddNotification = jest.fn();
 
+interface StubEntry {
+  id: string;
+  documentType: null;
+  documentId: string;
+  note: string;
+  errors: Record<string, string>;
+  files: StubDocument[];
+}
+
 interface StubDocument {
   id: string;
   fileName: string;
@@ -51,12 +60,13 @@ jest.mock('@bahmni/widgets', () => ({
     documents,
     onDocumentsChange,
   }: {
-    documents: StubDocument[];
-    onDocumentsChange: (documents: StubDocument[]) => void;
+    documents: StubEntry[];
+    onDocumentsChange: (documents: StubEntry[]) => void;
   }) => {
     const { useId } = jest.requireActual('react');
     // A fresh id per mount, so a remounted widget carries a different one.
     const instance = useId();
+    const files = documents.flatMap((entry) => entry.files);
 
     return (
       <div data-testid="document-upload" data-instance={instance}>
@@ -64,19 +74,27 @@ jest.mock('@bahmni/widgets', () => ({
           data-testid="select-file"
           onClick={() =>
             onDocumentsChange([
-              ...documents,
               {
-                id: `${instance}f.png`,
-                fileName: 'f.png',
-                url: 'blob:f',
+                id: `${instance}doc`,
+                documentType: null,
+                documentId: '',
                 note: '',
+                errors: {},
+                files: [
+                  ...files,
+                  {
+                    id: `${instance}f.png`,
+                    fileName: 'f.png',
+                    url: 'blob:f',
+                  },
+                ],
               },
             ])
           }
         />
-        {documents.map((document) => (
-          <span key={document.id} data-testid="pending">
-            {document.fileName}
+        {files.map((file) => (
+          <span key={file.id} data-testid="pending">
+            {file.fileName}
           </span>
         ))}
       </div>

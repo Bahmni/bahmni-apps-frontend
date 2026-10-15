@@ -1,16 +1,10 @@
 import { uploadDocument } from '@bahmni/services';
-import { revokeDocumentPreview } from '@bahmni/widgets';
-import type { PendingDocument } from '@bahmni/widgets';
+import { isDocumentEntryEmpty, revokeDocumentPreview } from '@bahmni/widgets';
+import type { DocumentEntry, PendingDocument } from '@bahmni/widgets';
 import { create } from 'zustand';
 import { useEncounterDetailsStore } from '../../../stores/encounterDetailsStore';
-import { DOCUMENTS_SELECT_TYPE_ERROR } from './constants';
-import type { DocumentEntry, DocumentsState } from './models';
-import {
-  createEmptyEntry,
-  isEntryEmpty,
-  validateEntry,
-  withoutError,
-} from './utils';
+import type { DocumentsState } from './models';
+import { validateEntry } from './utils';
 
 const messageOf = (error: unknown): string =>
   error instanceof Error ? error.message : String(error);
@@ -66,65 +60,36 @@ export const useDocumentsStore = create<DocumentsState>((set, get) => {
 
     setAttributes: (attributes) => set({ attributes }),
 
-    addEntry: () => {
-      const entry = createEmptyEntry();
-      set((state) => ({ entries: [...state.entries, entry] }));
-      return entry.id;
-    },
-
-    removeEntry: (id) => {
-      get()
-        .entries.find((entry) => entry.id === id)
-        ?.files.forEach(revokeDocumentPreview);
-      set((state) => ({
-        entries: state.entries.filter((entry) => entry.id !== id),
-      }));
-    },
-
-    updateDocumentType: (id, documentType) =>
-      updateEntry(id, ({ errors }) => ({
-        documentType,
-        errors: withoutError(errors, 'documentType'),
-      })),
-
-    updateDocumentId: (id, documentId) =>
-      updateEntry(id, ({ errors }) => ({
-        documentId,
-        errors: withoutError(errors, 'documentId'),
-      })),
-
-    updateNote: (id, note) => updateEntry(id, () => ({ note })),
-
-    setFiles: (id, files) => {
-      const known = new Set(
-        get()
-          .entries.find((entry) => entry.id === id)
-          ?.files.map((file) => file.id),
+    setEntries: (next) => {
+      const known = new Map(
+        get().entries.map((entry) => [
+          entry.id,
+          new Set(entry.files.map((file) => file.id)),
+        ]),
       );
-      const next = files.map(
-        (file): PendingDocument =>
-          known.has(file.id) ? file : { ...file, status: 'uploading' },
-      );
-      updateEntry(id, ({ errors }) => ({
-        files: next,
-        errors: withoutError(errors, 'files'),
-      }));
-      next
-        .filter((file) => !known.has(file.id))
-        .forEach((file) => void uploadFile(id, file));
+      const added: Array<[string, PendingDocument]> = [];
+      const entries = next.map((entry) => {
+        const knownFiles = known.get(entry.id);
+        const files = entry.files.map((file): PendingDocument => {
+          if (knownFiles?.has(file.id)) {
+            return file;
+          }
+          const uploading: PendingDocument = { ...file, status: 'uploading' };
+          added.push([entry.id, uploading]);
+          return uploading;
+        });
+        return { ...entry, files };
+      });
+      set({ entries });
+      added.forEach(([entryId, file]) => void uploadFile(entryId, file));
     },
-
-    showDocumentTypeRequired: (id) =>
-      updateEntry(id, (entry) => ({
-        errors: { ...entry.errors, documentType: DOCUMENTS_SELECT_TYPE_ERROR },
-      })),
 
     validateAll: () => {
       const { attributes } = get();
       let isValid = true;
       set((state) => ({
         entries: state.entries.map((entry) => {
-          if (isEntryEmpty(entry)) {
+          if (isDocumentEntryEmpty(entry)) {
             return entry;
           }
           const errors = validateEntry(entry, attributes);
@@ -135,7 +100,7 @@ export const useDocumentsStore = create<DocumentsState>((set, get) => {
       return isValid;
     },
 
-    hasData: () => get().entries.some((entry) => !isEntryEmpty(entry)),
+    hasData: () => get().entries.some((entry) => !isDocumentEntryEmpty(entry)),
 
     reset: () => {
       get().entries.forEach((entry) =>

@@ -1,14 +1,12 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { fireEvent, render, screen } from '@testing-library/react';
-import { useState } from 'react';
+import { StrictMode, useState } from 'react';
 import { DocumentUpload } from '../DocumentUpload';
-import { PendingDocument } from '../models';
+import { DocumentEntry, DocumentUploadProps, PendingDocument } from '../models';
 
 jest.mock('@bahmni/services', () => ({
   ...jest.requireActual('@bahmni/services'),
-  uploadDocument: jest.fn(),
-  saveDocuments: jest.fn(),
-  getDocumentUploadMaxSizeMb: jest.fn().mockResolvedValue(5),
+  getDocumentUploadMaxSizeMb: jest.fn(),
 }));
 
 global.URL.createObjectURL = jest.fn(
@@ -21,434 +19,361 @@ jest.mock('../../notification', () => ({
   useNotification: () => ({ addNotification: mockAddNotification }),
 }));
 
-const { uploadDocument, saveDocuments, getDocumentUploadMaxSizeMb } =
-  jest.requireMock('@bahmni/services');
+const { getDocumentUploadMaxSizeMb } = jest.requireMock('@bahmni/services');
 
-const mockDocumentsChange = jest.fn();
+const TYPES = [
+  { id: 'type-1', label: 'Lab Report' },
+  { id: 'type-2', label: 'Prescription' },
+];
 
-const Harness = ({ isSaving = false }: { isSaving?: boolean }) => {
-  const [documents, setDocuments] = useState<PendingDocument[]>([]);
+const pendingFile = (
+  name: string,
+  extra: Partial<PendingDocument> = {},
+): PendingDocument => ({
+  id: `pending-${name}`,
+  file: new File(['x'], name, { type: 'image/png' }),
+  url: `blob:http://localhost/${name}`,
+  fileName: name,
+  contentType: 'image/png',
+  ...extra,
+});
+
+const entry = (
+  id: string,
+  extra: Partial<DocumentEntry> = {},
+): DocumentEntry => ({
+  id,
+  documentType: null,
+  documentId: '',
+  note: '',
+  files: [],
+  errors: {},
+  ...extra,
+});
+
+const fileOf = (name: string, type = 'image/png', sizeInBytes = 4) =>
+  new File([new Uint8Array(sizeInBytes)], name, { type });
+
+const onChange = jest.fn();
+
+type HarnessProps = Partial<
+  Omit<DocumentUploadProps, 'documents' | 'onDocumentsChange'>
+> & { initial?: DocumentEntry[] };
+
+const Harness = ({ initial = [entry('e1')], ...props }: HarnessProps) => {
+  const [documents, setDocuments] = useState<DocumentEntry[]>(initial);
   return (
     <DocumentUpload
+      documentTypes={TYPES}
+      {...props}
       documents={documents}
       onDocumentsChange={(next) => {
-        mockDocumentsChange(next);
+        onChange(next);
         setDocuments(next);
       }}
-      documentTypes={[
-        { id: 'type-1', label: 'Lab Report' },
-        { id: 'type-2', label: 'Prescription' },
-      ]}
-      isSaving={isSaving}
     />
   );
 };
 
-const queryClient = () =>
-  new QueryClient({ defaultOptions: { queries: { retry: false } } });
-
-const renderWidget = () => {
-  const client = queryClient();
-  const view = render(
-    <QueryClientProvider client={client}>
-      <Harness />
-    </QueryClientProvider>,
+const renderWidget = (props: HarnessProps = {}, strict = false) => {
+  const widget = (
+    <QueryClientProvider
+      client={
+        new QueryClient({ defaultOptions: { queries: { retry: false } } })
+      }
+    >
+      <Harness {...props} />
+    </QueryClientProvider>
   );
-  const setSaving = (isSaving: boolean) =>
-    view.rerender(
-      <QueryClientProvider client={client}>
-        <Harness isSaving={isSaving} />
-      </QueryClientProvider>,
-    );
-  return { ...view, setSaving };
+  return render(strict ? <StrictMode>{widget}</StrictMode> : widget);
 };
 
-const lastDocuments = (): PendingDocument[] =>
-  mockDocumentsChange.mock.calls.at(-1)?.[0] ?? [];
+const latest = (): DocumentEntry[] => onChange.mock.calls.at(-1)?.[0];
 
-const fileOf = (name: string, mimeType = 'image/png', sizeInBytes = 4) =>
-  new File([new Uint8Array(sizeInBytes)], name, { type: mimeType });
+const fileInputs = () =>
+  Array.from(document.querySelectorAll<HTMLInputElement>('input[type="file"]'));
 
-const selectFiles = (...files: File[]) =>
-  fireEvent.change(screen.getByTestId('document-file-input'), {
-    target: { files },
-  });
-
-const selectFile = (mimeType = 'image/png', sizeInBytes = 4) =>
-  selectFiles(fileOf('doc.png', mimeType, sizeInBytes));
+const pick = (index: number, ...files: File[]) =>
+  fireEvent.change(fileInputs()[index], { target: { files } });
 
 describe('DocumentUpload', () => {
-  beforeEach(() => jest.clearAllMocks());
-
-  it('renders the upload section', () => {
-    renderWidget();
-    expect(screen.getByText('DOCUMENT_UPLOAD_TITLE')).toBeInTheDocument();
-    expect(screen.getByText('DOCUMENT_UPLOAD_BUTTON')).toBeInTheDocument();
+  beforeEach(() => {
+    jest.clearAllMocks();
+    getDocumentUploadMaxSizeMb.mockResolvedValue(5);
   });
 
-  it('hands a selected file to the consumer as a pending document without uploading it', async () => {
-    renderWidget();
-    selectFile();
+  describe('documents', () => {
+    it('shows an empty document to start from when it is given none', () => {
+      renderWidget({ initial: [] });
 
-    expect(
-      await screen.findByTestId('pending-document-row'),
-    ).toBeInTheDocument();
-    expect(lastDocuments()).toEqual([
-      expect.objectContaining({
-        file: expect.any(File),
-        fileName: 'doc.png',
-        contentType: 'image/png',
-        url: 'blob:http://localhost/test-blob-url',
-        documentType: null,
-        note: '',
-      }),
-    ]);
-    expect(uploadDocument).not.toHaveBeenCalled();
-    expect(saveDocuments).not.toHaveBeenCalled();
-  });
-
-  it('leaves saving to the consumer instead of rendering its own save button', async () => {
-    renderWidget();
-    selectFile();
-    await screen.findByTestId('pending-document-row');
-
-    expect(screen.queryByText('DOCUMENT_UPLOAD_SAVE')).not.toBeInTheDocument();
-  });
-
-  it('rejects unsupported file types without adding them', () => {
-    renderWidget();
-    selectFile('text/plain');
-
-    expect(mockDocumentsChange).not.toHaveBeenCalled();
-    expect(mockAddNotification).toHaveBeenCalledWith(
-      expect.objectContaining({ type: 'error', timeout: 5000 }),
-    );
-  });
-
-  it('shows the configured max size in the help text and rejects a larger file', async () => {
-    renderWidget();
-    // wait for the setting to load so the size check is active (help text shows the max-size line)
-    await screen.findByText('DOCUMENT_UPLOAD_HELP');
-
-    selectFile('image/png', 8 * 1024 * 1024);
-
-    expect(mockDocumentsChange).not.toHaveBeenCalled();
-    expect(mockAddNotification).toHaveBeenCalledWith(
-      expect.objectContaining({ type: 'error', timeout: 5000 }),
-    );
-  });
-
-  it('does not enforce a size limit when the setting is not configured', async () => {
-    getDocumentUploadMaxSizeMb.mockResolvedValueOnce(undefined);
-    renderWidget();
-    // no max-size line — only the supported-types help text
-    await screen.findByText('DOCUMENT_UPLOAD_SUPPORTED_TYPES');
-
-    selectFile('image/png', 8 * 1024 * 1024);
-
-    expect(
-      await screen.findByTestId('pending-document-row'),
-    ).toBeInTheDocument();
-  });
-
-  it('renders a video tile for a video upload', async () => {
-    renderWidget();
-    selectFile('video/mp4');
-    expect(
-      await screen.findByTestId('pending-document-row'),
-    ).toBeInTheDocument();
-  });
-
-  it('renders a file tile for a pdf upload', async () => {
-    renderWidget();
-    selectFile('application/pdf');
-    expect(
-      await screen.findByTestId('pending-document-row'),
-    ).toBeInTheDocument();
-  });
-
-  it('records the typed note on the pending document', async () => {
-    renderWidget();
-    selectFile();
-    await screen.findByTestId('pending-document-row');
-
-    fireEvent.click(screen.getByText('DOCUMENT_UPLOAD_ADD_NOTE'));
-    fireEvent.change(screen.getByTestId('document-note'), {
-      target: { value: 'follow up in 2 weeks' },
+      expect(screen.getAllByTestId(/^document-entry-/)).toHaveLength(1);
+      expect(latest()).toEqual([expect.objectContaining({ files: [] })]);
     });
 
-    expect(lastDocuments()).toEqual([
-      expect.objectContaining({
-        note: 'follow up in 2 weeks',
-        isNoteVisible: true,
-      }),
-    ]);
-  });
+    it('still starts with a single empty document when effects run twice on mount', () => {
+      renderWidget({ initial: [] }, true);
 
-  it('shows the first document type by default without fixing it on the document', async () => {
-    renderWidget();
-    selectFile();
-    await screen.findByTestId('pending-document-row');
+      expect(screen.getAllByTestId(/^document-entry-/)).toHaveLength(1);
+      expect(latest()).toHaveLength(1);
+    });
 
-    expect(
-      screen.queryByText('DOCUMENT_UPLOAD_CHOOSE_TYPE'),
-    ).not.toBeInTheDocument();
-    expect(screen.getByText('Lab Report')).toBeInTheDocument();
-    // Left unset so the consumer resolves the default at save time, after the types have loaded.
-    expect(lastDocuments()[0].documentType).toBeNull();
-  });
-
-  it('discards the pending document and releases its preview', async () => {
-    renderWidget();
-    selectFile();
-    await screen.findByTestId('pending-document-row');
-
-    fireEvent.click(screen.getByLabelText('DOCUMENT_UPLOAD_DISCARD'));
-
-    expect(
-      screen.queryByTestId('pending-document-row'),
-    ).not.toBeInTheDocument();
-    expect(lastDocuments()).toEqual([]);
-    expect(URL.revokeObjectURL).toHaveBeenCalledWith(
-      'blob:http://localhost/test-blob-url',
-    );
-  });
-
-  describe('multiple documents', () => {
-    it('accepts several files at once and adds to what is already pending', async () => {
+    it('adds another document with "Add more"', () => {
       renderWidget();
 
-      selectFiles(fileOf('scan.png'), fileOf('report.pdf', 'application/pdf'));
-      expect(await screen.findAllByTestId('pending-document-row')).toHaveLength(
-        2,
-      );
+      fireEvent.click(screen.getByTestId('document-upload-add-more'));
 
-      selectFiles(fileOf('note.png'));
-      expect(await screen.findAllByTestId('pending-document-row')).toHaveLength(
-        3,
+      expect(screen.getAllByTestId(/^document-entry-/)).toHaveLength(2);
+      expect(latest()).toHaveLength(2);
+    });
+
+    it('offers removal only when there is more than one document, and releases previews', () => {
+      renderWidget({
+        initial: [entry('e1', { files: [pendingFile('a.png')] }), entry('e2')],
+      });
+
+      fireEvent.click(screen.getAllByRole('button', { name: /close/i })[0]);
+
+      expect(screen.getAllByTestId(/^document-entry-/)).toHaveLength(1);
+      expect(latest().map(({ id }) => id)).toEqual(['e2']);
+      expect(URL.revokeObjectURL).toHaveBeenCalledWith(
+        'blob:http://localhost/a.png',
       );
-      expect(lastDocuments().map((document) => document.fileName)).toEqual([
-        'scan.png',
-        'report.pdf',
-        'note.png',
+      expect(screen.queryByRole('button', { name: /close/i })).toBeNull();
+    });
+
+    it('lists the documents under a heading when given one', () => {
+      renderWidget({ documentsTitle: 'Added document type' });
+
+      expect(screen.getByText('Added document type')).toBeVisible();
+    });
+
+    it('locks the controls while saving', () => {
+      renderWidget({ isSaving: true, showDocumentId: true });
+
+      expect(screen.getByRole('combobox')).toBeDisabled();
+      expect(screen.getByTestId('document-id-e1')).toBeDisabled();
+      expect(screen.getByTestId('document-upload-add-more')).toBeDisabled();
+      expect(fileInputs()[0]).toBeDisabled();
+    });
+  });
+
+  describe('type and identifier', () => {
+    it('shows no Document ID by default, and keeps the type dropdown narrow then', () => {
+      renderWidget();
+
+      expect(screen.queryByTestId('document-id-e1')).toBeNull();
+      expect(
+        screen.getByTestId('document-type-e1').closest('.typeOnly'),
+      ).not.toBeNull();
+    });
+
+    it('shows the Document ID when asked to and records what is typed', () => {
+      renderWidget({ showDocumentId: true });
+
+      fireEvent.change(screen.getByTestId('document-id-e1'), {
+        target: { value: 'D-2' },
+      });
+
+      expect(latest()[0].documentId).toBe('D-2');
+      expect(
+        screen.getByTestId('document-type-e1').closest('.typeOnly'),
+      ).toBeNull();
+    });
+
+    it('marks the type as required only when it is', () => {
+      const { unmount } = renderWidget({ isDocumentTypeRequired: true });
+      expect(screen.getByText('DOCUMENTS_DOCUMENT_TYPE_LABEL*')).toBeVisible();
+      unmount();
+
+      renderWidget();
+      expect(screen.getByText('DOCUMENTS_DOCUMENT_TYPE_LABEL')).toBeVisible();
+    });
+
+    it('shows the default type until another is chosen, and records the choice', () => {
+      renderWidget({ defaultDocumentType: TYPES[1] });
+      expect(screen.getByRole('combobox')).toHaveTextContent('Prescription');
+
+      fireEvent.click(screen.getByRole('combobox'));
+      fireEvent.click(screen.getByText('Lab Report'));
+
+      expect(latest()[0].documentType).toEqual(TYPES[0]);
+    });
+
+    it('shows the errors it is given, and clears one when its field is corrected', () => {
+      renderWidget({
+        showDocumentId: true,
+        initial: [
+          entry('e1', {
+            errors: {
+              documentType: 'TYPE_ERROR',
+              documentId: 'ID_ERROR',
+              files: 'FILES_ERROR',
+            },
+          }),
+        ],
+      });
+      expect(screen.getByText('TYPE_ERROR')).toBeVisible();
+      expect(screen.getByText('ID_ERROR')).toBeVisible();
+      expect(screen.getByText('FILES_ERROR')).toBeVisible();
+
+      fireEvent.change(screen.getByTestId('document-id-e1'), {
+        target: { value: 'D-1' },
+      });
+
+      expect(latest()[0].errors.documentId).toBeUndefined();
+      expect(latest()[0].errors.documentType).toBe('TYPE_ERROR');
+    });
+  });
+
+  describe('note', () => {
+    it('opens from "Add note", records typing, and clears when closed', () => {
+      renderWidget();
+      expect(screen.queryByTestId('document-note-e1')).toBeNull();
+
+      fireEvent.click(screen.getByTestId('document-add-note-e1'));
+      fireEvent.change(screen.getByTestId('document-note-e1'), {
+        target: { value: 'signed' },
+      });
+      expect(latest()[0].note).toBe('signed');
+
+      fireEvent.click(screen.getByRole('button', { name: /close|clear/i }));
+
+      expect(latest()[0].note).toBe('');
+      expect(screen.getByTestId('document-add-note-e1')).toBeInTheDocument();
+    });
+
+    it('shows an existing note without needing to open it', () => {
+      renderWidget({ initial: [entry('e1', { note: 'already here' })] });
+
+      expect(screen.getByTestId('document-note-e1')).toHaveValue(
+        'already here',
+      );
+    });
+  });
+
+  describe('files', () => {
+    it('adds accepted files to the document they were picked for', async () => {
+      renderWidget({ initial: [entry('e1'), entry('e2')] });
+      await screen.findAllByText('DOCUMENT_UPLOAD_HELP');
+
+      pick(1, fileOf('a.png'), fileOf('b.pdf', 'application/pdf'));
+
+      expect(latest()[0].files).toEqual([]);
+      expect(latest()[1].files.map((file) => file.fileName)).toEqual([
+        'a.png',
+        'b.pdf',
       ]);
+      expect(await screen.findByText('a.png')).toBeInTheDocument();
     });
 
-    it('gives every pending document its own id', async () => {
-      renderWidget();
+    it('rejects files outside the configured extensions and notifies', () => {
+      renderWidget({ supportedFileTypes: ['.pdf'] });
 
-      selectFiles(fileOf('scan.png'), fileOf('report.pdf', 'application/pdf'));
-      selectFiles(fileOf('note.png'));
-      await screen.findAllByTestId('pending-document-row');
+      pick(0, fileOf('a.png'));
 
-      const ids = lastDocuments().map((document) => document.id);
-      expect(new Set(ids).size).toBe(3);
-    });
-
-    it('raises one notification per rejection reason, not per file', async () => {
-      renderWidget();
-      // Wait for the max-size setting so the size check is active.
-      await screen.findByText(/DOCUMENT_UPLOAD_HELP/);
-
-      selectFiles(
-        fileOf('ok.png'),
-        fileOf('huge.png', 'image/png', 6 * 1000 * 1000),
-        fileOf('notes.txt', 'text/plain'),
-      );
-
-      expect(await screen.findAllByTestId('pending-document-row')).toHaveLength(
-        1,
-      );
-      const titles = mockAddNotification.mock.calls.map(
-        ([notification]) => notification.title,
-      );
-      expect(titles).toContain('DOCUMENT_UPLOAD_INVALID_TYPE_TITLE');
-      expect(titles).toContain('DOCUMENT_UPLOAD_SIZE_EXCEEDED_TITLE');
-      // One per reason, not one per rejected file.
-      expect(titles).toHaveLength(2);
-    });
-
-    it('rejects unsupported files in a mixed selection with a single notification', async () => {
-      renderWidget();
-
-      selectFiles(
-        fileOf('scan.png'),
-        fileOf('notes.txt', 'text/plain'),
-        fileOf('summary.doc', 'application/msword'),
-      );
-
-      expect(await screen.findAllByTestId('pending-document-row')).toHaveLength(
-        1,
-      );
-      expect(mockAddNotification).toHaveBeenCalledTimes(1);
+      expect(onChange).not.toHaveBeenCalled();
       expect(mockAddNotification).toHaveBeenCalledWith(
         expect.objectContaining({
           title: 'DOCUMENT_UPLOAD_INVALID_TYPE_TITLE',
-          type: 'error',
         }),
       );
     });
 
-    it('locks the type and note controls while the consumer is saving', async () => {
-      const { setSaving } = renderWidget();
-      selectFile();
-      await screen.findByTestId('pending-document-row');
-      fireEvent.click(screen.getByText('DOCUMENT_UPLOAD_ADD_NOTE'));
+    it('restricts the file picker to the configured extensions', () => {
+      renderWidget({ supportedFileTypes: ['pdf', '.PNG'] });
 
-      setSaving(true);
-
-      expect(screen.getByTestId('document-note')).toBeDisabled();
-      expect(screen.getByRole('combobox')).toBeDisabled();
-      expect(screen.getByLabelText('DOCUMENT_UPLOAD_DISCARD')).toBeDisabled();
-      expect(screen.getByText('DOCUMENT_UPLOAD_BUTTON')).toBeDisabled();
-      expect(screen.getByText('DOCUMENT_UPLOAD_SAVING')).toBeInTheDocument();
-
-      setSaving(false);
-
-      expect(screen.getByTestId('document-note')).toBeEnabled();
+      expect(fileInputs()[0]).toHaveAttribute('accept', '.pdf,.png');
     });
 
-    it('discards one pending document without touching the others', async () => {
+    it('rejects a file over the configured size limit', async () => {
       renderWidget();
-      selectFiles(fileOf('scan.png'), fileOf('report.pdf', 'application/pdf'));
-      await screen.findAllByTestId('pending-document-row');
+      await screen.findByText('DOCUMENT_UPLOAD_HELP');
 
-      fireEvent.click(screen.getAllByLabelText('DOCUMENT_UPLOAD_DISCARD')[0]);
+      pick(0, fileOf('big.png', 'image/png', 6 * 1000 * 1000));
 
-      expect(screen.getAllByTestId('pending-document-row')).toHaveLength(1);
-      expect(lastDocuments().map((document) => document.fileName)).toEqual([
-        'report.pdf',
-      ]);
-    });
-  });
-});
-
-describe('DocumentUpload in fileOnly mode', () => {
-  const pendingFile = (
-    name: string,
-    extra: Partial<PendingDocument> = {},
-  ): PendingDocument => ({
-    id: `pending-${name}`,
-    file: new File(['x'], name, { type: 'image/png' }),
-    url: `blob:http://localhost/${name}`,
-    fileName: name,
-    contentType: 'image/png',
-    documentType: null,
-    note: '',
-    isNoteVisible: false,
-    ...extra,
-  });
-
-  const FileOnlyHarness = ({
-    initial = [],
-    canSelectFiles,
-    supportedFileTypes,
-  }: {
-    initial?: PendingDocument[];
-    canSelectFiles?: () => boolean;
-    supportedFileTypes?: string[];
-  }) => {
-    const [documents, setDocuments] = useState<PendingDocument[]>(initial);
-    return (
-      <DocumentUpload
-        fileOnly
-        documents={documents}
-        onDocumentsChange={(next) => {
-          mockDocumentsChange(next);
-          setDocuments(next);
-        }}
-        canSelectFiles={canSelectFiles}
-        supportedFileTypes={supportedFileTypes}
-      />
-    );
-  };
-
-  const renderFileOnly = (
-    props: React.ComponentProps<typeof FileOnlyHarness> = {},
-  ) =>
-    render(
-      <QueryClientProvider client={queryClient()}>
-        <FileOnlyHarness {...props} />
-      </QueryClientProvider>,
-    );
-
-  const fileInput = () =>
-    document.querySelector('input[type="file"]') as HTMLInputElement;
-
-  const pick = (...files: File[]) =>
-    fireEvent.change(fileInput(), { target: { files } });
-
-  beforeEach(() => jest.clearAllMocks());
-
-  it('shows no document type or note controls', () => {
-    renderFileOnly({ initial: [pendingFile('scan.png')] });
-
-    expect(screen.queryByTestId('document-type-dropdown')).toBeNull();
-    expect(screen.queryByText('DOCUMENT_UPLOAD_ADD_NOTE')).toBeNull();
-    expect(screen.getByText('scan.png')).toBeInTheDocument();
-  });
-
-  it('adds accepted files to the controlled list', async () => {
-    renderFileOnly();
-    await screen.findByText('DOCUMENT_UPLOAD_HELP');
-
-    pick(new File(['x'], 'a.png', { type: 'image/png' }));
-
-    expect(await screen.findByText('a.png')).toBeInTheDocument();
-    expect(mockDocumentsChange).toHaveBeenCalledWith([
-      expect.objectContaining({ fileName: 'a.png', documentType: null }),
-    ]);
-  });
-
-  it('rejects files outside the configured extensions and notifies', async () => {
-    renderFileOnly({ supportedFileTypes: ['.pdf'] });
-
-    pick(new File(['x'], 'a.png', { type: 'image/png' }));
-
-    expect(mockDocumentsChange).not.toHaveBeenCalled();
-    expect(mockAddNotification).toHaveBeenCalledWith(
-      expect.objectContaining({ title: 'DOCUMENT_UPLOAD_INVALID_TYPE_TITLE' }),
-    );
-  });
-
-  it('restricts the file picker to the configured extensions', () => {
-    renderFileOnly({ supportedFileTypes: ['pdf', '.PNG'] });
-
-    expect(fileInput()).toHaveAttribute('accept', '.pdf,.png');
-  });
-
-  it('removes a file and releases its preview', () => {
-    renderFileOnly({ initial: [pendingFile('a.png'), pendingFile('b.png')] });
-
-    fireEvent.click(
-      screen.getAllByRole('button', { name: 'DOCUMENT_UPLOAD_REMOVE_FILE' })[0],
-    );
-
-    expect(screen.queryByText('a.png')).toBeNull();
-    expect(screen.getByText('b.png')).toBeInTheDocument();
-    expect(URL.revokeObjectURL).toHaveBeenCalledWith(
-      'blob:http://localhost/a.png',
-    );
-  });
-
-  it('shows upload progress and failures per file', () => {
-    renderFileOnly({
-      initial: [
-        pendingFile('a.png', { status: 'uploading' }),
-        pendingFile('b.png', { status: 'error', error: 'Server said no' }),
-        pendingFile('c.png', { status: 'uploaded' }),
-      ],
+      expect(onChange).not.toHaveBeenCalled();
+      expect(mockAddNotification).toHaveBeenCalledWith(
+        expect.objectContaining({
+          title: 'DOCUMENT_UPLOAD_SIZE_EXCEEDED_TITLE',
+        }),
+      );
     });
 
-    expect(screen.getByText('DOCUMENT_UPLOAD_UPLOADING')).toBeInTheDocument();
-    expect(screen.getByRole('alert')).toHaveTextContent('Server said no');
+    it('removes a file and releases its preview', () => {
+      renderWidget({
+        initial: [
+          entry('e1', { files: [pendingFile('a.png'), pendingFile('b.png')] }),
+        ],
+      });
+
+      fireEvent.click(
+        screen.getAllByRole('button', {
+          name: /DOCUMENT_UPLOAD_REMOVE_FILE/,
+        })[0],
+      );
+
+      expect(latest()[0].files.map((file) => file.fileName)).toEqual(['b.png']);
+      expect(URL.revokeObjectURL).toHaveBeenCalledWith(
+        'blob:http://localhost/a.png',
+      );
+    });
+
+    it('shows a failed upload with its reason, and no removal while uploading', () => {
+      renderWidget({
+        initial: [
+          entry('e1', {
+            files: [
+              pendingFile('a.png', { status: 'uploading' }),
+              pendingFile('b.png', {
+                status: 'error',
+                error: 'Server said no',
+              }),
+            ],
+          }),
+        ],
+      });
+
+      expect(screen.getByText('Server said no')).toBeInTheDocument();
+      expect(
+        screen.getAllByRole('button', { name: /DOCUMENT_UPLOAD_REMOVE_FILE/ }),
+      ).toHaveLength(1);
+    });
   });
 
-  it('keeps the file dialog from opening when canSelectFiles returns false', () => {
-    const canSelectFiles = jest.fn().mockReturnValue(false);
-    renderFileOnly({ canSelectFiles });
+  describe('browsing for files', () => {
+    it('is held back, with an error, while a required type is missing', () => {
+      renderWidget({ isDocumentTypeRequired: true });
 
-    expect(fireEvent.click(fileInput())).toBe(false);
-    expect(canSelectFiles).toHaveBeenCalledTimes(1);
+      const allowed = fireEvent.click(fileInputs()[0]);
+
+      expect(allowed).toBe(false);
+      expect(latest()[0].errors.documentType).toBe(
+        'DOCUMENTS_SELECT_DOCUMENT_TYPE',
+      );
+    });
+
+    it('is allowed once the document has a type', () => {
+      renderWidget({
+        isDocumentTypeRequired: true,
+        initial: [entry('e1', { documentType: TYPES[0] })],
+      });
+
+      expect(fireEvent.click(fileInputs()[0])).toBe(true);
+    });
+
+    it('is allowed when the default type applies', () => {
+      renderWidget({
+        isDocumentTypeRequired: true,
+        defaultDocumentType: TYPES[0],
+      });
+
+      expect(fireEvent.click(fileInputs()[0])).toBe(true);
+    });
+
+    it('is not held back when the type is not required', () => {
+      renderWidget();
+
+      expect(fireEvent.click(fileInputs()[0])).toBe(true);
+    });
   });
 });
