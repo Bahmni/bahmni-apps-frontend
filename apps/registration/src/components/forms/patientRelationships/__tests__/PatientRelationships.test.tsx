@@ -29,11 +29,6 @@ jest.mock('@bahmni/services', () => ({
   })),
 }));
 
-const mockAddNotification = jest.fn();
-jest.mock('@bahmni/widgets', () => ({
-  useNotification: () => ({ addNotification: mockAddNotification }),
-}));
-
 describe('PatientRelationships', () => {
   let queryClient: QueryClient;
   let ref: React.RefObject<PatientRelationshipsRef | null>;
@@ -213,7 +208,6 @@ describe('PatientRelationships', () => {
     });
 
     it('should reject empty relationships for a brand new patient', async () => {
-      mockAddNotification.mockClear();
       render(<PatientRelationships ref={ref} />, { wrapper });
 
       await waitFor(() => {
@@ -226,9 +220,9 @@ describe('PatientRelationships', () => {
       });
 
       expect(isValid).toBe(false);
-      expect(mockAddNotification).toHaveBeenCalledWith(
-        expect.objectContaining({ type: 'error' }),
-      );
+      expect(
+        screen.getByTestId('patient-relationships-general-error'),
+      ).toHaveTextContent('REGISTRATION_RELATIONSHIP_REQUIRED');
     });
 
     it('should validate incomplete relationships correctly', async () => {

@@ -1,5 +1,4 @@
 import { useTranslation, getRelationshipTypes } from '@bahmni/services';
-import { useNotification } from '@bahmni/widgets';
 import { useQuery } from '@tanstack/react-query';
 import { parseISO, startOfDay } from 'date-fns';
 import { useState, useEffect } from 'react';
@@ -8,6 +7,7 @@ import {
   getRelationshipTypesFromCache,
   saveRelationshipTypesToCache,
 } from '../utils/relationshipTypesCache';
+import { isRelationshipRowMeaningful } from '../utils/relationshipUtils';
 
 export interface ValidationErrors {
   [key: string]: {
@@ -18,7 +18,6 @@ export interface ValidationErrors {
 
 export const useRelationshipValidation = () => {
   const { t } = useTranslation();
-  const { addNotification } = useNotification();
 
   // Get cached data from localStorage to use as initial data
   const cachedData = getRelationshipTypesFromCache();
@@ -44,6 +43,7 @@ export const useRelationshipValidation = () => {
   const [validationErrors, setValidationErrors] = useState<ValidationErrors>(
     {},
   );
+  const [generalError, setGeneralError] = useState<string | null>(null);
 
   const isExpired = (tillDate: string) =>
     !!tillDate && parseISO(tillDate) < startOfDay(new Date());
@@ -80,26 +80,20 @@ export const useRelationshipValidation = () => {
     return duplicateIds;
   };
 
-  const validateRelationships = (relationships: RelationshipData[]) => {
+  const validateRelationships = (
+    relationships: RelationshipData[],
+    isExistingPatient: boolean,
+  ) => {
     let isValid = true;
-    const hasExistingRelationship = relationships.some((rel) => rel.isExisting);
+    setGeneralError(null);
 
-    if (!hasExistingRelationship) {
+    if (!isExistingPatient) {
       const hasAnyRelationship = relationships.some(
-        (rel) =>
-          !rel.isDeleted &&
-          (rel.relationshipType.trim() ||
-            rel.patientId.trim() ||
-            rel.tillDate.trim()),
+        (rel) => !rel.isDeleted && isRelationshipRowMeaningful(rel),
       );
 
       if (!hasAnyRelationship) {
-        addNotification({
-          title: t('NOTIFICATION_ERROR_TITLE'),
-          message: t('REGISTRATION_RELATIONSHIP_REQUIRED'),
-          type: 'error',
-          timeout: 5000,
-        });
+        setGeneralError(t('REGISTRATION_RELATIONSHIP_REQUIRED'));
         setValidationErrors({});
         return false;
       }
@@ -112,12 +106,7 @@ export const useRelationshipValidation = () => {
       // only validate newly added rows — existing rows are already saved, deleted rows are going away
       if (rel.isExisting || rel.isDeleted) return;
 
-      const hasAnyData =
-        rel.relationshipType.trim() ||
-        rel.patientId.trim() ||
-        rel.tillDate.trim();
-
-      if (!hasAnyData) {
+      if (!isRelationshipRowMeaningful(rel)) {
         return;
       }
 
@@ -162,13 +151,20 @@ export const useRelationshipValidation = () => {
 
   const clearAllErrors = () => {
     setValidationErrors({});
+    setGeneralError(null);
+  };
+
+  const clearGeneralError = () => {
+    setGeneralError(null);
   };
 
   return {
     relationshipTypes,
     validationErrors,
+    generalError,
     validateRelationships,
     clearFieldError,
     clearAllErrors,
+    clearGeneralError,
   };
 };

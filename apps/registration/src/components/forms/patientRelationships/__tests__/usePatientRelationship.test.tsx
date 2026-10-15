@@ -24,6 +24,7 @@ describe('usePatientRelationship', () => {
   const mockValidateRelationships = jest.fn();
   const mockClearFieldError = jest.fn();
   const mockClearAllErrors = jest.fn();
+  const mockClearGeneralError = jest.fn();
 
   const mockRelationshipTypes = [
     { uuid: 'type-1', aIsToB: 'Parent', bIsToA: 'Child' },
@@ -45,9 +46,11 @@ describe('usePatientRelationship', () => {
     mockUseRelationshipValidation.mockReturnValue({
       relationshipTypes: mockRelationshipTypes,
       validationErrors: {},
+      generalError: null,
       validateRelationships: mockValidateRelationships,
       clearFieldError: mockClearFieldError,
       clearAllErrors: mockClearAllErrors,
+      clearGeneralError: mockClearGeneralError,
     });
 
     mockGetPatientSuggestions.mockReturnValue([]);
@@ -348,7 +351,58 @@ describe('usePatientRelationship', () => {
       expect(data).toEqual(initialData);
     });
 
-    it('should validate relationships', () => {
+    it('should filter out completely empty rows but keep rows with any field filled', () => {
+      const initialData = [
+        { id: 'rel-1', relationshipType: '', patientId: '', tillDate: '' },
+        {
+          id: 'rel-2',
+          relationshipType: 'type-1',
+          patientId: 'PAT001',
+          tillDate: '',
+        },
+        {
+          id: 'rel-3',
+          relationshipType: '',
+          patientId: '',
+          tillDate: '2025-01-01',
+        },
+      ];
+
+      const { result } = renderHook(() =>
+        usePatientRelationship({ initialData }),
+      );
+
+      const data = result.current.getData();
+      expect(data.map((rel) => rel.id)).toEqual(['rel-2', 'rel-3']);
+    });
+
+    it('should keep existing and deleted rows via getData regardless of field contents', () => {
+      const initialData = [
+        {
+          id: 'rel-1',
+          relationshipType: '',
+          patientId: '',
+          tillDate: '',
+          isExisting: true,
+        },
+        {
+          id: 'rel-2',
+          relationshipType: '',
+          patientId: '',
+          tillDate: '',
+          isDeleted: true,
+        },
+      ];
+
+      const { result } = renderHook(() =>
+        usePatientRelationship({ initialData }),
+      );
+
+      const data = result.current.getData();
+      expect(data.map((rel) => rel.id)).toEqual(['rel-1', 'rel-2']);
+    });
+
+    it('should validate relationships as a new patient when currentPatientUuid is absent', () => {
       const { result } = renderHook(() => usePatientRelationship({}));
 
       act(() => {
@@ -357,6 +411,22 @@ describe('usePatientRelationship', () => {
 
       expect(mockValidateRelationships).toHaveBeenCalledWith(
         result.current.relationships,
+        false,
+      );
+    });
+
+    it('should validate relationships as an existing patient when currentPatientUuid is present', () => {
+      const { result } = renderHook(() =>
+        usePatientRelationship({ currentPatientUuid: 'patient-uuid-1' }),
+      );
+
+      act(() => {
+        result.current.validate();
+      });
+
+      expect(mockValidateRelationships).toHaveBeenCalledWith(
+        result.current.relationships,
+        true,
       );
     });
 
