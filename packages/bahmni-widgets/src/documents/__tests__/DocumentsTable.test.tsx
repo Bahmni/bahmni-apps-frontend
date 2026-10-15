@@ -10,6 +10,7 @@ import {
   act,
   waitFor,
   fireEvent,
+  within,
 } from '@testing-library/react';
 import userEvent, { type UserEvent } from '@testing-library/user-event';
 import { axe, toHaveNoViolations } from 'jest-axe';
@@ -40,7 +41,12 @@ jest.mock('@tanstack/react-query', () => ({
 
 jest.mock('@bahmni/services', () => ({
   ...jest.requireActual('@bahmni/services'),
-  useTranslation: () => ({ t: (key: string) => key }),
+  useTranslation: () => ({
+    t: (key: string, options?: { current?: number; total?: number }) =>
+      key === 'DOCUMENTS_ATTACHMENT_COUNTER'
+        ? `Attachment ${options?.current} of ${options?.total}`
+        : key,
+  }),
   formatDateTime: () => ({ formattedResult: '15/01/2024 4:00 PM' }),
   getDocumentReferencePage: jest.fn(),
   useSubscribeConsultationSaved: jest.fn(),
@@ -475,7 +481,7 @@ describe('DocumentsTable', () => {
       expect(iframes).toHaveLength(2);
     });
 
-    it('shows attachment counter (e.g. "1/2") when there are multiple attachments', async () => {
+    it('labels each attachment "Attachment 1 of 2" when there are multiple attachments', async () => {
       const user = userEvent.setup();
       (useQuery as jest.Mock).mockReturnValue(
         mockQueryData([mockMultiAttachmentDocument]),
@@ -484,8 +490,9 @@ describe('DocumentsTable', () => {
 
       await user.click(screen.getByText('DOCUMENTS_VIEW_ATTACHMENTS'));
 
-      expect(screen.getByText('1/2')).toBeInTheDocument();
-      expect(screen.getByText('2/2')).toBeInTheDocument();
+      expect(screen.getByText('Attachment 1 of 2')).toBeInTheDocument();
+      expect(screen.getByText('Attachment 2 of 2')).toBeInTheDocument();
+      expect(screen.queryByText('1/2')).not.toBeInTheDocument();
     });
 
     it('does not show attachment counter when there is only one attachment', async () => {
@@ -495,7 +502,9 @@ describe('DocumentsTable', () => {
 
       await user.click(screen.getByText('DOCUMENTS_VIEW_ATTACHMENTS'));
 
-      expect(screen.queryByText('1/1')).not.toBeInTheDocument();
+      expect(
+        screen.queryByText(/^Attachment \d+ of \d+$/),
+      ).not.toBeInTheDocument();
     });
   });
 
@@ -1078,6 +1087,67 @@ describe('DocumentsTable', () => {
       expect(
         screen.getAllByText('Test Document').length,
       ).toBeGreaterThanOrEqual(2);
+    });
+  });
+
+  describe('Columns', () => {
+    // A sortable header's text also carries its "Click to sort…" hint.
+    const columnNames = () =>
+      screen
+        .getAllByRole('columnheader')
+        .map((header) =>
+          (header.textContent ?? '').replace(
+            /^Click to sort rows by .* header in ascending order/,
+            '',
+          ),
+        );
+
+    it('puts Document type first by default, then the identifier, attachments, upload date and uploader', () => {
+      (useQuery as jest.Mock).mockReturnValue(mockQueryData([mockPdfDocument]));
+
+      renderComponent({});
+
+      expect(columnNames()).toEqual([
+        'DOCUMENTS_TYPE',
+        'DOCUMENTS_DOCUMENT_IDENTIFIER',
+        'DOCUMENTS_ATTACHMENTS',
+        'DOCUMENTS_UPLOADED_ON',
+        'DOCUMENTS_UPLOADED_BY',
+      ]);
+    });
+
+    it('shows a dash for a document with no identifier', () => {
+      (useQuery as jest.Mock).mockReturnValue(
+        mockQueryData([
+          { ...mockPdfDocument, id: 'doc-empty', documentIdentifier: '' },
+          { ...mockImageDocument, id: 'doc-blank', documentIdentifier: '   ' },
+          mockMultiAttachmentDocument,
+        ]),
+      );
+
+      renderComponent({});
+
+      const rows = screen.getAllByRole('row').slice(1);
+      const identifierCells = rows.map(
+        (row) => within(row).getAllByRole('cell')[1].textContent,
+      );
+      expect(identifierCells).toEqual(
+        expect.arrayContaining(['-', '-', 'Multi Attachment Doc']),
+      );
+      expect(identifierCells.filter((text) => text === '-')).toHaveLength(2);
+    });
+
+    it('follows the order the dashboard config lists the fields in', () => {
+      (useQuery as jest.Mock).mockReturnValue(mockQueryData([mockPdfDocument]));
+
+      renderComponent({
+        config: { fields: ['documentIdentifier', 'documentType'] },
+      });
+
+      expect(columnNames()).toEqual([
+        'DOCUMENTS_DOCUMENT_IDENTIFIER',
+        'DOCUMENTS_TYPE',
+      ]);
     });
   });
 

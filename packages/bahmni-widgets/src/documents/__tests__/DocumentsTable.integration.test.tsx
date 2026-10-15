@@ -21,7 +21,13 @@ jest.mock('../../hooks/usePatientUUID', () => ({
 
 jest.mock('@bahmni/services', () => ({
   ...jest.requireActual('@bahmni/services'),
-  useTranslation: () => ({ t: (key: string) => key }),
+  useTranslation: () => ({
+    // Echoes keys, except the attachment counter, whose wording is the point of its tests.
+    t: (key: string, options?: { current?: number; total?: number }) =>
+      key === 'DOCUMENTS_ATTACHMENT_COUNTER'
+        ? `Attachment ${options?.current} of ${options?.total}`
+        : key,
+  }),
   getDocumentReferencePage: jest.fn(),
   useSubscribeConsultationSaved: jest.fn(),
 }));
@@ -281,8 +287,8 @@ describe('DocumentsTable Integration', () => {
     const iframes = screen.getAllByTitle('MultiPage_Report_2024');
     expect(iframes).toHaveLength(2);
     // Counter labels visible
-    expect(screen.getByText('1/2')).toBeInTheDocument();
-    expect(screen.getByText('2/2')).toBeInTheDocument();
+    expect(screen.getByText('Attachment 1 of 2')).toBeInTheDocument();
+    expect(screen.getByText('Attachment 2 of 2')).toBeInTheDocument();
   });
 
   it('closes modal after clicking close button', async () => {

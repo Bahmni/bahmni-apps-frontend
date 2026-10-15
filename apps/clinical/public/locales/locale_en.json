@@ -141,6 +141,7 @@
   "DOCUMENTS_ADD_ACTION": "Add document",
   "DOCUMENTS_ADD_MORE": "Add more",
   "DOCUMENTS_ADD_NOTE": "Add note",
+  "DOCUMENTS_ATTACHMENT_COUNTER": "Attachment {{current}} of {{total}}",
   "DOCUMENTS_DOCUMENT_ID_LABEL": "Document ID",
   "DOCUMENTS_DOCUMENT_TYPE_LABEL": "Document type",
   "DOCUMENTS_DOCUMENT_TYPE_PLACEHOLDER": "Choose an option",

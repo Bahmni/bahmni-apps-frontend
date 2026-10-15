@@ -71,8 +71,8 @@ const SCROLL_KEYS = new Set([
 const ATTACHMENT_LOAD_TIMEOUT_MS = 15000;
 
 const DEFAULT_DOCUMENT_FIELDS = [
-  'documentIdentifier',
   'documentType',
+  'documentIdentifier',
   'attachments',
   'uploadedOn',
   'uploadedBy',
@@ -429,7 +429,7 @@ const DocumentsTable: React.FC<WidgetProps> = ({ config, encounterUuids }) => {
     (doc: DocumentViewModel, cellId: string) => {
       switch (cellId) {
         case 'documentIdentifier':
-          return <span>{doc.documentIdentifier}</span>;
+          return <span>{doc.documentIdentifier?.trim() || '-'}</span>;
         case 'documentType':
           return (
             <div className={styles.documentTypeCell}>
@@ -562,7 +562,10 @@ const DocumentsTable: React.FC<WidgetProps> = ({ config, encounterUuids }) => {
                   >
                     {normalizedAttachments.length > 1 && (
                       <p className={styles.attachmentCounter}>
-                        {index + 1}/{normalizedAttachments.length}
+                        {t('DOCUMENTS_ATTACHMENT_COUNTER', {
+                          current: index + 1,
+                          total: normalizedAttachments.length,
+                        })}
                       </p>
                     )}
                     <p>{t('DOCUMENTS_ERROR_LOADING_ATTACHMENT')}</p>
@@ -578,7 +581,10 @@ const DocumentsTable: React.FC<WidgetProps> = ({ config, encounterUuids }) => {
                   <div className={styles.attachmentHeader}>
                     {normalizedAttachments.length > 1 ? (
                       <p className={styles.attachmentCounter}>
-                        {index + 1}/{normalizedAttachments.length}
+                        {t('DOCUMENTS_ATTACHMENT_COUNTER', {
+                          current: index + 1,
+                          total: normalizedAttachments.length,
+                        })}
                       </p>
                     ) : (
                       <span />
