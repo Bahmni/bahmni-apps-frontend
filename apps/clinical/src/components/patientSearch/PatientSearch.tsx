@@ -11,6 +11,12 @@ import styles from './styles/PatientSearch.module.scss';
 interface PatientSearchProps {
   isOpen: boolean;
   onClose: () => void;
+  /**
+   * Header element the search must stay to the left of (the user menu). Its
+   * width varies with the user's name, so the search's right offset is
+   * measured from it instead of being hardcoded.
+   */
+  anchorRef?: React.RefObject<HTMLElement | null>;
 }
 
 type PatientSearchItem =
@@ -52,7 +58,11 @@ const isPatientResult = (
 // Server-side search; disable client-side filtering
 const alwaysTrue = () => true;
 
-const PatientSearch: React.FC<PatientSearchProps> = ({ isOpen, onClose }) => {
+const PatientSearch: React.FC<PatientSearchProps> = ({
+  isOpen,
+  onClose,
+  anchorRef,
+}) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { addNotification } = useNotification();
@@ -60,6 +70,7 @@ const PatientSearch: React.FC<PatientSearchProps> = ({ isOpen, onClose }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const [inputValue, setInputValue] = useState('');
   const [submittedTerm, setSubmittedTerm] = useState('');
+  const [rightOffset, setRightOffset] = useState<number>();
 
   const displayFields =
     clinicalConfig?.patientSearch?.displayFields ?? DEFAULT_DISPLAY_FIELDS;
@@ -115,6 +126,29 @@ const PatientSearch: React.FC<PatientSearchProps> = ({ isOpen, onClose }) => {
       },
     [displayFields],
   );
+
+  // Keep the search's right edge flush with the anchor's left edge so it never
+  // overlaps the user menu, re-measuring on viewport resize. A passive effect
+  // (not a layout effect) and a fresh `anchorRef.current` read on every
+  // measurement are deliberate: the Header subtree remounts on re-render, so
+  // the anchor's ref is only re-attached after this component's layout effects
+  // run, and any previously captured node would be stale.
+  useEffect(() => {
+    if (!isOpen || !anchorRef) return;
+
+    const updateOffset = () => {
+      const anchor = anchorRef.current;
+      if (!anchor) return;
+      setRightOffset(
+        document.documentElement.clientWidth -
+          anchor.getBoundingClientRect().left,
+      );
+    };
+    updateOffset();
+
+    window.addEventListener('resize', updateOffset);
+    return () => window.removeEventListener('resize', updateOffset);
+  }, [isOpen, anchorRef]);
 
   // Reset state when closed; auto-focus input when opened
   useEffect(() => {
@@ -210,6 +244,9 @@ const PatientSearch: React.FC<PatientSearchProps> = ({ isOpen, onClose }) => {
     <div
       ref={containerRef}
       className={styles.patientSearchContainer}
+      // Runtime-measured offset; can't be expressed as a static CSS class.
+      // eslint-disable-next-line react/forbid-dom-props
+      style={rightOffset === undefined ? undefined : { right: rightOffset }}
       data-testid="patient-search-container"
     >
       <ComboBox

@@ -2,7 +2,11 @@
 @use "@carbon/react/scss/theme" as *;
 @use "@carbon/react/scss/type" as *;
 
-$header-actions-offset: 6rem; // 3 action buttons × 2rem each — offset to clear global action buttons in header
+// Fallback right offset, used until PatientSearch measures its anchor (the
+// header user menu) and sets `right` inline. It is the widest the user menu can
+// get: UserGlobalAction caps its trigger at `max-inline-size: 150px`, padding
+// included (border-box), so the search clears the profile name at any length.
+$header-actions-offset: 150px;
 
 .patientSearchContainer {
   position: fixed;
