@@ -7,7 +7,8 @@
   display: flex;
   align-items: stretch;
   gap: $spacing-03;
-  max-inline-size: 100%;
+  inline-size: 100%;
+  max-inline-size: 28rem;
 }
 
 .thumbnail {
@@ -33,4 +34,10 @@
 .item {
   flex: 1;
   min-inline-size: 0;
+
+  // Carbon caps its bar at 20rem and sizes it to its content; fill the row instead.
+  :global(.cds--file__selected-file) {
+    inline-size: 100%;
+    max-inline-size: none;
+  }
 }
