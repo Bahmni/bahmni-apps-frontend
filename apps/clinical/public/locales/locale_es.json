@@ -155,6 +155,7 @@
   "DOCUMENTS_DOCUMENT_TYPE_PLACEHOLDER": "Elija una opción",
   "DOCUMENTS_ERROR_LOADING_DOCUMENT_TYPES": "No se pueden cargar los tipos de documento.",
   "DOCUMENTS_INPUT_CONTROL_LABEL": "Documentos",
+  "DOCUMENTS_LOADING_ATTACHMENT": "Cargando adjunto…",
   "DOCUMENTS_NOTE_PLACEHOLDER": "Agregue una nota sobre este documento",
   "DOCUMENTS_PRINT_ALL": "Imprimir todo",
   "DOCUMENTS_PRINT_ATTACHMENT": "Imprimir adjunto {{index}}",

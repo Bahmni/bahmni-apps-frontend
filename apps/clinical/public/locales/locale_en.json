@@ -146,6 +146,7 @@
   "DOCUMENTS_DOCUMENT_TYPE_PLACEHOLDER": "Choose an option",
   "DOCUMENTS_ERROR_LOADING_DOCUMENT_TYPES": "Unable to load the document types.",
   "DOCUMENTS_INPUT_CONTROL_LABEL": "Documents",
+  "DOCUMENTS_LOADING_ATTACHMENT": "Loading attachment…",
   "DOCUMENTS_NOTE_PLACEHOLDER": "Add a note about this document",
   "DOCUMENTS_PRINT_ALL": "Print all",
   "DOCUMENTS_PRINT_ATTACHMENT": "Print attachment {{index}}",

@@ -50,6 +50,25 @@
   border: none;
 }
 
+.attachmentContent {
+  position: relative;
+  min-height: $spacing-09;
+}
+
+// Holds the attachment's place while it loads, so the viewer does not shift under the user.
+.attachmentLoading {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+// Not displayed until loaded, so a pdf cannot take focus and scroll itself into view meanwhile.
+.hiddenWhileLoading {
+  visibility: hidden;
+}
+
 .documentImage {
   max-width: 100%;
   object-fit: contain;

@@ -10,21 +10,17 @@ export { DocumentPrintButton } from './documentPrintButton';
 export type { PrintOption } from './documentPrintButton';
 export {
   DocumentUpload,
-  FILE_INPUT_ACCEPT,
-  MAX_NOTE_LENGTH,
   createEmptyDocumentEntry,
   getDefaultDocumentType,
   isDocumentEntryEmpty,
   renderDocumentTile,
   revokeDocumentPreview,
-  useFileSelection,
 } from './documentUpload';
 export type {
   DocumentEntry,
   DocumentEntryErrors,
   DocumentUploadProps,
   DocumentTileData,
-  FileSelectionOptions,
   PendingDocument,
 } from './documentUpload';
 export { PatientDetails } from './patientDetails';

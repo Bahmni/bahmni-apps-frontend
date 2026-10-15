@@ -2,7 +2,8 @@ import {
   getFileTypeCategory,
   buildDocumentUrl,
   createDocumentHeaders,
-  buildAttachmentsPrintHtml,
+  buildAttachmentPrintHtml,
+  isPdfAttachment,
 } from '../utils';
 
 describe('Documents Utils', () => {
@@ -122,31 +123,38 @@ describe('Documents Utils', () => {
     });
   });
 
-  describe('buildAttachmentsPrintHtml', () => {
-    it('renders each image as an img on its own page', () => {
-      const html = buildAttachmentsPrintHtml(
-        [
-          { url: '1/a.png', contentType: 'image/png' },
-          { url: '1/b.jpg', contentType: 'image/jpeg' },
-        ],
+  describe('buildAttachmentPrintHtml', () => {
+    it('renders the image from its authorised absolute url', () => {
+      const html = buildAttachmentPrintHtml(
+        { url: '1/a.png', contentType: 'image/png' },
         'Doc',
       );
 
-      expect(html).toContain('<img src="http://localhost/openmrs/auth?');
-      expect(html).toContain('a.png');
-      expect(html).toContain('b.jpg');
+      expect(html).toContain(
+        `<img src="${globalThis.location.origin}/openmrs/auth?requested_document=/document_images/1/a.png"`,
+      );
       expect(html).not.toContain('<embed');
-      expect(html.match(/class="attachment"/g)).toHaveLength(2);
     });
 
     it('escapes the title', () => {
-      const html = buildAttachmentsPrintHtml(
-        [{ url: '1/a.png', contentType: 'image/png' }],
+      const html = buildAttachmentPrintHtml(
+        { url: '1/a.png', contentType: 'image/png' },
         '<script>"x"</script>',
       );
 
       expect(html).not.toContain('<script>');
       expect(html).toContain('&lt;script&gt;&quot;x&quot;&lt;/script&gt;');
+    });
+  });
+
+  describe('isPdfAttachment', () => {
+    it.each([
+      ['application/pdf', true],
+      ['APPLICATION/PDF', true],
+      ['image/png', false],
+      [undefined, false],
+    ])('%s -> %s', (contentType, expected) => {
+      expect(isPdfAttachment({ url: '1/a', contentType })).toBe(expected);
     });
   });
 });

@@ -65,12 +65,21 @@ function cleanupIframe(iframe: HTMLIFrameElement): void {
   }
 }
 
-export async function printViaIframe(html: string): Promise<void> {
+export interface PrintViaIframeOptions {
+  focus?: boolean;
+  container?: HTMLElement | null;
+  signal?: AbortSignal;
+}
+
+export async function printViaIframe(
+  html: string,
+  { focus = true, container, signal }: PrintViaIframeOptions = {},
+): Promise<void> {
   const iframe = createIframe();
 
   const loaded = waitForIframeLoad(iframe);
   iframe.srcdoc = html;
-  document.body.appendChild(iframe);
+  (container ?? document.body).appendChild(iframe);
   await loaded;
 
   const iframeDoc = getIframeDocument(iframe);
@@ -82,6 +91,11 @@ export async function printViaIframe(html: string): Promise<void> {
   }
   await waitForImagesToLoad(iframeDoc);
 
+  if (signal?.aborted) {
+    cleanupIframe(iframe);
+    return;
+  }
+
   let cleaned = false;
   const cleanup = () => {
     if (cleaned) return;
@@ -92,20 +106,73 @@ export async function printViaIframe(html: string): Promise<void> {
   iframeWindow.addEventListener('afterprint', cleanup, { once: true });
   const fallbackId = setTimeout(cleanup, CLEANUP_TIMEOUT_MS);
 
-  iframeWindow.focus();
+  if (focus) {
+    iframeWindow.focus();
+  }
   iframeWindow.print();
 }
 
 // The browser's PDF viewer reports the frame as loaded before it can print it.
 const PDF_RENDER_DELAY_MS = 500;
+const PRINT_DIALOG_TIMEOUT_MS = 120000;
+const PRINT_DIALOG_OPEN_GRACE_MS = 3000;
 
 /**
- * Prints a PDF. A PDF cannot be embedded in the sandboxed HTML frame printViaIframe uses (the
- * browser blocks its viewer there and the pages print blank), so the PDF is loaded into a frame of
- * its own, from a same-origin blob so it prints regardless of how the server frames its documents.
+ * Resolves when the print dialog opened by a frame has been closed, however the browser reports it.
+ * The PDF viewer prints out of process, so `afterprint` does not reliably fire for it; the page
+ * losing and regaining focus is what a dialog opening and closing looks like from here. Always
+ * settles: on abort, and after a last-resort timeout.
  */
-export async function printPdfViaIframe(url: string): Promise<void> {
-  const response = await fetch(url, { credentials: 'same-origin' });
+function waitForPrintDialogClose(
+  printWindow: Window,
+  signal?: AbortSignal,
+): Promise<void> {
+  return new Promise<void>((resolve) => {
+    let sawBlur = false;
+    const finish = () => {
+      clearTimeout(timeoutId);
+      clearTimeout(graceId);
+      printWindow.removeEventListener('afterprint', finish);
+      window.removeEventListener('afterprint', finish);
+      window.removeEventListener('blur', onBlur);
+      window.removeEventListener('focus', onFocus);
+      signal?.removeEventListener('abort', finish);
+      resolve();
+    };
+    const onBlur = () => {
+      sawBlur = true;
+    };
+    const onFocus = () => {
+      if (sawBlur) finish();
+    };
+    const timeoutId = setTimeout(finish, PRINT_DIALOG_TIMEOUT_MS);
+    const graceId = setTimeout(() => {
+      if (!sawBlur) finish();
+    }, PRINT_DIALOG_OPEN_GRACE_MS);
+    printWindow.addEventListener('afterprint', finish);
+    window.addEventListener('afterprint', finish);
+    window.addEventListener('blur', onBlur);
+    window.addEventListener('focus', onFocus);
+    signal?.addEventListener('abort', finish);
+    if (signal?.aborted) finish();
+  });
+}
+
+export interface PrintPdfOptions {
+  /** Where the hidden frame is mounted; see {@link PrintViaIframeOptions.container}. */
+  container?: HTMLElement | null;
+  /** Whether to focus the frame before printing; skipped in a modal, where focusing it scrolls. */
+  focus?: boolean;
+  /** Abandons the print, removing the frame, when aborted. */
+  signal?: AbortSignal;
+}
+
+/** Prints a pdf, resolving once its print dialog has been closed (or the print is aborted). */
+export async function printPdfViaIframe(
+  url: string,
+  { container, focus = true, signal }: PrintPdfOptions = {},
+): Promise<void> {
+  const response = await fetch(url, { credentials: 'same-origin', signal });
   if (!response.ok) {
     throw new Error(
       `Unable to load the document to print (${response.status})`,
@@ -115,28 +182,30 @@ export async function printPdfViaIframe(url: string): Promise<void> {
   const objectUrl = URL.createObjectURL(pdf);
 
   const iframe = createIframe(false);
-  const loaded = waitForIframeLoad(iframe);
-  iframe.src = objectUrl;
-  document.body.appendChild(iframe);
-  await loaded;
-  await new Promise((resolve) => setTimeout(resolve, PDF_RENDER_DELAY_MS));
-
-  const iframeWindow = getIframeWindow(iframe);
-  let cleaned = false;
   const cleanup = () => {
-    if (cleaned) return;
-    cleaned = true;
-    clearTimeout(fallbackId);
     cleanupIframe(iframe);
     URL.revokeObjectURL(objectUrl);
   };
-  const fallbackId = setTimeout(cleanup, CLEANUP_TIMEOUT_MS);
 
-  if (!iframeWindow) {
+  try {
+    const loaded = waitForIframeLoad(iframe);
+    iframe.src = objectUrl;
+    (container ?? document.body).appendChild(iframe);
+    await loaded;
+    await new Promise((resolve) => setTimeout(resolve, PDF_RENDER_DELAY_MS));
+
+    const iframeWindow = getIframeWindow(iframe);
+    if (!iframeWindow || signal?.aborted) {
+      return;
+    }
+    if (focus) {
+      iframeWindow.focus();
+    }
+    // The listeners go on before print(), which may return only once the dialog is closed.
+    const closed = waitForPrintDialogClose(iframeWindow, signal);
+    iframeWindow.print();
+    await closed;
+  } finally {
     cleanup();
-    return;
   }
-  iframeWindow.addEventListener('afterprint', cleanup, { once: true });
-  iframeWindow.focus();
-  iframeWindow.print();
 }

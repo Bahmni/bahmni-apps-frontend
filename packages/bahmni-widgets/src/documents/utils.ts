@@ -59,8 +59,7 @@ const escapeHtml = (value: string): string =>
   value.replace(/[&<>"']/g, (char) => HTML_ESCAPES[char]);
 
 const PRINT_STYLES =
-  'body{margin:0}.attachment{page-break-after:always;break-after:page}' +
-  '.attachment:last-child{page-break-after:auto;break-after:auto}' +
+  'body{margin:0}' +
   'img{max-width:100%;max-height:100vh;object-fit:contain;display:block;margin:0 auto}';
 
 export const isPdfAttachment = ({
@@ -70,21 +69,15 @@ export const isPdfAttachment = ({
 export const toPrintUrl = (url: string): string =>
   new URL(buildDocumentUrl(url), globalThis.location.origin).href;
 
-/** Print page for the image attachments; PDFs cannot be embedded and are printed on their own. */
-export function buildAttachmentsPrintHtml(
-  attachments: PrintableAttachment[],
+/** Print page for one image attachment; every file is printed, and previewed, on its own. */
+export function buildAttachmentPrintHtml(
+  { url }: PrintableAttachment,
   title: string,
 ): string {
-  const pages = attachments
-    .map(({ url }) => {
-      const src = escapeHtml(toPrintUrl(url));
-      return `<div class="attachment"><img src="${src}" alt="${escapeHtml(
-        title,
-      )}" /></div>`;
-    })
-    .join('');
-
+  const src = escapeHtml(toPrintUrl(url));
   return `<!DOCTYPE html><html><head><meta charset="utf-8" /><title>${escapeHtml(
     title,
-  )}</title><style>${PRINT_STYLES}</style></head><body>${pages}</body></html>`;
+  )}</title><style>${PRINT_STYLES}</style></head><body><img src="${src}" alt="${escapeHtml(
+    title,
+  )}" /></body></html>`;
 }
