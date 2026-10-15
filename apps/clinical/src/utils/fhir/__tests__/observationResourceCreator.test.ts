@@ -1,7 +1,6 @@
 import { getFhirObservations } from '@bahmni/form2-controls';
 import { Form2Observation } from '@bahmni/services';
 import { Reference } from 'fhir/r4';
-import { markClearedExistingObsAsVoided } from '../observationReconciliation';
 import { createObservationEntries } from '../observationResourceCreator';
 
 jest.mock('@bahmni/form2-controls', () => ({
@@ -504,24 +503,17 @@ describe('createObservationEntries', () => {
     });
   });
 
-  describe('cleared conditional field end-to-end', () => {
-    it('emits DELETE (not PUT) for a previously-saved leaf whose value was cleared by a form condition', () => {
-      // Form2 setValue(null) leaves a uuid-bearing obs with null value.
-      // markClearedExistingObsAsVoided detects the cleared transition, then createObservationEntries emits DELETE.
-      const original: Form2Observation[] = [
-        {
-          concept: { uuid: 'interpreter-name-concept' },
-          value: 'John Smith',
-          uuid: 'interpreter-name-obs-uuid',
-        },
-      ];
+  describe('cleared conditional field (voided-leaf shape)', () => {
+    // These exercise the bundle builder in isolation — the voided obs shape here is
+    // the exact post-reconciliation input processLeafObservation sees. The pipeline
+    // that produces this shape is covered end-to-end in observationReconciliation.test.ts.
+    it('emits DELETE (not PUT) for a previously-saved leaf flagged voided', () => {
       const obs: Form2Observation = {
         concept: { uuid: 'interpreter-name-concept' },
         value: null,
         uuid: 'interpreter-name-obs-uuid',
+        voided: true,
       };
-
-      markClearedExistingObsAsVoided([obs], original);
 
       const entries = createObservationEntries(
         [obs],
@@ -537,8 +529,7 @@ describe('createObservationEntries', () => {
       );
     });
 
-    it('emits DELETE for a cleared grouped child and leaves the parent untouched, end-to-end', () => {
-      // cleared child inside a group → only child gets DELETE, parent is untouched.
+    it('emits DELETE for a voided grouped child and leaves the parent untouched', () => {
       const groupObs: Form2Observation = {
         concept: { uuid: 'grp-concept' },
         value: null,
@@ -548,6 +539,7 @@ describe('createObservationEntries', () => {
             concept: { uuid: 'child-cleared-concept' },
             value: null,
             uuid: 'child-cleared-uuid',
+            voided: true,
           },
           {
             concept: { uuid: 'child-kept-concept' },
@@ -557,25 +549,6 @@ describe('createObservationEntries', () => {
           },
         ],
       };
-      const original: Form2Observation[] = [
-        {
-          ...groupObs,
-          groupMembers: [
-            {
-              concept: { uuid: 'child-cleared-concept' },
-              value: 'yes',
-              uuid: 'child-cleared-uuid',
-            },
-            {
-              concept: { uuid: 'child-kept-concept' },
-              value: 42,
-              uuid: 'child-kept-uuid',
-            },
-          ],
-        },
-      ];
-
-      markClearedExistingObsAsVoided([groupObs], original);
 
       const entries = createObservationEntries(
         [groupObs],

@@ -6,6 +6,7 @@ import {
   markClearedExistingObsAsVoided,
   markUnchangedObservations,
   mergeObsExistingData,
+  reconcileObservations,
   restoreComplexValues,
   valueFingerprint,
 } from '../observationReconciliation';
@@ -455,15 +456,19 @@ describe('markClearedExistingObsAsVoided', () => {
     expect(parent.voided).toBeUndefined(); // helper doesn't touch parent
   });
 
-  it('deletes note alongside obs when value is cleared (intended — pre-fix behaviour was worse)', () => {
-    // DELETE sends only { resourceType, id }, dropping comment. Acceptable: the obs with the note
-    // was already being deleted and recreated with stale data before this fix.
+  // Known trade-off (tracked separately): voiding a cleared-value obs with a non-empty
+  // comment/interpretation causes the bundle builder to emit a bare DELETE that drops
+  // the note server-side. The helper is intentionally content-agnostic — preserving the
+  // note requires a product-level decision on whether to keep the obs live (`value: null`)
+  // or void-and-POST a new note-only obs. The test below documents the current behaviour
+  // against mutation only; the bundle-level outcome is not yet asserted because the
+  // desired outcome is under product review (see PR #712).
+  it('still voids a cleared-value obs even when a comment is present (document current behaviour)', () => {
     const original = [leaf('obs-1', 'old-value')];
     const obs = leaf('obs-1', null, { comment: 'important note' });
     markClearedExistingObsAsVoided([obs], original);
     expect(obs.voided).toBe(true);
-    // Comment is still on the obs object; it will be ignored by the DELETE branch in the bundle builder.
-    expect(obs.comment).toBe('important note');
+    expect(obs.comment).toBe('important note'); // helper does not strip comment
   });
 });
 
@@ -509,5 +514,65 @@ describe('findBasedOnFromObservations', () => {
       },
     ];
     expect(findBasedOnFromObservations(observations)).toBeUndefined();
+  });
+});
+
+describe('reconcileObservations (pipeline composition)', () => {
+  // Pins the load-bearing step ordering declared in the function JSDoc.
+  // A fixture combining a cleared value, an unchanged value, and a removed obs
+  // exercises all five steps in one pass; a future reorder that breaks the
+  // contract (e.g. moving markClearedExistingObsAsVoided after
+  // markUnchangedObservations) will fail this test.
+  const leaf = (
+    uuid: string | undefined,
+    value: Form2Observation['value'],
+    extra: Partial<Form2Observation> = {},
+  ): Form2Observation => ({
+    concept: { uuid: 'c1' },
+    value,
+    obsDatetime: '2024-01-01',
+    formNamespace: 'Bahmni',
+    uuid,
+    ...extra,
+  });
+
+  it('voids cleared leaves, marks unchanged leaves, and injects DELETEs for removed obs', () => {
+    const original: Form2Observation[] = [
+      leaf('obs-cleared', 'had-value'),
+      leaf('obs-unchanged', 'same'),
+      leaf('obs-removed', 'gone'),
+    ];
+    const transformed: Form2Observation[] = [
+      leaf('obs-cleared', null),
+      leaf('obs-unchanged', 'same'),
+    ];
+
+    reconcileObservations(transformed, original);
+
+    const cleared = transformed.find((o) => o.uuid === 'obs-cleared')!;
+    expect(cleared.voided).toBe(true);
+    expect(cleared.unchanged).toBeUndefined();
+
+    const unchanged = transformed.find((o) => o.uuid === 'obs-unchanged')!;
+    expect(unchanged.voided).toBeUndefined();
+    expect(unchanged.unchanged).toBe(true);
+
+    const injected = transformed.find((o) => o.uuid === 'obs-removed')!;
+    expect(injected).toBeDefined();
+    expect(injected.voided).toBe(true);
+  });
+
+  it('merges status/basedOn from the original snapshot alongside clear/unchanged bookkeeping', () => {
+    const basedOn = { reference: 'ServiceRequest/sr-1' } as const;
+    const original: Form2Observation[] = [
+      leaf('obs-1', 'v', { status: 'final', basedOn }),
+    ];
+    const transformed: Form2Observation[] = [leaf('obs-1', 'v')];
+
+    reconcileObservations(transformed, original);
+
+    expect(transformed[0].status).toBe('final');
+    expect(transformed[0].basedOn).toBe(basedOn);
+    expect(transformed[0].unchanged).toBe(true);
   });
 });
