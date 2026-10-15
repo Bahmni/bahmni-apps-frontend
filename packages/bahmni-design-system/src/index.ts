@@ -175,7 +175,14 @@ export {
 } from './molecules/formCardContainer';
 export { FormCard, type FormCardProps } from './molecules/formCard';
 export { Modal, type ModalProps } from './atoms/modal';
-export { FileUploader, type FileUploaderProps } from './atoms/fileUploader';
+export {
+  FileUploader,
+  FileUploaderButton,
+  FileUploaderItem,
+  type FileUploaderProps,
+  type FileUploaderButtonProps,
+  type FileUploaderItemProps,
+} from './atoms/fileUploader';
 export {
   InlineNotification,
   type InlineNotificationProps,
