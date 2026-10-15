@@ -5,6 +5,19 @@ import type { Reference } from 'fhir/r4';
 const isClearedValue = (v: Form2Observation['value']): boolean =>
   v == null || v === '';
 
+/** Flattens a (possibly nested) observation tree into a Map keyed by obs.uuid. */
+const indexByUuid = (
+  list: Form2Observation[],
+): Map<string, Form2Observation> => {
+  const map = new Map<string, Form2Observation>();
+  const walk = (obs: Form2Observation) => {
+    if (obs.uuid) map.set(obs.uuid, obs);
+    obs.groupMembers?.forEach(walk);
+  };
+  list.forEach(walk);
+  return map;
+};
+
 /**
  * Flips existing (uuid-bearing) leaf observations whose value was explicitly cleared to voided,
  * so the bundle builder emits DELETE instead of a PUT with no value[x].
@@ -13,19 +26,15 @@ const isClearedValue = (v: Form2Observation['value']): boolean =>
  * (original non-empty → current empty), preventing spurious DELETE for observations
  * that were persisted with no value.
  *
- * Must run before markUnchangedObservations: without this, null==null would mark a cleared
- * obs as "unchanged" and suppress the DELETE entry.
+ * Must run before markUnchangedObservations and before the bundle builder: setting
+ * `voided: true` lets markUnchangedObservations skip the obs (its guard is `!obs.uuid || obs.voided`)
+ * and lets processLeafObservation see the voided flag and emit DELETE instead of a value-less PUT.
  */
 export const markClearedExistingObsAsVoided = (
   transformed: Form2Observation[],
   original: Form2Observation[],
 ): void => {
-  const originalByUuid = new Map<string, Form2Observation>();
-  const buildMap = (obs: Form2Observation) => {
-    if (obs.uuid) originalByUuid.set(obs.uuid, obs);
-    obs.groupMembers?.forEach(buildMap);
-  };
-  original.forEach(buildMap);
+  const originalByUuid = indexByUuid(original);
 
   const process = (obs: Form2Observation): void => {
     if (obs.groupMembers?.length) {
@@ -147,12 +156,7 @@ export const markUnchangedObservations = (
   transformed: Form2Observation[],
   original: Form2Observation[],
 ): void => {
-  const originalByUuid = new Map<string, Form2Observation>();
-  const buildMap = (obs: Form2Observation) => {
-    if (obs.uuid) originalByUuid.set(obs.uuid, obs);
-    obs.groupMembers?.forEach(buildMap);
-  };
-  original.forEach(buildMap);
+  const originalByUuid = indexByUuid(original);
 
   const processObsList = (obsList: Form2Observation[]): void => {
     for (const obs of obsList) {
@@ -187,7 +191,8 @@ export const markUnchangedObservations = (
  * Runs all reconciliation steps on `transformed` in the correct order before the list
  * is passed to the bundle builder. Step ordering is load-bearing — do not reorder.
  *
- * 1. markClearedExistingObsAsVoided  — void cleared leaves first so step 5 doesn't skip them
+ * 1. markClearedExistingObsAsVoided  — flag cleared leaves as voided so step 5 skips them
+ *                                      and the bundle builder emits DELETE (not value-less PUT)
  * 2. mergeObsExistingData            — copy status/basedOn from the original snapshot
  * 3. restoreComplexValues            — rehydrate ComplexValue blobs (image/file uploads)
  * 4. injectMissingDeleteObs          — DELETE obs that were removed from the form entirely
