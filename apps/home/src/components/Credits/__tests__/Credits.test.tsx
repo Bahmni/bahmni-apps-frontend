@@ -1,20 +1,27 @@
 import { render, screen } from '@testing-library/react';
-import { CONTRIBUTORS, CREDITS_INTRO } from '../constants';
+import { CONTRIBUTORS } from '../contributors';
 import { Credits } from '../Credits';
 
 describe('Credits', () => {
   it('renders the intro text', () => {
     render(<Credits />);
 
-    expect(screen.getByText(CREDITS_INTRO)).toBeInTheDocument();
+    expect(
+      screen.getByText(/Sushruta and Rudolf Virchow have vanished/),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(/restoring equitable digital HEALTH in the World/),
+    ).toBeInTheDocument();
   });
 
-  it('renders every contributor', () => {
+  it('renders the contributor names', () => {
     render(<Credits />);
 
-    const list = screen.getByText(CONTRIBUTORS.join(', '));
-    expect(list).toBeInTheDocument();
-    expect(CONTRIBUTORS).toContain('Vinkesh Banka');
-    expect(CONTRIBUTORS).toContain('Vivek Majumdar');
+    expect(screen.getByText(/Vinkesh Banka/)).toBeInTheDocument();
+    expect(screen.getByText(/Vivek Majumdar/)).toBeInTheDocument();
+  });
+
+  it('lists all 280 contributors', () => {
+    expect(CONTRIBUTORS).toHaveLength(280);
   });
 });

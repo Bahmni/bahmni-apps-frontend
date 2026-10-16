@@ -5,9 +5,8 @@
   bottom: 0;
   left: 50%;
   margin-left: -9em;
-  // Old page used 350% of the browser default 16px; Carbon's base size is smaller.
   font-family: 'Times New Roman', Times, serif;
-  font-size: 56px;
+  font-size: 350%;
   font-weight: bold;
   line-height: normal;
   letter-spacing: normal;
@@ -23,11 +22,20 @@
   top: 100%;
   animation: scroll 150s linear 1s infinite;
 
-  // Carbon's reset zeroes paragraph margins and resets font; restore browser defaults.
+  // Carbon's reset zeroes paragraph margins and gives <p> its own font size and
+  // weight; restore the browser defaults the legacy page relied on.
   p {
     margin: 1em 0;
     font: inherit;
-    letter-spacing: inherit;
+  }
+}
+
+// The crawl starts below the viewport (top: 100%), so with the animation off
+// the list is placed in view instead.
+@media (prefers-reduced-motion: reduce) {
+  .contributorList {
+    animation: none;
+    top: 0;
   }
 }
 

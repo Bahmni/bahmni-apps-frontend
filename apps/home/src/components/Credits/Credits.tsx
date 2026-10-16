@@ -1,5 +1,5 @@
 import React from 'react';
-import { CONTRIBUTORS, CREDITS_INTRO } from './constants';
+import { CONTRIBUTORS, CREDITS_INTRO } from './contributors';
 import styles from './styles/Credits.module.scss';
 
 export const Credits: React.FC = () => (
