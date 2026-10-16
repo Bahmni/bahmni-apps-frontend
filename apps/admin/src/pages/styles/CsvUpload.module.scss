@@ -1,5 +1,56 @@
 @use '@carbon/react/scss/spacing' as *;
 
+// The theme's card (layer) token resolves to the same grey as the page background
+// here, so the cards pin a literal white to read as cards, as in the design.
+$card-background: #ffffff;
+$card-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+$card-header-background: #f4f4f4;
+
 .page {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-07;
   padding-block: $spacing-05;
+}
+
+.selectFiles {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-05;
+  padding: 1.75rem;
+  background-color: $card-background;
+  box-shadow: $card-shadow;
+
+  h2 {
+    font-size: 1.125rem;
+    font-weight: 400;
+  }
+}
+
+.selectRow {
+  display: flex;
+  align-items: flex-end;
+  gap: $spacing-05;
+}
+
+.typeDropdown {
+  inline-size: 19rem;
+}
+
+.progress {
+  max-inline-size: 36rem;
+}
+
+.history {
+  background-color: $card-background;
+  box-shadow: $card-shadow;
+
+  :global(.cds--data-table-header) {
+    padding: $spacing-05;
+    background-color: $card-header-background;
+  }
+
+  :global(.cds--data-table-header__title) {
+    font-size: 1.125rem;
+  }
 }

@@ -540,3 +540,16 @@ export {
   type ActionExtension,
   type ExtensionButtonKind,
 } from './extensions';
+
+export {
+  getImportedItems,
+  uploadImportFile,
+  IMPORT_TYPES,
+  STATUS_COMPLETED_WITH_ERRORS,
+  ADMIN_IMPORT_STATUS_URL,
+  hasImportError,
+  getImportErrorFileUrl,
+  type ImportedItem,
+  type ImportType,
+  type UploadProgress,
+} from './adminImportService';
