@@ -2,6 +2,8 @@ import {
   getFileTypeCategory,
   buildDocumentUrl,
   createDocumentHeaders,
+  buildAttachmentPrintHtml,
+  isPdfAttachment,
 } from '../utils';
 
 describe('Documents Utils', () => {
@@ -118,6 +120,41 @@ describe('Documents Utils', () => {
         key: 'uploadedOn',
         header: 'DOCUMENTS_UPLOADED_ON',
       });
+    });
+  });
+
+  describe('buildAttachmentPrintHtml', () => {
+    it('renders the image from its authorised absolute url', () => {
+      const html = buildAttachmentPrintHtml(
+        { url: '1/a.png', contentType: 'image/png' },
+        'Doc',
+      );
+
+      expect(html).toContain(
+        `<img src="${globalThis.location.origin}/openmrs/auth?requested_document=/document_images/1/a.png"`,
+      );
+      expect(html).not.toContain('<embed');
+    });
+
+    it('escapes the title', () => {
+      const html = buildAttachmentPrintHtml(
+        { url: '1/a.png', contentType: 'image/png' },
+        '<script>"x"</script>',
+      );
+
+      expect(html).not.toContain('<script>');
+      expect(html).toContain('&lt;script&gt;&quot;x&quot;&lt;/script&gt;');
+    });
+  });
+
+  describe('isPdfAttachment', () => {
+    it.each([
+      ['application/pdf', true],
+      ['APPLICATION/PDF', true],
+      ['image/png', false],
+      [undefined, false],
+    ])('%s -> %s', (contentType, expected) => {
+      expect(isPdfAttachment({ url: '1/a', contentType })).toBe(expected);
     });
   });
 });

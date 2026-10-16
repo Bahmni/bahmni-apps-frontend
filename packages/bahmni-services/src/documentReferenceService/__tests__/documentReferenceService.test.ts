@@ -7,6 +7,7 @@ import {
   getFormattedDocumentReferences,
   getDocumentReferencePage,
   getDocumentTypes,
+  getDocumentTypesByConceptUuid,
   getDocumentUploadMaxSizeMb,
 } from '../documentReferenceService';
 
@@ -468,6 +469,34 @@ describe('documentReferenceService', () => {
 
       expect(result.documents).toEqual([]);
       expect(result.total).toBe(0);
+    });
+  });
+
+  describe('getDocumentTypesByConceptUuid', () => {
+    it('maps the setMembers of the concept with the given uuid', async () => {
+      mockedGet.mockResolvedValueOnce({
+        uuid: 'set-uuid',
+        setMembers: [
+          { uuid: 'type-1', display: 'Consent form' },
+          { uuid: 'type-2' },
+        ],
+      });
+
+      const result = await getDocumentTypesByConceptUuid('set-uuid');
+
+      expect(mockedGet).toHaveBeenCalledWith(
+        `${OPENMRS_REST_V1}/concept/set-uuid?v=custom%3A(setMembers%3A(uuid%2Cdisplay))`,
+      );
+      expect(result).toEqual([
+        { id: 'type-1', label: 'Consent form' },
+        { id: 'type-2', label: '' },
+      ]);
+    });
+
+    it('returns an empty list when the concept has no setMembers', async () => {
+      mockedGet.mockResolvedValueOnce({ uuid: 'set-uuid' });
+
+      expect(await getDocumentTypesByConceptUuid('set-uuid')).toEqual([]);
     });
   });
 

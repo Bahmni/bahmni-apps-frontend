@@ -1,6 +1,10 @@
 import { Bundle, DocumentReference } from 'fhir/r4';
 import { get } from '../api';
-import { searchConceptByName } from '../conceptService/conceptService';
+import {
+  getConceptById,
+  searchConceptByName,
+} from '../conceptService/conceptService';
+import type { ConceptData } from '../conceptService/models';
 import {
   DOCUMENT_UPLOAD_MAX_SIZE_URL,
   PATIENT_DOCUMENT_REFERENCES_URL,
@@ -22,6 +26,16 @@ export async function getDocumentUploadMaxSizeMb(): Promise<
   return Number.isFinite(value) && value > 0 ? value : undefined;
 }
 
+const DOCUMENT_TYPES_VIEW = 'custom:(setMembers:(uuid,display))';
+
+const toDocumentTypes = (
+  concept: Pick<ConceptData, 'setMembers'> | null,
+): DocumentType[] =>
+  (concept?.setMembers ?? []).map((member) => ({
+    id: member.uuid,
+    label: member.display ?? '',
+  }));
+
 /**
  * Fetches the configurable document types (set members of the given document-type concept),
  * e.g. Prescription, Radiology Report. Used to populate the document-type dropdown.
@@ -30,12 +44,21 @@ export async function getDocumentUploadMaxSizeMb(): Promise<
 export async function getDocumentTypes(
   conceptName: string,
 ): Promise<DocumentType[]> {
-  const customView = 'custom:(setMembers:(uuid,display))';
-  const concept = await searchConceptByName(conceptName, customView);
-  return (concept?.setMembers ?? []).map((member) => ({
-    id: member.uuid,
-    label: member.display ?? '',
-  }));
+  return toDocumentTypes(
+    await searchConceptByName(conceptName, DOCUMENT_TYPES_VIEW),
+  );
+}
+
+/**
+ * Same as getDocumentTypes, for a document-type concept set configured by uuid.
+ * @param conceptUuid - uuid of the document-type concept set
+ */
+export async function getDocumentTypesByConceptUuid(
+  conceptUuid: string,
+): Promise<DocumentType[]> {
+  return toDocumentTypes(
+    await getConceptById(conceptUuid, DOCUMENT_TYPES_VIEW),
+  );
 }
 
 /**
