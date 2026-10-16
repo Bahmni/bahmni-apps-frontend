@@ -5,7 +5,7 @@ import {
   hasPrivilege,
   useTranslation,
 } from '@bahmni/services';
-import { UserAvatar } from '@carbon/icons-react';
+import { UserAvatar, Location } from '@carbon/icons-react';
 import { HeaderGlobalAction, HeaderGlobalActionProps } from '@carbon/react';
 import {
   AriaAttributes,
@@ -51,7 +51,11 @@ const HeaderGlobalActionWithHtmlAttrs = HeaderGlobalAction as ComponentType<
   }
 >;
 
-export const UserGlobalAction = () => {
+export interface UserGlobalActionProps {
+  locationName?: string;
+} // The logged-in users location to display in the user profile menu
+
+export const UserGlobalAction = ({ locationName }: UserGlobalActionProps) => {
   const { t } = useTranslation();
   const { userPrivileges } = useUserPrivilege();
   const { addNotification } = useNotification();
@@ -200,6 +204,21 @@ export const UserGlobalAction = () => {
         label={t('USER_GLOBAL_ACTION_MENU')}
         onClose={() => setIsOpen(false)}
       >
+        {locationName && (
+          // As the outer carbon menu is <ul> its direct children should be <li>
+          <li role="presentation">
+            <div
+              role="group"
+              aria-label={t('LOGIN_LOCATION_LABEL', { name: locationName })}
+              title={locationName}
+              className={styles.locationInfo}
+            >
+              <Location aria-hidden="true" />
+              <span className={styles.locationText}>{locationName}</span>
+            </div>
+          </li>
+        )}
+
         {filteredActions.map((action) => (
           <MenuItem
             id={`user-global-action-${action.id}`}

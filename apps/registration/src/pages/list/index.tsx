@@ -11,9 +11,10 @@ import {
   groupExtensionsByPoint,
   type SearchExtension,
 } from '@bahmni/services';
-import { useUserPrivilege, UserGlobalAction } from '@bahmni/widgets';
+import { useUserPrivilege } from '@bahmni/widgets';
 import { Suspense, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { RegistrationUserMenu } from '../../components/common/RegistrationUserMenu';
 import { useRegistrationConfig } from '../../providers/registrationConfig';
 import { EXTENSION_HANDLERS } from './constants';
 import styles from './styles/index.module.scss';
@@ -84,7 +85,7 @@ const RegistrationList = () => {
                 {t('CREATE_PATIENT_BUTTON_TEXT')}
               </Button>,
             ]}
-            userMenu={<UserGlobalAction />}
+            userMenu={<RegistrationUserMenu />}
           />
         </div>
       }
