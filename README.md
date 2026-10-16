@@ -2,7 +2,7 @@
 
 A React TypeScript monorepo application for Bahmni applications, built with Nx, Webpack, and Carbon Design System. This application includes PWA support for offline capabilities.
 
-> **Current version:** 1.1.0 (Bahmni Lite 2.0 release)
+> **Current version:** 1.1.0 (Bahmni Lite 2.0 release) — version is tracked in `.appversion`; `package.json` intentionally retains the initial monorepo version `0.1.0`.
 
 ## About Bahmni
 
@@ -15,14 +15,13 @@ Version 1.1.0 marks the **Bahmni Lite 2.0** milestone — a focused iteration th
 - **Command Palette** — keyboard-driven global navigation for faster clinical workflows
 - **Consultation Event System** — structured event hooks for real-time consultation data exchange between modules
 - **CDSS Integration** — Clinical Decision Support System implementation guide for embedding decision-support rules
-- **Enhanced Display Controls** — improved reusable clinical data-visualization components
 - **Colour Token System** — a unified design token layer for consistent theming across all Bahmni applications
 - **Icon Guide** — standardized Bahmni icon library with usage patterns
 - **Header & Side-Nav Improvements** — updated navigation shell with configurable side-nav
 - **Document Print Button** — standardized print action component for clinical documents
 - **PWA / Offline Support** — continued investment in service-worker-based offline capabilities via Workbox
 
-For detailed notes on each feature see the [Additional Documentation](#additional-documentation) section below.
+For documentation on most of these features, see the [Additional Documentation](#additional-documentation) section below.
 
 ## Features
 
@@ -81,20 +80,23 @@ yarn lint:fix
 
 ### Nx Workspace Commands
 
-This project uses [Nx](https://nx.dev/) for monorepo tooling. Common Nx commands:
+This project uses [Nx](https://nx.dev/) for monorepo tooling. The repository ships dedicated npm scripts that already encode the correct flags (including `--parallel=1` required by these Jest suites); **prefer those where available** (see the [Scripts](#scripts) section):
 
 ```bash
 # Run tests for affected projects only (recommended for PRs)
-yarn nx affected --target=test --base=origin/main
+# Equivalent to: yarn nx affected --target=test --parallel=1 --base=origin/main
+yarn test:affected
 
 # Run lint for affected projects only
-yarn nx affected --target=lint --base=origin/main
+# Equivalent to: yarn nx affected --target=lint --parallel=1 --base=origin/main
+yarn lint:affected
 
 # Build a specific app
-yarn nx build <app-name>
+# Use `yarn nx show projects` to list exact project names (e.g. clinical-app, not clinical)
+yarn nx build clinical-app
 
-# Run all tests
-yarn nx run-many --all --target=test
+# Run all tests (serial execution required by this repo's Jest suites)
+yarn nx run-many --all --target=test --parallel=1
 
 # View the project dependency graph
 yarn nx graph
@@ -109,8 +111,10 @@ For a more detailed explanation of the project structure and architecture, see [
 - `yarn test` — Run tests
 - `yarn test:watch` — Run tests in watch mode
 - `yarn test:coverage` — Run tests with coverage report
+- `yarn test:affected` — Run tests for affected projects only (uses `--parallel=1`)
 - `yarn lint` — Run ESLint to check for code quality issues
 - `yarn lint:fix` — Fix ESLint issues automatically
+- `yarn lint:affected` — Run lint for affected projects only (uses `--parallel=1`)
 - `yarn format` — Format code with Prettier
 
 ## Technologies
@@ -155,6 +159,7 @@ For a more detailed explanation of the project structure and architecture, see [
 
 - [Consultation Event System](docs/consultation-event-system.md) — Event-driven data exchange between consultation modules
 - [CDSS Implementation Guide](docs/CDSS-Implementation-guide.md) — Clinical Decision Support System integration guide
+- [Prescription Category Print Plan](docs/BAH-4881-prescription-category-print-plan.md) — Implementation notes for prescription category print functionality
 
 ## Contributing
 
