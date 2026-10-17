@@ -176,7 +176,7 @@ describe('PatientRelationships', () => {
       await user.click(addButton);
 
       await waitFor(() => {
-        expect(ref.current?.getData()).toHaveLength(2);
+        expect(ref.current?.getData()).toHaveLength(1);
       });
     });
 
@@ -207,7 +207,7 @@ describe('PatientRelationships', () => {
       });
     });
 
-    it('should validate empty relationships correctly', async () => {
+    it('should reject empty relationships for a brand new patient', async () => {
       render(<PatientRelationships ref={ref} />, { wrapper });
 
       await waitFor(() => {
@@ -219,8 +219,10 @@ describe('PatientRelationships', () => {
         isValid = ref.current?.validate();
       });
 
-      // Empty relationships are allowed (they are skipped during validation)
-      expect(isValid).toBe(true);
+      expect(isValid).toBe(false);
+      expect(
+        screen.getByTestId('patient-relationships-general-error'),
+      ).toHaveTextContent('REGISTRATION_RELATIONSHIP_REQUIRED');
     });
 
     it('should validate incomplete relationships correctly', async () => {
