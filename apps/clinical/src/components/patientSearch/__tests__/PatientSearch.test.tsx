@@ -1,6 +1,12 @@
 import { useTranslation } from '@bahmni/services';
 import { useNotification } from '@bahmni/widgets';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import {
+  act,
+  render,
+  screen,
+  fireEvent,
+  waitFor,
+} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { axe, toHaveNoViolations } from 'jest-axe';
 import React from 'react';
@@ -509,6 +515,72 @@ describe('PatientSearch Component', () => {
         expect(screen.getByText('GAN123456')).toBeInTheDocument();
         expect(screen.getByText('M')).toBeInTheDocument();
         expect(screen.getByText('34')).toBeInTheDocument();
+      });
+    });
+  });
+
+  describe('Positioning relative to anchor', () => {
+    const createAnchor = (left: number) => {
+      const anchor = document.createElement('div');
+      anchor.getBoundingClientRect = jest.fn(() => ({ left }) as DOMRect);
+      document.body.appendChild(anchor);
+      return { current: anchor };
+    };
+
+    beforeEach(() => {
+      jest
+        .spyOn(document.documentElement, 'clientWidth', 'get')
+        .mockReturnValue(1440);
+    });
+
+    afterEach(() => {
+      jest.restoreAllMocks();
+      document.body.innerHTML = '';
+    });
+
+    test('does not set an inline offset when no anchor is provided', () => {
+      render(<PatientSearch {...defaultProps} />);
+      expect(screen.getByTestId('patient-search-container').style.right).toBe(
+        '',
+      );
+    });
+
+    test('aligns its right edge with the left edge of the anchor', () => {
+      const anchorRef = createAnchor(1304);
+      render(<PatientSearch {...defaultProps} anchorRef={anchorRef} />);
+      expect(screen.getByTestId('patient-search-container')).toHaveStyle({
+        right: '136px',
+      });
+    });
+
+    test('re-measures the anchor on window resize', () => {
+      const anchorRef = createAnchor(1304);
+      render(<PatientSearch {...defaultProps} anchorRef={anchorRef} />);
+
+      (anchorRef.current.getBoundingClientRect as jest.Mock).mockReturnValue({
+        left: 1290,
+      } as DOMRect);
+      act(() => {
+        window.dispatchEvent(new Event('resize'));
+      });
+
+      expect(screen.getByTestId('patient-search-container')).toHaveStyle({
+        right: '150px',
+      });
+    });
+
+    test('reads the current anchor node on each measurement', () => {
+      const anchorRef: React.RefObject<HTMLElement | null> = createAnchor(1304);
+      render(<PatientSearch {...defaultProps} anchorRef={anchorRef} />);
+
+      // The Header subtree can remount, replacing the anchor element.
+      anchorRef.current = createAnchor(1200).current;
+      act(() => {
+        window.dispatchEvent(new Event('resize'));
+      });
+
+      expect(screen.getByTestId('patient-search-container')).toHaveStyle({
+        right: '240px',
       });
     });
   });

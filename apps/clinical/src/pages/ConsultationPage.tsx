@@ -29,6 +29,7 @@ import React, {
   useCallback,
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from 'react';
 import { useSearchParams } from 'react-router-dom';
@@ -96,6 +97,7 @@ const ConsultationPage: React.FC = () => {
     }, []),
   );
   const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const userMenuRef = useRef<HTMLDivElement>(null);
   const [searchParams] = useSearchParams();
 
   const handleSearchOpen = useCallback(() => setIsSearchOpen(true), []);
@@ -335,13 +337,21 @@ const ConsultationPage: React.FC = () => {
     <ClinicalAppProvider episodeUuids={episodeUuids} patientId={patientUUID}>
       {/* Rendered outside ActionAreaLayout: uses position:fixed to overlay the header area.
           Placed here (inside ClinicalAppProvider) so it has access to clinical context. */}
-      <PatientSearch isOpen={isSearchOpen} onClose={handleSearchClose} />
+      <PatientSearch
+        isOpen={isSearchOpen}
+        onClose={handleSearchClose}
+        anchorRef={userMenuRef}
+      />
       <ActionAreaLayout
         headerWSideNav={
           <Header
             breadcrumbItems={breadcrumbItems}
             globalActions={globalActions}
-            userMenu={<UserGlobalAction />}
+            userMenu={
+              <div ref={userMenuRef} data-testid="user-menu-anchor">
+                <UserGlobalAction />
+              </div>
+            }
             sideNavItems={isActionAreaExpanded ? [] : sidebarItems}
             activeSideNavItemId={activeItemId}
             onSideNavItemClick={handleItemClick}
