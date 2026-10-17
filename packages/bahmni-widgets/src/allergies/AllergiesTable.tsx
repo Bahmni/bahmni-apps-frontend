@@ -13,7 +13,6 @@ import {
   getAllergies,
   getFormattedAllergies,
   fetchOtherNonCodedAllergenUUID,
-  mapAllergyToInputEntry,
   useTranslation,
   useSubscribeConsultationSaved,
 } from '@bahmni/services';
@@ -83,9 +82,7 @@ const AllergiesTable: React.FC<WidgetProps> = ({
         globalThis.dispatchEvent(
           new CustomEvent(CONSULTATION_START_EVENT, {
             detail: {
-              editOnly: 'allergies',
-              editTitle: 'EDIT_ALLERGIES_TITLE',
-              preloadedAllergies: [mapAllergyToInputEntry(target)],
+              action: { type: 'update', resources: [target] },
             },
           }),
         );

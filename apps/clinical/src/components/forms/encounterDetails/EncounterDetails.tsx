@@ -29,7 +29,7 @@ const EncounterDetails: React.FC<EncounterDetailsProps> = ({
   inputControlConfig,
 }) => {
   const isVisitActive =
-    (encounterSessionStartContext?.isVisitActive as boolean) ?? true;
+    (encounterSessionStartContext?.context?.isVisitActive as boolean) ?? true;
   const { t } = useTranslation();
   const practitionerState = useActivePractitioner();
 
