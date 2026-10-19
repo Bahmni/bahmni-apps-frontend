@@ -3,7 +3,7 @@ export default {
   preset: '../../jest.preset.js',
   setupFilesAfterEnv: ['<rootDir>/setupTests.ts'],
   transformIgnorePatterns: [
-    'node_modules/(?!(@bahmni/design-system|@bahmni/services)/)',
+    'node_modules/(?!(@bahmni/design-system|@bahmni/services|react-router|cookie-es)/)',
   ],
   moduleNameMapper: {
     '^i18next$': '<rootDir>/../../node_modules/i18next',

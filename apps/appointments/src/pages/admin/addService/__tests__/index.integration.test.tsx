@@ -18,8 +18,8 @@ import { MANAGE_APPOINTMENT_SERVICES_PRIVILEGE } from '../../../../constants/app
 import { useServiceStore } from '../../stores';
 import AddServicePage from '../index';
 
-jest.mock('react-router-dom', () => ({
-  ...jest.requireActual('react-router-dom'),
+jest.mock('react-router', () => ({
+  ...jest.requireActual('react-router'),
   useNavigate: () => mockNavigate,
 }));
 

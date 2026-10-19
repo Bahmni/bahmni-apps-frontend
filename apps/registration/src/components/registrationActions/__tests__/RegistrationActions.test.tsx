@@ -7,7 +7,7 @@ import { NotificationProvider, useUserPrivilege } from '@bahmni/widgets';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
-import { BrowserRouter } from 'react-router-dom';
+import { BrowserRouter } from 'react-router';
 import { useRegistrationConfig } from '../../../providers/registrationConfig';
 import { handleExtensionNavigation } from '../../../utils/extensionNavigation';
 import { RegistrationActions } from '../RegistrationActions';

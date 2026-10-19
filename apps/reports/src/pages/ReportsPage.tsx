@@ -10,7 +10,7 @@ import {
 import { BAHMNI_HOME_PATH, useTranslation } from '@bahmni/services';
 import { UserGlobalAction } from '@bahmni/widgets';
 import React, { useCallback, useMemo } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router';
 import { ReportList } from '../components/ReportList/ReportList';
 import { MY_REPORTS_TAB_PATH, REPORTS_TAB_PATH } from '../constants/app';
 import styles from './styles/ReportsPage.module.scss';

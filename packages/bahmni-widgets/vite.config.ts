@@ -46,7 +46,7 @@ export default defineConfig(() => ({
         'react',
         'react-dom',
         'react/jsx-runtime',
-        'react-router-dom',
+        'react-router',
         'react-i18next',
         '@tanstack/react-query',
         /^@carbon\/styles/,

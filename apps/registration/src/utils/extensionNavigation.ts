@@ -1,5 +1,5 @@
 import { formatUrl } from '@bahmni/services';
-import { NavigateFunction } from 'react-router-dom';
+import { NavigateFunction } from 'react-router';
 
 /**
  * Handles navigation based on URL pattern
