@@ -46,7 +46,7 @@ For documentation on each feature, see the [Additional Documentation](#additiona
 
 ## Prerequisites
 
-- **Node.js v22.x or later** (LTS recommended — `@types/node ^22` is required; Node 18 will not satisfy this constraint)
+- **Node.js v22.x or later** (LTS recommended — CI pins `NODE_VERSION: "22"` in `.github/workflows/build-and-publish.yml`)
 - **Yarn v1.22.x or later**
 
 ## Getting Started
@@ -101,17 +101,13 @@ yarn lint:affected
 
 ## Storybook
 
-A Storybook configuration (`.storybook/`) is present for isolated component development and visual exploration. Stories live under each package's `src/**/*.stories.tsx` files. The recommended way to run Storybook for an individual library is via the Nx `storybook` target:
+A Storybook configuration (`.storybook/`) is present for isolated component development and visual exploration. Stories live under each package's `src/**/*.stories.tsx` files.
 
-```bash
-yarn nx storybook <project-name>
-```
-
-Replace `<project-name>` with the relevant app or package (e.g. `bahmni-design-system`). Use `yarn nx show projects` to list all available project names.
+> **Note:** The Storybook runtime (`@nx/storybook` / `storybook`) is not yet listed as a project dependency and no Nx `storybook` target is currently wired up. The `.storybook/` configuration and story files are in place; installing `@nx/storybook` and adding a project target are the follow-up steps required before Storybook can be run locally.
 
 ## Nx Workspace Commands
 
-This project uses [Nx](https://nx.dev/) for monorepo tooling. The repository ships dedicated `package.json` scripts that already encode the correct flags (including `--parallel=1` required by these Jest suites); **prefer those where available** (see the [Scripts](#scripts) section below):
+This project uses [Nx](https://nx.dev/) for monorepo tooling. The repository ships dedicated `package.json` scripts that already encode the correct flags (test scripts use `--parallel=1`; lint scripts do not); **prefer those where available** (see the [Scripts](#scripts) section below):
 
 ```bash
 # Run tests for affected projects only (recommended for PRs)
@@ -164,12 +160,12 @@ All scripts in `package.json`:
 | `yarn test:affected` | Run tests for affected projects only (uses `--parallel=1`) |
 | `yarn lint` | Run ESLint across all projects |
 | `yarn lint:fix` | Fix ESLint issues automatically across all projects |
-| `yarn lint:affected` | Run lint for affected projects only (uses `--parallel=1`) |
+| `yarn lint:affected` | Run lint for affected projects only |
 | `yarn typecheck` | Run TypeScript type-check across all projects |
 | `yarn typecheck:affected` | Run type-check for affected projects only |
-| `yarn format` | Format code with Prettier |
 | `yarn clean` | Reset Nx cache and remove `dist/` and `coverage/` directories |
 | `yarn create:app` | Scaffold a new Bahmni application in the monorepo |
+| `yarn prepare` | Install Husky git hooks (runs automatically after `yarn install`) |
 
 ## Technologies
 
