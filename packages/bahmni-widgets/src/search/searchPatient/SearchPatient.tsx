@@ -320,6 +320,7 @@ const SearchPatient = ({ extensionParams }: SearchWidgetProps) => {
           isLoading={isLoading}
           isError={isError}
           isAdvancedSearch={isAdvancedSearch}
+          isDateSearch={isDateSearch()}
           searchFields={resultsSearchFields}
           selectedFieldType={resultsFieldType}
           patientDetailUrl={patientSearchConfig?.patientDetailUrl}

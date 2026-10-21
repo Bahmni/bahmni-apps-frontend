@@ -1,6 +1,57 @@
 import { ComplexValue, Form2Observation } from '@bahmni/services';
 import type { Reference } from 'fhir/r4';
 
+// NB: 0 and false are legitimate medical values — only null/undefined/'' count as cleared.
+const isClearedValue = (v: Form2Observation['value']): boolean =>
+  v == null || v === '';
+
+/** Flattens a (possibly nested) observation tree into a Map keyed by obs.uuid. */
+const indexByUuid = (
+  list: Form2Observation[],
+): Map<string, Form2Observation> => {
+  const map = new Map<string, Form2Observation>();
+  const walk = (obs: Form2Observation) => {
+    if (obs.uuid) map.set(obs.uuid, obs);
+    obs.groupMembers?.forEach(walk);
+  };
+  list.forEach(walk);
+  return map;
+};
+
+/**
+ * Flips existing (uuid-bearing) leaf observations whose value was explicitly cleared to voided,
+ * so the bundle builder emits DELETE instead of a PUT with no value[x].
+ *
+ * Takes `original` (the saved snapshot) to void only on an actual cleared transition
+ * (original non-empty → current empty), preventing spurious DELETE for observations
+ * that were persisted with no value.
+ *
+ * Must run before markUnchangedObservations and before the bundle builder: setting
+ * `voided: true` lets markUnchangedObservations skip the obs (its guard is `!obs.uuid || obs.voided`)
+ * and lets processLeafObservation see the voided flag and emit DELETE instead of a value-less PUT.
+ */
+export const markClearedExistingObsAsVoided = (
+  transformed: Form2Observation[],
+  original: Form2Observation[],
+): void => {
+  const originalByUuid = indexByUuid(original);
+
+  const process = (obs: Form2Observation): void => {
+    if (obs.groupMembers?.length) {
+      obs.groupMembers.forEach(process);
+      return;
+    }
+    if (!obs.uuid || obs.voided || !isClearedValue(obs.value)) return;
+    const orig = originalByUuid.get(obs.uuid);
+    if (orig && !isClearedValue(orig.value)) {
+      obs.voided = true;
+      obs.value = null;
+    }
+  };
+
+  transformed.forEach(process);
+};
+
 /** Injects a synthetic voided DELETE entry for any obs present in `original` but missing from `transformed`. */
 export const injectMissingDeleteObs = (
   transformed: Form2Observation[],
@@ -105,12 +156,7 @@ export const markUnchangedObservations = (
   transformed: Form2Observation[],
   original: Form2Observation[],
 ): void => {
-  const originalByUuid = new Map<string, Form2Observation>();
-  const buildMap = (obs: Form2Observation) => {
-    if (obs.uuid) originalByUuid.set(obs.uuid, obs);
-    obs.groupMembers?.forEach(buildMap);
-  };
-  original.forEach(buildMap);
+  const originalByUuid = indexByUuid(original);
 
   const processObsList = (obsList: Form2Observation[]): void => {
     for (const obs of obsList) {
@@ -139,6 +185,28 @@ export const markUnchangedObservations = (
   };
 
   processObsList(transformed);
+};
+
+/**
+ * Runs all reconciliation steps on `transformed` in the correct order before the list
+ * is passed to the bundle builder. Step ordering is load-bearing — do not reorder.
+ *
+ * 1. markClearedExistingObsAsVoided  — flag cleared leaves as voided so step 5 skips them
+ *                                      and the bundle builder emits DELETE (not value-less PUT)
+ * 2. mergeObsExistingData            — copy status/basedOn from the original snapshot
+ * 3. restoreComplexValues            — rehydrate ComplexValue blobs (image/file uploads)
+ * 4. injectMissingDeleteObs          — DELETE obs that were removed from the form entirely
+ * 5. markUnchangedObservations       — skip PUT for leaves whose value/comment match the snapshot
+ */
+export const reconcileObservations = (
+  transformed: Form2Observation[],
+  original: Form2Observation[],
+): void => {
+  markClearedExistingObsAsVoided(transformed, original);
+  mergeObsExistingData(transformed, original);
+  restoreComplexValues(transformed, original);
+  injectMissingDeleteObs(transformed, original);
+  markUnchangedObservations(transformed, original);
 };
 
 /** Converts a single observation value to a stable, comparable string (coded/complex/date-aware). */
