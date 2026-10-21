@@ -43,6 +43,7 @@ interface PatientSearchResultsProps {
   isLoading: boolean;
   isError: boolean;
   isAdvancedSearch: boolean;
+  isDateSearch: boolean;
   searchFields: PatientSearchField[];
   selectedFieldType: string;
   patientDetailUrl?: string;
@@ -55,6 +56,7 @@ const PatientSearchResults = ({
   isLoading,
   isError,
   isAdvancedSearch,
+  isDateSearch,
   searchFields,
   selectedFieldType,
   patientDetailUrl,
@@ -236,9 +238,6 @@ const PatientSearchResults = ({
     return String(cellValue ?? '');
   };
 
-  const isDateSearch =
-    selectedFieldType === 'appointment' &&
-    searchFields[0]?.fields[0] === 'appointmentDate';
   const displayTerm = isDateSearch
     ? formatDateTime(searchTerm, t).formattedResult
     : searchTerm;
