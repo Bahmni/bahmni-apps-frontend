@@ -7,6 +7,7 @@ import {
   getRelationshipTypesFromCache,
   saveRelationshipTypesToCache,
 } from '../utils/relationshipTypesCache';
+import { isRelationshipRowMeaningful } from '../utils/relationshipUtils';
 
 export interface ValidationErrors {
   [key: string]: {
@@ -42,6 +43,7 @@ export const useRelationshipValidation = () => {
   const [validationErrors, setValidationErrors] = useState<ValidationErrors>(
     {},
   );
+  const [generalError, setGeneralError] = useState<string | null>(null);
 
   const isExpired = (tillDate: string) =>
     !!tillDate && parseISO(tillDate) < startOfDay(new Date());
@@ -78,8 +80,25 @@ export const useRelationshipValidation = () => {
     return duplicateIds;
   };
 
-  const validateRelationships = (relationships: RelationshipData[]) => {
+  const validateRelationships = (
+    relationships: RelationshipData[],
+    isExistingPatient: boolean,
+  ) => {
     let isValid = true;
+    setGeneralError(null);
+
+    if (!isExistingPatient) {
+      const hasAnyRelationship = relationships.some(
+        (rel) => !rel.isDeleted && isRelationshipRowMeaningful(rel),
+      );
+
+      if (!hasAnyRelationship) {
+        setGeneralError(t('REGISTRATION_RELATIONSHIP_REQUIRED'));
+        setValidationErrors({});
+        return false;
+      }
+    }
+
     const duplicateIds = getDuplicateIds(relationships);
     const newValidationErrors: ValidationErrors = {};
 
@@ -87,12 +106,7 @@ export const useRelationshipValidation = () => {
       // only validate newly added rows — existing rows are already saved, deleted rows are going away
       if (rel.isExisting || rel.isDeleted) return;
 
-      const hasAnyData =
-        rel.relationshipType.trim() ||
-        rel.patientId.trim() ||
-        rel.tillDate.trim();
-
-      if (!hasAnyData) {
+      if (!isRelationshipRowMeaningful(rel) && rel.isDefaultPlaceholder) {
         return;
       }
 
@@ -137,13 +151,20 @@ export const useRelationshipValidation = () => {
 
   const clearAllErrors = () => {
     setValidationErrors({});
+    setGeneralError(null);
+  };
+
+  const clearGeneralError = () => {
+    setGeneralError(null);
   };
 
   return {
     relationshipTypes,
     validationErrors,
+    generalError,
     validateRelationships,
     clearFieldError,
     clearAllErrors,
+    clearGeneralError,
   };
 };
