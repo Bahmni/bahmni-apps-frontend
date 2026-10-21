@@ -6,7 +6,6 @@ import {
   screen,
   waitFor,
 } from '@testing-library/react';
-import type { Ref } from 'react';
 import { DocumentsSection } from '../DocumentsSection';
 
 jest.mock('@bahmni/services', () => ({
@@ -16,40 +15,75 @@ jest.mock('@bahmni/services', () => ({
     .mockResolvedValue([{ id: 'type-1', label: 'Prescription' }]),
 }));
 
-const mockAddNotification = jest.fn();
-const mockSave = jest.fn().mockResolvedValue({ savedCount: 1, failures: [] });
+interface StubDocument {
+  id: string;
+  fileName: string;
+  url: string;
+  uploadedUrl?: string;
+}
 
+interface SaveSummary {
+  savedCount: number;
+  failures: { fileName: string; message: string }[];
+}
+
+// The section only reads savedIds for counting, so a summary maps onto any ids of that length.
+const resultOf = ({ savedCount, failures }: SaveSummary) => ({
+  savedIds: Array.from({ length: savedCount }, (_, index) => `saved-${index}`),
+  uploadedUrls: {},
+  failures,
+});
+
+// jsdom has no object URLs; the section releases the previews it holds.
+global.URL.revokeObjectURL = jest.fn();
+
+const mockAddNotification = jest.fn();
+const mockSave = jest.fn();
+jest.mock('../../services/visitDocumentSaveService', () => ({
+  saveVisitDocuments: (...args: unknown[]) => mockSave(...args),
+}));
+
+let mockNextDocumentId = 0;
 jest.mock('@bahmni/widgets', () => ({
   ...jest.requireActual('@bahmni/widgets'),
   useNotification: () => ({ addNotification: mockAddNotification }),
+  useActivePractitioner: () => ({
+    practitioner: { uuid: 'practitioner-uuid' },
+  }),
   DocumentUpload: ({
-    saveTarget,
-    onPendingChange,
-    ref,
+    documents,
+    onDocumentsChange,
+    isSaving,
   }: {
-    saveTarget: unknown;
-    onPendingChange: (hasPendingDocument: boolean) => void;
-    ref: Ref<{ save: () => Promise<unknown> }>;
-  }) => {
-    const { useImperativeHandle } = jest.requireActual('react');
-    useImperativeHandle(ref, () => ({ save: mockSave }));
-    return (
-      <div
-        data-testid="document-upload"
-        data-savetarget={JSON.stringify(saveTarget)}
-      >
-        <button
-          data-testid="select-file"
-          onClick={() => onPendingChange(true)}
-        />
-        <button
-          data-testid="discard-file"
-          onClick={() => onPendingChange(false)}
-        />
-      </div>
-    );
-  },
+    documents: StubDocument[];
+    onDocumentsChange: (documents: StubDocument[]) => void;
+    isSaving: boolean;
+  }) => (
+    <div
+      data-testid="document-upload"
+      data-saving={String(isSaving)}
+      data-documents={JSON.stringify(documents)}
+    >
+      <button
+        data-testid="select-file"
+        onClick={() => {
+          const id = `pending-${mockNextDocumentId++}`;
+          onDocumentsChange([
+            ...documents,
+            { id, fileName: `${id}.png`, url: `blob:${id}` },
+          ]);
+        }}
+      />
+      <button
+        data-testid="discard-file"
+        onClick={() => onDocumentsChange([])}
+      />
+    </div>
+  ),
 }));
+
+const documentsOf = (widget: HTMLElement): StubDocument[] =>
+  JSON.parse(widget.getAttribute('data-documents') ?? '[]');
 
 const mockUseVisitDocuments = jest.fn();
 const mockRefetch = jest.fn();
@@ -145,6 +179,13 @@ const renderSection = (topLevelConcept?: string | null) => {
 describe('DocumentsSection', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    mockSave.mockImplementation(
+      async ({ documents }: { documents: StubDocument[] }) => ({
+        savedIds: documents.map((document) => document.id),
+        uploadedUrls: {},
+        failures: [],
+      }),
+    );
     mockUseVisitDocuments.mockReturnValue({
       visitGroups,
       isLoading: false,
@@ -225,12 +266,15 @@ describe('DocumentsSection', () => {
     expect(screen.getByDisplayValue('take twice daily')).toBeInTheDocument();
   });
 
-  it('reuses an existing encounter as the save target when one exists, otherwise creates one', () => {
+  it('reuses an existing encounter as the save target when one exists, otherwise creates one', async () => {
     renderSection();
 
-    const targets = screen
-      .getAllByTestId('document-upload')
-      .map((node) => JSON.parse(node.getAttribute('data-savetarget') ?? '{}'));
+    fireEvent.click(screen.getAllByTestId('select-file')[0]);
+    fireEvent.click(screen.getAllByTestId('select-file')[1]);
+    fireEvent.click(screen.getByTestId('save-documents'));
+
+    await waitFor(() => expect(mockSave).toHaveBeenCalledTimes(2));
+    const targets = mockSave.mock.calls.map(([input]) => input.target);
 
     // The encounter travels whole, not just its uuid: the save bundle re-sends it as a PUT.
     expect(targets[0]).toEqual({
@@ -300,7 +344,9 @@ describe('DocumentsSection', () => {
     ).toBeInTheDocument();
     expect(screen.queryByTestId('save-documents')).not.toBeInTheDocument();
 
-    await act(async () => finishSave({ savedCount: 1, failures: [] }));
+    await act(async () =>
+      finishSave(resultOf({ savedCount: 1, failures: [] })),
+    );
 
     expect(screen.getByTestId('save-documents')).toBeInTheDocument();
   });
@@ -367,9 +413,119 @@ describe('DocumentsSection', () => {
     await waitFor(() => expect(mockSave).toHaveBeenCalledTimes(1));
   });
 
+  it("saves each visit's pending documents with the default type and the active practitioner", async () => {
+    renderSection('Patient Document');
+    await waitFor(() =>
+      expect(
+        jest.requireMock('@bahmni/services').getDocumentTypes,
+      ).toHaveBeenCalled(),
+    );
+
+    fireEvent.click(screen.getAllByTestId('select-file')[0]);
+    fireEvent.click(screen.getAllByTestId('select-file')[0]);
+    fireEvent.click(screen.getByTestId('save-documents'));
+
+    await waitFor(() => expect(mockSave).toHaveBeenCalledTimes(1));
+    const [input] = mockSave.mock.calls[0];
+    expect(input).toEqual(
+      expect.objectContaining({
+        patientUuid: 'patient-uuid',
+        encounterTypeName: 'Patient Document',
+        authorPractitionerUuid: 'practitioner-uuid',
+        defaultDocumentType: { id: 'type-1', label: 'Prescription' },
+      }),
+    );
+    expect(input.documents).toHaveLength(2);
+  });
+
+  it('locks every upload widget while the save is in flight', async () => {
+    let finishSave: (result: unknown) => void = () => {};
+    mockSave.mockImplementationOnce(
+      () =>
+        new Promise((resolve) => {
+          finishSave = resolve;
+        }),
+    );
+    renderSection();
+    fireEvent.click(screen.getAllByTestId('select-file')[0]);
+
+    fireEvent.click(screen.getByTestId('save-documents'));
+
+    await waitFor(() =>
+      screen
+        .getAllByTestId('document-upload')
+        .forEach((widget) =>
+          expect(widget).toHaveAttribute('data-saving', 'true'),
+        ),
+    );
+
+    await act(async () =>
+      finishSave(resultOf({ savedCount: 1, failures: [] })),
+    );
+
+    screen
+      .getAllByTestId('document-upload')
+      .forEach((widget) =>
+        expect(widget).toHaveAttribute('data-saving', 'false'),
+      );
+  });
+
+  it('clears saved documents and keeps failed ones with their upload url for a retry', async () => {
+    mockSave.mockImplementationOnce(
+      async ({ documents }: { documents: StubDocument[] }) => ({
+        savedIds: [documents[0].id],
+        uploadedUrls: {
+          [documents[0].id]: 'patient/saved.png',
+          [documents[1].id]: 'patient/failed.png',
+        },
+        failures: [{ fileName: documents[1].fileName, message: 'rejected' }],
+      }),
+    );
+    renderSection();
+    fireEvent.click(screen.getAllByTestId('select-file')[0]);
+    fireEvent.click(screen.getAllByTestId('select-file')[0]);
+    const [saved, failed] = documentsOf(
+      screen.getAllByTestId('document-upload')[0],
+    );
+
+    fireEvent.click(screen.getByTestId('save-documents'));
+
+    await waitFor(() =>
+      expect(documentsOf(screen.getAllByTestId('document-upload')[0])).toEqual([
+        { ...failed, uploadedUrl: 'patient/failed.png' },
+      ]),
+    );
+    expect(URL.revokeObjectURL).toHaveBeenCalledWith(saved.url);
+    expect(URL.revokeObjectURL).not.toHaveBeenCalledWith(failed.url);
+    expect(screen.getByTestId('save-documents')).toBeEnabled();
+  });
+
+  it('releases the previews of unsaved documents when the section goes away', () => {
+    const { unmount } = renderSection();
+    fireEvent.click(screen.getAllByTestId('select-file')[0]);
+    const [pending] = documentsOf(screen.getAllByTestId('document-upload')[0]);
+
+    unmount();
+
+    expect(URL.revokeObjectURL).toHaveBeenCalledWith(pending.url);
+  });
+
+  it('disables save once every pending document is saved', async () => {
+    renderSection();
+    fireEvent.click(screen.getAllByTestId('select-file')[0]);
+
+    fireEvent.click(screen.getByTestId('save-documents'));
+
+    await waitFor(() =>
+      expect(screen.getByTestId('save-documents')).toBeDisabled(),
+    );
+  });
+
   describe('save notification', () => {
-    const saveAll = async (...summaries: unknown[]) => {
-      summaries.forEach((summary) => mockSave.mockResolvedValueOnce(summary));
+    const saveAll = async (...summaries: SaveSummary[]) => {
+      summaries.forEach((summary) =>
+        mockSave.mockResolvedValueOnce(resultOf(summary)),
+      );
       renderSection();
       summaries.forEach((_, index) =>
         fireEvent.click(screen.getAllByTestId('select-file')[index]),
@@ -466,7 +622,7 @@ describe('DocumentsSection', () => {
     });
 
     it('stays quiet when a save neither saved nor failed anything', async () => {
-      mockSave.mockResolvedValueOnce({ savedCount: 0, failures: [] });
+      mockSave.mockResolvedValueOnce(resultOf({ savedCount: 0, failures: [] }));
       renderSection();
 
       fireEvent.click(screen.getAllByTestId('select-file')[0]);

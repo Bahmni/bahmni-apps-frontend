@@ -5,13 +5,11 @@
  * useVisitDocuments.test.tsx never renders a component. Between them nothing verified what broke:
  * a save that creates a document encounter re-keys the documents query, and if the hook reports
  * isLoading again the section swaps the accordion for a skeleton, unmounting every upload widget
- * and discarding the pending documents of any visit whose save had just failed.
+ * mid-save and leaving the visit whose save had just failed without its pending documents on screen.
  *
- * The hook and the section are real here; only the services and the upload widget are stubbed. The
- * stub owns local state and counts its mounts, so a remount — the thing that destroyed pending
- * documents — is directly observable. The widget's own behaviour is covered by
- * DocumentUpload.test.tsx; it cannot be driven from here because @bahmni/widgets bundles its copy
- * of @bahmni/services, so an app-level mock never reaches the widget's internal calls.
+ * The hook, the section and its save service are real here; only the backend calls and the upload
+ * widget are stubbed. The stub renders the documents the section hands it and tags itself with an
+ * id unique to its mount, so a remount is directly observable.
  *
  * Two things this test needs in order to catch anything, both learned the hard way:
  *   1. No visit may start with a document encounter, or placeholderData serves previous data and
@@ -22,7 +20,6 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { Encounter } from 'fhir/r4';
-import type { Ref } from 'react';
 import { DocumentsSection } from '../DocumentsSection';
 
 jest.mock('@bahmni/services', () => ({
@@ -30,66 +27,56 @@ jest.mock('@bahmni/services', () => ({
   getPatientEncounters: jest.fn(),
   getFormattedDocumentReferences: jest.fn(),
   getDocumentTypes: jest.fn().mockResolvedValue([{ id: 't1', label: 'Rx' }]),
+  uploadDocument: jest.fn(),
+  saveDocuments: jest.fn(),
+  dispatchAuditEvent: jest.fn(),
 }));
 
+global.URL.revokeObjectURL = jest.fn();
+
 const mockAddNotification = jest.fn();
-const mountCounts: Record<string, number> = {};
-const saveResults: Record<string, 'ok' | 'fail'> = {};
+
+interface StubDocument {
+  id: string;
+  fileName: string;
+  url: string;
+  note: string;
+}
 
 jest.mock('@bahmni/widgets', () => ({
   ...jest.requireActual('@bahmni/widgets'),
   useNotification: () => ({ addNotification: mockAddNotification }),
+  useActivePractitioner: () => ({ practitioner: { uuid: 'practitioner' } }),
   DocumentUpload: ({
-    saveTarget,
-    onPendingChange,
-    ref,
+    documents,
+    onDocumentsChange,
   }: {
-    saveTarget: {
-      encounterUuid?: string;
-      createEncounterInVisit?: { visitUuid: string };
-    };
-    onPendingChange: (hasPending: boolean) => void;
-    ref: Ref<{ save: () => Promise<unknown> }>;
+    documents: StubDocument[];
+    onDocumentsChange: (documents: StubDocument[]) => void;
   }) => {
-    const { useImperativeHandle, useState, useEffect } =
-      jest.requireActual('react');
-    const key =
-      saveTarget.encounterUuid ??
-      saveTarget.createEncounterInVisit?.visitUuid ??
-      'unknown';
-    const [pending, setPending] = useState<string[]>([]);
-
-    useEffect(() => {
-      mountCounts[key] = (mountCounts[key] ?? 0) + 1;
-    }, [key]);
-
-    useImperativeHandle(ref, () => ({
-      save: async () => {
-        if (saveResults[key] === 'fail') {
-          // Mirrors the real widget: a failed save keeps its rows for retry.
-          return {
-            savedCount: 0,
-            failures: [{ fileName: 'f.png', message: 'Bundle rejected' }],
-          };
-        }
-        setPending([]);
-        onPendingChange(false);
-        return { savedCount: pending.length, failures: [] };
-      },
-    }));
+    const { useId } = jest.requireActual('react');
+    // A fresh id per mount, so a remounted widget carries a different one.
+    const instance = useId();
 
     return (
-      <div data-testid="document-upload">
+      <div data-testid="document-upload" data-instance={instance}>
         <button
-          data-testid={`select-${key}`}
-          onClick={() => {
-            setPending(['f.png']);
-            onPendingChange(true);
-          }}
+          data-testid="select-file"
+          onClick={() =>
+            onDocumentsChange([
+              ...documents,
+              {
+                id: `${instance}f.png`,
+                fileName: 'f.png',
+                url: 'blob:f',
+                note: '',
+              },
+            ])
+          }
         />
-        {pending.map((name) => (
-          <span key={name} data-testid={`pending-${key}`}>
-            {name}
+        {documents.map((document) => (
+          <span key={document.id} data-testid="pending">
+            {document.fileName}
           </span>
         ))}
       </div>
@@ -97,8 +84,12 @@ jest.mock('@bahmni/widgets', () => ({
   },
 }));
 
-const { getPatientEncounters, getFormattedDocumentReferences } =
-  jest.requireMock('@bahmni/services');
+const {
+  getPatientEncounters,
+  getFormattedDocumentReferences,
+  uploadDocument,
+  saveDocuments,
+} = jest.requireMock('@bahmni/services');
 
 const DOC_TYPE_UUID = 'doc-enc-type-uuid';
 const PATIENT = 'patient-uuid';
@@ -143,8 +134,7 @@ const renderSection = () =>
 describe('DocumentsSection integration with the real useVisitDocuments hook', () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    Object.keys(mountCounts).forEach((k) => delete mountCounts[k]);
-    Object.keys(saveResults).forEach((k) => delete saveResults[k]);
+    uploadDocument.mockResolvedValue({ url: 'patient/f.png' });
   });
 
   it('keeps a failed visit’s pending document when another visit’s save re-keys the documents query', async () => {
@@ -160,7 +150,18 @@ describe('DocumentsSection integration with the real useVisitDocuments hook', ()
         visit('visit-2', '2026-06-20T09:00:00Z'),
         docEncounter('doc-enc-1', 'visit-1'),
       ]);
-    saveResults['visit-2'] = 'fail';
+    saveDocuments.mockImplementation(
+      async ({
+        target,
+      }: {
+        target: { createEncounterInVisit?: { visitUuid: string } };
+      }) => {
+        if (target.createEncounterInVisit?.visitUuid === 'visit-2') {
+          throw new Error('Bundle rejected');
+        }
+        return {};
+      },
+    );
 
     let releaseDocuments: (docs: unknown[]) => void = () => {};
     getFormattedDocumentReferences.mockImplementation(
@@ -172,13 +173,14 @@ describe('DocumentsSection integration with the real useVisitDocuments hook', ()
 
     renderSection();
 
-    await screen.findByTestId('select-visit-1');
-    fireEvent.click(screen.getByTestId('select-visit-1'));
-    fireEvent.click(screen.getByTestId('select-visit-2'));
+    const [visit1Widget, visit2Widget] =
+      await screen.findAllByTestId('document-upload');
+    const visit2Instance = visit2Widget.getAttribute('data-instance')!;
+    fireEvent.click(visit1Widget.querySelector('button')!);
+    fireEvent.click(visit2Widget.querySelector('button')!);
     await waitFor(() =>
-      expect(screen.getByTestId('pending-visit-2')).toBeInTheDocument(),
+      expect(screen.getAllByTestId('pending')).toHaveLength(2),
     );
-    const mountsBeforeSave = mountCounts['visit-2'];
 
     await waitFor(() =>
       expect(screen.getByTestId('save-documents')).not.toBeDisabled(),
@@ -194,8 +196,13 @@ describe('DocumentsSection integration with the real useVisitDocuments hook', ()
       screen.queryByTestId('document-section-skeleton'),
     ).not.toBeInTheDocument();
     // ...so the failed visit's widget is never remounted and keeps its pending document.
-    expect(mountCounts['visit-2']).toBe(mountsBeforeSave);
-    expect(screen.getByTestId('pending-visit-2')).toBeInTheDocument();
+    expect(screen.getAllByTestId('document-upload')[1]).toHaveAttribute(
+      'data-instance',
+      visit2Instance,
+    );
+    await waitFor(() =>
+      expect(screen.getAllByTestId('pending')).toHaveLength(1),
+    );
 
     releaseDocuments([]);
     await waitFor(() =>
@@ -203,6 +210,8 @@ describe('DocumentsSection integration with the real useVisitDocuments hook', ()
         expect.objectContaining({ type: 'warning' }),
       ),
     );
-    expect(screen.getByTestId('pending-visit-2')).toBeInTheDocument();
+    const [, failedVisitWidget] = screen.getAllByTestId('document-upload');
+    expect(failedVisitWidget).toHaveTextContent('f.png');
+    expect(screen.getAllByTestId('pending')).toHaveLength(1);
   });
 });
