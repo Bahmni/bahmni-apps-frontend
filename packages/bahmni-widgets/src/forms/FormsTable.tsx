@@ -240,10 +240,14 @@ const FormsTable: React.FC<WidgetProps> = ({
         acc[formName].push({
           id: form.encounterUuid,
           formName: form.formName,
-          recordedOn: formatDateTime(form.encounterDateTime, t, true)
-            .formattedResult,
+          recordedOn: formatDateTime(
+            form.formSavedDateTime ?? form.encounterDateTime,
+            t,
+            true,
+          ).formattedResult,
           recordedBy: providerNames ?? '--',
           encounterDateTime: form.encounterDateTime,
+          formSavedDateTime: form.formSavedDateTime,
           encounterUuid: form.encounterUuid,
         });
 
@@ -257,7 +261,9 @@ const FormsTable: React.FC<WidgetProps> = ({
       ([formName, records]) => ({
         formName,
         records: records.sort(
-          (a, b) => b.encounterDateTime - a.encounterDateTime,
+          (a, b) =>
+            (b.formSavedDateTime ?? b.encounterDateTime) -
+            (a.formSavedDateTime ?? a.encounterDateTime),
         ),
       }),
     );
