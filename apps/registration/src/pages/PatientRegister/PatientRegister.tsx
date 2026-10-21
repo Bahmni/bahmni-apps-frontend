@@ -9,7 +9,6 @@ import {
 } from '@bahmni/services';
 import {
   useNotification,
-  UserGlobalAction,
   useUserPrivilege,
   DocumentPrintButton,
   type PrintOption,
@@ -17,6 +16,7 @@ import {
 import { usePatientPhoto } from '@bahmni/widgets';
 import { useRef, useState, useEffect, useMemo } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import { RegistrationUserMenu } from '../../components/common/RegistrationUserMenu';
 import { AdditionalIdentifiersRef } from '../../components/forms/additionalIdentifiers/AdditionalIdentifiers';
 import { AdditionalInfoRef } from '../../components/forms/additionalInfo/AdditionalInfo';
 import { AddressInfoRef } from '../../components/forms/addressInfo/AddressInfo';
@@ -337,7 +337,10 @@ const PatientRegister = () => {
   return (
     <BaseLayout
       header={
-        <Header breadcrumbItems={breadcrumbs} userMenu={<UserGlobalAction />} />
+        <Header
+          breadcrumbItems={breadcrumbs}
+          userMenu={<RegistrationUserMenu />}
+        />
       }
       main={
         <div>

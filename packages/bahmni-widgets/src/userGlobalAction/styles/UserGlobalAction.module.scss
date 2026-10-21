@@ -93,3 +93,19 @@
     margin-block: 0;
   }
 }
+
+.locationInfo {
+  display: flex;
+  align-items: center;
+  gap: $spacing-03;
+  padding: $spacing-04 $spacing-05;
+  border-bottom: 1px solid $border-subtle;
+  color: $text-secondary;
+}
+
+.locationText {
+  @include type-style("body-compact-01");
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
