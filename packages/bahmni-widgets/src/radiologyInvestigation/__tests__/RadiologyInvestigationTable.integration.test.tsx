@@ -4,7 +4,7 @@ import {
 } from '@bahmni/services';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, screen, waitFor } from '@testing-library/react';
-import { MemoryRouter, Route, Routes } from 'react-router-dom';
+import { MemoryRouter, Route, Routes } from 'react-router';
 import { useNotification } from '../../notification';
 import { mockCategoryUuid, mockValidBundle } from '../__mocks__/mocks';
 import RadiologyInvestigationTable from '../RadiologyInvestigationTable';

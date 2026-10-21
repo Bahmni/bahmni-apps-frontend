@@ -13,7 +13,7 @@ import {
 import { useNotification } from '@bahmni/widgets';
 import { useMutation } from '@tanstack/react-query';
 import type { Patient } from 'fhir/r4';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import type { RelationshipData } from '../components/forms/patientRelationships/PatientRelationships';
 import {
   BasicInfoData,

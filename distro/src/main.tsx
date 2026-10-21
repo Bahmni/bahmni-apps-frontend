@@ -7,7 +7,7 @@ import '@bahmni/widgets/styles';
 import React, { StrictMode } from 'react';
 import * as ReactDOMModule from 'react-dom';
 import { createRoot } from 'react-dom/client';
-import { BrowserRouter } from 'react-router-dom';
+import { BrowserRouter } from 'react-router';
 
 import App from './app/app';
 import { PUBLIC_PATH } from './constants/app';

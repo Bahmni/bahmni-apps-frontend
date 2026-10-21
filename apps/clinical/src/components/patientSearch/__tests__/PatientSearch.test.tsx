@@ -16,8 +16,8 @@ Element.prototype.scrollIntoView = jest.fn();
 const mockNavigate = jest.fn();
 const mockAddNotification = jest.fn();
 
-jest.mock('react-router-dom', () => ({
-  ...jest.requireActual('react-router-dom'),
+jest.mock('react-router', () => ({
+  ...jest.requireActual('react-router'),
   useNavigate: () => mockNavigate,
 }));
 

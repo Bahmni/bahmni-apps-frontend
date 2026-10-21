@@ -1,4 +1,4 @@
-import { Navigate, Route } from 'react-router-dom';
+import { Navigate, Route } from 'react-router';
 import { Routes, RouteConfig } from './model';
 
 export { routes } from './routes';

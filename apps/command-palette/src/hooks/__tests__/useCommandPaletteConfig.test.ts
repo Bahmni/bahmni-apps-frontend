@@ -13,7 +13,7 @@ import {
 } from '../../constants/extensionPoints';
 import { useCommandPaletteConfig } from '../useCommandPaletteConfig';
 
-jest.mock('react-router-dom', () => ({
+jest.mock('react-router', () => ({
   useLocation: jest.fn(() => ({ pathname: '/' })),
 }));
 
@@ -145,7 +145,7 @@ describe('useCommandPaletteConfig', () => {
   });
 
   it('excludes extensions outside the current appContext', async () => {
-    const { useLocation } = jest.requireMock('react-router-dom');
+    const { useLocation } = jest.requireMock('react-router');
     useLocation.mockReturnValue({ pathname: '/home' });
 
     mockFetchModuleExtensions.mockResolvedValue([
