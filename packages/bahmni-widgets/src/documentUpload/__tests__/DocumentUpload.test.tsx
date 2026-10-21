@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { fireEvent, render, screen } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { StrictMode, useState } from 'react';
 import { DocumentUpload } from '../DocumentUpload';
 import { DocumentEntry, DocumentUploadProps, PendingDocument } from '../models';
@@ -7,6 +7,7 @@ import { DocumentEntry, DocumentUploadProps, PendingDocument } from '../models';
 jest.mock('@bahmni/services', () => ({
   ...jest.requireActual('@bahmni/services'),
   getDocumentUploadMaxSizeMb: jest.fn(),
+  getDocumentTypesByConceptUuid: jest.fn(),
 }));
 
 global.URL.createObjectURL = jest.fn(
@@ -19,7 +20,8 @@ jest.mock('../../notification', () => ({
   useNotification: () => ({ addNotification: mockAddNotification }),
 }));
 
-const { getDocumentUploadMaxSizeMb } = jest.requireMock('@bahmni/services');
+const { getDocumentUploadMaxSizeMb, getDocumentTypesByConceptUuid } =
+  jest.requireMock('@bahmni/services');
 
 const TYPES = [
   { id: 'type-1', label: 'Lab Report' },
@@ -53,6 +55,16 @@ const entry = (
 
 const fileOf = (name: string, type = 'image/png', sizeInBytes = 4) =>
   new File([new Uint8Array(sizeInBytes)], name, { type });
+
+const METADATA = { documentTypeConceptSetUuid: 'set-uuid' };
+const DOC_ID_CONFIG = {
+  attributes: [{ name: 'documentId' }],
+  metadata: METADATA,
+};
+const TYPE_REQUIRED_CONFIG = {
+  attributes: [{ name: 'documentType', required: true }],
+  metadata: METADATA,
+};
 
 const onChange = jest.fn();
 
@@ -100,6 +112,7 @@ describe('DocumentUpload', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     getDocumentUploadMaxSizeMb.mockResolvedValue(5);
+    getDocumentTypesByConceptUuid.mockResolvedValue(TYPES);
   });
 
   describe('documents', () => {
@@ -148,7 +161,7 @@ describe('DocumentUpload', () => {
     });
 
     it('locks the controls while saving', () => {
-      renderWidget({ isSaving: true, showDocumentId: true });
+      renderWidget({ isSaving: true, config: DOC_ID_CONFIG });
 
       expect(screen.getByRole('combobox')).toBeDisabled();
       expect(screen.getByTestId('document-id-e1')).toBeDisabled();
@@ -168,7 +181,7 @@ describe('DocumentUpload', () => {
     });
 
     it('shows the Document ID when asked to and records what is typed', () => {
-      renderWidget({ showDocumentId: true });
+      renderWidget({ config: DOC_ID_CONFIG });
 
       fireEvent.change(screen.getByTestId('document-id-e1'), {
         target: { value: 'D-2' },
@@ -181,7 +194,7 @@ describe('DocumentUpload', () => {
     });
 
     it('marks the type as required only when it is', () => {
-      const { unmount } = renderWidget({ isDocumentTypeRequired: true });
+      const { unmount } = renderWidget({ config: TYPE_REQUIRED_CONFIG });
       expect(screen.getByText('DOCUMENTS_DOCUMENT_TYPE_LABEL*')).toBeVisible();
       unmount();
 
@@ -201,7 +214,7 @@ describe('DocumentUpload', () => {
 
     it('shows the errors it is given, and clears one when its field is corrected', () => {
       renderWidget({
-        showDocumentId: true,
+        config: DOC_ID_CONFIG,
         initial: [
           entry('e1', {
             errors: {
@@ -267,7 +280,9 @@ describe('DocumentUpload', () => {
     });
 
     it('rejects files outside the configured extensions and notifies', () => {
-      renderWidget({ supportedFileTypes: ['.pdf'] });
+      renderWidget({
+        config: { metadata: { ...METADATA, supportedFileTypes: ['.pdf'] } },
+      });
 
       pick(0, fileOf('a.png'));
 
@@ -280,7 +295,11 @@ describe('DocumentUpload', () => {
     });
 
     it('restricts the file picker to the configured extensions', () => {
-      renderWidget({ supportedFileTypes: ['pdf', '.PNG'] });
+      renderWidget({
+        config: {
+          metadata: { ...METADATA, supportedFileTypes: ['pdf', '.PNG'] },
+        },
+      });
 
       expect(fileInputs()[0]).toHaveAttribute('accept', '.pdf,.png');
     });
@@ -374,7 +393,7 @@ describe('DocumentUpload', () => {
 
   describe('browsing for files', () => {
     it('is held back, with an error, while a required type is missing', () => {
-      renderWidget({ isDocumentTypeRequired: true });
+      renderWidget({ config: TYPE_REQUIRED_CONFIG });
 
       const allowed = fireEvent.click(fileInputs()[0]);
 
@@ -386,7 +405,7 @@ describe('DocumentUpload', () => {
 
     it('is allowed once the document has a type', () => {
       renderWidget({
-        isDocumentTypeRequired: true,
+        config: TYPE_REQUIRED_CONFIG,
         initial: [entry('e1', { documentType: TYPES[0] })],
       });
 
@@ -395,7 +414,7 @@ describe('DocumentUpload', () => {
 
     it('is allowed when the default type applies', () => {
       renderWidget({
-        isDocumentTypeRequired: true,
+        config: TYPE_REQUIRED_CONFIG,
         defaultDocumentType: TYPES[0],
       });
 
@@ -406,6 +425,36 @@ describe('DocumentUpload', () => {
       renderWidget();
 
       expect(fireEvent.click(fileInputs()[0])).toBe(true);
+    });
+  });
+
+  describe('configuration', () => {
+    it('loads the document types from the configured concept set', async () => {
+      renderWidget({ config: { metadata: METADATA } });
+
+      await waitFor(() =>
+        expect(getDocumentTypesByConceptUuid).toHaveBeenCalledWith('set-uuid'),
+      );
+    });
+
+    it('shows a configuration error instead of the widget without a concept set', () => {
+      renderWidget({ config: { metadata: {} } });
+
+      expect(
+        screen.getByText('DOCUMENTS_ERROR_INVALID_CONFIGURATION'),
+      ).toBeVisible();
+      expect(fileInputs()).toHaveLength(0);
+      expect(getDocumentTypesByConceptUuid).not.toHaveBeenCalled();
+    });
+
+    it('shows an error instead of the widget when the document types cannot be loaded', async () => {
+      getDocumentTypesByConceptUuid.mockRejectedValue(new Error('boom'));
+      renderWidget({ config: { metadata: METADATA } });
+
+      expect(
+        await screen.findByText('DOCUMENTS_ERROR_LOADING_DOCUMENT_TYPES'),
+      ).toBeVisible();
+      expect(fileInputs()).toHaveLength(0);
     });
   });
 });

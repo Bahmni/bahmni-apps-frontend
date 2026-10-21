@@ -14,8 +14,3 @@
 .title {
   @include type-style("heading-compact-02");
 }
-
-.error {
-  @include type-style("body-compact-02");
-  color: $text-error;
-}

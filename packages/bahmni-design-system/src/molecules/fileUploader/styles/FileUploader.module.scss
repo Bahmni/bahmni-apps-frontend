@@ -36,7 +36,7 @@
   min-inline-size: 0;
 
   // Carbon caps its bar at 20rem and sizes it to its content; fill the row instead.
-  :global(.cds--file__selected-file) {
+  .selectedFile {
     inline-size: 100%;
     max-inline-size: none;
   }

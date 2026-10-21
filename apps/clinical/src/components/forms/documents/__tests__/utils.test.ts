@@ -1,43 +1,26 @@
 import type { DocumentEntry } from '@bahmni/widgets';
-import { createEmptyDocumentEntry } from '@bahmni/widgets';
 import { createDocumentBundleEntries } from '../utils';
-
-const uploadedFile = (name: string, contentType: string) => ({
-  id: `id-${name}`,
-  file: new File(['x'], name, { type: contentType }),
-  url: 'blob:preview',
-  documentType: null,
-  note: '',
-  isNoteVisible: false,
-  fileName: name,
-  contentType,
-  status: 'uploaded' as const,
-  uploadedUrl: `100/${name}`,
-});
-
-const entry = (overrides: Partial<DocumentEntry> = {}): DocumentEntry => ({
-  ...createEmptyDocumentEntry(),
-  documentType: { id: 'type-uuid', label: 'Consent form' },
-  documentId: ' DOC-1 ',
-  note: ' signed ',
-  files: [
-    uploadedFile('a.png', 'image/png'),
-    uploadedFile('b.pdf', 'application/pdf'),
-  ],
-  ...overrides,
-});
+import {
+  CONSENT_FORM_TYPE,
+  createBlankDocumentEntry,
+  createDocumentEntry,
+  createUploadedDocument,
+  ENCOUNTER_REFERENCE,
+  PATIENT_UUID,
+  PRACTITIONER_UUID,
+} from './__mocks__/documentsMocks';
 
 const build = (entries: DocumentEntry[]) =>
   createDocumentBundleEntries({
     entries,
-    encounterSubject: { reference: 'Patient/patient-uuid' },
-    encounterReference: 'urn:uuid:encounter',
-    practitionerUUID: 'practitioner-uuid',
+    encounterSubject: { reference: `Patient/${PATIENT_UUID}` },
+    encounterReference: ENCOUNTER_REFERENCE,
+    practitionerUUID: PRACTITIONER_UUID,
   });
 
 describe('createDocumentBundleEntries', () => {
   it('creates one DocumentReference per entry holding all its files', () => {
-    const bundleEntries = build([entry(), entry()]);
+    const bundleEntries = build([createDocumentEntry(), createDocumentEntry()]);
 
     expect(bundleEntries).toHaveLength(2);
     const [first] = bundleEntries;
@@ -45,12 +28,16 @@ describe('createDocumentBundleEntries', () => {
     expect(first.fullUrl).toMatch(/^urn:uuid:/);
     expect(first.resource).toMatchObject({
       resourceType: 'DocumentReference',
-      subject: { reference: 'Patient/patient-uuid' },
+      subject: { reference: `Patient/${PATIENT_UUID}` },
       masterIdentifier: { value: 'DOC-1' },
       description: 'signed',
-      type: { coding: [{ code: 'type-uuid', display: 'Consent form' }] },
-      author: [{ reference: 'Practitioner/practitioner-uuid' }],
-      context: { encounter: [{ reference: 'urn:uuid:encounter' }] },
+      type: {
+        coding: [
+          { code: CONSENT_FORM_TYPE.id, display: CONSENT_FORM_TYPE.label },
+        ],
+      },
+      author: [{ reference: `Practitioner/${PRACTITIONER_UUID}` }],
+      context: { encounter: [{ reference: ENCOUNTER_REFERENCE }] },
       content: [
         {
           attachment: {
@@ -71,32 +58,40 @@ describe('createDocumentBundleEntries', () => {
   });
 
   it('gives every document its own placeholder url', () => {
-    const [first, second] = build([entry(), entry()]);
+    const [first, second] = build([
+      createDocumentEntry(),
+      createDocumentEntry(),
+    ]);
 
     expect(first.fullUrl).not.toBe(second.fullUrl);
   });
 
   it('leaves out the identifier and note when blank', () => {
-    const [{ resource }] = build([entry({ documentId: ' ', note: '' })]);
+    const [{ resource }] = build([
+      createDocumentEntry({ documentId: ' ', note: '' }),
+    ]);
 
     expect(resource).not.toHaveProperty('masterIdentifier');
     expect(resource).not.toHaveProperty('description');
   });
 
-  it('skips untouched entries and files that never finished uploading', () => {
-    const pending = {
-      ...uploadedFile('c.png', 'image/png'),
+  it('skips untouched entries and documents with a file that is not uploaded', () => {
+    const notUploaded = {
+      ...createUploadedDocument('c.png', 'image/png'),
       uploadedUrl: undefined,
     };
 
     const bundleEntries = build([
-      createEmptyDocumentEntry(),
-      entry({ files: [uploadedFile('a.png', 'image/png'), pending] }),
+      createBlankDocumentEntry(),
+      createDocumentEntry({
+        files: [createUploadedDocument('a.png', 'image/png'), notUploaded],
+      }),
+      createDocumentEntry(),
     ]);
 
     expect(bundleEntries).toHaveLength(1);
     expect(
       (bundleEntries[0].resource as { content: unknown[] }).content,
-    ).toHaveLength(1);
+    ).toHaveLength(2);
   });
 });

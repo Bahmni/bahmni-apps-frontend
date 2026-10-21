@@ -6,8 +6,9 @@ export interface DocumentsState {
   entries: DocumentEntry[];
   attributes: InputControlAttributes[] | undefined;
   setAttributes: (attributes: InputControlAttributes[] | undefined) => void;
-  /** Replaces the documents; files not seen before start uploading straight away. */
   setEntries: (entries: DocumentEntry[]) => void;
+  uploadPendingFiles: () => Promise<void>;
+  hasFailedUploads: () => boolean;
   validateAll: () => boolean;
   hasData: () => boolean;
   reset: () => void;

@@ -184,7 +184,7 @@ export {
   type FileUploaderProps,
   type FileUploaderButtonProps,
   type FileUploaderItemProps,
-} from './atoms/fileUploader';
+} from './molecules/fileUploader';
 export {
   InlineNotification,
   type InlineNotificationProps,

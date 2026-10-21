@@ -12,7 +12,11 @@ import {
   TextAreaWClose,
   TextInput,
 } from '@bahmni/design-system';
-import { DocumentType, getDocumentUploadMaxSizeMb } from '@bahmni/services';
+import {
+  DocumentType,
+  getDocumentTypesByConceptUuid,
+  getDocumentUploadMaxSizeMb,
+} from '@bahmni/services';
 import { useQuery } from '@tanstack/react-query';
 import React, { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -63,13 +67,11 @@ const toPendingDocuments = (files: File[]): PendingDocument[] =>
 interface DocumentEntryCardProps
   extends Pick<
     DocumentUploadProps,
-    | 'documentTypes'
-    | 'defaultDocumentType'
-    | 'isDocumentTypeRequired'
-    | 'showDocumentId'
-    | 'isDocumentIdRequired'
-    | 'isSaving'
+    'documentTypes' | 'defaultDocumentType' | 'isSaving'
   > {
+  isDocumentTypeRequired: boolean;
+  showDocumentId: boolean;
+  isDocumentIdRequired: boolean;
   entry: DocumentEntry;
   accept: string[];
   uploadHelpText: string;
@@ -116,9 +118,6 @@ const DocumentEntryCard: React.FC<DocumentEntryCardProps> = ({
       .forEach((file) => revokeDocumentPreview(file));
     onChange({ files: entry.files.filter((file) => file.id !== fileId) });
   };
-
-  // The file dialog opens from a click on the hidden input, whether from the button or the
-  // keyboard, so that is the one place to hold it back until the document has a type.
   const handleClickCapture = (event: React.MouseEvent) => {
     const target = event.target as HTMLElement;
     if (
@@ -260,12 +259,9 @@ const DocumentEntryCard: React.FC<DocumentEntryCardProps> = ({
 export const DocumentUpload: React.FC<DocumentUploadProps> = ({
   documents,
   onDocumentsChange,
-  documentTypes = [],
+  config,
+  documentTypes: providedDocumentTypes = [],
   defaultDocumentType = null,
-  isDocumentTypeRequired = false,
-  showDocumentId = false,
-  isDocumentIdRequired = false,
-  supportedFileTypes,
   documentsTitle,
   isSaving = false,
 }) => {
@@ -278,14 +274,33 @@ export const DocumentUpload: React.FC<DocumentUploadProps> = ({
     queryFn: getDocumentUploadMaxSizeMb,
   });
 
+  const attributes = config?.attributes;
+  const attribute = (name: string) => attributes?.find((a) => a.name === name);
+  const isDocumentTypeRequired =
+    attribute('documentType')?.required ?? !!config;
+  const showDocumentId = !!attribute('documentId');
+  const isDocumentIdRequired = attribute('documentId')?.required ?? false;
+  const conceptSetUuid = config?.metadata?.documentTypeConceptSetUuid as
+    | string
+    | undefined;
+  const supportedFileTypes = config?.metadata?.supportedFileTypes as
+    | string[]
+    | undefined;
+
+  const { data: loadedDocumentTypes, isError } = useQuery({
+    queryKey: ['documentTypes', conceptSetUuid],
+    queryFn: () => getDocumentTypesByConceptUuid(conceptSetUuid!),
+    enabled: !!conceptSetUuid,
+  });
+  const documentTypes = config
+    ? (loadedDocumentTypes ?? [])
+    : providedDocumentTypes;
+
   const { accept, selectFiles } = useFileSelection({
     supportedFileTypes,
     maxFileSizeMb,
   });
 
-  // A document is always being filled in; "Add more" is for the next one. Replacing the list rather
-  // than appending to it keeps this to a single empty document when React runs the effect twice on
-  // mount (StrictMode).
   const onDocumentsChangeRef = useRef(onDocumentsChange);
   useEffect(() => {
     onDocumentsChangeRef.current = onDocumentsChange;
@@ -356,6 +371,21 @@ export const DocumentUpload: React.FC<DocumentUploadProps> = ({
       </div>
     );
   });
+
+  const errorKey = !config
+    ? undefined
+    : !conceptSetUuid
+      ? 'DOCUMENTS_ERROR_INVALID_CONFIGURATION'
+      : isError
+        ? 'DOCUMENTS_ERROR_LOADING_DOCUMENT_TYPES'
+        : undefined;
+  if (errorKey) {
+    return (
+      <div role="alert" className={styles.error}>
+        {t(errorKey)}
+      </div>
+    );
+  }
 
   return (
     <div className={styles.container}>

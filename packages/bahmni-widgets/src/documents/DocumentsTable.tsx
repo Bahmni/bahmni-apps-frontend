@@ -6,6 +6,7 @@ import {
   InlineLoading,
   Link,
   Modal,
+  Printer,
   SortableDataTable,
   Tile,
   TooltipIcon,
@@ -17,7 +18,6 @@ import {
   useSubscribeConsultationSaved,
   DocumentViewModel,
 } from '@bahmni/services';
-import { Printer } from '@carbon/icons-react';
 import { useQuery } from '@tanstack/react-query';
 import React, {
   useCallback,

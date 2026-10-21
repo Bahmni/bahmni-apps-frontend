@@ -67,3 +67,8 @@
   align-self: flex-start;
   margin: $spacing-05;
 }
+
+.error {
+  @include type-style("body-compact-02");
+  color: $text-error;
+}

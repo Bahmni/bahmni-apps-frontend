@@ -2,6 +2,8 @@
   "DAYS_one": " day",
   "DAYS_other": " days",
   "DOCUMENTS_ADD_MORE": "Add more",
+  "DOCUMENTS_ERROR_INVALID_CONFIGURATION": "Documents control is not configured correctly.",
+  "DOCUMENTS_ERROR_LOADING_DOCUMENT_TYPES": "Unable to load the document types.",
   "DOCUMENTS_ADD_NOTE": "Add note",
   "DOCUMENTS_COL_ACTIONS": "Actions",
   "DOCUMENTS_COL_FILE": "Uploaded files",

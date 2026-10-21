@@ -12,8 +12,6 @@ import {
   DOCUMENT_TYPE_ATTRIBUTE,
   DOCUMENTS_ID_REQUIRED_ERROR,
   DOCUMENTS_SELECT_TYPE_ERROR,
-  DOCUMENTS_UPLOAD_FAILED_ERROR,
-  DOCUMENTS_UPLOAD_IN_PROGRESS_ERROR,
   DOCUMENTS_UPLOAD_REQUIRED_ERROR,
 } from './constants';
 import type { CreateDocumentBundleEntriesParams } from './models';
@@ -25,16 +23,6 @@ const isRequired = (
 ): boolean =>
   attributes?.find((attribute) => attribute.name === name)?.required ??
   requiredByDefault;
-
-const validateFiles = (entry: DocumentEntry): string | undefined => {
-  if (entry.files.some((file) => file.status === 'uploading')) {
-    return DOCUMENTS_UPLOAD_IN_PROGRESS_ERROR;
-  }
-  if (entry.files.some((file) => file.status === 'error')) {
-    return DOCUMENTS_UPLOAD_FAILED_ERROR;
-  }
-  return entry.files.length === 0 ? DOCUMENTS_UPLOAD_REQUIRED_ERROR : undefined;
-};
 
 export const validateEntry = (
   entry: DocumentEntry,
@@ -53,15 +41,17 @@ export const validateEntry = (
   ) {
     errors.documentId = DOCUMENTS_ID_REQUIRED_ERROR;
   }
-  const filesError = validateFiles(entry);
-  if (filesError) {
-    errors.files = filesError;
+  if (entry.files.length === 0) {
+    errors.files = DOCUMENTS_UPLOAD_REQUIRED_ERROR;
   }
   return errors;
 };
 
 const patientUuidOf = (subject: Reference): string =>
   subject.reference?.split('/').pop() ?? '';
+
+export const isDocumentUploaded = (entry: DocumentEntry): boolean =>
+  entry.files.every((file) => !!file.uploadedUrl);
 
 export const createDocumentBundleEntries = ({
   entries,
@@ -70,20 +60,22 @@ export const createDocumentBundleEntries = ({
   practitionerUUID,
 }: CreateDocumentBundleEntriesParams): BundleEntry[] =>
   entries
-    .filter((entry) => !isDocumentEntryEmpty(entry))
+    .filter(
+      (entry) => !isDocumentEntryEmpty(entry) && isDocumentUploaded(entry),
+    )
     .map((entry) =>
       createBundleEntry(
         `urn:uuid:${generateUUID()}`,
         buildDocumentReference(
           patientUuidOf(encounterSubject),
           {
-            files: entry.files
-              .filter((file) => file.uploadedUrl)
-              .map(({ uploadedUrl, contentType, fileName }) => ({
+            files: entry.files.map(
+              ({ uploadedUrl, contentType, fileName }) => ({
                 url: uploadedUrl!,
                 contentType,
                 title: fileName,
-              })),
+              }),
+            ),
             masterIdentifier: entry.documentId.trim() || undefined,
             typeCode: entry.documentType?.id,
             typeDisplay: entry.documentType?.label,

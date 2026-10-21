@@ -4,7 +4,7 @@ import type { DocumentEntry, PendingDocument } from '@bahmni/widgets';
 import { create } from 'zustand';
 import { useEncounterDetailsStore } from '../../../stores/encounterDetailsStore';
 import type { DocumentsState } from './models';
-import { validateEntry } from './utils';
+import { isDocumentUploaded, validateEntry } from './utils';
 
 const messageOf = (error: unknown): string =>
   error instanceof Error ? error.message : String(error);
@@ -26,33 +26,10 @@ export const useDocumentsStore = create<DocumentsState>((set, get) => {
     patch: Partial<PendingDocument>,
   ) =>
     updateEntry(entryId, (entry) => ({
-      // A file removed while its upload was in flight stays removed.
       files: entry.files.map((file) =>
         file.id === fileId ? { ...file, ...patch } : file,
       ),
     }));
-
-  const uploadFile = async (entryId: string, selected: PendingDocument) => {
-    const { patientUUID, selectedEncounterType } =
-      useEncounterDetailsStore.getState();
-    try {
-      const { url } = await uploadDocument(
-        selected.file,
-        selectedEncounterType?.name ?? '',
-        patientUUID ?? '',
-      );
-      updateFile(entryId, selected.id, {
-        status: 'uploaded',
-        uploadedUrl: url,
-        error: undefined,
-      });
-    } catch (error) {
-      updateFile(entryId, selected.id, {
-        status: 'error',
-        error: messageOf(error),
-      });
-    }
-  };
 
   return {
     entries: [],
@@ -60,29 +37,47 @@ export const useDocumentsStore = create<DocumentsState>((set, get) => {
 
     setAttributes: (attributes) => set({ attributes }),
 
-    setEntries: (next) => {
-      const known = new Map(
-        get().entries.map((entry) => [
-          entry.id,
-          new Set(entry.files.map((file) => file.id)),
-        ]),
+    setEntries: (entries) => set({ entries }),
+
+    uploadPendingFiles: async () => {
+      const { patientUUID, selectedEncounterType } =
+        useEncounterDetailsStore.getState();
+      const pending = get()
+        .entries.filter((entry) => !isDocumentEntryEmpty(entry))
+        .flatMap((entry) =>
+          entry.files
+            .filter((file) => !file.uploadedUrl)
+            .map((file) => ({ entryId: entry.id, file })),
+        );
+      pending.forEach(({ entryId, file }) =>
+        updateFile(entryId, file.id, { status: 'uploading', error: undefined }),
       );
-      const added: Array<[string, PendingDocument]> = [];
-      const entries = next.map((entry) => {
-        const knownFiles = known.get(entry.id);
-        const files = entry.files.map((file): PendingDocument => {
-          if (knownFiles?.has(file.id)) {
-            return file;
+      await Promise.all(
+        pending.map(async ({ entryId, file }) => {
+          try {
+            const { url } = await uploadDocument(
+              file.file,
+              selectedEncounterType?.name ?? '',
+              patientUUID ?? '',
+            );
+            updateFile(entryId, file.id, {
+              status: 'uploaded',
+              uploadedUrl: url,
+            });
+          } catch (error) {
+            updateFile(entryId, file.id, {
+              status: 'error',
+              error: messageOf(error),
+            });
           }
-          const uploading: PendingDocument = { ...file, status: 'uploading' };
-          added.push([entry.id, uploading]);
-          return uploading;
-        });
-        return { ...entry, files };
-      });
-      set({ entries });
-      added.forEach(([entryId, file]) => void uploadFile(entryId, file));
+        }),
+      );
     },
+
+    hasFailedUploads: () =>
+      get().entries.some(
+        (entry) => !isDocumentEntryEmpty(entry) && !isDocumentUploaded(entry),
+      ),
 
     validateAll: () => {
       const { attributes } = get();

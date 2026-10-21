@@ -24,6 +24,8 @@ export interface InputControl {
   hasData: () => boolean;
   subscribe: (cb: () => void) => () => void;
   createBundleEntries?: (ctx: EncounterContext) => BundleEntry[];
+  prepareBundleEntries?: () => Promise<void>;
+  getSubmissionWarning?: () => { title: string; message: string } | undefined;
   /**
    * Only consulted when onDirectSubmit is also defined. A control with
    * onDirectSubmit but no hasBundleData is assumed to have moved all its data

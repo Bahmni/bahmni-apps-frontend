@@ -1,8 +1,8 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { act, render, screen, waitFor } from '@testing-library/react';
-import type { InputControl } from '../../../../providers/clinicalConfig/models';
+import { act, render, screen } from '@testing-library/react';
 import DocumentsForm from '../DocumentsForm';
 import { useDocumentsStore } from '../store';
+import { documentsControlConfig } from './__mocks__/documentsMocks';
 
 jest.mock('@bahmni/services', () => ({
   ...jest.requireActual('@bahmni/services'),
@@ -19,26 +19,17 @@ interface StubWidgetProps {
     errors: Record<string, string>;
   }>;
   onDocumentsChange: (documents: unknown[]) => void;
-  documentTypes: Array<{ id: string; label: string }>;
-  isDocumentTypeRequired: boolean;
-  showDocumentId: boolean;
-  isDocumentIdRequired: boolean;
-  supportedFileTypes?: string[];
+  config?: unknown;
   documentsTitle?: string;
 }
 
-// The widget itself is covered in @bahmni/widgets; here it only needs to drive the form.
 jest.mock('@bahmni/widgets', () => ({
   ...jest.requireActual('@bahmni/widgets'),
   DocumentUpload: (props: StubWidgetProps) => (
     <div
       data-testid="document-upload"
       data-title={props.documentsTitle}
-      data-types={props.supportedFileTypes?.join(',')}
-      data-type-count={props.documentTypes.length}
-      data-show-id={String(props.showDocumentId)}
-      data-type-required={String(props.isDocumentTypeRequired)}
-      data-id-required={String(props.isDocumentIdRequired)}
+      data-config={JSON.stringify(props.config)}
     >
       <span data-testid="document-count">{props.documents.length}</span>
       <span data-testid="errors">
@@ -49,12 +40,10 @@ jest.mock('@bahmni/widgets', () => ({
           props.onDocumentsChange([
             ...props.documents,
             {
+              ...jest
+                .requireActual('./__mocks__/documentsMocks')
+                .createBlankDocumentEntry('DOC-77'),
               id: `doc-${props.documents.length}`,
-              documentType: null,
-              documentId: 'DOC-77',
-              note: '',
-              files: [],
-              errors: {},
             },
           ])
         }
@@ -65,23 +54,6 @@ jest.mock('@bahmni/widgets', () => ({
   ),
 }));
 
-const { getDocumentTypesByConceptUuid } = jest.requireMock('@bahmni/services');
-
-const config: InputControl = {
-  type: 'documents',
-  label: 'DOCUMENTS_INPUT_CONTROL_LABEL',
-  encounterTypes: ['Patient Document'],
-  privileges: ['Add Encounters'],
-  attributes: [
-    { name: 'documentType', required: true },
-    { name: 'documentId', required: true },
-  ],
-  metadata: {
-    documentTypeConceptSetUuid: 'set-uuid',
-    supportedFileTypes: ['.pdf', '.png'],
-  },
-};
-
 const renderForm = () =>
   render(
     <QueryClientProvider
@@ -89,7 +61,7 @@ const renderForm = () =>
         new QueryClient({ defaultOptions: { queries: { retry: false } } })
       }
     >
-      <DocumentsForm inputControlConfig={config} />
+      <DocumentsForm inputControlConfig={documentsControlConfig} />
     </QueryClientProvider>,
   );
 
@@ -101,10 +73,6 @@ describe('DocumentsForm', () => {
     global.URL.createObjectURL = jest.fn(() => 'blob:preview');
     global.URL.revokeObjectURL = jest.fn();
     act(() => state().reset());
-    getDocumentTypesByConceptUuid.mockResolvedValue([
-      { id: 'type-1', label: 'Consent form' },
-      { id: 'type-2', label: 'Lab report' },
-    ]);
   });
 
   it('renders the configured title and the documents widget under it', () => {
@@ -117,28 +85,14 @@ describe('DocumentsForm', () => {
     );
   });
 
-  it('configures the widget from the control config', () => {
+  it('hands the control config to the widget, which decides how to use it', () => {
     renderForm();
 
-    const widget = screen.getByTestId('document-upload');
-    expect(widget).toHaveAttribute('data-types', '.pdf,.png');
-    expect(widget).toHaveAttribute('data-show-id', 'true');
-    expect(widget).toHaveAttribute('data-type-required', 'true');
-    expect(widget).toHaveAttribute('data-id-required', 'true');
-  });
-
-  it('loads the document types from the configured concept set into the widget', async () => {
-    renderForm();
-
-    await waitFor(() =>
-      expect(getDocumentTypesByConceptUuid).toHaveBeenCalledWith('set-uuid'),
-    );
-    await waitFor(() =>
-      expect(screen.getByTestId('document-upload')).toHaveAttribute(
-        'data-type-count',
-        '2',
+    expect(
+      JSON.parse(
+        screen.getByTestId('document-upload').getAttribute('data-config')!,
       ),
-    );
+    ).toEqual(documentsControlConfig);
   });
 
   it('keeps the documents the widget reports in the store', async () => {
@@ -163,14 +117,5 @@ describe('DocumentsForm', () => {
     const errors = await screen.findByTestId('errors');
     expect(errors).toHaveTextContent('DOCUMENTS_SELECT_DOCUMENT_TYPE');
     expect(errors).toHaveTextContent('DOCUMENTS_UPLOAD_A_DOCUMENT');
-  });
-
-  it('tells the user when the document types cannot be loaded', async () => {
-    getDocumentTypesByConceptUuid.mockRejectedValue(new Error('boom'));
-    renderForm();
-
-    expect(
-      await screen.findByText('DOCUMENTS_ERROR_LOADING_DOCUMENT_TYPES'),
-    ).toBeVisible();
   });
 });

@@ -1,9 +1,17 @@
 import { uploadDocument } from '@bahmni/services';
-import { createEmptyDocumentEntry } from '@bahmni/widgets';
-import type { DocumentEntry, PendingDocument } from '@bahmni/widgets';
+import {
+  createEmptyDocumentEntry,
+  type DocumentEntry,
+  type PendingDocument,
+} from '@bahmni/widgets';
 import { act } from '@testing-library/react';
 import { useEncounterDetailsStore } from '../../../../stores/encounterDetailsStore';
 import { useDocumentsStore } from '../store';
+import {
+  createPendingDocument,
+  LAB_REPORT_TYPE,
+  PATIENT_UUID,
+} from './__mocks__/documentsMocks';
 
 jest.mock('@bahmni/services', () => ({
   ...jest.requireActual('@bahmni/services'),
@@ -13,21 +21,6 @@ jest.mock('@bahmni/services', () => ({
 const mockUploadDocument = uploadDocument as jest.MockedFunction<
   typeof uploadDocument
 >;
-
-const REPORT_TYPE = { id: 'type-1', label: 'Lab Report' };
-
-const png = (name = 'scan.png') => new File(['x'], name, { type: 'image/png' });
-
-const pending = (name = 'scan.png'): PendingDocument => ({
-  id: `pending-${name}`,
-  file: png(name),
-  url: 'blob:preview',
-  fileName: name,
-  contentType: 'image/png',
-  documentType: null,
-  note: '',
-  isNoteVisible: false,
-});
 
 const state = () => useDocumentsStore.getState();
 const addEntry = (): string => {
@@ -55,13 +48,11 @@ const removeEntry = (id: string) =>
 
 const entryOf = (id: string) => state().entries.find((e) => e.id === id)!;
 
-const flushUploads = () => act(async () => {});
-
 const addValidEntry = async () => {
   const id = addEntry();
-  updateDocumentType(id, REPORT_TYPE);
-  setFiles(id, [pending()]);
-  await flushUploads();
+  updateDocumentType(id, LAB_REPORT_TYPE);
+  setFiles(id, [createPendingDocument()]);
+  await act(() => state().uploadPendingFiles());
   return id;
 };
 
@@ -72,7 +63,7 @@ describe('useDocumentsStore', () => {
     global.URL.createObjectURL = jest.fn(() => 'blob:preview');
     global.URL.revokeObjectURL = jest.fn();
     useEncounterDetailsStore.setState({
-      patientUUID: 'patient-uuid',
+      patientUUID: PATIENT_UUID,
       selectedEncounterType: { uuid: 'enc-uuid', name: 'Patient Document' },
     });
     mockUploadDocument.mockResolvedValue({ url: '100/scan.png' } as never);
@@ -94,12 +85,12 @@ describe('useDocumentsStore', () => {
       const first = addEntry();
       const second = addEntry();
 
-      updateDocumentType(first, REPORT_TYPE);
+      updateDocumentType(first, LAB_REPORT_TYPE);
       updateDocumentId(first, 'DOC-1');
       updateNote(first, 'urgent');
 
       expect(entryOf(first)).toMatchObject({
-        documentType: REPORT_TYPE,
+        documentType: LAB_REPORT_TYPE,
         documentId: 'DOC-1',
         note: 'urgent',
       });
@@ -111,35 +102,54 @@ describe('useDocumentsStore', () => {
     });
   });
 
-  describe('uploading as soon as files are picked', () => {
+  describe('picking files', () => {
+    it('keeps the files without uploading them', () => {
+      const id = addEntry();
+
+      setFiles(id, [createPendingDocument()]);
+
+      expect(mockUploadDocument).not.toHaveBeenCalled();
+      expect(entryOf(id).files[0].uploadedUrl).toBeUndefined();
+    });
+
+    it('releases the previews it still holds when the store is reset', () => {
+      const id = addEntry();
+      setFiles(id, [createPendingDocument()]);
+
+      state().reset();
+
+      expect(URL.revokeObjectURL).toHaveBeenCalledWith('blob:preview');
+      expect(state().entries).toEqual([]);
+    });
+  });
+
+  describe('uploadPendingFiles', () => {
     it('uploads each file against the encounter type and patient', async () => {
       const id = addEntry();
-      const first = pending('a.png');
-      const second = pending('b.png');
-
+      updateDocumentType(id, LAB_REPORT_TYPE);
+      const first = createPendingDocument('a.png');
+      const second = createPendingDocument('b.png');
       setFiles(id, [first, second]);
+
+      await act(() => state().uploadPendingFiles());
 
       expect(mockUploadDocument).toHaveBeenCalledWith(
         first.file,
         'Patient Document',
-        'patient-uuid',
+        PATIENT_UUID,
       );
       expect(mockUploadDocument).toHaveBeenCalledWith(
         second.file,
         'Patient Document',
-        'patient-uuid',
+        PATIENT_UUID,
       );
-      expect(entryOf(id).files.map((f) => f.status)).toEqual([
-        'uploading',
-        'uploading',
-      ]);
     });
 
     it('records the uploaded url once the upload finishes', async () => {
       const id = addEntry();
+      setFiles(id, [createPendingDocument()]);
 
-      setFiles(id, [pending()]);
-      await flushUploads();
+      await act(() => state().uploadPendingFiles());
 
       expect(entryOf(id).files[0]).toMatchObject({
         status: 'uploaded',
@@ -150,52 +160,79 @@ describe('useDocumentsStore', () => {
       });
     });
 
-    it('marks a file as failed with the server message when its upload fails', async () => {
+    it('shows the files as uploading while the upload is in flight', async () => {
+      const id = addEntry();
+      mockUploadDocument.mockReturnValueOnce(new Promise(() => {}));
+      setFiles(id, [createPendingDocument()]);
+
+      void state().uploadPendingFiles();
+
+      expect(entryOf(id).files[0].status).toBe('uploading');
+    });
+
+    it('marks a file as failed with the server message and still uploads the others', async () => {
       mockUploadDocument.mockRejectedValueOnce(new Error('Disk full'));
       const id = addEntry();
+      setFiles(id, [
+        createPendingDocument('a.png'),
+        createPendingDocument('b.png'),
+      ]);
 
-      setFiles(id, [pending()]);
-      await flushUploads();
+      await act(() => state().uploadPendingFiles());
 
       expect(entryOf(id).files[0]).toMatchObject({
         status: 'error',
         error: 'Disk full',
       });
+      expect(entryOf(id).files[1].status).toBe('uploaded');
     });
 
-    it('does not bring back a file that was removed while uploading', async () => {
+    it('does not upload a file again once it is uploaded', async () => {
       const id = addEntry();
-      setFiles(id, [pending()]);
+      setFiles(id, [createPendingDocument('a.png')]);
+      await act(() => state().uploadPendingFiles());
 
-      setFiles(id, []);
-      await flushUploads();
+      setFiles(id, [...entryOf(id).files, createPendingDocument('b.png')]);
+      await act(() => state().uploadPendingFiles());
 
-      expect(entryOf(id).files).toEqual([]);
-    });
-
-    it('attaches several files to the same document', async () => {
-      const id = addEntry();
-
-      setFiles(id, [pending('a.png')]);
-      setFiles(id, [...entryOf(id).files, pending('b.png')]);
-      await flushUploads();
-
-      // The first file is not uploaded a second time when the list is replaced.
       expect(mockUploadDocument).toHaveBeenCalledTimes(2);
-      expect(entryOf(id).files.map((f) => f.fileName)).toEqual([
-        'a.png',
-        'b.png',
-      ]);
     });
 
-    it('releases the previews it still holds when the store is reset', async () => {
+    it('retries a file that failed before', async () => {
+      mockUploadDocument.mockRejectedValueOnce(new Error('nope'));
       const id = addEntry();
-      setFiles(id, [pending()]);
+      setFiles(id, [createPendingDocument()]);
+      await act(() => state().uploadPendingFiles());
 
-      state().reset();
+      await act(() => state().uploadPendingFiles());
 
-      expect(URL.revokeObjectURL).toHaveBeenCalledWith('blob:preview');
-      expect(state().entries).toEqual([]);
+      expect(entryOf(id).files[0]).toMatchObject({
+        status: 'uploaded',
+        error: undefined,
+      });
+    });
+
+    it('skips entries with nothing to save', async () => {
+      addEntry();
+
+      await act(() => state().uploadPendingFiles());
+
+      expect(mockUploadDocument).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('hasFailedUploads', () => {
+    it('is false when every file is uploaded', async () => {
+      await addValidEntry();
+
+      expect(state().hasFailedUploads()).toBe(false);
+    });
+
+    it('is true when a file could not be uploaded', async () => {
+      mockUploadDocument.mockRejectedValueOnce(new Error('nope'));
+      await addValidEntry();
+
+      expect(state().hasFailedUploads()).toBe(true);
     });
   });
 
@@ -207,10 +244,10 @@ describe('useDocumentsStore', () => {
     });
 
     it.each([
-      ['a type', (id: string) => updateDocumentType(id, REPORT_TYPE)],
+      ['a type', (id: string) => updateDocumentType(id, LAB_REPORT_TYPE)],
       ['an identifier', (id: string) => updateDocumentId(id, 'D-1')],
       ['a note', (id: string) => updateNote(id, 'n')],
-      ['a file', (id: string) => setFiles(id, [pending()])],
+      ['a file', (id: string) => setFiles(id, [createPendingDocument()])],
     ])('is true once an entry has %s', (_label, change) => {
       change(addEntry());
 
@@ -219,7 +256,7 @@ describe('useDocumentsStore', () => {
   });
 
   describe('validateAll', () => {
-    it('passes when every touched entry has a type and an uploaded file', async () => {
+    it('passes when every touched entry has a type and a file', async () => {
       await addValidEntry();
 
       expect(state().validateAll()).toBe(true);
@@ -227,8 +264,7 @@ describe('useDocumentsStore', () => {
 
     it('requires a document type', async () => {
       const id = addEntry();
-      setFiles(id, [pending()]);
-      await flushUploads();
+      setFiles(id, [createPendingDocument()]);
 
       expect(state().validateAll()).toBe(false);
       expect(entryOf(id).errors).toEqual({
@@ -238,33 +274,12 @@ describe('useDocumentsStore', () => {
 
     it('requires at least one file', () => {
       const id = addEntry();
-      updateDocumentType(id, REPORT_TYPE);
+      updateDocumentType(id, LAB_REPORT_TYPE);
 
       expect(state().validateAll()).toBe(false);
       expect(entryOf(id).errors).toEqual({
         files: 'DOCUMENTS_UPLOAD_A_DOCUMENT',
       });
-    });
-
-    it('blocks while a file is still uploading', () => {
-      const id = addEntry();
-      updateDocumentType(id, REPORT_TYPE);
-      mockUploadDocument.mockReturnValueOnce(new Promise(() => {}));
-      setFiles(id, [pending()]);
-
-      expect(state().validateAll()).toBe(false);
-      expect(entryOf(id).errors.files).toBe('DOCUMENTS_UPLOAD_IN_PROGRESS');
-    });
-
-    it('blocks while a file has failed to upload', async () => {
-      const id = addEntry();
-      updateDocumentType(id, REPORT_TYPE);
-      mockUploadDocument.mockRejectedValueOnce(new Error('nope'));
-      setFiles(id, [pending()]);
-      await flushUploads();
-
-      expect(state().validateAll()).toBe(false);
-      expect(entryOf(id).errors.files).toBe('DOCUMENTS_UPLOAD_FAILED_REMOVE');
     });
 
     it('requires the identifier only when configured as required', async () => {
@@ -282,8 +297,7 @@ describe('useDocumentsStore', () => {
     it('does not require a type when configured as optional', async () => {
       const id = addEntry();
       state().setAttributes([{ name: 'documentType', required: false }]);
-      setFiles(id, [pending()]);
-      await flushUploads();
+      setFiles(id, [createPendingDocument()]);
 
       expect(state().validateAll()).toBe(true);
     });

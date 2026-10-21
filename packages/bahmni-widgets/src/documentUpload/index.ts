@@ -10,6 +10,7 @@ export type { DocumentTileData } from './renderDocumentTile';
 export type {
   DocumentEntry,
   DocumentEntryErrors,
+  DocumentUploadConfig,
   DocumentUploadProps,
   PendingDocument,
 } from './models';

@@ -10,18 +10,12 @@ import {
 } from './utils';
 
 export interface FileSelectionOptions {
-  /** Extensions such as ".pdf" or "png". Any image, video or PDF is accepted when not set. */
   supportedFileTypes?: string[];
-  /** No client-side size limit when not set; the backend remains the authority. */
   maxFileSizeMb?: number;
 }
 
 const NOTIFICATION_TIMEOUT_MS = 5000;
 
-/**
- * Validates files picked for upload against the accepted types and the size limit, telling the
- * user about every rejection. Holds no file state: callers decide what to do with the accepted files.
- */
 export const useFileSelection = ({
   supportedFileTypes,
   maxFileSizeMb,

@@ -11,6 +11,14 @@ registerInputControl({
   validate: () => useDocumentsStore.getState().validateAll(),
   hasData: () => useDocumentsStore.getState().hasData(),
   subscribe: (cb) => useDocumentsStore.subscribe(cb),
+  prepareBundleEntries: () => useDocumentsStore.getState().uploadPendingFiles(),
+  getSubmissionWarning: () =>
+    useDocumentsStore.getState().hasFailedUploads()
+      ? {
+          title: 'DOCUMENTS_NOT_SAVED_TITLE',
+          message: 'DOCUMENTS_NOT_SAVED_MESSAGE',
+        }
+      : undefined,
   createBundleEntries: (ctx) =>
     createDocumentBundleEntries({
       entries: useDocumentsStore.getState().entries,

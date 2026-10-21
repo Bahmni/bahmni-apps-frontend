@@ -1,6 +1,10 @@
 import { fireEvent, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { FileUploader, FileUploaderButton, FileUploaderItem } from '../index';
+import {
+  FileUploader,
+  FileUploaderButton,
+  FileUploaderItem,
+} from '../FileUploader';
 
 describe('FileUploader', () => {
   it('renders the carbon uploader with its label and a test id', () => {

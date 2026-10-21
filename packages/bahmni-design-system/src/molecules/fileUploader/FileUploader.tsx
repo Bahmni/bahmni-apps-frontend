@@ -29,7 +29,6 @@ export type FileUploaderButtonProps = React.ComponentProps<
   testId?: string;
 };
 
-/** The button that opens the file dialog, for building an uploader whose file list the caller owns. */
 export const FileUploaderButton: React.FC<FileUploaderButtonProps> = ({
   testId,
   ...carbonProps
@@ -41,23 +40,23 @@ export type FileUploaderItemProps = React.ComponentProps<
   typeof CarbonFileUploaderItem
 > & {
   testId?: string;
-  /**
-   * Optional preview shown in a square beside the file, e.g. an image or an icon. An image fills the
-   * square. Without it the item looks exactly as Carbon draws it.
-   */
   thumbnail?: React.ReactNode;
 };
 
-/** One selected file with its status and a remove button, optionally with a thumbnail. */
 export const FileUploaderItem: React.FC<FileUploaderItemProps> = ({
   testId,
   thumbnail,
+  className,
   ...carbonProps
 }) => {
-  const item = <CarbonFileUploaderItem {...carbonProps} data-testid={testId} />;
-
   if (!thumbnail) {
-    return item;
+    return (
+      <CarbonFileUploaderItem
+        {...carbonProps}
+        className={className}
+        data-testid={testId}
+      />
+    );
   }
 
   return (
@@ -68,7 +67,13 @@ export const FileUploaderItem: React.FC<FileUploaderItemProps> = ({
       >
         {thumbnail}
       </div>
-      <div className={styles.item}>{item}</div>
+      <div className={styles.item}>
+        <CarbonFileUploaderItem
+          {...carbonProps}
+          className={[styles.selectedFile, className].filter(Boolean).join(' ')}
+          data-testid={testId}
+        />
+      </div>
     </div>
   );
 };

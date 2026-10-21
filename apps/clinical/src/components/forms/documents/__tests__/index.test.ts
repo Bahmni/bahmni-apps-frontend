@@ -1,7 +1,14 @@
-import { createEmptyDocumentEntry } from '@bahmni/widgets';
 import { clearRegistry, getRegisteredInputControls } from '../../registry';
 import { DOCUMENTS_INPUT_CONTROL_KEY } from '../constants';
 import { useDocumentsStore } from '../store';
+
+import {
+  createBlankDocumentEntry,
+  createPendingDocument,
+  ENCOUNTER_REFERENCE,
+  PATIENT_UUID,
+  PRACTITIONER_UUID,
+} from './__mocks__/documentsMocks';
 
 import '../index';
 
@@ -11,7 +18,7 @@ jest.mock('@bahmni/services', () => ({
 }));
 
 const addEntry = (documentId = '') => {
-  const entry = { ...createEmptyDocumentEntry(), documentId };
+  const entry = createBlankDocumentEntry(documentId);
   const store = useDocumentsStore.getState();
   store.setEntries([...store.entries, entry]);
   return entry.id;
@@ -23,6 +30,11 @@ const loadControl = () =>
   )!;
 
 jest.mock('../DocumentsForm', () => 'DocumentsForm');
+
+beforeAll(() => {
+  global.URL.createObjectURL = jest.fn(() => 'blob:preview');
+  global.URL.revokeObjectURL = jest.fn();
+});
 
 afterAll(() => clearRegistry());
 
@@ -68,14 +80,63 @@ describe('documents input control registration', () => {
     addEntry('DOC-1');
 
     const entries = control.createBundleEntries!({
-      encounterSubject: { reference: 'Patient/patient-uuid' },
-      encounterReference: 'urn:uuid:encounter',
-      practitionerUUID: 'practitioner-uuid',
+      encounterSubject: { reference: `Patient/${PATIENT_UUID}` },
+      encounterReference: ENCOUNTER_REFERENCE,
+      practitionerUUID: PRACTITIONER_UUID,
       consultationDate: new Date(),
     });
 
     expect(entries).toHaveLength(1);
     expect(entries[0].resource?.resourceType).toBe('DocumentReference');
+  });
+
+  describe('uploading on submit', () => {
+    const mockUploadDocument = jest.requireMock('@bahmni/services')
+      .uploadDocument as jest.Mock;
+    const addEntryWithFile = () => {
+      const entry = {
+        ...createBlankDocumentEntry('DOC-1'),
+        files: [createPendingDocument('a.png')],
+      };
+      useDocumentsStore.getState().setEntries([entry]);
+    };
+    const ctx = {
+      encounterSubject: { reference: `Patient/${PATIENT_UUID}` },
+      encounterReference: ENCOUNTER_REFERENCE,
+      practitionerUUID: PRACTITIONER_UUID,
+      consultationDate: new Date(),
+    };
+
+    beforeEach(() => {
+      mockUploadDocument.mockReset();
+    });
+
+    it('uploads the files before the bundle entries are built', async () => {
+      mockUploadDocument.mockResolvedValue({ url: '100/a.png' });
+      const control = loadControl();
+      addEntryWithFile();
+
+      await control.prepareBundleEntries!();
+
+      expect(mockUploadDocument).toHaveBeenCalledTimes(1);
+      const entries = control.createBundleEntries!(ctx);
+      expect(entries).toHaveLength(1);
+      expect(control.getSubmissionWarning!()).toBeUndefined();
+    });
+
+    it('leaves a document out and warns when its upload fails, without throwing', async () => {
+      mockUploadDocument.mockRejectedValue(new Error('Disk full'));
+      const control = loadControl();
+      addEntryWithFile();
+
+      await expect(control.prepareBundleEntries!()).resolves.toBeUndefined();
+
+      expect(control.createBundleEntries!(ctx)).toEqual([]);
+      expect(control.getSubmissionWarning!()).toEqual({
+        title: 'DOCUMENTS_NOT_SAVED_TITLE',
+        message: 'DOCUMENTS_NOT_SAVED_MESSAGE',
+      });
+    });
   });
 
   it('resets the store', () => {
