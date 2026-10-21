@@ -2,6 +2,9 @@
   "name": "@bahmni/source",
   "version": "0.1.0",
   "license": "MPLv2",
+  "engines": {
+    "node": ">=22.22.0"
+  },
   "scripts": {
     "create:app": "node ./scripts/create-app.js",
     "dev": "nx serve distro",

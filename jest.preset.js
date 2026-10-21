@@ -1,4 +1,5 @@
 const nxPreset = require('@nx/jest/preset').default;
+const { esmTransformIgnorePattern } = require('./jest.esm-packages');
 
 module.exports = {
   ...nxPreset,
@@ -14,7 +15,7 @@ module.exports = {
     ],
   },
   // react-router v8 (and its dependencies) are ESM-only, so they must be transformed.
-  transformIgnorePatterns: ['node_modules/(?!(react-router|cookie-es)/)'],
+  transformIgnorePatterns: [esmTransformIgnorePattern()],
   moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx'],
   coverageDirectory: 'test-output/jest/coverage',
   coverageReporters: ['html', 'text', 'lcov'],
