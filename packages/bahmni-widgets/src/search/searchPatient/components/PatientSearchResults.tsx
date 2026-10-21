@@ -240,16 +240,14 @@ const PatientSearchResults = ({
     selectedFieldType === 'appointment' &&
     searchFields[0]?.fields[0] === 'appointmentDate';
   const displayTerm = isDateSearch
-    ? formatDateTime(new Date(`${searchTerm}T00:00:00`), t).formattedResult
+    ? formatDateTime(searchTerm, t).formattedResult
     : searchTerm;
 
   const emptyMessage = isAdvancedSearch
     ? t('REGISTRATION_PATIENT_SEARCH_CUSTOM_ATTRIBUTE_EMPTY_MESSAGE', {
         searchTerm: displayTerm,
       })
-    : t('REGISTRATION_PATIENT_SEARCH_EMPTY_MESSAGE', {
-        searchTerm: displayTerm,
-      });
+    : t('REGISTRATION_PATIENT_SEARCH_EMPTY_MESSAGE', { searchTerm });
 
   return (
     <div className={styles.patientSearchResult}>
