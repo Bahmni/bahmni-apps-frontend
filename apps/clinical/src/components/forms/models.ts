@@ -14,6 +14,10 @@ export interface InputControl {
   encounterTypes?: string[];
   privilege?: string[];
   onActionTriggered?: boolean;
+  /** Action types that this control handles exclusively (e.g. ['delete'] for stopMedications). */
+  handledActionTypes?: ('create' | 'update' | 'delete')[];
+  /** FHIR resource types this control handles (e.g. ['MedicationRequest'] for stopMedications). */
+  handledResourceTypes?: string[];
   inputControlConfig?: ClinicalInputControlConfig;
   component: React.ComponentType<{
     encounterSessionStartContext?: EncounterSessionStartContext;

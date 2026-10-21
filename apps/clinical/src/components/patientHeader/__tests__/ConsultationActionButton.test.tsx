@@ -94,15 +94,24 @@ describe('ConsultationActionButton', () => {
       expect(mockDispatchConsultationStart).toHaveBeenCalledWith({});
     });
 
-    it('dispatches consultationStart with editTitle when continuing an existing encounter', () => {
+    it('dispatches consultationStart with context.encounter when continuing an existing encounter', () => {
+      const mockEncounter = {
+        resourceType: 'Encounter',
+        id: 'enc-123',
+        status: 'in-progress',
+      } as any;
       render(
-        <ConsultationActionButton {...defaultProps} editActiveEncounter />,
+        <ConsultationActionButton
+          {...defaultProps}
+          editActiveEncounter
+          activeEncounter={mockEncounter}
+        />,
       );
 
       fireEvent.click(screen.getByTestId('consultation-action-button'));
 
       expect(mockDispatchConsultationStart).toHaveBeenCalledWith({
-        editTitle: 'CONSULTATION_ACTION_CONTINUE',
+        context: { encounter: mockEncounter },
       });
     });
 

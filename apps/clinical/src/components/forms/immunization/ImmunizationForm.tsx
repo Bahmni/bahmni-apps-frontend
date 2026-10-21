@@ -62,7 +62,9 @@ const ImmunizationForm = ({
 
   const basedOn =
     immunizationFormType === IMMUNIZATION_ADMINISTRATION_INPUT_CONTROL_KEY
-      ? (encounterSessionStartContext?.basedOn as MedicationRequest | undefined)
+      ? (encounterSessionStartContext?.context?.basedOn as
+          | MedicationRequest
+          | undefined)
       : undefined;
 
   const basedOnReference = basedOn?.id;

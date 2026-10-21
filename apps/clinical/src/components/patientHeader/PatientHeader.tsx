@@ -139,6 +139,7 @@ const PatientHeader: React.FC<PatientHeaderProps> = ({
           isActionAreaVisible={isActionAreaVisible}
           editActiveEncounter={editActiveEncounter}
           isLoading={isLoading}
+          activeEncounter={activeEncounter}
         />
         <DocumentPrintButton
           printOptions={printOptions}

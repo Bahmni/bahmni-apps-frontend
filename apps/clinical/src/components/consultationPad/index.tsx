@@ -36,7 +36,6 @@ import { useActionAreaExpandProps } from '../../hooks/useActionAreaExpandProps';
 import { useClinicalAppData } from '../../hooks/useClinicalAppData';
 import { useEncounterConcepts } from '../../hooks/useEncounterConcepts';
 import { useClinicalConfig } from '../../providers/clinicalConfig';
-import { useAllergyStore } from '../../stores/allergyStore';
 import { useEncounterDetailsStore } from '../../stores/encounterDetailsStore';
 import { useObservationFormsStore } from '../../stores/observationFormsStore';
 import { InputControlRenderer } from '../forms';
@@ -68,19 +67,11 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
   isActionAreaExpanded,
   onToggleActionAreaExpand,
 }) => {
-  const preloadedAllergies = encounterSessionStartContext.preloadedAllergies;
-  const encounterType = encounterSessionStartContext.encounterType;
-  const editOnlyKey = encounterSessionStartContext.editOnly as
-    | string
-    | undefined;
-  const editTitle = encounterSessionStartContext.editTitle as
-    | string
-    | undefined;
-  const sourceEncounterUuid =
-    encounterSessionStartContext.sourceEncounterUuid as string | undefined;
-  const directFormMode = encounterSessionStartContext.directFormMode as
-    | boolean
-    | undefined;
+  const context = encounterSessionStartContext.context;
+  const action = encounterSessionStartContext.action;
+  const encounterType = context?.encounterType;
+  const sourceEncounterUuid = context?.encounter?.id;
+  const directFormMode = context?.directFormMode;
   const { t } = useTranslation();
   const { addNotification } = useNotification();
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -140,10 +131,18 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
     );
   }, [encounterType, clinicalConfig]);
 
-  const activeEntries = useMemo(
-    () => getActiveEntries(registry, resolvedEncounterType!, editOnlyKey),
-    [registry, resolvedEncounterType, editOnlyKey],
-  );
+  const activeEntries = useMemo(() => {
+    const effectiveCtx = context
+      ? {
+          ...context,
+          encounterType:
+            context.encounterType ?? resolvedEncounterType ?? undefined,
+        }
+      : resolvedEncounterType
+        ? { encounterType: resolvedEncounterType }
+        : undefined;
+    return getActiveEntries(registry, effectiveCtx, action);
+  }, [registry, resolvedEncounterType, context, action]);
 
   const subscribeAll = useCallback(
     (cb: () => void) => {
@@ -270,24 +269,18 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
 
   // Seed medication store with FHIR resources for edit mode
   useEffect(() => {
-    const editMedications = encounterSessionStartContext.editMedications as
-      | MedicationRequest[]
-      | undefined;
+    const editMedications =
+      action?.type === 'update' &&
+      action.resources?.every((r) => r.resourceType === 'MedicationRequest')
+        ? (action.resources as MedicationRequest[])
+        : [];
     const medStore = getMedicationRequestStore(MEDICATIONS_INPUT_CONTROL_KEY);
-    medStore
-      .getState()
-      .setPendingFhirEdits(editMedications?.length ? editMedications : []);
-  }, [encounterSessionStartContext.editMedications]);
+    medStore.getState().setPendingFhirEdits(editMedications);
+  }, [action]);
 
   useEffect(() => {
     return () => activeEntries.forEach((entry) => entry.reset());
   }, []);
-
-  useEffect(() => {
-    if (preloadedAllergies?.length) {
-      useAllergyStore.getState().preloadAllergies(preloadedAllergies);
-    }
-  }, [preloadedAllergies]);
 
   const buildComprehensiveCDSSBundle = useCallback((): Bundle => {
     const entries: BundleEntry[] = [];
@@ -296,7 +289,7 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
       if (entry.hasData() && entry.createBundleEntries) {
         const ctx: EncounterContext = {
           encounterSubject: {
-            reference: `Patient/${encounterSessionStartContext.patientUuid}`,
+            reference: `Patient/${patientId}`,
           },
           encounterReference: activeEncounter?.id ?? '',
           practitionerUUID: practitioner?.uuid ?? '',
@@ -591,13 +584,16 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
     );
   })();
 
-  const isEditMode = !!editOnlyKey;
+  const isEditMode = action?.type === 'update';
+  const isMedicationEditMode =
+    action?.type === 'update' &&
+    (action.resourceType === 'MedicationRequest' ||
+      action.resources?.[0]?.resourceType === 'MedicationRequest');
   const medStore = getMedicationRequestStore(MEDICATIONS_INPUT_CONTROL_KEY);
   const editChangesExist = useSyncExternalStore(
     (cb) => medStore.subscribe(cb),
     () => {
-      if (!isEditMode || editOnlyKey !== MEDICATIONS_INPUT_CONTROL_KEY)
-        return true;
+      if (!isEditMode || !isMedicationEditMode) return true;
       return medStore.getState().hasEditChanges();
     },
   );
@@ -617,8 +613,8 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
         title={
           hasError
             ? ''
-            : editTitle
-              ? t(editTitle)
+            : context?.encounter
+              ? t('CONSULTATION_ACTION_CONTINUE')
               : t('CONSULTATION_ACTION_NEW')
         }
         primaryButtonText={t('CONSULTATION_PAD_DONE_BUTTON')}

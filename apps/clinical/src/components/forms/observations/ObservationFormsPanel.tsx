@@ -37,21 +37,24 @@ const ObservationFormsPanel: React.FC<ObservationFormsPanelProps> = ({
   const { episodeOfCare } = useClinicalAppData();
   const episodeOfCareUuids = episodeOfCare.map((eoc) => eoc.uuid);
 
-  const formName = encounterSessionStartContext?.formName as string | undefined;
-  const directFormMode = encounterSessionStartContext?.directFormMode as
-    | boolean
-    | undefined;
-  const sourceEncounterUuid = encounterSessionStartContext?.sourceEncounterUuid;
+  const ctx = encounterSessionStartContext?.context;
+  const act = encounterSessionStartContext?.action;
+
+  const formName = ctx?.formName;
+  const directFormMode = ctx?.directFormMode;
+  const sourceEncounterUuid = ctx?.encounter?.id;
   const activeEncounter = encounterSessionStartContext?.activeEncounter;
   const isCopyover: boolean | undefined =
     !sourceEncounterUuid || activeEncounter === undefined
       ? undefined
       : activeEncounter?.id !== sourceEncounterUuid;
-  const task = encounterSessionStartContext?.task as Task | undefined;
+  const task = ctx?.basedOn as Task | undefined;
   const basedOnRef = task?.basedOn?.[0]?.reference;
   const basedOnId = basedOnRef?.split('/').pop() ?? undefined;
   const isEditObservationFormsMode =
-    encounterSessionStartContext?.editOnly === 'observationForms';
+    act?.type === 'update' &&
+    (act.resourceType === 'Observation' ||
+      act.resources?.[0]?.resourceType === 'Observation');
   const isEditMode =
     isEditObservationFormsMode && !!sourceEncounterUuid && isCopyover === false;
   const isCopyoverMode =
