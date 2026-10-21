@@ -31,6 +31,7 @@ export const usePatientRelationship = ({
             relationshipType: '',
             patientId: '',
             tillDate: '',
+            isDefaultPlaceholder: true,
           },
         ],
   );

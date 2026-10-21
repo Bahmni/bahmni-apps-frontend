@@ -106,7 +106,7 @@ export const useRelationshipValidation = () => {
       // only validate newly added rows — existing rows are already saved, deleted rows are going away
       if (rel.isExisting || rel.isDeleted) return;
 
-      if (!isRelationshipRowMeaningful(rel)) {
+      if (!isRelationshipRowMeaningful(rel) && rel.isDefaultPlaceholder) {
         return;
       }
 

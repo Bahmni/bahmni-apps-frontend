@@ -24,6 +24,7 @@ export interface RelationshipData {
   tillDate: string;
   isExisting?: boolean;
   isDeleted?: boolean;
+  isDefaultPlaceholder?: boolean;
 }
 
 export interface PatientRelationshipsRef {

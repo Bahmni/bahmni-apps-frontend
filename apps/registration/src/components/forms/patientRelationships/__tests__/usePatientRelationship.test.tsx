@@ -66,6 +66,7 @@ describe('usePatientRelationship', () => {
         relationshipType: '',
         patientId: '',
         tillDate: '',
+        isDefaultPlaceholder: true,
       });
       expect(result.current.relationships[0].id).toMatch(/^rel-\d+$/);
     });
@@ -136,6 +137,7 @@ describe('usePatientRelationship', () => {
         patientId: '',
         tillDate: '',
       });
+      expect(result.current.relationships[1].isDefaultPlaceholder).toBeFalsy();
     });
 
     it('should mark existing relationship as deleted instead of removing', () => {

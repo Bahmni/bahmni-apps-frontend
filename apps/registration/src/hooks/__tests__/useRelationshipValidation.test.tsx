@@ -400,6 +400,7 @@ describe('useRelationshipValidation', () => {
           relationshipType: '',
           patientId: '',
           tillDate: '',
+          isDefaultPlaceholder: true,
         },
       ];
 
@@ -410,6 +411,39 @@ describe('useRelationshipValidation', () => {
 
       expect(isValid).toBe(true);
       expect(result.current.generalError).toBeNull();
+    });
+
+    it('should reject a blank row the user explicitly added via "Add another", unlike the auto-provided placeholder', () => {
+      const { result } = renderHook(() => useRelationshipValidation(), {
+        wrapper,
+      });
+
+      const relationships: RelationshipData[] = [
+        {
+          id: 'rel-1',
+          relationshipType: 'parent-child-uuid',
+          patientId: 'P001',
+          patientUuid: 'uuid-1',
+          tillDate: '',
+          isExisting: true,
+        },
+        {
+          id: 'rel-2',
+          relationshipType: '',
+          patientId: '',
+          tillDate: '',
+        },
+      ];
+
+      let isValid = false;
+      act(() => {
+        isValid = result.current.validateRelationships(relationships, true);
+      });
+
+      expect(isValid).toBe(false);
+      expect(result.current.validationErrors['rel-2']).toEqual({
+        relationshipType: 'REGISTRATION_RELATIONSHIP_TYPE_REQUIRED',
+      });
     });
 
     it('should allow an existing patient to remove their last relationship without the mandatory notification', () => {
