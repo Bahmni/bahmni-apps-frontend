@@ -1093,6 +1093,124 @@ describe('FormsTable', () => {
     });
   });
 
+  describe('Timestamp display - formSavedDateTime', () => {
+    it('uses formSavedDateTime for recordedOn when it is present and differs from encounterDateTime', async () => {
+      const encDateTime = NOW - 10 * 60 * 1000; // encounter started 10 min ago
+      const formSavedTs = NOW - 5 * 60 * 1000; // form actually saved 5 min ago
+
+      mockGetPatientFormData.mockResolvedValue([
+        {
+          formType: 'v2',
+          formName: 'Vitals Form',
+          formVersion: 1,
+          visitUuid: 'visit-1',
+          visitStartDateTime: encDateTime,
+          encounterUuid: 'encounter-1',
+          encounterDateTime: encDateTime,
+          formSavedDateTime: formSavedTs,
+          providers: [{ providerName: 'Dr. Smith', uuid: 'provider-1' }],
+        },
+      ]);
+
+      renderFormsTable();
+
+      await waitFor(() => {
+        expect(screen.getByText('Dr. Smith')).toBeInTheDocument();
+      });
+
+      // formatDateTime must have been called with formSavedDateTime, NOT with encounterDateTime
+      expect(mockFormatDateTime).toHaveBeenCalledWith(
+        formSavedTs,
+        expect.anything(),
+        true,
+      );
+      expect(mockFormatDateTime).not.toHaveBeenCalledWith(
+        encDateTime,
+        expect.anything(),
+        true,
+      );
+    });
+
+    it('falls back to encounterDateTime for recordedOn when formSavedDateTime is absent', async () => {
+      const encDateTime = NOW - 10 * 60 * 1000;
+
+      mockGetPatientFormData.mockResolvedValue([
+        {
+          formType: 'v2',
+          formName: 'Vitals Form',
+          formVersion: 1,
+          visitUuid: 'visit-1',
+          visitStartDateTime: encDateTime,
+          encounterUuid: 'encounter-1',
+          encounterDateTime: encDateTime,
+          // formSavedDateTime deliberately omitted
+          providers: [{ providerName: 'Dr. Smith', uuid: 'provider-1' }],
+        },
+      ]);
+
+      renderFormsTable();
+
+      await waitFor(() => {
+        expect(screen.getByText('Dr. Smith')).toBeInTheDocument();
+      });
+
+      // formatDateTime must fall back to encounterDateTime
+      expect(mockFormatDateTime).toHaveBeenCalledWith(
+        encDateTime,
+        expect.anything(),
+        true,
+      );
+    });
+
+    it('sorts multiple forms within a group by formSavedDateTime (most recent first) when present', async () => {
+      // Two records share the same encounterDateTime but have distinct formSavedDateTime values.
+      // The sort must use formSavedDateTime so the record saved later appears first in the DOM.
+      const sharedEncDateTime = NOW - 10 * 60 * 1000;
+      const savedEarlier = NOW - 20 * 60 * 1000;
+      const savedLater = NOW - 5 * 60 * 1000;
+
+      mockGetPatientFormData.mockResolvedValue([
+        {
+          formType: 'v2',
+          formName: 'Vitals Form',
+          formVersion: 1,
+          visitUuid: 'visit-1',
+          visitStartDateTime: sharedEncDateTime,
+          encounterUuid: 'encounter-a',
+          encounterDateTime: sharedEncDateTime,
+          formSavedDateTime: savedEarlier,
+          providers: [{ providerName: 'Dr. Earlier', uuid: 'provider-1' }],
+        },
+        {
+          formType: 'v2',
+          formName: 'Vitals Form',
+          formVersion: 1,
+          visitUuid: 'visit-1',
+          visitStartDateTime: sharedEncDateTime,
+          encounterUuid: 'encounter-b',
+          encounterDateTime: sharedEncDateTime, // identical encounterDateTime
+          formSavedDateTime: savedLater, // but this form was saved later
+          providers: [{ providerName: 'Dr. Later', uuid: 'provider-2' }],
+        },
+      ]);
+
+      renderFormsTable();
+
+      await waitFor(() => {
+        expect(screen.getByText('Dr. Earlier')).toBeInTheDocument();
+      });
+
+      // Dr. Later saved their form more recently (savedLater > savedEarlier).
+      // Verify DOM order: Dr. Later row must appear before Dr. Earlier row.
+      const drLater = screen.getByText('Dr. Later');
+      const drEarlier = screen.getByText('Dr. Earlier');
+      expect(
+        drLater.compareDocumentPosition(drEarlier) &
+          Node.DOCUMENT_POSITION_FOLLOWING,
+      ).toBeTruthy();
+    });
+  });
+
   describe('Snapshots', () => {
     it('should match snapshot with form data', async () => {
       mockGetPatientFormData.mockResolvedValue(mockFormResponseData);
