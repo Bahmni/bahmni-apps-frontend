@@ -8,6 +8,7 @@ import { IMPORTED_ITEMS_QUERY_KEY } from '../useImportedItems';
 
 const mockAddNotification = jest.fn();
 jest.mock('@bahmni/services', () => ({
+  ...jest.requireActual('@bahmni/services'),
   uploadImportFile: jest.fn(),
 }));
 jest.mock('@bahmni/widgets', () => ({
@@ -33,14 +34,7 @@ const setup = () => {
   const wrapper = ({ children }: { children: React.ReactNode }) => (
     <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
   );
-  const hook = renderHook(
-    () =>
-      useCsvUpload({
-        notificationTitle: 'Done',
-        notificationMessage: (name) => `${name} ok`,
-      }),
-    { wrapper },
-  );
+  const hook = renderHook(() => useCsvUpload(), { wrapper });
   return { ...hook, invalidate };
 };
 
@@ -80,7 +74,11 @@ describe('useCsvUpload', () => {
     );
     expect(mockAddNotification).toHaveBeenCalledTimes(3);
     expect(mockAddNotification).toHaveBeenCalledWith(
-      expect.objectContaining({ type: 'success', message: 'a.csv ok' }),
+      expect.objectContaining({
+        type: 'success',
+        message:
+          'a.csv was uploaded. Check the Uploaded Files table for the import status.',
+      }),
     );
     expect(invalidate).toHaveBeenCalledTimes(1);
     expect(invalidate).toHaveBeenCalledWith({
@@ -89,7 +87,7 @@ describe('useCsvUpload', () => {
     expect(result.current.isUploading).toBe(false);
   });
 
-  it('continues after a failed file without notifying, and still reloads history', async () => {
+  it('notifies a failed file, continues with the rest, and reloads history', async () => {
     mockUpload.mockRejectedValueOnce(new Error('500'));
     mockUpload.mockResolvedValueOnce();
     const { result, invalidate } = setup();
@@ -98,9 +96,19 @@ describe('useCsvUpload', () => {
     await act(() => result.current.upload(files, importType));
 
     expect(mockUpload).toHaveBeenCalledTimes(2);
-    expect(mockAddNotification).toHaveBeenCalledTimes(1);
+    expect(mockAddNotification).toHaveBeenCalledTimes(2);
     expect(mockAddNotification).toHaveBeenCalledWith(
-      expect.objectContaining({ message: 'b.csv ok' }),
+      expect.objectContaining({
+        type: 'error',
+        message: 'Failed to upload a.csv. Please try again.',
+      }),
+    );
+    expect(mockAddNotification).toHaveBeenCalledWith(
+      expect.objectContaining({
+        type: 'success',
+        message:
+          'b.csv was uploaded. Check the Uploaded Files table for the import status.',
+      }),
     );
     expect(invalidate).toHaveBeenCalledTimes(1);
   });
@@ -149,7 +157,7 @@ describe('useCsvUpload', () => {
     expect(result.current.isUploading).toBe(true);
   });
 
-  it('does not notify when every file fails, but still reloads history once', async () => {
+  it('notifies each failed file and still reloads history once', async () => {
     mockUpload.mockRejectedValue(new Error('500'));
     const { result, invalidate } = setup();
     const files = ['a.csv', 'b.csv'].map((n) => new File(['x'], n));
@@ -157,7 +165,19 @@ describe('useCsvUpload', () => {
     await act(() => result.current.upload(files, importType));
 
     expect(mockUpload).toHaveBeenCalledTimes(2);
-    expect(mockAddNotification).not.toHaveBeenCalled();
+    expect(mockAddNotification).toHaveBeenCalledTimes(2);
+    expect(mockAddNotification).toHaveBeenCalledWith(
+      expect.objectContaining({
+        type: 'error',
+        message: 'Failed to upload a.csv. Please try again.',
+      }),
+    );
+    expect(mockAddNotification).toHaveBeenCalledWith(
+      expect.objectContaining({
+        type: 'error',
+        message: 'Failed to upload b.csv. Please try again.',
+      }),
+    );
     expect(invalidate).toHaveBeenCalledTimes(1);
   });
 });

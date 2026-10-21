@@ -225,4 +225,12 @@ describe('CsvUpload', () => {
     expect(within(table).getByText('Error')).toBeInTheDocument();
     expect(within(table).getByText('In progress')).toBeInTheDocument();
   });
+
+  it('renders the raw value for an unmapped status', () => {
+    setHooks([item({ id: '1', status: 'SOME_FUTURE_STATUS' })]);
+    render(<CsvUpload />);
+
+    const table = screen.getByTestId('admin-csv-uploaded-files-table');
+    expect(within(table).getByText('SOME_FUTURE_STATUS')).toBeInTheDocument();
+  });
 });

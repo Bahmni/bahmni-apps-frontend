@@ -10,7 +10,7 @@ import {
 import {
   formatDateTime,
   getImportErrorFileUrl,
-  hasImportError,
+  hasDownloadableErrorFile,
   ImportedItem,
   ImportType,
   IMPORT_TYPES,
@@ -23,6 +23,8 @@ import { useCsvUpload } from '../hooks/useCsvUpload';
 import { useImportedItems } from '../hooks/useImportedItems';
 import styles from './styles/CsvUpload.module.scss';
 
+// Legacy parity: the legacy page always rendered dates as `dd MMM yyyy h:mm aaa`,
+// overriding the admin's locale-aware default.
 const DATE_TIME_FORMAT = 'dd MMM yyyy h:mm aaa';
 
 // Hoisted so the dropdown items array isn't reallocated on every render.
@@ -32,7 +34,7 @@ const IMPORT_TYPE_OPTIONS: ImportType[] = [...IMPORT_TYPES];
 // fall back to the raw value.
 const STATUS_LABEL_KEYS: Record<string, string> = {
   COMPLETED: 'ADMIN_CSV_STATUS_COMPLETED',
-  COMPLETED_WITH_ERRORS: 'ADMIN_CSV_STATUS_COMPLETED_WITH_ERRORS',
+  [STATUS_COMPLETED_WITH_ERRORS]: 'ADMIN_CSV_STATUS_COMPLETED_WITH_ERRORS',
   ERROR: 'ADMIN_CSV_STATUS_ERROR',
   IN_PROGRESS: 'ADMIN_CSV_STATUS_IN_PROGRESS',
 };
@@ -43,15 +45,7 @@ export const CsvUpload: React.FC = () => {
   const [selectedType, setSelectedType] = useState<ImportType | null>(null);
   const { data: importedItems = [], isLoading, isError } = useImportedItems();
 
-  const notificationMessage = useCallback(
-    (fileName: string) =>
-      t('ADMIN_CSV_UPLOAD_NOTIFICATION_MESSAGE', { fileName }),
-    [t],
-  );
-  const { upload, uploadState, isUploading } = useCsvUpload({
-    notificationTitle: t('ADMIN_CSV_UPLOAD_NOTIFICATION_TITLE'),
-    notificationMessage,
-  });
+  const { upload, uploadState, isUploading } = useCsvUpload();
 
   const columns: DataTableColumn<ImportedItem>[] = useMemo(
     () => [
@@ -73,17 +67,17 @@ export const CsvUpload: React.FC = () => {
         case 'errorMessage':
           if (item.errorMessage) return item.errorMessage;
           if (item.status === STATUS_COMPLETED_WITH_ERRORS) {
-            return hasImportError(item)
+            return hasDownloadableErrorFile(item)
               ? t('ADMIN_CSV_ERROR_SUMMARY_MESSAGE')
               : t('ADMIN_CSV_ERROR_SUMMARY_NO_FILE_MESSAGE');
           }
           return '';
-        case 'download':
-          return hasImportError(item) ? (
-            <Link href={getImportErrorFileUrl(item)}>
-              {t('ADMIN_CSV_ERROR_FILE_LINK')}
-            </Link>
+        case 'download': {
+          const errorFileUrl = getImportErrorFileUrl(item);
+          return hasDownloadableErrorFile(item) && errorFileUrl ? (
+            <Link href={errorFileUrl}>{t('ADMIN_CSV_ERROR_FILE_LINK')}</Link>
           ) : null;
+        }
         case 'originalFileName':
           return item.originalFileName;
         case 'status':
@@ -178,7 +172,9 @@ export const CsvUpload: React.FC = () => {
             loading={isLoading}
             renderCell={renderCell}
             emptyStateMessage={t('ADMIN_CSV_NO_FILES_UPLOADED')}
-            errorStateMessage={isError ? t('ADMIN_ERROR_FETCH_CONFIG') : null}
+            errorStateMessage={
+              isError ? t('ADMIN_CSV_ERROR_FETCH_HISTORY') : null
+            }
           />
         </div>
       </div>

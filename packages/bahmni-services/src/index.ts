@@ -547,7 +547,7 @@ export {
   IMPORT_TYPES,
   STATUS_COMPLETED_WITH_ERRORS,
   ADMIN_IMPORT_STATUS_URL,
-  hasImportError,
+  hasDownloadableErrorFile,
   getImportErrorFileUrl,
   type ImportedItem,
   type ImportType,

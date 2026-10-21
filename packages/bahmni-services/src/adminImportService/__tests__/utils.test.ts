@@ -1,5 +1,5 @@
 import { ImportedItem } from '../models';
-import { getImportErrorFileUrl, hasImportError } from '../utils';
+import { getImportErrorFileUrl, hasDownloadableErrorFile } from '../utils';
 
 const item = (overrides: Partial<ImportedItem>): ImportedItem => ({
   id: '1',
@@ -20,19 +20,23 @@ const item = (overrides: Partial<ImportedItem>): ImportedItem => ({
 });
 
 describe('adminImportService utils', () => {
-  it('flags an error only when records failed', () => {
-    expect(hasImportError(item({ failedRecords: 0 }))).toBe(false);
+  it('flags a downloadable error file only when records failed and a file exists', () => {
+    expect(hasDownloadableErrorFile(item({ failedRecords: 0 }))).toBe(false);
     expect(
-      hasImportError(item({ failedRecords: 2, errorFileName: 'err.csv' })),
+      hasDownloadableErrorFile(
+        item({ failedRecords: 2, errorFileName: 'err.csv' }),
+      ),
     ).toBe(true);
   });
 
-  it('does not flag an error when records failed but no error file exists', () => {
+  it('does not flag a downloadable error file when records failed but no error file exists', () => {
     expect(
-      hasImportError(item({ failedRecords: 2, errorFileName: null })),
+      hasDownloadableErrorFile(item({ failedRecords: 2, errorFileName: null })),
     ).toBe(false);
     expect(
-      hasImportError(item({ failedRecords: 2, errorFileName: 'err.csv' })),
+      hasDownloadableErrorFile(
+        item({ failedRecords: 2, errorFileName: 'err.csv' }),
+      ),
     ).toBe(true);
   });
 
@@ -46,5 +50,15 @@ describe('adminImportService utils', () => {
     expect(getImportErrorFileUrl(item({ errorFileName: 'err/a#b.csv' }))).toBe(
       '/uploaded-files/mrs/err/a%23b.csv',
     );
+  });
+
+  it('returns null for a null errorFileName', () => {
+    expect(getImportErrorFileUrl(item({ errorFileName: null }))).toBeNull();
+  });
+
+  it('strips dot and dot-dot path segments to prevent traversal', () => {
+    expect(
+      getImportErrorFileUrl(item({ errorFileName: '../../../etc/passwd' })),
+    ).toBe('/uploaded-files/mrs/etc/passwd');
   });
 });

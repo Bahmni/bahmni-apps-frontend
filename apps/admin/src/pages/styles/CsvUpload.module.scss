@@ -1,9 +1,10 @@
 @use '@carbon/react/scss/spacing' as *;
+@use '@carbon/react/scss/theme' as *;
 
 // The theme's card (layer) token resolves to the same grey as the page background
 // here, so the cards pin a literal white to read as cards, as in the design.
 $card-background: #ffffff;
-$card-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+$card-shadow: 0 1px 4px $shadow;
 $card-header-background: #f4f4f4;
 
 .page {
