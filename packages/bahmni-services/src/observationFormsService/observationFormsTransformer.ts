@@ -493,7 +493,12 @@ function processControlForNotesExtraction(
     hasNoValue &&
     hasNotes &&
     conceptUuid &&
-    !transformedObservations.some((obs) => obs.concept.uuid === conceptUuid)
+    // Skip only when a live obs for this concept is already present. A voided placeholder
+    // (e.g. injected by injectMissingDeleteObs for an untouched existing obs) must NOT
+    // suppress re-appending the note — otherwise content is silently dropped.
+    !transformedObservations.some(
+      (obs) => obs.concept.uuid === conceptUuid && !obs.voided,
+    )
   ) {
     const observation: Form2Observation = {
       concept: {
