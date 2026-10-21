@@ -49,10 +49,7 @@ import { usePinnedObservationForms } from '../../../hooks/usePinnedObservationFo
 import {
   extractVersionFromFormFieldPath,
   findBasedOnFromObservations,
-  injectMissingDeleteObs,
-  markUnchangedObservations,
-  mergeObsExistingData,
-  restoreComplexValues,
+  reconcileObservations,
 } from '../../../utils/fhir/observationReconciliation';
 import EncounterDetails from '../encounterDetails/EncounterDetails';
 import styles from './styles/ObservationFormsContainer.module.scss';
@@ -383,19 +380,7 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
               )
             : [];
 
-        mergeObsExistingData(
-          transformedObservations,
-          initialObservationsRef.current,
-        );
-        restoreComplexValues(
-          transformedObservations,
-          initialObservationsRef.current,
-        );
-        injectMissingDeleteObs(
-          transformedObservations,
-          initialObservationsRef.current,
-        );
-        markUnchangedObservations(
+        reconcileObservations(
           transformedObservations,
           initialObservationsRef.current,
         );
@@ -460,19 +445,7 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
       setValidationErrorMessage(null);
 
       try {
-        mergeObsExistingData(
-          transformedObservations,
-          initialObservationsRef.current,
-        );
-        restoreComplexValues(
-          transformedObservations,
-          initialObservationsRef.current,
-        );
-        injectMissingDeleteObs(
-          transformedObservations,
-          initialObservationsRef.current,
-        );
-        markUnchangedObservations(
+        reconcileObservations(
           transformedObservations,
           initialObservationsRef.current,
         );
@@ -528,27 +501,15 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
             )
           : [];
 
+      reconcileObservations(
+        transformedObservations,
+        initialObservationsRef.current,
+      );
+
       // Extract and append notes-only observations
       extractAndAppendNotesFromFormData(
         formContainerRef,
         transformedObservations,
-      );
-
-      mergeObsExistingData(
-        transformedObservations,
-        initialObservationsRef.current,
-      );
-      restoreComplexValues(
-        transformedObservations,
-        initialObservationsRef.current,
-      );
-      injectMissingDeleteObs(
-        transformedObservations,
-        initialObservationsRef.current,
-      );
-      markUnchangedObservations(
-        transformedObservations,
-        initialObservationsRef.current,
       );
 
       handleSaveForm(transformedObservations, validationErrorType);

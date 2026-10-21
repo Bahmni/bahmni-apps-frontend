@@ -2,10 +2,13 @@ import {
   getConfig,
   searchPatientByNameOrId,
   searchPatientByCustomAttribute,
+  searchAppointmentsByAttribute,
 } from '@bahmni/services';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { format } from 'date-fns';
+import i18n from 'i18next';
 import { axe, toHaveNoViolations } from 'jest-axe';
 import { MemoryRouter } from 'react-router-dom';
 import { useNotification } from '../../../notification';
@@ -25,6 +28,7 @@ jest.mock('@bahmni/services', () => ({
   getConfig: jest.fn(),
   searchPatientByNameOrId: jest.fn(),
   searchPatientByCustomAttribute: jest.fn(),
+  searchAppointmentsByAttribute: jest.fn(),
 }));
 jest.mock('../../../notification');
 jest.mock('../../../userPrivileges/useUserPrivilege');
@@ -625,5 +629,143 @@ describe('SearchPatient', () => {
     });
     const results = await axe(container);
     expect(results).toHaveNoViolations();
+  });
+
+  describe('appointment date search', () => {
+    const DATE_OPTION = 'APPOINTMENT_SEARCH_DROPDOWN_DATE';
+
+    const appointmentConfig: SearchPatientConfig = {
+      customAttributes: [],
+      appointment: [
+        {
+          translationKey: DATE_OPTION,
+          fields: ['appointmentDate'],
+          columnTranslationKeys: ['APPOINTMENT_SEARCH_HEADER_DATE'],
+          type: 'appointment' as const,
+          actions: [],
+        },
+      ],
+    };
+
+    const selectOption = async (name: string) => {
+      await waitFor(() => {
+        expect(screen.getByTestId('search-patient-tile')).toBeInTheDocument();
+      });
+      await userEvent.click(
+        screen.getByRole('combobox', {
+          name: /PATIENT_SEARCH_ATTRIBUTE_SELECTOR/,
+        }),
+      );
+      await userEvent.click(await screen.findByRole('option', { name }));
+    };
+
+    beforeEach(() => {
+      (searchAppointmentsByAttribute as jest.Mock).mockResolvedValue([]);
+    });
+
+    it('shows a date picker pre-filled with today instead of the text input when appointment date is selected', async () => {
+      renderSearchPatient(appointmentConfig);
+      await selectOption(DATE_OPTION);
+
+      const dateInput = screen.getByTestId('advance-search-date-input');
+      expect(dateInput).toBeInTheDocument();
+      expect(dateInput).toHaveValue(format(new Date(), 'MM/dd/yyyy'));
+      expect(
+        screen.queryByTestId('advance-search-input'),
+      ).not.toBeInTheDocument();
+      expect(screen.getByTestId('advance-search-button')).toBeEnabled();
+    });
+
+    it('searches the selected date when Enter is pressed in the date picker', async () => {
+      renderSearchPatient(appointmentConfig);
+      await selectOption(DATE_OPTION);
+
+      const today = new Date();
+      await userEvent.click(screen.getByTestId('advance-search-date-input'));
+      await userEvent.keyboard('{enter}');
+
+      await waitFor(() =>
+        expect(searchAppointmentsByAttribute).toHaveBeenCalledTimes(1),
+      );
+      expect(searchAppointmentsByAttribute).toHaveBeenCalledWith({
+        startDate: new Date(
+          today.getFullYear(),
+          today.getMonth(),
+          today.getDate(),
+          0,
+          0,
+          0,
+          0,
+        ).toISOString(),
+        endDate: new Date(
+          today.getFullYear(),
+          today.getMonth(),
+          today.getDate(),
+          23,
+          59,
+          59,
+          999,
+        ).toISOString(),
+      });
+    });
+
+    it('searches the selected day as a local start/end of day range', async () => {
+      renderSearchPatient(appointmentConfig);
+      await selectOption(DATE_OPTION);
+
+      const today = new Date();
+      const expectedStart = new Date(
+        today.getFullYear(),
+        today.getMonth(),
+        today.getDate(),
+        0,
+        0,
+        0,
+        0,
+      ).toISOString();
+      const expectedEnd = new Date(
+        today.getFullYear(),
+        today.getMonth(),
+        today.getDate(),
+        23,
+        59,
+        59,
+        999,
+      ).toISOString();
+
+      await userEvent.click(screen.getByTestId('advance-search-button'));
+
+      await waitFor(() =>
+        expect(searchAppointmentsByAttribute).toHaveBeenCalledTimes(1),
+      );
+      expect(searchAppointmentsByAttribute).toHaveBeenCalledWith({
+        startDate: expectedStart,
+        endDate: expectedEnd,
+      });
+    });
+
+    it('shows the searched date in the configured date format in the empty results message', async () => {
+      localStorage.setItem('default_dateFormat', 'dd-MMM-yyyy');
+      i18n.addResourceBundle(
+        'en',
+        'translation',
+        {
+          REGISTRATION_PATIENT_SEARCH_CUSTOM_ATTRIBUTE_EMPTY_MESSAGE:
+            'No matching search results for {{searchTerm}}.',
+        },
+        true,
+        true,
+      );
+      renderSearchPatient(appointmentConfig);
+      await selectOption(DATE_OPTION);
+
+      await userEvent.click(screen.getByTestId('advance-search-button'));
+
+      const expectedDate = format(new Date(), 'dd-MMM-yyyy');
+      const emptyMessage = await screen.findByText(
+        `No matching search results for ${expectedDate}.`,
+      );
+      expect(emptyMessage).toBeInTheDocument();
+    });
   });
 });

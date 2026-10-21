@@ -1,4 +1,4 @@
-import { ObservationForm } from '@bahmni/services';
+import { Form2Observation, ObservationForm } from '@bahmni/services';
 import { useQuery } from '@tanstack/react-query';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { useTranslation } from 'react-i18next';
@@ -1519,6 +1519,81 @@ describe('ObservationFormsContainer', () => {
           undefined,
         );
       });
+    });
+
+    it('should preserve an untouched note-only existing observation on Continue Anyway', async () => {
+      // Regression guard: injectMissingDeleteObs injects a voided placeholder for the untouched
+      // note; the dedup guard in extractNotesFromFormData must still allow the note content to
+      // be re-appended (as a new POST), otherwise the comment is silently dropped.
+      const mockOnFormObservationsChange = jest.fn();
+
+      mockUseObservationFormData.mockReturnValue({
+        observations: [],
+        handleFormDataChange: jest.fn(),
+        resetForm: jest.fn(),
+        formMetadata: mockMetadata,
+        isLoadingMetadata: false,
+        metadataError: null,
+      });
+
+      mockGetValue.mockReturnValue({ observations: [], errors: [] });
+
+      mockContainerState.data = {
+        children: [
+          {
+            conceptUuid: 'note-concept',
+            value: { value: null, comment: 'Patient prefers morning visits' },
+            id: 'noteField',
+            control: { concept: { uuid: 'note-concept' } },
+          },
+        ],
+      };
+
+      render(
+        <ObservationFormsContainer
+          {...defaultProps}
+          viewingForm={mockForm}
+          existingObservations={[
+            {
+              concept: { uuid: 'note-concept' },
+              uuid: 'existing-note-uuid',
+              value: null,
+              comment: 'Patient prefers morning visits',
+              status: 'final',
+            },
+          ]}
+          onFormObservationsChange={mockOnFormObservationsChange}
+        />,
+      );
+
+      const saveButton = screen.getByTestId('primary-button');
+      fireEvent.click(saveButton); // triggers 'empty' validation
+      await waitFor(() => {
+        expect(screen.getByTestId('inline-notification')).toBeInTheDocument();
+      });
+      fireEvent.click(saveButton); // Continue Anyway
+
+      await waitFor(() => {
+        expect(mockOnFormObservationsChange).toHaveBeenCalled();
+      });
+      const saved = mockOnFormObservationsChange.mock.calls.at(-1)![1];
+      // Voided placeholder for the existing uuid (DELETE lineage)
+      expect(
+        saved.some(
+          (o: Form2Observation) =>
+            o.uuid === 'existing-note-uuid' && o.voided === true,
+        ),
+      ).toBe(true);
+      // Re-appended live note carrying the comment (POST, no uuid)
+      expect(
+        saved.some(
+          (o: Form2Observation) =>
+            !o.uuid &&
+            !o.voided &&
+            o.concept.uuid === 'note-concept' &&
+            o.comment === 'Patient prefers morning visits',
+        ),
+      ).toBe(true);
     });
 
     it('should extract notes from nested children in form data structure', async () => {
