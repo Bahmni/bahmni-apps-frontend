@@ -668,7 +668,16 @@ describe('SearchPatient', () => {
 
       const dateInput = screen.getByTestId('advance-search-date-input');
       expect(dateInput).toBeInTheDocument();
-      expect(dateInput).toHaveValue(format(new Date(), 'MM/dd/yyyy'));
+      const localeParts = new Intl.DateTimeFormat().formatToParts(new Date());
+      const tokenMap: Record<string, string> = {
+        day: 'dd',
+        month: 'MM',
+        year: 'yyyy',
+      };
+      const expectedDateFormat = localeParts
+        .map((part) => tokenMap[part.type] ?? part.value)
+        .join('');
+      expect(dateInput).toHaveValue(format(new Date(), expectedDateFormat));
       expect(
         screen.queryByTestId('advance-search-input'),
       ).not.toBeInTheDocument();
