@@ -12,6 +12,7 @@ import {
   PatientSearchField,
   PatientSearchResult,
   PatientSearchResultBundle,
+  formatDateTime,
   formatUrl,
   useTranslation,
 } from '@bahmni/services';
@@ -235,11 +236,20 @@ const PatientSearchResults = ({
     return String(cellValue ?? '');
   };
 
+  const isDateSearch =
+    selectedFieldType === 'appointment' &&
+    searchFields[0]?.fields[0] === 'appointmentDate';
+  const displayTerm = isDateSearch
+    ? formatDateTime(new Date(`${searchTerm}T00:00:00`), t).formattedResult
+    : searchTerm;
+
   const emptyMessage = isAdvancedSearch
     ? t('REGISTRATION_PATIENT_SEARCH_CUSTOM_ATTRIBUTE_EMPTY_MESSAGE', {
-        searchTerm,
+        searchTerm: displayTerm,
       })
-    : t('REGISTRATION_PATIENT_SEARCH_EMPTY_MESSAGE', { searchTerm });
+    : t('REGISTRATION_PATIENT_SEARCH_EMPTY_MESSAGE', {
+        searchTerm: displayTerm,
+      });
 
   return (
     <div className={styles.patientSearchResult}>
