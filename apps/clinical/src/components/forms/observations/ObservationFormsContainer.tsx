@@ -274,7 +274,9 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
 
     const convertDateTime = (obs: Form2Observation): Form2Observation => {
       // Date-only concepts must match the date-only value form calculations write,
-      // otherwise CarbonContainer flags the form as updated on load.
+      // otherwise CarbonContainer flags the form as updated on load. Take the calendar
+      // date from the string as-is: converting through Date shifts it by a day when the
+      // browser is behind the server's timezone (e.g. 00:00 UTC is the previous day in UTC-3).
       const converted =
         typeof obs.value === 'string' && DATETIME_REGEX_PATTERN.test(obs.value)
           ? {
@@ -282,7 +284,7 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
               value:
                 formMetadata &&
                 findConceptDatatype(formMetadata, obs.concept.uuid) === 'Date'
-                  ? formatDateForControl(new Date(obs.value)).split(' ')[0]
+                  ? obs.value.slice(0, 10)
                   : formatDateForControl(new Date(obs.value)),
             }
           : obs;

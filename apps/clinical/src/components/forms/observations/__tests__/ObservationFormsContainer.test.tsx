@@ -535,6 +535,46 @@ describe('ObservationFormsContainer', () => {
     });
 
     describe('date-only normalisation of existing observations', () => {
+      // OpenMRS returns Date concepts as midnight in the server timezone
+      const OPENMRS_DATE_VALUE = '2026-10-02T00:00:00+00:00';
+      // Local construction keeps the expected Datetime output timezone-independent
+      const LOCAL_DATETIME_ISO = new Date(
+        2027,
+        4,
+        17,
+        13,
+        45,
+        30,
+      ).toISOString();
+
+      // Jest ignores process.env.TZ changes at runtime, so simulate a browser timezone by
+      // making Date's local getters read the UTC clock shifted by the given offset.
+      const localGetters = [
+        ['getFullYear', 'getUTCFullYear'],
+        ['getMonth', 'getUTCMonth'],
+        ['getDate', 'getUTCDate'],
+        ['getDay', 'getUTCDay'],
+        ['getHours', 'getUTCHours'],
+        ['getMinutes', 'getUTCMinutes'],
+        ['getSeconds', 'getUTCSeconds'],
+      ] as const;
+      let timezoneSpies: jest.SpyInstance[] = [];
+
+      const simulateBrowserUtcOffset = (offsetHours: number) => {
+        timezoneSpies = localGetters.map(([local, utc]) =>
+          jest.spyOn(Date.prototype, local).mockImplementation(function (
+            this: Date,
+          ) {
+            return new Date(this.getTime() + offsetHours * 3_600_000)[utc]();
+          }),
+        );
+      };
+
+      afterEach(() => {
+        timezoneSpies.forEach((spy) => spy.mockRestore());
+        timezoneSpies = [];
+      });
+
       const renderWithDateObservations = () => {
         mockUseObservationFormData.mockReturnValue({
           observations: [],
@@ -557,9 +597,6 @@ describe('ObservationFormsContainer', () => {
           metadataError: null,
         });
 
-        // Local construction keeps the expected output timezone-independent
-        const iso = new Date(2027, 4, 17, 13, 45, 30).toISOString();
-
         render(
           <ObservationFormsContainer
             {...defaultProps}
@@ -568,13 +605,13 @@ describe('ObservationFormsContainer', () => {
               {
                 concept: { uuid: 'date-concept' },
                 uuid: 'obs-date',
-                value: iso,
+                value: OPENMRS_DATE_VALUE,
                 status: 'final',
               },
               {
                 concept: { uuid: 'datetime-concept' },
                 uuid: 'obs-datetime',
-                value: iso,
+                value: LOCAL_DATETIME_ISO,
                 status: 'final',
               },
             ]}
@@ -588,8 +625,32 @@ describe('ObservationFormsContainer', () => {
         const dateObs = lastCarbonContainerObservations.find(
           (o: any) => o.uuid === 'obs-date',
         );
-        expect(dateObs.value).toBe('2027-05-17');
+        expect(dateObs.value).toBe('2026-10-02');
       });
+
+      it.each([
+        ['America/Los_Angeles (UTC-7)', -7, 1],
+        ['America/Sao_Paulo (UTC-3)', -3, 1],
+        ['UTC', 0, 2],
+        ['Europe/Berlin (UTC+2)', 2, 2],
+        ['Asia/Kolkata (UTC+5:30)', 5.5, 2],
+      ])(
+        'should keep the stored calendar date for Date concepts when the browser is in %s',
+        (_timeZone, offsetHours, localDayOfStoredValue) => {
+          simulateBrowserUtcOffset(offsetHours);
+          // Guard: the simulation is active, so a Date-based conversion would shift west of UTC
+          expect(new Date(OPENMRS_DATE_VALUE).getDate()).toBe(
+            localDayOfStoredValue,
+          );
+
+          renderWithDateObservations();
+
+          const dateObs = lastCarbonContainerObservations.find(
+            (o: any) => o.uuid === 'obs-date',
+          );
+          expect(dateObs.value).toBe('2026-10-02');
+        },
+      );
 
       it('should keep YYYY-MM-DD HH:mm:ss format for Datetime concepts', () => {
         renderWithDateObservations();
