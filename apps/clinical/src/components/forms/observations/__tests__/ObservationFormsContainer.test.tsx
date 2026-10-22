@@ -52,6 +52,7 @@ const mockContainerState = { data: {} };
 
 // Captures the patient prop passed to CarbonContainer most recently
 let lastCarbonContainerPatient: unknown = undefined;
+let lastCarbonContainerObservations: any = undefined;
 
 jest.mock('@bahmni/form2-controls', () => {
   // eslint-disable-next-line @typescript-eslint/no-require-imports
@@ -65,6 +66,7 @@ jest.mock('@bahmni/form2-controls', () => {
 
       // Capture patient prop for assertions
       lastCarbonContainerPatient = props.patient;
+      lastCarbonContainerObservations = props.observations;
 
       return (
         <div data-testid="form2-container">
@@ -232,6 +234,7 @@ describe('ObservationFormsContainer', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     lastCarbonContainerPatient = undefined;
+    lastCarbonContainerObservations = undefined;
 
     // Default mock for useQuery — minimal patient data so form renders
     (useQuery as jest.Mock).mockReturnValue({
@@ -529,6 +532,73 @@ describe('ObservationFormsContainer', () => {
       const savedObservations = mockOnFormObservationsChange.mock.calls[0][1];
       expect(savedObservations).toHaveLength(1);
       expect(savedObservations[0].interpretation).toBeUndefined();
+    });
+
+    describe('date-only normalisation of existing observations', () => {
+      const renderWithDateObservations = () => {
+        mockUseObservationFormData.mockReturnValue({
+          observations: [],
+          handleFormDataChange: jest.fn(),
+          resetForm: jest.fn(),
+          formMetadata: {
+            schema: {
+              name: 'Pregnancy',
+              controls: [
+                {
+                  concept: { uuid: 'date-concept', datatype: 'Date' },
+                },
+                {
+                  concept: { uuid: 'datetime-concept', datatype: 'Datetime' },
+                },
+              ],
+            },
+          },
+          isLoadingMetadata: false,
+          metadataError: null,
+        });
+
+        // Local construction keeps the expected output timezone-independent
+        const iso = new Date(2027, 4, 17, 13, 45, 30).toISOString();
+
+        render(
+          <ObservationFormsContainer
+            {...defaultProps}
+            viewingForm={mockForm}
+            existingObservations={[
+              {
+                concept: { uuid: 'date-concept' },
+                uuid: 'obs-date',
+                value: iso,
+                status: 'final',
+              },
+              {
+                concept: { uuid: 'datetime-concept' },
+                uuid: 'obs-datetime',
+                value: iso,
+                status: 'final',
+              },
+            ]}
+          />,
+        );
+      };
+
+      it('should pass a YYYY-MM-DD value without time for Date concepts', () => {
+        renderWithDateObservations();
+
+        const dateObs = lastCarbonContainerObservations.find(
+          (o: any) => o.uuid === 'obs-date',
+        );
+        expect(dateObs.value).toBe('2027-05-17');
+      });
+
+      it('should keep YYYY-MM-DD HH:mm:ss format for Datetime concepts', () => {
+        renderWithDateObservations();
+
+        const datetimeObs = lastCarbonContainerObservations.find(
+          (o: any) => o.uuid === 'obs-datetime',
+        );
+        expect(datetimeObs.value).toBe('2027-05-17 13:45:30');
+      });
     });
 
     it('should PUT with interpretation omitted when interpretation is cleared on an obsGroup member', () => {

@@ -105,7 +105,7 @@ function transformGroupMembers(
 }
 
 // Helper function to find concept datatype from metadata schema
-function findConceptDatatype(
+export function findConceptDatatype(
   metadata: FormMetadata,
   conceptUuid: string,
 ): string | undefined {
