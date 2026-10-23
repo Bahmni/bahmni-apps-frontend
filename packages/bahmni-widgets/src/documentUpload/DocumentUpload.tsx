@@ -37,8 +37,6 @@ import {
 
 const DOCUMENT_TYPE_REQUIRED_ERROR = 'DOCUMENTS_SELECT_DOCUMENT_TYPE';
 
-// Module-wide rather than per instance: the consumer keeps the documents across a remount of the
-// widget, so a per-instance counter restarting at zero could reissue an id that is still pending.
 let nextPendingId = 0;
 
 const withoutError = (
@@ -46,8 +44,6 @@ const withoutError = (
   field: keyof DocumentEntryErrors,
 ): DocumentEntryErrors => ({ ...errors, [field]: undefined });
 
-// What a picked file looks like beside its name: the image itself, or the same document icon the
-// file tiles use for anything that is not an image.
 const FileThumbnail: React.FC<{ file: PendingDocument }> = ({ file }) =>
   file.contentType.startsWith('image/') ? (
     <img src={file.url} alt="" />
@@ -79,7 +75,6 @@ interface DocumentEntryCardProps
   onChange: (patch: Partial<DocumentEntry>) => void;
 }
 
-// One document: its type, optional identifier, files and note.
 const DocumentEntryCard: React.FC<DocumentEntryCardProps> = ({
   entry,
   documentTypes = [],
@@ -251,11 +246,6 @@ const DocumentEntryCard: React.FC<DocumentEntryCardProps> = ({
   );
 };
 
-/**
- * The documents being added: one card per document (type, optional identifier, files, note), and
- * an "Add more" button for the next one. Picks, validates, previews and removes the files of each
- * document but never uploads them; whoever saves owns the files and decides when to upload.
- */
 export const DocumentUpload: React.FC<DocumentUploadProps> = ({
   documents,
   onDocumentsChange,

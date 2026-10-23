@@ -159,15 +159,11 @@ function waitForPrintDialogClose(
 }
 
 export interface PrintPdfOptions {
-  /** Where the hidden frame is mounted; see {@link PrintViaIframeOptions.container}. */
   container?: HTMLElement | null;
-  /** Whether to focus the frame before printing; skipped in a modal, where focusing it scrolls. */
   focus?: boolean;
-  /** Abandons the print, removing the frame, when aborted. */
   signal?: AbortSignal;
 }
 
-/** Prints a pdf, resolving once its print dialog has been closed (or the print is aborted). */
 export async function printPdfViaIframe(
   url: string,
   { container, focus = true, signal }: PrintPdfOptions = {},
@@ -201,7 +197,6 @@ export async function printPdfViaIframe(
     if (focus) {
       iframeWindow.focus();
     }
-    // The listeners go on before print(), which may return only once the dialog is closed.
     const closed = waitForPrintDialogClose(iframeWindow, signal);
     iframeWindow.print();
     await closed;

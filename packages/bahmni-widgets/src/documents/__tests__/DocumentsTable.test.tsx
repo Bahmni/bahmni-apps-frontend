@@ -1080,7 +1080,6 @@ describe('DocumentsTable', () => {
   });
 
   describe('Printing', () => {
-    // What a user waits for before printing: every attachment in the viewer finishing its load.
     const finishLoadingAttachments = () => {
       document
         .querySelectorAll(
@@ -1116,7 +1115,6 @@ describe('DocumentsTable', () => {
       );
       expect(printViaIframe).not.toHaveBeenCalled();
       expect(screen.queryByTestId('print-all-attachments')).toBeNull();
-      // Inside the modal container, which the focus trap allows, and without taking focus.
       const { container } = (printPdfViaIframe as jest.Mock).mock.calls[0][1];
       expect(container).toHaveClass('cds--modal-container');
       expect(container).toContainElement(
@@ -1268,8 +1266,6 @@ describe('DocumentsTable', () => {
         finishLoadingAttachments();
       };
 
-      // The first preview of each print stays open until the test closes it; the following ones
-      // close at once, so a print can run to the end.
       beforeEach(() => {
         let calls = 0;
         (printViaIframe as jest.Mock).mockImplementation(() => {
