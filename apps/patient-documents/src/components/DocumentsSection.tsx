@@ -398,8 +398,7 @@ export const DocumentsSection: React.FC<DocumentsSectionProps> = ({
                 onDocumentsChange={(entries) =>
                   setVisitDocuments(visitKey, entries)
                 }
-                documentTypes={documentTypes}
-                defaultDocumentType={defaultDocumentType}
+                documentTypeConceptName={topLevelConcept ?? undefined}
                 isSaving={isSaving}
               />
             </AccordionItem>

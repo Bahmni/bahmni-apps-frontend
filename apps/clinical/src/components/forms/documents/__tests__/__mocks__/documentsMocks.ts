@@ -27,7 +27,7 @@ export const documentsControlConfig: InputControl = {
     { name: 'documentId', required: true },
   ],
   metadata: {
-    documentTypeConceptSetUuid: 'set-uuid',
+    documentTypeConceptName: 'Document Type',
     supportedFileTypes: ['.pdf', '.png'],
   },
 };

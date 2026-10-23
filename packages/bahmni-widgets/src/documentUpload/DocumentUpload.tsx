@@ -14,7 +14,7 @@ import {
 } from '@bahmni/design-system';
 import {
   DocumentType,
-  getDocumentTypesByConceptUuid,
+  getDocumentTypes,
   getDocumentUploadMaxSizeMb,
 } from '@bahmni/services';
 import { useQuery } from '@tanstack/react-query';
@@ -60,11 +60,8 @@ const toPendingDocuments = (files: File[]): PendingDocument[] =>
     contentType: file.type,
   }));
 
-interface DocumentEntryCardProps
-  extends Pick<
-    DocumentUploadProps,
-    'documentTypes' | 'defaultDocumentType' | 'isSaving'
-  > {
+interface DocumentEntryCardProps extends Pick<DocumentUploadProps, 'isSaving'> {
+  documentTypes: DocumentType[];
   isDocumentTypeRequired: boolean;
   showDocumentId: boolean;
   isDocumentIdRequired: boolean;
@@ -77,8 +74,7 @@ interface DocumentEntryCardProps
 
 const DocumentEntryCard: React.FC<DocumentEntryCardProps> = ({
   entry,
-  documentTypes = [],
-  defaultDocumentType = null,
+  documentTypes,
   isDocumentTypeRequired = false,
   showDocumentId = false,
   isDocumentIdRequired = false,
@@ -91,7 +87,7 @@ const DocumentEntryCard: React.FC<DocumentEntryCardProps> = ({
   const { t } = useTranslation();
   const [isNoteOpened, setIsNoteOpened] = useState(false);
   const { id, errors } = entry;
-  const documentType = entry.documentType ?? defaultDocumentType;
+  const documentType = entry.documentType;
   const isNoteVisible = isNoteOpened || entry.note !== '';
 
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -250,8 +246,7 @@ export const DocumentUpload: React.FC<DocumentUploadProps> = ({
   documents,
   onDocumentsChange,
   config,
-  documentTypes: providedDocumentTypes = [],
-  defaultDocumentType = null,
+  documentTypeConceptName: fallbackConceptName,
   documentsTitle,
   isSaving = false,
 }) => {
@@ -270,21 +265,19 @@ export const DocumentUpload: React.FC<DocumentUploadProps> = ({
     attribute('documentType')?.required ?? !!config;
   const showDocumentId = !!attribute('documentId');
   const isDocumentIdRequired = attribute('documentId')?.required ?? false;
-  const conceptSetUuid = config?.metadata?.documentTypeConceptSetUuid as
-    | string
-    | undefined;
+  const conceptName =
+    (config?.metadata?.documentTypeConceptName as string | undefined) ??
+    fallbackConceptName;
   const supportedFileTypes = config?.metadata?.supportedFileTypes as
     | string[]
     | undefined;
 
   const { data: loadedDocumentTypes, isError } = useQuery({
-    queryKey: ['documentTypes', conceptSetUuid],
-    queryFn: () => getDocumentTypesByConceptUuid(conceptSetUuid!),
-    enabled: !!conceptSetUuid,
+    queryKey: ['documentTypes', conceptName],
+    queryFn: () => getDocumentTypes(conceptName!),
+    enabled: !!conceptName,
   });
-  const documentTypes = config
-    ? (loadedDocumentTypes ?? [])
-    : providedDocumentTypes;
+  const documentTypes = loadedDocumentTypes ?? [];
 
   const { accept, selectFiles } = useFileSelection({
     supportedFileTypes,
@@ -336,7 +329,6 @@ export const DocumentUpload: React.FC<DocumentUploadProps> = ({
       <DocumentEntryCard
         entry={entry}
         documentTypes={documentTypes}
-        defaultDocumentType={defaultDocumentType}
         isDocumentTypeRequired={isDocumentTypeRequired}
         showDocumentId={showDocumentId}
         isDocumentIdRequired={isDocumentIdRequired}
@@ -364,7 +356,7 @@ export const DocumentUpload: React.FC<DocumentUploadProps> = ({
 
   const errorKey = !config
     ? undefined
-    : !conceptSetUuid
+    : !conceptName
       ? 'DOCUMENTS_ERROR_INVALID_CONFIGURATION'
       : isError
         ? 'DOCUMENTS_ERROR_LOADING_DOCUMENT_TYPES'

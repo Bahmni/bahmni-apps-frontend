@@ -1,9 +1,6 @@
 import { Bundle, DocumentReference } from 'fhir/r4';
 import { get } from '../api';
-import {
-  getConceptById,
-  searchConceptByName,
-} from '../conceptService/conceptService';
+import { searchConceptByName } from '../conceptService/conceptService';
 import type { ConceptData } from '../conceptService/models';
 import {
   DOCUMENT_UPLOAD_MAX_SIZE_URL,
@@ -46,18 +43,6 @@ export async function getDocumentTypes(
 ): Promise<DocumentType[]> {
   return toDocumentTypes(
     await searchConceptByName(conceptName, DOCUMENT_TYPES_VIEW),
-  );
-}
-
-/**
- * Same as getDocumentTypes, for a document-type concept set configured by uuid.
- * @param conceptUuid - uuid of the document-type concept set
- */
-export async function getDocumentTypesByConceptUuid(
-  conceptUuid: string,
-): Promise<DocumentType[]> {
-  return toDocumentTypes(
-    await getConceptById(conceptUuid, DOCUMENT_TYPES_VIEW),
   );
 }
 

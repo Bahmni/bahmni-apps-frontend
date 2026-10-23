@@ -7,7 +7,7 @@ import { DocumentEntry, DocumentUploadProps, PendingDocument } from '../models';
 jest.mock('@bahmni/services', () => ({
   ...jest.requireActual('@bahmni/services'),
   getDocumentUploadMaxSizeMb: jest.fn(),
-  getDocumentTypesByConceptUuid: jest.fn(),
+  getDocumentTypes: jest.fn(),
 }));
 
 global.URL.createObjectURL = jest.fn(
@@ -20,7 +20,7 @@ jest.mock('../../notification', () => ({
   useNotification: () => ({ addNotification: mockAddNotification }),
 }));
 
-const { getDocumentUploadMaxSizeMb, getDocumentTypesByConceptUuid } =
+const { getDocumentUploadMaxSizeMb, getDocumentTypes } =
   jest.requireMock('@bahmni/services');
 
 const TYPES = [
@@ -56,7 +56,7 @@ const entry = (
 const fileOf = (name: string, type = 'image/png', sizeInBytes = 4) =>
   new File([new Uint8Array(sizeInBytes)], name, { type });
 
-const METADATA = { documentTypeConceptSetUuid: 'set-uuid' };
+const METADATA = { documentTypeConceptName: 'Document Type' };
 const DOC_ID_CONFIG = {
   attributes: [{ name: 'documentId' }],
   metadata: METADATA,
@@ -76,7 +76,7 @@ const Harness = ({ initial = [entry('e1')], ...props }: HarnessProps) => {
   const [documents, setDocuments] = useState<DocumentEntry[]>(initial);
   return (
     <DocumentUpload
-      documentTypes={TYPES}
+      documentTypeConceptName="Document Type"
       {...props}
       documents={documents}
       onDocumentsChange={(next) => {
@@ -112,7 +112,7 @@ describe('DocumentUpload', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     getDocumentUploadMaxSizeMb.mockResolvedValue(5);
-    getDocumentTypesByConceptUuid.mockResolvedValue(TYPES);
+    getDocumentTypes.mockResolvedValue(TYPES);
   });
 
   describe('documents', () => {
@@ -202,12 +202,11 @@ describe('DocumentUpload', () => {
       expect(screen.getByText('DOCUMENTS_DOCUMENT_TYPE_LABEL')).toBeVisible();
     });
 
-    it('shows the default type until another is chosen, and records the choice', () => {
-      renderWidget({ defaultDocumentType: TYPES[1] });
-      expect(screen.getByRole('combobox')).toHaveTextContent('Prescription');
+    it('records the type that is chosen', async () => {
+      renderWidget();
 
       fireEvent.click(screen.getByRole('combobox'));
-      fireEvent.click(screen.getByText('Lab Report'));
+      fireEvent.click(await screen.findByText('Lab Report'));
 
       expect(latest()[0].documentType).toEqual(TYPES[0]);
     });
@@ -412,15 +411,6 @@ describe('DocumentUpload', () => {
       expect(fireEvent.click(fileInputs()[0])).toBe(true);
     });
 
-    it('is allowed when the default type applies', () => {
-      renderWidget({
-        config: TYPE_REQUIRED_CONFIG,
-        defaultDocumentType: TYPES[0],
-      });
-
-      expect(fireEvent.click(fileInputs()[0])).toBe(true);
-    });
-
     it('is not held back when the type is not required', () => {
       renderWidget();
 
@@ -433,22 +423,48 @@ describe('DocumentUpload', () => {
       renderWidget({ config: { metadata: METADATA } });
 
       await waitFor(() =>
-        expect(getDocumentTypesByConceptUuid).toHaveBeenCalledWith('set-uuid'),
+        expect(getDocumentTypes).toHaveBeenCalledWith('Document Type'),
       );
     });
 
-    it('shows a configuration error instead of the widget without a concept set', () => {
-      renderWidget({ config: { metadata: {} } });
+    it('falls back to the given concept name when the config does not name one', async () => {
+      renderWidget({
+        config: { attributes: [] },
+        documentTypeConceptName: 'Fallback Type',
+      });
+
+      await waitFor(() =>
+        expect(getDocumentTypes).toHaveBeenCalledWith('Fallback Type'),
+      );
+    });
+
+    it('prefers the concept name in the config over the given one', async () => {
+      renderWidget({
+        config: { metadata: METADATA },
+        documentTypeConceptName: 'Fallback Type',
+      });
+
+      await waitFor(() =>
+        expect(getDocumentTypes).toHaveBeenCalledWith('Document Type'),
+      );
+      expect(getDocumentTypes).not.toHaveBeenCalledWith('Fallback Type');
+    });
+
+    it('shows a configuration error instead of the widget without a concept name', () => {
+      renderWidget({
+        config: { metadata: {} },
+        documentTypeConceptName: undefined,
+      });
 
       expect(
         screen.getByText('DOCUMENTS_ERROR_INVALID_CONFIGURATION'),
       ).toBeVisible();
       expect(fileInputs()).toHaveLength(0);
-      expect(getDocumentTypesByConceptUuid).not.toHaveBeenCalled();
+      expect(getDocumentTypes).not.toHaveBeenCalled();
     });
 
     it('shows an error instead of the widget when the document types cannot be loaded', async () => {
-      getDocumentTypesByConceptUuid.mockRejectedValue(new Error('boom'));
+      getDocumentTypes.mockRejectedValue(new Error('boom'));
       renderWidget({ config: { metadata: METADATA } });
 
       expect(

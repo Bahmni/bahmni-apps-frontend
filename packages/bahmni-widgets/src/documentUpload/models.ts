@@ -38,8 +38,7 @@ export interface DocumentUploadProps {
   documents: DocumentEntry[];
   onDocumentsChange: (documents: DocumentEntry[]) => void;
   config?: DocumentUploadConfig;
-  documentTypes?: DocumentType[];
-  defaultDocumentType?: DocumentType | null;
+  documentTypeConceptName?: string;
   documentsTitle?: string;
   isSaving?: boolean;
 }

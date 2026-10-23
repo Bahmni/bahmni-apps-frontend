@@ -463,7 +463,6 @@ export {
   getFormattedDocumentReferences,
   getDocumentReferencePage,
   getDocumentTypes,
-  getDocumentTypesByConceptUuid,
   getDocumentUploadMaxSizeMb,
   buildDocumentReference,
   saveDocuments,

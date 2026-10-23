@@ -3,7 +3,6 @@ export {
   getFormattedDocumentReferences,
   getDocumentReferencePage,
   getDocumentTypes,
-  getDocumentTypesByConceptUuid,
   getDocumentUploadMaxSizeMb,
   type DocumentReferencePage,
 } from './documentReferenceService';

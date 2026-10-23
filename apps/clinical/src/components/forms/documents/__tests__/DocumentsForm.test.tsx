@@ -7,7 +7,7 @@ import { documentsControlConfig } from './__mocks__/documentsMocks';
 jest.mock('@bahmni/services', () => ({
   ...jest.requireActual('@bahmni/services'),
   useTranslation: () => ({ t: (key: string) => key }),
-  getDocumentTypesByConceptUuid: jest.fn(),
+  getDocumentTypes: jest.fn(),
   uploadDocument: jest.fn().mockResolvedValue({ url: '100/scan.png' }),
 }));
 
