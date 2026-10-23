@@ -1,17 +1,35 @@
+import { useSubscribeConsultationSaved } from '@bahmni/services';
 import {
   QueryClient,
   QueryClientProvider,
   useQuery,
 } from '@tanstack/react-query';
-import { render, screen, act, waitFor } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
+import {
+  render,
+  screen,
+  act,
+  waitFor,
+  fireEvent,
+  within,
+} from '@testing-library/react';
+import userEvent, { type UserEvent } from '@testing-library/user-event';
 import { axe, toHaveNoViolations } from 'jest-axe';
+import {
+  printPdfViaIframe,
+  printViaIframe,
+} from '../../documentPrintButton/printViaIframe';
 import { useNotification } from '../../notification';
+import { useHasPrivilege } from '../../userPrivileges/useHasPrivilege';
 import DocumentsTable from '../DocumentsTable';
 
 expect.extend(toHaveNoViolations);
 
 jest.mock('../../notification');
+jest.mock('../../userPrivileges/useHasPrivilege');
+jest.mock('../../documentPrintButton/printViaIframe', () => ({
+  printViaIframe: jest.fn(),
+  printPdfViaIframe: jest.fn(),
+}));
 jest.mock('../../hooks/usePatientUUID', () => ({
   usePatientUUID: jest.fn(() => 'test-patient-uuid'),
 }));
@@ -23,7 +41,12 @@ jest.mock('@tanstack/react-query', () => ({
 
 jest.mock('@bahmni/services', () => ({
   ...jest.requireActual('@bahmni/services'),
-  useTranslation: () => ({ t: (key: string) => key }),
+  useTranslation: () => ({
+    t: (key: string, options?: { current?: number; total?: number }) =>
+      key === 'DOCUMENTS_ATTACHMENT_COUNTER'
+        ? `Attachment ${options?.current} of ${options?.total}`
+        : key,
+  }),
   formatDateTime: () => ({ formattedResult: '15/01/2024 4:00 PM' }),
   getDocumentReferencePage: jest.fn(),
   useSubscribeConsultationSaved: jest.fn(),
@@ -155,6 +178,7 @@ describe('DocumentsTable', () => {
       },
     });
     jest.clearAllMocks();
+    (useHasPrivilege as jest.Mock).mockReturnValue(true);
     (useNotification as jest.Mock).mockReturnValue({
       addNotification: mockAddNotification,
     });
@@ -179,25 +203,32 @@ describe('DocumentsTable', () => {
       expect(screen.getByTestId('documents-table')).toBeInTheDocument();
     });
 
-    it('displays error state and triggers notification with error message', () => {
-      const errorMessage = 'Network error';
-      (useQuery as jest.Mock).mockReturnValue({
-        data: null,
-        error: new Error(errorMessage),
-        isError: true,
-        isLoading: false,
-        refetch: jest.fn(),
-      });
+    it.each([
+      ['Network error', new Error('Network error'), 'Network error'],
+      ['no message', new Error(), undefined],
+    ])(
+      'displays error state and notifies the user (%s)',
+      (_label, error, message) => {
+        (useQuery as jest.Mock).mockReturnValue({
+          data: null,
+          error,
+          isError: true,
+          isLoading: false,
+          refetch: jest.fn(),
+        });
 
-      renderComponent();
+        renderComponent();
 
-      expect(screen.getByTestId('documents-table')).toBeInTheDocument();
-      expect(mockAddNotification).toHaveBeenCalledWith({
-        type: 'error',
-        title: 'ERROR_DEFAULT_TITLE',
-        message: errorMessage,
-      });
-    });
+        expect(screen.getByTestId('documents-table')).toBeInTheDocument();
+        expect(mockAddNotification).toHaveBeenCalledWith(
+          expect.objectContaining({
+            type: 'error',
+            title: 'ERROR_DEFAULT_TITLE',
+            ...(message && { message }),
+          }),
+        );
+      },
+    );
 
     it('displays empty state message when no documents exist', () => {
       (useQuery as jest.Mock).mockReturnValue({
@@ -233,93 +264,34 @@ describe('DocumentsTable', () => {
       expect(screen.getByText('DOCUMENTS_ATTACHMENTS')).toBeInTheDocument();
     });
 
-    it('renders the Attachments column header as 3rd column', () => {
+    it('shows each field of a document, the identifier as plain text', () => {
       (useQuery as jest.Mock).mockReturnValue(mockQueryData());
       renderComponent({ config: defaultConfig });
 
-      const headers = screen.getAllByRole('columnheader');
-      const headerTexts = headers.map((h) => h.textContent?.trim());
-      expect(headerTexts[2]).toBe('DOCUMENTS_ATTACHMENTS');
-    });
-
-    it('displays document identifier as plain text (no icon, no button)', () => {
-      (useQuery as jest.Mock).mockReturnValue(mockQueryData());
-      renderComponent({ config: defaultConfig });
-
-      expect(screen.getByText('Test Document')).toBeInTheDocument();
+      expect(screen.getByText('Test Document').tagName).toBe('SPAN');
       expect(
         screen.queryByRole('button', { name: 'View Test Document' }),
       ).not.toBeInTheDocument();
-    });
-
-    it('renders document identifier inside a span', () => {
-      (useQuery as jest.Mock).mockReturnValue(mockQueryData());
-      renderComponent({ config: defaultConfig });
-
-      const identifierSpan = screen.getByText('Test Document');
-      expect(identifierSpan.tagName).toBe('SPAN');
-    });
-
-    it('displays document identifier, type, and uploader correctly', () => {
-      (useQuery as jest.Mock).mockReturnValue(mockQueryData());
-      renderComponent({ config: defaultConfig });
-
-      expect(screen.getByText('Test Document')).toBeInTheDocument();
       expect(screen.getByText('Prescription')).toBeInTheDocument();
       expect(screen.getByText('15/01/2024 4:00 PM')).toBeInTheDocument();
       expect(screen.getByText('Dr. Smith')).toBeInTheDocument();
-    });
-
-    it('renders long document identifier name inside a span to support word wrapping', () => {
-      const longName =
-        'VeryLongDocumentIdentifierNameThatShouldBreakAndWrapAcrossMultipleLinesInTheTableCell';
-      const docWithLongName = {
-        ...mockPdfDocument,
-        documentIdentifier: longName,
-      };
-      (useQuery as jest.Mock).mockReturnValue(mockQueryData([docWithLongName]));
-      renderComponent({ config: defaultConfig });
-
-      const identifierSpan = screen.getByText(longName);
-      expect(identifierSpan.tagName).toBe('SPAN');
-    });
-
-    it('displays multiple documents', () => {
-      (useQuery as jest.Mock).mockReturnValue(
-        mockQueryData([mockPdfDocument, mockImageDocument]),
-      );
-      renderComponent({ config: defaultConfig });
-
-      expect(screen.getByText('Test Document')).toBeInTheDocument();
-      expect(screen.getByText('X-Ray Image')).toBeInTheDocument();
-      expect(screen.getByText('Prescription')).toBeInTheDocument();
-      expect(screen.getByText('Radiology Report')).toBeInTheDocument();
+      expect(
+        screen.getByText('DOCUMENTS_VIEW_ATTACHMENTS'),
+      ).toBeInTheDocument();
     });
   });
 
   describe('Attachments Column', () => {
-    it('renders "View attachment/s" link for documents with attachments', () => {
-      (useQuery as jest.Mock).mockReturnValue(mockQueryData([mockPdfDocument]));
-      renderComponent({ config: defaultConfig });
-
-      expect(
-        screen.getByText('DOCUMENTS_VIEW_ATTACHMENTS'),
-      ).toBeInTheDocument();
-    });
-
-    it('renders "View attachment/s" link for documents with documentUrl but empty attachments', () => {
-      const docWithUrlNoAttachments = {
-        ...mockPdfDocument,
-        attachments: [],
-      };
+    it('renders "View attachment/s" link for a document with attachments or only a documentUrl', () => {
       (useQuery as jest.Mock).mockReturnValue(
-        mockQueryData([docWithUrlNoAttachments]),
+        mockQueryData([
+          mockPdfDocument,
+          { ...mockImageDocument, attachments: [] },
+        ]),
       );
       renderComponent({ config: defaultConfig });
 
-      expect(
-        screen.getByText('DOCUMENTS_VIEW_ATTACHMENTS'),
-      ).toBeInTheDocument();
+      expect(screen.getAllByText('DOCUMENTS_VIEW_ATTACHMENTS')).toHaveLength(2);
     });
 
     it('renders "--" in attachments column when document has no attachments and no URL', () => {
@@ -332,16 +304,6 @@ describe('DocumentsTable', () => {
       expect(
         screen.queryByText('DOCUMENTS_VIEW_ATTACHMENTS'),
       ).not.toBeInTheDocument();
-    });
-
-    it('"View attachment/s" link opens modal when clicked', async () => {
-      const user = userEvent.setup();
-      (useQuery as jest.Mock).mockReturnValue(mockQueryData([mockPdfDocument]));
-      renderComponent({ config: defaultConfig });
-
-      await user.click(screen.getByText('DOCUMENTS_VIEW_ATTACHMENTS'));
-
-      expect(screen.getByRole('dialog')).toBeInTheDocument();
     });
 
     it('"View attachment/s" link does not open new tab (no target=_blank, no navigation href)', () => {
@@ -361,17 +323,17 @@ describe('DocumentsTable', () => {
       const user = userEvent.setup();
       (useQuery as jest.Mock).mockReturnValue(mockQueryData([mockPdfDocument]));
       renderComponent({ config: defaultConfig });
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
 
       await user.click(screen.getByText('DOCUMENTS_VIEW_ATTACHMENTS'));
 
-      const modal = screen.getByRole('dialog');
-      expect(modal).toBeInTheDocument();
+      expect(screen.getByRole('dialog')).toBeInTheDocument();
       expect(
         screen.getAllByText('Test Document').length,
       ).toBeGreaterThanOrEqual(2);
     });
 
-    it('renders iframe for PDF document in modal', async () => {
+    it('renders iframe for PDF document in modal, with the toolbar hidden', async () => {
       const user = userEvent.setup();
       (useQuery as jest.Mock).mockReturnValue(mockQueryData([mockPdfDocument]));
       renderComponent({ config: defaultConfig });
@@ -386,16 +348,6 @@ describe('DocumentsTable', () => {
           '/openmrs/auth?requested_document=/document_images/',
         ),
       );
-    });
-
-    it('appends #toolbar=0 to PDF iframe src', async () => {
-      const user = userEvent.setup();
-      (useQuery as jest.Mock).mockReturnValue(mockQueryData([mockPdfDocument]));
-      renderComponent({ config: defaultConfig });
-
-      await user.click(screen.getByText('DOCUMENTS_VIEW_ATTACHMENTS'));
-
-      const iframe = screen.getByTitle('Test Document');
       expect(iframe).toHaveAttribute(
         'src',
         expect.stringContaining('#toolbar=0'),
@@ -433,17 +385,10 @@ describe('DocumentsTable', () => {
       const iframe = screen.getByTitle('Clinical Notes');
       expect(iframe.tagName).toBe('IFRAME');
     });
-
-    it('modal is not rendered initially', () => {
-      (useQuery as jest.Mock).mockReturnValue(mockQueryData([mockPdfDocument]));
-      renderComponent({ config: defaultConfig });
-
-      expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
-    });
   });
 
   describe('Modal - Multi Attachment', () => {
-    it('renders all attachments when a document has multiple attachments', async () => {
+    it('renders every attachment, each labelled "Attachment n of total"', async () => {
       const user = userEvent.setup();
       (useQuery as jest.Mock).mockReturnValue(
         mockQueryData([mockMultiAttachmentDocument]),
@@ -452,22 +397,10 @@ describe('DocumentsTable', () => {
 
       await user.click(screen.getByText('DOCUMENTS_VIEW_ATTACHMENTS'));
 
-      // Should show 2 iframes since both are PDF
-      const iframes = screen.getAllByTitle('Multi Attachment Doc');
-      expect(iframes).toHaveLength(2);
-    });
-
-    it('shows attachment counter (e.g. "1/2") when there are multiple attachments', async () => {
-      const user = userEvent.setup();
-      (useQuery as jest.Mock).mockReturnValue(
-        mockQueryData([mockMultiAttachmentDocument]),
-      );
-      renderComponent({ config: defaultConfig });
-
-      await user.click(screen.getByText('DOCUMENTS_VIEW_ATTACHMENTS'));
-
-      expect(screen.getByText('1/2')).toBeInTheDocument();
-      expect(screen.getByText('2/2')).toBeInTheDocument();
+      expect(screen.getAllByTitle('Multi Attachment Doc')).toHaveLength(2);
+      expect(screen.getByText('Attachment 1 of 2')).toBeInTheDocument();
+      expect(screen.getByText('Attachment 2 of 2')).toBeInTheDocument();
+      expect(screen.queryByText('1/2')).not.toBeInTheDocument();
     });
 
     it('does not show attachment counter when there is only one attachment', async () => {
@@ -477,12 +410,14 @@ describe('DocumentsTable', () => {
 
       await user.click(screen.getByText('DOCUMENTS_VIEW_ATTACHMENTS'));
 
-      expect(screen.queryByText('1/1')).not.toBeInTheDocument();
+      expect(
+        screen.queryByText(/^Attachment \d+ of \d+$/),
+      ).not.toBeInTheDocument();
     });
   });
 
   describe('Modal - Error Handling', () => {
-    it('shows error message when attachment URL is corrupt (contains colon)', async () => {
+    it('shows an error message instead of the frame when the attachment URL is corrupt', async () => {
       const user = userEvent.setup();
       (useQuery as jest.Mock).mockReturnValue(
         mockQueryData([mockDocumentCorruptUrl]),
@@ -494,17 +429,6 @@ describe('DocumentsTable', () => {
       expect(
         screen.getByText('DOCUMENTS_ERROR_LOADING_ATTACHMENT'),
       ).toBeInTheDocument();
-    });
-
-    it('shows error message instead of iframe when URL is corrupt', async () => {
-      const user = userEvent.setup();
-      (useQuery as jest.Mock).mockReturnValue(
-        mockQueryData([mockDocumentCorruptUrl]),
-      );
-      renderComponent({ config: defaultConfig });
-
-      await user.click(screen.getByText('DOCUMENTS_VIEW_ATTACHMENTS'));
-
       expect(screen.queryByTitle('Corrupt URL Doc')).not.toBeInTheDocument();
     });
 
@@ -534,66 +458,24 @@ describe('DocumentsTable', () => {
   });
 
   describe('Fallback Content', () => {
-    it('displays fallback text when document type is missing', () => {
-      const docWithoutType = {
-        ...mockPdfDocument,
-        documentType: undefined,
-      };
-      (useQuery as jest.Mock).mockReturnValue(mockQueryData([docWithoutType]));
-      renderComponent({ config: defaultConfig });
-
-      expect(screen.getByText('DOCUMENTS_NOT_AVAILABLE')).toBeInTheDocument();
-    });
-
-    it('displays fallback text when uploaded by is missing', () => {
-      const docWithoutUploader = {
-        ...mockPdfDocument,
-        uploadedBy: undefined,
-      };
+    it('displays fallback text for a missing document type and uploader', () => {
       (useQuery as jest.Mock).mockReturnValue(
-        mockQueryData([docWithoutUploader]),
+        mockQueryData([
+          {
+            ...mockPdfDocument,
+            documentType: undefined,
+            uploadedBy: undefined,
+          },
+        ]),
       );
       renderComponent({ config: defaultConfig });
 
-      const fallbackTexts = screen.getAllByText('DOCUMENTS_NOT_AVAILABLE');
-      expect(fallbackTexts.length).toBeGreaterThan(0);
-    });
-  });
-
-  describe('Race Condition Prevention', () => {
-    it('validation effect has correct dependencies for modal state', async () => {
-      // This test verifies the effect cleanup (AbortController) works
-      // by ensuring multiple modal open/close cycles work correctly
-      const user = userEvent.setup();
-      (useQuery as jest.Mock).mockReturnValue(
-        mockQueryData([mockPdfDocument, mockImageDocument]),
-      );
-      renderComponent({ config: defaultConfig });
-
-      // First open/close
-      await user.click(screen.getAllByText('DOCUMENTS_VIEW_ATTACHMENTS')[0]);
-      expect(screen.getByRole('dialog')).toBeInTheDocument();
-
-      await user.keyboard('{Escape}');
-      await waitFor(() => {
-        expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
-      });
-
-      // Second open/close - should work without state corruption
-      await user.click(screen.getAllByText('DOCUMENTS_VIEW_ATTACHMENTS')[0]);
-      await waitFor(() => {
-        expect(screen.getByRole('dialog')).toBeInTheDocument();
-      });
-
-      await user.keyboard('{Escape}');
-      await waitFor(() => {
-        expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
-      });
+      expect(screen.getAllByText('DOCUMENTS_NOT_AVAILABLE')).toHaveLength(2);
     });
   });
 
   describe('State Management', () => {
-    it('clears state when closing modal and can reopen with fresh state', async () => {
+    it('closes on Escape and can be reopened with fresh state', async () => {
       const user = userEvent.setup();
       (useQuery as jest.Mock).mockReturnValue(
         mockQueryData([mockDocumentCorruptUrl]),
@@ -671,123 +553,6 @@ describe('DocumentsTable', () => {
     });
   });
 
-  describe('Effect Dependencies and Modal State', () => {
-    it('calls validation effect when modal opens', async () => {
-      const user = userEvent.setup();
-      const fetchSpy = jest.spyOn(globalThis as any, 'fetch');
-
-      fetchSpy.mockResolvedValue({ ok: true, status: 200 } as Response);
-
-      (useQuery as jest.Mock).mockReturnValue(mockQueryData([mockPdfDocument]));
-      renderComponent({ config: defaultConfig });
-
-      // Open modal - should trigger validation effect
-      await user.click(screen.getByText('DOCUMENTS_VIEW_ATTACHMENTS'));
-
-      await waitFor(() => {
-        expect(screen.getByRole('dialog')).toBeInTheDocument();
-      });
-
-      // Verify validation was called (fetch should have been invoked)
-      expect(fetchSpy).toHaveBeenCalled();
-
-      fetchSpy.mockRestore();
-    });
-  });
-
-  describe('Error Notification', () => {
-    it('shows error notification when document fetch fails', () => {
-      const errorMessage = 'Failed to fetch documents';
-      (useQuery as jest.Mock).mockReturnValue({
-        data: null,
-        error: new Error(errorMessage),
-        isError: true,
-        isLoading: false,
-        refetch: jest.fn(),
-      });
-
-      renderComponent({ config: defaultConfig });
-
-      expect(mockAddNotification).toHaveBeenCalledWith({
-        type: 'error',
-        title: 'ERROR_DEFAULT_TITLE',
-        message: errorMessage,
-      });
-    });
-
-    it('handles error with undefined message gracefully', () => {
-      (useQuery as jest.Mock).mockReturnValue({
-        data: null,
-        error: new Error(),
-        isError: true,
-        isLoading: false,
-        refetch: jest.fn(),
-      });
-
-      renderComponent({ config: defaultConfig });
-
-      expect(mockAddNotification).toHaveBeenCalledWith(
-        expect.objectContaining({
-          type: 'error',
-          title: 'ERROR_DEFAULT_TITLE',
-        }),
-      );
-    });
-  });
-
-  describe('RenderCell Coverage', () => {
-    it('renders all column types in renderCell', () => {
-      (useQuery as jest.Mock).mockReturnValue(mockQueryData([mockPdfDocument]));
-      renderComponent({ config: defaultConfig });
-
-      // Verify all columns are rendered
-      expect(screen.getByText('Test Document')).toBeInTheDocument();
-      expect(screen.getByText('Prescription')).toBeInTheDocument();
-      expect(screen.getByText('15/01/2024 4:00 PM')).toBeInTheDocument();
-      expect(screen.getByText('Dr. Smith')).toBeInTheDocument();
-      expect(
-        screen.getByText('DOCUMENTS_VIEW_ATTACHMENTS'),
-      ).toBeInTheDocument();
-    });
-
-    it('renders all cell types correctly', () => {
-      (useQuery as jest.Mock).mockReturnValue(mockQueryData([mockPdfDocument]));
-      renderComponent({ config: defaultConfig });
-
-      // Verify document identifier renders as span
-      const identifierSpan = screen.getByText('Test Document');
-      expect(identifierSpan.tagName).toBe('SPAN');
-
-      // Verify all other columns render
-      expect(screen.getByText('Prescription')).toBeInTheDocument();
-      expect(screen.getByText('Dr. Smith')).toBeInTheDocument();
-    });
-  });
-
-  describe('Config and Fields', () => {
-    it('uses default fields when config fields not provided', () => {
-      (useQuery as jest.Mock).mockReturnValue(mockQueryData([mockPdfDocument]));
-      renderComponent({ config: {} });
-
-      // Should still render with default fields
-      expect(screen.getByText('Test Document')).toBeInTheDocument();
-      expect(screen.getByRole('table')).toBeInTheDocument();
-    });
-
-    it('renders with custom field configuration', () => {
-      const customConfig = {
-        fields: ['documentIdentifier', 'attachments'],
-      };
-      (useQuery as jest.Mock).mockReturnValue(mockQueryData([mockPdfDocument]));
-      renderComponent({ config: customConfig });
-
-      expect(screen.getByText('Test Document')).toBeInTheDocument();
-      expect(
-        screen.getByText('DOCUMENTS_VIEW_ATTACHMENTS'),
-      ).toBeInTheDocument();
-    });
-  });
-
   describe('Pagination', () => {
     const manyDocs = Array.from({ length: 12 }, (_, i) => ({
       id: `doc-page-${i}`,
@@ -801,15 +566,6 @@ describe('DocumentsTable', () => {
         { url: `100/doc-${i}.pdf`, contentType: 'application/pdf' },
       ],
     }));
-
-    it('renders pagination when documents exceed default pageSize of 5', () => {
-      (useQuery as jest.Mock).mockReturnValue(mockQueryData(manyDocs));
-      renderComponent({ config: defaultConfig });
-
-      expect(
-        screen.getByRole('button', { name: /next page/i }),
-      ).toBeInTheDocument();
-    });
 
     it('shows pagination footer but disables next when documents are fewer than or equal to pageSize', () => {
       (useQuery as jest.Mock).mockReturnValue(
@@ -856,20 +612,6 @@ describe('DocumentsTable', () => {
 
       // All 10 rows now visible
       expect(screen.getByText('Document 6')).toBeInTheDocument();
-    });
-
-    it('modal still works on paginated documents', async () => {
-      const user = userEvent.setup();
-      (useQuery as jest.Mock).mockReturnValue(mockQueryData(manyDocs));
-      renderComponent({ config: { ...defaultConfig, pageSize: 5 } });
-
-      const nextButton = screen.getByRole('button', { name: /next page/i });
-      await user.click(nextButton);
-
-      const links = screen.getAllByText('DOCUMENTS_VIEW_ATTACHMENTS');
-      await user.click(links[0]);
-
-      expect(screen.getByRole('dialog')).toBeInTheDocument();
     });
   });
 
@@ -999,23 +741,6 @@ describe('DocumentsTable', () => {
       });
     });
 
-    it('passes accessibility tests in error state', async () => {
-      (useQuery as jest.Mock).mockReturnValue({
-        data: null,
-        error: new Error('Failed to load documents'),
-        isError: true,
-        isLoading: false,
-        refetch: jest.fn(),
-      });
-
-      const { container } = renderComponent({ config: defaultConfig });
-
-      await act(async () => {
-        const results = await axe(container);
-        expect(results).toHaveNoViolations();
-      });
-    });
-
     it('passes accessibility tests with modal open', async () => {
       const user = userEvent.setup();
       (useQuery as jest.Mock).mockReturnValue(mockQueryData([mockPdfDocument]));
@@ -1029,37 +754,629 @@ describe('DocumentsTable', () => {
         expect(results).toHaveNoViolations();
       });
     });
+  });
 
-    it('closes modal when Escape key is pressed', async () => {
-      const user = userEvent.setup();
+  describe('Columns', () => {
+    // A sortable header's text also carries its "Click to sort…" hint.
+    const columnNames = () =>
+      screen
+        .getAllByRole('columnheader')
+        .map((header) =>
+          (header.textContent ?? '').replace(
+            /^Click to sort rows by .* header in ascending order/,
+            '',
+          ),
+        );
+
+    it('puts Document type first by default, then the identifier, attachments, upload date and uploader', () => {
       (useQuery as jest.Mock).mockReturnValue(mockQueryData([mockPdfDocument]));
 
-      renderComponent({ config: defaultConfig });
+      renderComponent({});
 
-      await user.click(screen.getByText('DOCUMENTS_VIEW_ATTACHMENTS'));
-      expect(screen.getByRole('dialog')).toBeInTheDocument();
+      expect(columnNames()).toEqual([
+        'DOCUMENTS_TYPE',
+        'DOCUMENTS_DOCUMENT_IDENTIFIER',
+        'DOCUMENTS_ATTACHMENTS',
+        'DOCUMENTS_UPLOADED_ON',
+        'DOCUMENTS_UPLOADED_BY',
+      ]);
+    });
 
-      await user.keyboard('{Escape}');
+    it('shows a dash for a document with no identifier', () => {
+      (useQuery as jest.Mock).mockReturnValue(
+        mockQueryData([
+          { ...mockPdfDocument, id: 'doc-empty', documentIdentifier: '' },
+          { ...mockImageDocument, id: 'doc-blank', documentIdentifier: '   ' },
+          mockMultiAttachmentDocument,
+        ]),
+      );
 
-      await waitFor(() => {
-        expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+      renderComponent({});
+
+      const rows = screen.getAllByRole('row').slice(1);
+      const identifierCells = rows.map(
+        (row) => within(row).getAllByRole('cell')[1].textContent,
+      );
+      expect(identifierCells).toEqual(
+        expect.arrayContaining(['-', '-', 'Multi Attachment Doc']),
+      );
+      expect(identifierCells.filter((text) => text === '-')).toHaveLength(2);
+    });
+
+    it('follows the order the dashboard config lists the fields in', () => {
+      (useQuery as jest.Mock).mockReturnValue(mockQueryData([mockPdfDocument]));
+
+      renderComponent({
+        config: { fields: ['documentIdentifier', 'documentType'] },
+      });
+
+      expect(columnNames()).toEqual([
+        'DOCUMENTS_DOCUMENT_IDENTIFIER',
+        'DOCUMENTS_TYPE',
+      ]);
+    });
+  });
+
+  describe('Opening the attachment viewer', () => {
+    beforeEach(() => {
+      (globalThis.fetch as jest.Mock).mockResolvedValue({
+        ok: true,
+        status: 200,
       });
     });
 
-    it('modal dialog is properly labelled with document identifier for screen readers', async () => {
+    const openViewer = async (documents: unknown[]) => {
+      const user = userEvent.setup();
+      (useQuery as jest.Mock).mockReturnValue(mockQueryData(documents));
+      renderComponent({ config: defaultConfig });
+      await user.click(screen.getAllByText('DOCUMENTS_VIEW_ATTACHMENTS')[0]);
+      return user;
+    };
+
+    it.each([
+      [
+        'an image',
+        mockImageDocument,
+        () => screen.getByRole('img', { name: 'X-Ray Image' }),
+      ],
+      ['a pdf', mockPdfDocument, () => screen.getByTitle('Test Document')],
+    ])(
+      'shows a spinner for %s until it has loaded',
+      async (_label, document, attachment) => {
+        await openViewer([document]);
+
+        expect(screen.getByTestId('attachment-loading-0')).toBeInTheDocument();
+
+        fireEvent.load(attachment());
+
+        expect(screen.queryByTestId('attachment-loading-0')).toBeNull();
+      },
+    );
+
+    it('starts every attachment with a spinner again each time the viewer is opened', async () => {
+      const user = await openViewer([mockImageDocument]);
+      fireEvent.load(screen.getByRole('img', { name: 'X-Ray Image' }));
+      await user.click(screen.getByRole('button', { name: /close/i }));
+
+      await user.click(screen.getByText('DOCUMENTS_VIEW_ATTACHMENTS'));
+
+      expect(screen.getByTestId('attachment-loading-0')).toBeInTheDocument();
+    });
+
+    describe('printing while attachments are loading', () => {
+      const printButtons = () => [
+        screen.getByTestId('print-all-attachments'),
+        screen.getByTestId('print-attachment-0'),
+        screen.getByTestId('print-attachment-1'),
+      ];
+      const attachmentFrames = () =>
+        Array.from(
+          document.querySelectorAll(
+            '[data-testid="document-view-modal"] iframe',
+          ),
+        );
+
+      it('keeps the print buttons disabled until every attachment has loaded', async () => {
+        await openViewer([mockMultiAttachmentDocument]);
+
+        printButtons().forEach((button) => expect(button).toBeDisabled());
+
+        const [first, second] = attachmentFrames();
+        fireEvent.load(first);
+        printButtons().forEach((button) => expect(button).toBeDisabled());
+
+        fireEvent.load(second);
+        printButtons().forEach((button) => expect(button).toBeEnabled());
+      });
+
+      it('does not wait for an attachment that failed to load', async () => {
+        (globalThis.fetch as jest.Mock).mockImplementation(
+          async (url: string) => ({
+            ok: !url.includes('lab-page2'),
+            status: 200,
+          }),
+        );
+        await openViewer([mockMultiAttachmentDocument]);
+
+        await screen.findByTestId('attachment-error-1');
+        fireEvent.load(attachmentFrames()[0]);
+
+        expect(screen.getByTestId('print-attachment-0')).toBeEnabled();
+      });
+
+      it('gives up waiting for a frame that never reports loading', async () => {
+        jest.useFakeTimers();
+        try {
+          (useQuery as jest.Mock).mockReturnValue(
+            mockQueryData([mockMultiAttachmentDocument]),
+          );
+          renderComponent({ config: defaultConfig });
+          fireEvent.click(screen.getAllByText('DOCUMENTS_VIEW_ATTACHMENTS')[0]);
+          expect(screen.getByTestId('print-all-attachments')).toBeDisabled();
+
+          act(() => {
+            jest.advanceTimersByTime(15000);
+          });
+
+          expect(screen.getByTestId('print-all-attachments')).toBeEnabled();
+        } finally {
+          jest.useRealTimers();
+        }
+      });
+    });
+
+    describe('scroll position', () => {
+      const scroller = () =>
+        document.querySelector('.cds--modal-content') as HTMLElement;
+      const jumpTo = (top: number) => {
+        scroller().scrollTop = top;
+        fireEvent.scroll(scroller());
+      };
+
+      it('holds the viewer at the top while a loading attachment tries to scroll it away', async () => {
+        await openViewer([mockMultiAttachmentDocument]);
+
+        jumpTo(900);
+
+        expect(scroller().scrollTop).toBe(0);
+      });
+
+      it('lets the user scroll once they have scrolled themselves', async () => {
+        await openViewer([mockMultiAttachmentDocument]);
+
+        fireEvent.wheel(scroller());
+        jumpTo(400);
+
+        expect(scroller().scrollTop).toBe(400);
+      });
+
+      it('stays held when the user only clicks a button, since a loading attachment can still scroll', async () => {
+        await openViewer([mockMultiAttachmentDocument]);
+
+        fireEvent.mouseDown(screen.getByTestId('print-attachment-0'));
+        fireEvent.keyDown(screen.getByTestId('print-attachment-0'), {
+          key: 'Enter',
+        });
+        jumpTo(900);
+
+        expect(scroller().scrollTop).toBe(0);
+      });
+
+      it.each([
+        ['dragging the scrollbar', () => fireEvent.mouseDown(scroller())],
+        [
+          'a navigation key pressed on the viewer',
+          () => fireEvent.keyDown(scroller(), { key: 'PageDown' }),
+        ],
+      ])('is released by %s', async (_label, release) => {
+        await openViewer([mockMultiAttachmentDocument]);
+
+        release();
+        jumpTo(300);
+
+        expect(scroller().scrollTop).toBe(300);
+      });
+    });
+  });
+
+  describe('Add document action', () => {
+    const addAction = {
+      type: 'add',
+      label: 'DOCUMENTS_ADD_ACTION',
+      encounterType: 'Patient Document',
+      editTitle: 'DOCUMENTS_UPLOAD_TITLE',
+      requiredPrivilege: ['Add Encounters'],
+    };
+
+    it('does not render the add button when no action is configured', () => {
+      (useQuery as jest.Mock).mockReturnValue(mockQueryData());
+
+      renderComponent({ config: defaultConfig });
+
+      expect(screen.queryByTestId('documents-add-button')).toBeNull();
+    });
+
+    it('hides the add button without the required privilege', () => {
+      (useHasPrivilege as jest.Mock).mockReturnValue(false);
+      (useQuery as jest.Mock).mockReturnValue(mockQueryData());
+
+      renderComponent({ config: { ...defaultConfig, actions: [addAction] } });
+
+      expect(screen.queryByTestId('documents-add-button')).toBeNull();
+    });
+
+    it('shows the add button in the widget header next to the title', () => {
+      (useQuery as jest.Mock).mockReturnValue(mockQueryData());
+
+      renderComponent({ config: { ...defaultConfig, actions: [addAction] } });
+
+      expect(screen.getByTestId('documents-header')).toContainElement(
+        screen.getByTestId('documents-add-button'),
+      );
+    });
+
+    it('dispatches startConsultation for the documents control on click', async () => {
+      const user = userEvent.setup();
+      const listener = jest.fn();
+      globalThis.addEventListener('startConsultation', listener);
+      (useQuery as jest.Mock).mockReturnValue(mockQueryData());
+
+      renderComponent({ config: { ...defaultConfig, actions: [addAction] } });
+      await user.click(screen.getByTestId('documents-add-button'));
+
+      globalThis.removeEventListener('startConsultation', listener);
+      expect(listener).toHaveBeenCalledTimes(1);
+      expect((listener.mock.calls[0][0] as CustomEvent).detail).toEqual({
+        encounterType: 'Patient Document',
+        editOnly: 'documents',
+        editTitle: 'DOCUMENTS_UPLOAD_TITLE',
+      });
+    });
+  });
+
+  describe('Refresh after consultation saved', () => {
+    it('refetches when documents were saved for this patient', () => {
+      const refetch = jest.fn();
+      (useQuery as jest.Mock).mockReturnValue(
+        mockQueryData([mockPdfDocument], { refetch }),
+      );
+
+      renderComponent({ config: defaultConfig });
+      const handler = (useSubscribeConsultationSaved as jest.Mock).mock
+        .calls[0][0];
+
+      handler({
+        patientUUID: 'other-patient',
+        updatedResources: { documents: true },
+      });
+      handler({
+        patientUUID: 'test-patient-uuid',
+        updatedResources: { documents: false },
+      });
+      expect(refetch).not.toHaveBeenCalled();
+
+      handler({
+        patientUUID: 'test-patient-uuid',
+        updatedResources: { documents: true },
+      });
+      expect(refetch).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  describe('Notes', () => {
+    it('shows a notes tooltip only for documents with a description', () => {
+      (useQuery as jest.Mock).mockReturnValue(
+        mockQueryData([
+          { ...mockPdfDocument, description: 'Signed by patient' },
+          mockImageDocument,
+        ]),
+      );
+
+      renderComponent({ config: defaultConfig });
+
+      expect(screen.getByTestId('document-notes-doc-1')).toBeInTheDocument();
+      expect(screen.queryByTestId('document-notes-doc-2')).toBeNull();
+    });
+  });
+
+  describe('Printing', () => {
+    const finishLoadingAttachments = () => {
+      document
+        .querySelectorAll(
+          '[data-testid="document-view-modal"] img, [data-testid="document-view-modal"] iframe',
+        )
+        .forEach((element) => fireEvent.load(element));
+    };
+
+    beforeEach(() => {
+      (globalThis.fetch as jest.Mock).mockResolvedValue({
+        ok: true,
+        status: 200,
+      });
+    });
+
+    it('prints a single pdf attachment through the pdf printer', async () => {
       const user = userEvent.setup();
       (useQuery as jest.Mock).mockReturnValue(mockQueryData([mockPdfDocument]));
 
       renderComponent({ config: defaultConfig });
-
       await user.click(screen.getByText('DOCUMENTS_VIEW_ATTACHMENTS'));
+      finishLoadingAttachments();
+      await user.click(await screen.findByTestId('print-attachment-0'));
 
-      const dialog = screen.getByRole('dialog');
-      expect(dialog).toBeInTheDocument();
-      // Verify the modal heading is set to document identifier
+      expect(printPdfViaIframe).toHaveBeenCalledTimes(1);
+      expect(printPdfViaIframe).toHaveBeenCalledWith(
+        'http://localhost/openmrs/auth?requested_document=/document_images/100/test-document.pdf',
+        {
+          container: expect.any(HTMLElement),
+          focus: false,
+          signal: expect.any(AbortSignal),
+        },
+      );
+      expect(printViaIframe).not.toHaveBeenCalled();
+      expect(screen.queryByTestId('print-all-attachments')).toBeNull();
+      const { container } = (printPdfViaIframe as jest.Mock).mock.calls[0][1];
+      expect(container).toHaveClass('cds--modal-container');
+      expect(container).toContainElement(
+        screen.getByTestId('print-attachment-0'),
+      );
+    });
+
+    it('prints an image attachment through the same helper as the registration card', async () => {
+      const user = userEvent.setup();
+      (useQuery as jest.Mock).mockReturnValue(
+        mockQueryData([mockImageDocument]),
+      );
+
+      renderComponent({ config: defaultConfig });
+      await user.click(screen.getByText('DOCUMENTS_VIEW_ATTACHMENTS'));
+      finishLoadingAttachments();
+      await user.click(await screen.findByTestId('print-attachment-0'));
+
+      expect(printViaIframe).toHaveBeenCalledTimes(1);
+      const [html, options] = (printViaIframe as jest.Mock).mock.calls[0];
+      expect(html).toContain('100/xray-image.jpg');
+      expect(html).toContain('X-Ray Image');
+      expect(options).toEqual({
+        container: expect.any(HTMLElement),
+        focus: false,
+        signal: expect.any(AbortSignal),
+      });
+      expect(options.container).toHaveClass('cds--modal-container');
+      expect(printPdfViaIframe).not.toHaveBeenCalled();
+    });
+
+    it('opens a separate print preview for each file, in order, when printing all', async () => {
+      const user = userEvent.setup();
+      (useQuery as jest.Mock).mockReturnValue(
+        mockQueryData([
+          {
+            ...mockMultiAttachmentDocument,
+            attachments: [
+              { url: '100/a.jpg', contentType: 'image/jpeg' },
+              { url: '100/b.pdf', contentType: 'application/pdf' },
+              { url: '100/c.png', contentType: 'image/png' },
+            ],
+          },
+        ]),
+      );
+
+      renderComponent({ config: defaultConfig });
+      await user.click(screen.getByText('DOCUMENTS_VIEW_ATTACHMENTS'));
+      finishLoadingAttachments();
+      await user.click(await screen.findByTestId('print-all-attachments'));
+
+      await waitFor(() => expect(printViaIframe).toHaveBeenCalledTimes(2));
+      expect(printPdfViaIframe).toHaveBeenCalledTimes(1);
+      const [first, second] = (printViaIframe as jest.Mock).mock.calls;
+      expect(first[0]).toContain('a.jpg');
+      expect(first[0]).not.toContain('c.png');
+      expect(second[0]).toContain('c.png');
+      expect(second[0]).not.toContain('a.jpg');
       expect(
-        screen.getAllByText('Test Document').length,
-      ).toBeGreaterThanOrEqual(2);
+        (printViaIframe as jest.Mock).mock.invocationCallOrder[0],
+      ).toBeLessThan(
+        (printPdfViaIframe as jest.Mock).mock.invocationCallOrder[0],
+      );
+      expect(
+        (printPdfViaIframe as jest.Mock).mock.invocationCallOrder[0],
+      ).toBeLessThan((printViaIframe as jest.Mock).mock.invocationCallOrder[1]);
+    });
+
+    it('opens the next preview only after the previous print dialog has closed', async () => {
+      const user = userEvent.setup();
+      let closeFirst: () => void = () => {};
+      (printViaIframe as jest.Mock).mockImplementationOnce(
+        () =>
+          new Promise<void>((resolve) => {
+            closeFirst = resolve;
+          }),
+      );
+      (useQuery as jest.Mock).mockReturnValue(
+        mockQueryData([
+          {
+            ...mockMultiAttachmentDocument,
+            attachments: [
+              { url: '100/a.jpg', contentType: 'image/jpeg' },
+              { url: '100/c.png', contentType: 'image/png' },
+            ],
+          },
+        ]),
+      );
+
+      renderComponent({ config: defaultConfig });
+      await user.click(screen.getByText('DOCUMENTS_VIEW_ATTACHMENTS'));
+      finishLoadingAttachments();
+      await user.click(await screen.findByTestId('print-all-attachments'));
+
+      expect(printViaIframe).toHaveBeenCalledTimes(1);
+
+      await act(async () => closeFirst());
+
+      await waitFor(() => expect(printViaIframe).toHaveBeenCalledTimes(2));
+    });
+
+    it('stops and tells the user when one of the files cannot be printed', async () => {
+      const user = userEvent.setup();
+      (printViaIframe as jest.Mock).mockRejectedValueOnce(new Error('boom'));
+      (useQuery as jest.Mock).mockReturnValue(
+        mockQueryData([
+          {
+            ...mockMultiAttachmentDocument,
+            attachments: [
+              { url: '100/a.jpg', contentType: 'image/jpeg' },
+              { url: '100/c.png', contentType: 'image/png' },
+            ],
+          },
+        ]),
+      );
+
+      renderComponent({ config: defaultConfig });
+      await user.click(screen.getByText('DOCUMENTS_VIEW_ATTACHMENTS'));
+      finishLoadingAttachments();
+      await user.click(await screen.findByTestId('print-all-attachments'));
+
+      await waitFor(() =>
+        expect(mockAddNotification).toHaveBeenCalledWith(
+          expect.objectContaining({
+            message: 'DOCUMENTS_ERROR_LOADING_ATTACHMENT',
+          }),
+        ),
+      );
+      expect(printViaIframe).toHaveBeenCalledTimes(1);
+    });
+
+    describe('while a print is being prepared', () => {
+      let finishPrint: () => void;
+
+      const openMultiAttachmentViewer = async (user: UserEvent) => {
+        (useQuery as jest.Mock).mockReturnValue(
+          mockQueryData([
+            {
+              ...mockMultiAttachmentDocument,
+              attachments: [
+                { url: '100/a.jpg', contentType: 'image/jpeg' },
+                { url: '100/b.png', contentType: 'image/png' },
+              ],
+            },
+          ]),
+        );
+        renderComponent({ config: defaultConfig });
+        await user.click(screen.getByText('DOCUMENTS_VIEW_ATTACHMENTS'));
+        finishLoadingAttachments();
+      };
+
+      beforeEach(() => {
+        let calls = 0;
+        (printViaIframe as jest.Mock).mockImplementation(() => {
+          calls += 1;
+          return calls % 2 === 1
+            ? new Promise<void>((resolve) => {
+                finishPrint = resolve;
+              })
+            : Promise.resolve();
+        });
+      });
+
+      it('disables the print buttons until the print is done', async () => {
+        const user = userEvent.setup();
+        await openMultiAttachmentViewer(user);
+
+        await user.click(await screen.findByTestId('print-all-attachments'));
+
+        expect(screen.getByTestId('print-all-attachments')).toBeDisabled();
+        expect(screen.getByTestId('print-attachment-0')).toBeDisabled();
+
+        await act(async () => finishPrint());
+
+        expect(screen.getByTestId('print-all-attachments')).toBeEnabled();
+        expect(screen.getByTestId('print-attachment-0')).toBeEnabled();
+      });
+
+      it.each([
+        ['print-attachment-1', ['print-attachment-0', 'print-all-attachments']],
+        ['print-all-attachments', ['print-attachment-0', 'print-attachment-1']],
+      ])(
+        'shows which button is working: a spinner in place of its printer icon, on %s only',
+        async (started, others) => {
+          const user = userEvent.setup();
+          await openMultiAttachmentViewer(user);
+          const spinnerIn = (testId: string) =>
+            screen.getByTestId(testId).querySelector('.cds--inline-loading');
+
+          await user.click(await screen.findByTestId(started));
+
+          expect(spinnerIn(started)).not.toBeNull();
+          others.forEach((other) => expect(spinnerIn(other)).toBeNull());
+
+          await act(async () => finishPrint());
+
+          expect(spinnerIn(started)).toBeNull();
+        },
+      );
+
+      it('prints again once the first print has finished', async () => {
+        const user = userEvent.setup();
+        await openMultiAttachmentViewer(user);
+
+        await user.click(await screen.findByTestId('print-all-attachments'));
+        await act(async () => finishPrint());
+        await user.click(screen.getByTestId('print-all-attachments'));
+
+        expect(printViaIframe).toHaveBeenCalledTimes(3);
+      });
+
+      it('abandons the print when the viewer is closed, so the next one can start', async () => {
+        const user = userEvent.setup();
+        await openMultiAttachmentViewer(user);
+        await user.click(await screen.findByTestId('print-all-attachments'));
+        const { signal } = (printViaIframe as jest.Mock).mock.calls[0][1];
+
+        await user.click(screen.getByRole('button', { name: /close/i }));
+        await act(async () => finishPrint());
+
+        expect(signal.aborted).toBe(true);
+        expect(printViaIframe).toHaveBeenCalledTimes(1);
+
+        await user.click(screen.getByText('DOCUMENTS_VIEW_ATTACHMENTS'));
+        finishLoadingAttachments();
+
+        expect(
+          await screen.findByTestId('print-all-attachments'),
+        ).toBeEnabled();
+      });
+
+      it('lets printing be retried after a failure', async () => {
+        const user = userEvent.setup();
+        (printViaIframe as jest.Mock).mockRejectedValueOnce(new Error('boom'));
+        await openMultiAttachmentViewer(user);
+
+        await user.click(await screen.findByTestId('print-all-attachments'));
+
+        await waitFor(() =>
+          expect(screen.getByTestId('print-all-attachments')).toBeEnabled(),
+        );
+      });
+    });
+
+    it('tells the user when printing fails', async () => {
+      const user = userEvent.setup();
+      (printPdfViaIframe as jest.Mock).mockRejectedValueOnce(new Error('404'));
+      (useQuery as jest.Mock).mockReturnValue(mockQueryData([mockPdfDocument]));
+
+      renderComponent({ config: defaultConfig });
+      await user.click(screen.getByText('DOCUMENTS_VIEW_ATTACHMENTS'));
+      finishLoadingAttachments();
+      await user.click(await screen.findByTestId('print-attachment-0'));
+
+      await waitFor(() =>
+        expect(mockAddNotification).toHaveBeenCalledWith(
+          expect.objectContaining({
+            message: 'DOCUMENTS_ERROR_LOADING_ATTACHMENT',
+            type: 'error',
+          }),
+        ),
+      );
     });
   });
 });

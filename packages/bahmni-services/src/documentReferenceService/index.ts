@@ -6,12 +6,13 @@ export {
   getDocumentUploadMaxSizeMb,
   type DocumentReferencePage,
 } from './documentReferenceService';
-export { saveDocuments } from './documentWriteService';
+export { buildDocumentReference, saveDocuments } from './documentWriteService';
 export type {
   DocumentViewModel,
   DocumentType,
   DocumentSaveTarget,
   CreateEncounterInVisit,
+  DocumentFile,
   DocumentPayload,
   SaveDocumentsInput,
   AttachToExistingEncounter,

@@ -10,11 +10,15 @@ export { DocumentPrintButton } from './documentPrintButton';
 export type { PrintOption } from './documentPrintButton';
 export {
   DocumentUpload,
+  createEmptyDocumentEntry,
   getDefaultDocumentType,
+  isDocumentEntryEmpty,
   renderDocumentTile,
   revokeDocumentPreview,
 } from './documentUpload';
 export type {
+  DocumentEntry,
+  DocumentEntryErrors,
   DocumentUploadProps,
   DocumentTileData,
   PendingDocument,

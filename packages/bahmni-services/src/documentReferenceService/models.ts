@@ -62,11 +62,18 @@ export type DocumentSaveTarget =
   | AttachToExistingEncounter
   | { createEncounterInVisit: CreateEncounterInVisit };
 
-/** A single document. url comes from the prior visitDocument upload call. */
-export interface DocumentPayload {
+/** A single file of a document. url comes from the prior visitDocument upload call. */
+export interface DocumentFile {
   url: string;
   contentType?: string;
   title?: string;
+}
+
+/** A document (one DocumentReference) made up of one or more files. */
+export interface DocumentPayload {
+  files: DocumentFile[];
+  /** Business identifier of the document, shown as the Document ID. */
+  masterIdentifier?: string;
   typeCode?: string;
   typeDisplay?: string;
   description?: string;

@@ -1,21 +1,78 @@
-import { SortableDataTable, Modal, Link } from '@bahmni/design-system';
+import {
+  Button,
+  Icon,
+  ICON_SIZE,
+  IconButton,
+  InlineLoading,
+  Link,
+  Modal,
+  Printer,
+  SortableDataTable,
+  Tile,
+  TooltipIcon,
+} from '@bahmni/design-system';
 import {
   useTranslation,
   formatDateTime,
   getDocumentReferencePage,
+  useSubscribeConsultationSaved,
   DocumentViewModel,
 } from '@bahmni/services';
 import { useQuery } from '@tanstack/react-query';
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
+import {
+  printPdfViaIframe,
+  printViaIframe,
+} from '../documentPrintButton/printViaIframe';
 import { usePatientUUID } from '../hooks/usePatientUUID';
 import { useNotification } from '../notification';
-import { WidgetProps } from '../registry/model';
+import { WidgetActionConfig, WidgetProps } from '../registry/model';
+import { useHasPrivilege } from '../userPrivileges/useHasPrivilege';
 import styles from './styles/DocumentsTable.module.scss';
-import { buildDocumentUrl, createDocumentHeaders } from './utils';
+import {
+  buildDocumentUrl,
+  buildAttachmentPrintHtml,
+  createDocumentHeaders,
+  isPdfAttachment,
+  PrintableAttachment,
+  toPrintUrl,
+} from './utils';
+
+const CONSULTATION_START_EVENT = 'startConsultation';
+const ADD_DOCUMENT_ACTION_TYPE = 'add';
+const DOCUMENTS_INPUT_CONTROL_KEY = 'documents';
+
+interface AddDocumentActionConfig extends WidgetActionConfig {
+  encounterType?: string;
+  editOnly?: string;
+  editTitle?: string;
+}
+
+// Stands in for the printer icon on the button whose print is being prepared.
+const PrintSpinner: React.FC = () => <InlineLoading />;
+
+const SCROLL_KEYS = new Set([
+  'ArrowUp',
+  'ArrowDown',
+  'PageUp',
+  'PageDown',
+  'Home',
+  'End',
+  ' ',
+]);
+
+// A frame that never reports loading must not keep printing disabled for good.
+const ATTACHMENT_LOAD_TIMEOUT_MS = 15000;
 
 const DEFAULT_DOCUMENT_FIELDS = [
-  'documentIdentifier',
   'documentType',
+  'documentIdentifier',
   'attachments',
   'uploadedOn',
   'uploadedBy',
@@ -41,9 +98,31 @@ const DocumentsTable: React.FC<WidgetProps> = ({ config, encounterUuids }) => {
   const [failedAttachments, setFailedAttachments] = useState<Set<number>>(
     new Set(),
   );
+  // Attachments the viewer has finished loading; each shows a spinner until it has.
+  const [loadedAttachments, setLoadedAttachments] = useState<Set<number>>(
+    new Set(),
+  );
+  // The print run belongs to the open viewer: closing the viewer abandons what is left of it.
+  const printAbortRef = useRef<AbortController | null>(null);
+  // Which print button started the run, so only that one shows it is working.
+  const [printingTarget, setPrintingTarget] = useState<number | 'all' | null>(
+    null,
+  );
+  const isPrinting = printingTarget !== null;
+  useEffect(() => () => printAbortRef.current?.abort(), []);
   const patientUUID = usePatientUUID();
   const { t } = useTranslation();
   const { addNotification } = useNotification();
+
+  const addAction = useMemo(
+    () =>
+      (config?.actions as AddDocumentActionConfig[] | undefined)?.find(
+        (action) => action.type === ADD_DOCUMENT_ACTION_TYPE,
+      ),
+    [config?.actions],
+  );
+  const hasAddPrivilege = useHasPrivilege(addAction?.requiredPrivilege);
+  const showAddAction = !!addAction && hasAddPrivilege;
 
   const configPageSize = Number(config?.pageSize) || 5;
 
@@ -57,16 +136,35 @@ const DocumentsTable: React.FC<WidgetProps> = ({ config, encounterUuids }) => {
   }, []);
 
   const handleCloseModal = useCallback(() => {
+    printAbortRef.current?.abort();
+    setLoadedAttachments(new Set());
     setIsModalOpen(false);
     setSelectedDoc(null);
     setFailedAttachments(new Set());
+  }, []);
+
+  const handleAttachmentLoaded = useCallback((index: number) => {
+    setLoadedAttachments((prev) => new Set(prev).add(index));
   }, []);
 
   const handleAttachmentLoadError = useCallback((index: number) => {
     setFailedAttachments((prev) => new Set(prev).add(index));
   }, []);
 
-  const { data, isLoading, isError, error } = useQuery({
+  const handleAddDocument = useCallback(() => {
+    if (!addAction) return;
+    globalThis.dispatchEvent(
+      new CustomEvent(CONSULTATION_START_EVENT, {
+        detail: {
+          encounterType: addAction.encounterType,
+          editOnly: addAction.editOnly ?? DOCUMENTS_INPUT_CONTROL_KEY,
+          ...(addAction.editTitle ? { editTitle: addAction.editTitle } : {}),
+        },
+      }),
+    );
+  }, [addAction]);
+
+  const { data, isLoading, isError, error, refetch } = useQuery({
     queryKey: [
       'documents',
       patientUUID!,
@@ -83,6 +181,18 @@ const DocumentsTable: React.FC<WidgetProps> = ({ config, encounterUuids }) => {
         currentPage,
       ),
   });
+
+  useSubscribeConsultationSaved(
+    (payload) => {
+      if (
+        payload.patientUUID === patientUUID &&
+        payload.updatedResources.documents
+      ) {
+        refetch();
+      }
+    },
+    [patientUUID, refetch],
+  );
 
   useEffect(() => {
     if (data) {
@@ -141,6 +251,52 @@ const DocumentsTable: React.FC<WidgetProps> = ({ config, encounterUuids }) => {
     return () => controller.abort();
   }, [isModalOpen, selectedDoc]);
 
+  // A pdf grabs focus when it finishes loading, and the browser scrolls it into view: opened on a
+  // document of several attachments the viewer jumps to the last one, under the user's hand. Hold
+  // the viewer where it opened until the user scrolls it themselves.
+  useEffect(() => {
+    if (!isModalOpen || !selectedDoc) return;
+    const scroller = document.querySelector<HTMLElement>(
+      '[data-testid="document-view-modal"] .cds--modal-content',
+    );
+    if (!scroller) return;
+    let userHasScrolled = false;
+    const markScrolled = () => {
+      userHasScrolled = true;
+    };
+    // Only what moves a viewer counts: a click on a button, or Enter on one, must not release the
+    // hold, since a loading attachment can still scroll it right after.
+    const markScrolledByScrollbar = (event: MouseEvent) => {
+      if (event.target === scroller) markScrolled();
+    };
+    const markScrolledByKey = (event: KeyboardEvent) => {
+      const target = event.target as HTMLElement | null;
+      if (
+        SCROLL_KEYS.has(event.key) &&
+        !target?.closest('button, input, textarea, select, a')
+      ) {
+        markScrolled();
+      }
+    };
+    const holdPosition = () => {
+      if (!userHasScrolled && scroller.scrollTop !== 0) {
+        scroller.scrollTop = 0;
+      }
+    };
+    scroller.addEventListener('wheel', markScrolled, { passive: true });
+    scroller.addEventListener('touchmove', markScrolled, { passive: true });
+    scroller.addEventListener('mousedown', markScrolledByScrollbar);
+    scroller.addEventListener('keydown', markScrolledByKey);
+    scroller.addEventListener('scroll', holdPosition);
+    return () => {
+      scroller.removeEventListener('wheel', markScrolled);
+      scroller.removeEventListener('touchmove', markScrolled);
+      scroller.removeEventListener('mousedown', markScrolledByScrollbar);
+      scroller.removeEventListener('keydown', markScrolledByKey);
+      scroller.removeEventListener('scroll', holdPosition);
+    };
+  }, [isModalOpen, selectedDoc]);
+
   const handlePageChange = useCallback(
     (newPage: number, newPageSize: number) => {
       if (newPageSize !== selectedPageSize) {
@@ -187,13 +343,107 @@ const DocumentsTable: React.FC<WidgetProps> = ({ config, encounterUuids }) => {
     [selectedDoc],
   );
 
+  // Printing waits until the attachments have loaded (or failed): a pdf finishing its load takes
+  // focus and scrolls the viewer, which swallowed a click and interrupted a print started meanwhile.
+  const allAttachmentsLoaded = normalizedAttachments.every(
+    (attachment, index) =>
+      loadedAttachments.has(index) ||
+      failedAttachments.has(index) ||
+      buildDocumentUrl(attachment.url) === '#',
+  );
+
+  useEffect(() => {
+    if (!isModalOpen || normalizedAttachments.length === 0) return;
+    const timeoutId = setTimeout(
+      () => setLoadedAttachments(new Set(normalizedAttachments.keys())),
+      ATTACHMENT_LOAD_TIMEOUT_MS,
+    );
+    return () => clearTimeout(timeoutId);
+  }, [isModalOpen, normalizedAttachments]);
+
+  // One print run at a time: while it runs the print buttons are disabled, so a second click cannot
+  // queue a second print that opens its preview again once the first is cancelled.
+  const printAttachments = useCallback(
+    async (
+      attachments: PrintableAttachment[],
+      trigger: HTMLElement | null,
+      target: number | 'all',
+    ) => {
+      if (!selectedDoc || printAbortRef.current) return;
+      const controller = new AbortController();
+      const { signal } = controller;
+      printAbortRef.current = controller;
+      setPrintingTarget(target);
+      // Every print frame goes inside the modal's own container, the only place its focus trap
+      // allows focus: browsers focus the frame they print, and focus landing outside the modal
+      // makes the trap pull it back, scrolling the modal to the bottom and interrupting the print.
+      const container = trigger?.closest<HTMLElement>('.cds--modal-container');
+      try {
+        // Each file gets its own print preview, one after the other: the next opens once the
+        // previous dialog has been closed.
+        for (const attachment of attachments) {
+          if (signal.aborted) break;
+          if (isPdfAttachment(attachment)) {
+            await printPdfViaIframe(toPrintUrl(attachment.url), {
+              container,
+              focus: false,
+              signal,
+            });
+          } else {
+            await printViaIframe(
+              buildAttachmentPrintHtml(
+                attachment,
+                selectedDoc.documentIdentifier,
+              ),
+              { container, focus: false, signal },
+            );
+          }
+        }
+      } catch {
+        if (!signal.aborted) {
+          addNotification({
+            title: t('ERROR_DEFAULT_TITLE'),
+            message: t('DOCUMENTS_ERROR_LOADING_ATTACHMENT'),
+            type: 'error',
+          });
+        }
+      } finally {
+        printAbortRef.current = null;
+        setPrintingTarget(null);
+      }
+    },
+    [selectedDoc, addNotification, t],
+  );
+
+  const printableAttachments = useMemo(
+    () =>
+      normalizedAttachments.filter(
+        (attachment, index) =>
+          buildDocumentUrl(attachment.url) !== '#' &&
+          !failedAttachments.has(index),
+      ),
+    [normalizedAttachments, failedAttachments],
+  );
+
   const renderCell = useCallback(
     (doc: DocumentViewModel, cellId: string) => {
       switch (cellId) {
         case 'documentIdentifier':
-          return <span>{doc.documentIdentifier}</span>;
+          return <span>{doc.documentIdentifier?.trim() || '-'}</span>;
         case 'documentType':
-          return doc.documentType ?? t('DOCUMENTS_NOT_AVAILABLE');
+          return (
+            <div className={styles.documentTypeCell}>
+              <span>{doc.documentType ?? t('DOCUMENTS_NOT_AVAILABLE')}</span>
+              {doc.description && (
+                <TooltipIcon
+                  iconName="fa-file-lines"
+                  content={doc.description}
+                  ariaLabel={doc.description}
+                  testId={`document-notes-${doc.id}`}
+                />
+              )}
+            </div>
+          );
         case 'uploadedOn': {
           const formattedDate = formatDateTime(
             doc.uploadedOn,
@@ -227,6 +477,21 @@ const DocumentsTable: React.FC<WidgetProps> = ({ config, encounterUuids }) => {
 
   return (
     <>
+      {showAddAction && (
+        <Tile className={styles.header} testId="documents-header">
+          <p>{t('DOCUMENTS_TABLE_HEADING')}</p>
+          <IconButton
+            autoAlign
+            size="lg"
+            kind="ghost"
+            label={t(addAction.label)}
+            testId="documents-add-button"
+            onClick={handleAddDocument}
+          >
+            <Icon id="documents-add-icon" name="fa-plus" size={ICON_SIZE.LG} />
+          </IconButton>
+        </Tile>
+      )}
       <div data-testid="documents-table">
         <SortableDataTable
           headers={headers}
@@ -258,6 +523,25 @@ const DocumentsTable: React.FC<WidgetProps> = ({ config, encounterUuids }) => {
           testId="document-view-modal"
         >
           <div className={styles.documentViewerContainer}>
+            {printableAttachments.length > 1 && (
+              <Button
+                kind="tertiary"
+                size="sm"
+                className={styles.printAllButton}
+                renderIcon={printingTarget === 'all' ? PrintSpinner : Printer}
+                disabled={isPrinting || !allAttachmentsLoaded}
+                testId="print-all-attachments"
+                onClick={(event) =>
+                  printAttachments(
+                    printableAttachments,
+                    event.currentTarget,
+                    'all',
+                  )
+                }
+              >
+                {t('DOCUMENTS_PRINT_ALL')}
+              </Button>
+            )}
             {normalizedAttachments.map((attachment, index) => {
               const url = buildDocumentUrl(attachment.url);
               const isPdf = attachment.contentType
@@ -278,7 +562,10 @@ const DocumentsTable: React.FC<WidgetProps> = ({ config, encounterUuids }) => {
                   >
                     {normalizedAttachments.length > 1 && (
                       <p className={styles.attachmentCounter}>
-                        {index + 1}/{normalizedAttachments.length}
+                        {t('DOCUMENTS_ATTACHMENT_COUNTER', {
+                          current: index + 1,
+                          total: normalizedAttachments.length,
+                        })}
                       </p>
                     )}
                     <p>{t('DOCUMENTS_ERROR_LOADING_ATTACHMENT')}</p>
@@ -291,26 +578,77 @@ const DocumentsTable: React.FC<WidgetProps> = ({ config, encounterUuids }) => {
                   className={styles.attachmentItem}
                   data-testid={`attachment-item-${index}`}
                 >
-                  {normalizedAttachments.length > 1 && (
-                    <p className={styles.attachmentCounter}>
-                      {index + 1}/{normalizedAttachments.length}
-                    </p>
-                  )}
-                  {isImg ? (
-                    <img
-                      src={url}
-                      alt={selectedDoc.documentIdentifier}
-                      className={styles.documentImage}
-                      onError={() => handleAttachmentLoadError(index)}
-                    />
-                  ) : (
-                    <iframe
-                      src={isPdf ? `${url}#toolbar=0` : url}
-                      className={styles.documentIframe}
-                      title={selectedDoc.documentIdentifier}
-                      onError={() => handleAttachmentLoadError(index)}
-                    />
-                  )}
+                  <div className={styles.attachmentHeader}>
+                    {normalizedAttachments.length > 1 ? (
+                      <p className={styles.attachmentCounter}>
+                        {t('DOCUMENTS_ATTACHMENT_COUNTER', {
+                          current: index + 1,
+                          total: normalizedAttachments.length,
+                        })}
+                      </p>
+                    ) : (
+                      <span />
+                    )}
+                    <IconButton
+                      kind="ghost"
+                      size="sm"
+                      label={t('DOCUMENTS_PRINT_ATTACHMENT', {
+                        index: index + 1,
+                      })}
+                      disabled={isPrinting || !allAttachmentsLoaded}
+                      testId={`print-attachment-${index}`}
+                      onClick={(event) =>
+                        printAttachments(
+                          [attachment],
+                          event.currentTarget,
+                          index,
+                        )
+                      }
+                    >
+                      {printingTarget === index ? (
+                        <PrintSpinner />
+                      ) : (
+                        <Printer />
+                      )}
+                    </IconButton>
+                  </div>
+                  <div className={styles.attachmentContent}>
+                    {!loadedAttachments.has(index) && (
+                      <div
+                        className={styles.attachmentLoading}
+                        data-testid={`attachment-loading-${index}`}
+                      >
+                        <InlineLoading
+                          description={t('DOCUMENTS_LOADING_ATTACHMENT')}
+                        />
+                      </div>
+                    )}
+                    {isImg ? (
+                      <img
+                        src={url}
+                        alt={selectedDoc.documentIdentifier}
+                        className={`${styles.documentImage} ${
+                          loadedAttachments.has(index)
+                            ? ''
+                            : styles.hiddenWhileLoading
+                        }`}
+                        onLoad={() => handleAttachmentLoaded(index)}
+                        onError={() => handleAttachmentLoadError(index)}
+                      />
+                    ) : (
+                      <iframe
+                        src={isPdf ? `${url}#toolbar=0` : url}
+                        className={`${styles.documentIframe} ${
+                          loadedAttachments.has(index)
+                            ? ''
+                            : styles.hiddenWhileLoading
+                        }`}
+                        title={selectedDoc.documentIdentifier}
+                        onLoad={() => handleAttachmentLoaded(index)}
+                        onError={() => handleAttachmentLoadError(index)}
+                      />
+                    )}
+                  </div>
                 </div>
               );
             })}
