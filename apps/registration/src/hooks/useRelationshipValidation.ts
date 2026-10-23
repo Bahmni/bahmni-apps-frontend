@@ -71,12 +71,10 @@ export const useRelationshipValidation = () => {
     const newValidationErrors: ValidationErrors = {};
 
     relationships.forEach((rel) => {
-      const hasAnyData =
-        rel.relationshipType.trim() ||
-        rel.patientId.trim() ||
-        rel.tillDate.trim();
-
-      if (!hasAnyData) {
+      // Already-saved relationships are the backend's responsibility; rows being
+      // removed don't need to be complete. Every other row — including an
+      // untouched placeholder — must be fully filled in, or deleted, before save.
+      if (rel.isExisting || rel.isDeleted) {
         return;
       }
 
@@ -87,7 +85,7 @@ export const useRelationshipValidation = () => {
         isValid = false;
       }
 
-      if (rel.relationshipType.trim() && !rel.patientUuid) {
+      if (!rel.patientUuid) {
         errors.patientId = t('REGISTRATION_PATIENT_SELECTION_REQUIRED');
         isValid = false;
       }

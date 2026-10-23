@@ -114,6 +114,56 @@ describe('RelationshipRow', () => {
     expect(datePicker).toHaveAttribute('id', 'till-date-rel-1');
   });
 
+  describe('progressive field enablement (BAH-5166)', () => {
+    it('should disable patient search and till date when no relationship type is selected', () => {
+      const row = RelationshipRow({
+        relationship: { ...mockRelationship, relationshipType: '' },
+        relationshipTypes: mockRelationshipTypes,
+        suggestions: mockSuggestions,
+        errors: mockErrors,
+        ...mockCallbacks,
+      });
+
+      render(
+        <div>
+          {row.patientId}
+          {row.tillDate}
+        </div>,
+      );
+
+      expect(
+        screen.getByTestId('new-relationship-patient-search-combobox'),
+      ).toBeDisabled();
+      expect(
+        screen.getByTestId('new-relationship-till-date-input'),
+      ).toBeDisabled();
+    });
+
+    it('should enable patient search and till date once a relationship type is selected', () => {
+      const row = RelationshipRow({
+        relationship: mockRelationship,
+        relationshipTypes: mockRelationshipTypes,
+        suggestions: mockSuggestions,
+        errors: mockErrors,
+        ...mockCallbacks,
+      });
+
+      render(
+        <div>
+          {row.patientId}
+          {row.tillDate}
+        </div>,
+      );
+
+      expect(
+        screen.getByTestId('new-relationship-patient-search-combobox'),
+      ).toBeEnabled();
+      expect(
+        screen.getByTestId('new-relationship-till-date-input'),
+      ).toBeEnabled();
+    });
+  });
+
   it('should render remove button', () => {
     const row = RelationshipRow({
       relationship: mockRelationship,

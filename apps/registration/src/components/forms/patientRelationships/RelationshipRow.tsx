@@ -148,6 +148,7 @@ export const RelationshipRow = ({
         data-testid="new-relationship-patient-search-combobox"
         titleText=""
         placeholder={t('REGISTRATION_ENTER_PATIENT_ID')}
+        disabled={!relationship.relationshipType}
         items={suggestions}
         itemToString={(item) => item?.text ?? ''}
         selectedItem={
@@ -201,6 +202,7 @@ export const RelationshipRow = ({
           id={`till-date-${relationship.id}`}
           data-testid="new-relationship-till-date-input"
           labelText=""
+          disabled={!relationship.relationshipType}
         />
       </DatePicker>
     ),

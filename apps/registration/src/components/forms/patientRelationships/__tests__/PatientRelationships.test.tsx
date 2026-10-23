@@ -207,7 +207,7 @@ describe('PatientRelationships', () => {
       });
     });
 
-    it('should validate empty relationships correctly', async () => {
+    it('should reject the untouched default row — it must be completed or deleted', async () => {
       render(<PatientRelationships ref={ref} />, { wrapper });
 
       await waitFor(() => {
@@ -219,7 +219,33 @@ describe('PatientRelationships', () => {
         isValid = ref.current?.validate();
       });
 
-      // Empty relationships are allowed (they are skipped during validation)
+      // The default placeholder row is left untouched — it must be filled in
+      // or removed, it cannot be silently saved as-is.
+      expect(isValid).toBe(false);
+    });
+
+    it('should allow saving with zero relationships once the default row is deleted', async () => {
+      const user = userEvent.setup();
+      render(<PatientRelationships ref={ref} />, { wrapper });
+
+      await waitFor(() => {
+        expect(ref.current).not.toBeNull();
+      });
+
+      const removeButton = screen.getByRole('button', {
+        name: 'REGISTRATION_REMOVE',
+      });
+      await user.click(removeButton);
+
+      await waitFor(() => {
+        expect(ref.current?.getData()).toEqual([]);
+      });
+
+      let isValid;
+      act(() => {
+        isValid = ref.current?.validate();
+      });
+
       expect(isValid).toBe(true);
     });
 

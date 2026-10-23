@@ -192,10 +192,102 @@ describe('useRelationshipValidation', () => {
       expect(isValid).toBe(false);
       expect(result.current.validationErrors['rel-1']).toEqual({
         relationshipType: 'REGISTRATION_RELATIONSHIP_TYPE_REQUIRED',
+        patientId: 'REGISTRATION_PATIENT_SELECTION_REQUIRED',
       });
       expect(result.current.validationErrors['rel-3']).toEqual({
         patientId: 'REGISTRATION_RELATIONSHIP_ALREADY_EXISTS',
       });
+    });
+
+    it('should reject a completely untouched row — it must be filled in or deleted before save', () => {
+      const { result } = renderHook(() => useRelationshipValidation(), {
+        wrapper,
+      });
+
+      const relationships: RelationshipData[] = [
+        {
+          id: 'rel-1',
+          relationshipType: '',
+          patientId: '',
+          tillDate: '',
+        },
+      ];
+
+      let isValid = false;
+      act(() => {
+        isValid = result.current.validateRelationships(relationships);
+      });
+
+      expect(isValid).toBe(false);
+      expect(result.current.validationErrors['rel-1']).toEqual({
+        relationshipType: 'REGISTRATION_RELATIONSHIP_TYPE_REQUIRED',
+        patientId: 'REGISTRATION_PATIENT_SELECTION_REQUIRED',
+      });
+    });
+
+    it('should allow saving with zero relationships once every row has been deleted', () => {
+      const { result } = renderHook(() => useRelationshipValidation(), {
+        wrapper,
+      });
+
+      let isValid = false;
+      act(() => {
+        isValid = result.current.validateRelationships([]);
+      });
+
+      expect(isValid).toBe(true);
+      expect(result.current.validationErrors).toEqual({});
+    });
+
+    it('should not re-validate already-saved relationships', () => {
+      const { result } = renderHook(() => useRelationshipValidation(), {
+        wrapper,
+      });
+
+      const relationships: RelationshipData[] = [
+        {
+          id: 'rel-1',
+          relationshipType: 'parent-child-uuid',
+          patientId: 'P001',
+          patientUuid: 'uuid-1',
+          tillDate: '',
+          isExisting: true,
+        },
+      ];
+
+      let isValid = false;
+      act(() => {
+        isValid = result.current.validateRelationships(relationships);
+      });
+
+      expect(isValid).toBe(true);
+      expect(result.current.validationErrors).toEqual({});
+    });
+
+    it('should not validate a row that is being deleted', () => {
+      const { result } = renderHook(() => useRelationshipValidation(), {
+        wrapper,
+      });
+
+      const relationships: RelationshipData[] = [
+        {
+          id: 'rel-1',
+          relationshipType: 'parent-child-uuid',
+          patientId: 'P001',
+          patientUuid: 'uuid-1',
+          tillDate: '',
+          isExisting: true,
+          isDeleted: true,
+        },
+      ];
+
+      let isValid = false;
+      act(() => {
+        isValid = result.current.validateRelationships(relationships);
+      });
+
+      expect(isValid).toBe(true);
+      expect(result.current.validationErrors).toEqual({});
     });
   });
 
