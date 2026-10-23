@@ -1,15 +1,20 @@
-import { Column, Grid, Dropdown, TextInput } from '@bahmni/design-system';
+import { TextInput } from '@bahmni/design-system';
 import { useTranslation, type ConditionInputEntry } from '@bahmni/services';
 import React from 'react';
-import { DURATION_UNITS } from '../../../constants/conditions';
+import {
+  CONDITION_DURATION_FIELDS,
+  CONDITION_DURATION_LABELS,
+  type ConditionDurationField,
+} from '../../../constants/conditions';
+import { parseConditionDurationInput } from '../../../utils/conditionDuration';
 import styles from './styles/SelectedConditionItem.module.scss';
 
 export interface SelectedConditionItemProps {
   condition: ConditionInputEntry;
   updateConditionDuration: (
     conditionId: string,
+    field: ConditionDurationField,
     value: number | null,
-    unit: 'days' | 'months' | 'years' | null,
   ) => void;
 }
 
@@ -20,82 +25,89 @@ const SelectedConditionItem: React.FC<SelectedConditionItemProps> = React.memo(
     const {
       id,
       display,
-      durationValue,
-      durationUnit,
+      durationYears,
+      durationMonths,
+      durationDays,
       errors,
       hasBeenValidated,
     } = condition;
-    const hasDurationValueError = !!(hasBeenValidated && errors.durationValue);
-    const hasDurationUnitError = !!(hasBeenValidated && errors.durationUnit);
+    const hasDurationError = !!(hasBeenValidated && errors.duration);
+    const titleId = `condition-title-${id}`;
+    const errorId = `condition-duration-error-${id}`;
+
+    const durationValues: Record<ConditionDurationField, number | null> = {
+      years: durationYears,
+      months: durationMonths,
+      days: durationDays,
+    };
+
+    const handleDurationChange = (
+      field: ConditionDurationField,
+      rawValue: string,
+    ) => {
+      const value = parseConditionDurationInput(field, rawValue);
+      // Invalid input (negative, decimal, non-numeric, out of range) is rejected
+      // so the previously committed value stays in the input
+      if (value === undefined) return;
+      updateConditionDuration(id, field, value);
+    };
 
     return (
-      <Grid>
-        <Column
-          sm={4}
-          md={7}
-          lg={9}
-          xlg={9}
-          className={styles.selectedConditionTitle}
-        >
+      <div className={styles.selectedConditionRow}>
+        <span id={titleId} className={styles.selectedConditionTitle}>
           {display}
-        </Column>
-        <Column
-          sm={4}
-          md={2}
-          lg={6}
-          xlg={6}
-          className={styles.selectedConditionDuration}
-        >
-          <TextInput
-            id={`condition-duration-value-${id}`}
-            labelText={t('CONDITIONS_DURATION_VALUE_LABEL')}
-            placeholder={t('CONDITIONS_DURATION_VALUE_PLACEHOLDER')}
-            value={durationValue?.toString() ?? ''}
-            onChange={(event) => {
-              const value = event.target.value.trim();
-              if (value === '') {
-                updateConditionDuration(id, null, durationUnit);
-                return;
-              }
-              const numValue = parseInt(value, 10);
-              if (!isNaN(numValue) && numValue > 0 && numValue <= 99) {
-                updateConditionDuration(id, numValue, durationUnit);
-              }
-            }}
-            data-testid={`condition-duration-value-${id}`}
-            type="number"
-            invalid={hasDurationValueError}
-            invalidText={hasDurationValueError ? t(errors.durationValue!) : ''}
-            size="sm"
-            className={styles.selectedConditionDurationValue}
-          />
-          <Dropdown
-            id={`condition-duration-unit-${id}`}
-            titleText={t('CONDITIONS_DURATION_UNIT_LABEL')}
-            label={t('CONDITIONS_DURATION_UNIT_LABEL')}
-            items={DURATION_UNITS}
-            selectedItem={
-              DURATION_UNITS.find((unit) => unit.id === durationUnit) ?? null
-            }
-            itemToString={(item) => t(item?.display ?? '')}
-            onChange={(event) => {
-              const unit = event.selectedItem?.id as
-                | 'days'
-                | 'months'
-                | 'years'
-                | null;
-              if (unit && ['days', 'months', 'years'].includes(unit)) {
-                updateConditionDuration(id, durationValue, unit);
-              }
-            }}
-            invalid={hasDurationUnitError}
-            invalidText={hasDurationUnitError ? t(errors.durationUnit!) : ''}
-            size="sm"
-            className={styles.selectedConditionDurationUnit}
-            autoAlign
-          />
-        </Column>
-      </Grid>
+        </span>
+        <div className={styles.selectedConditionDuration}>
+          <fieldset
+            className={styles.selectedConditionDurationFieldset}
+            aria-labelledby={`${titleId} condition-duration-legend-${id}`}
+            data-testid={`condition-duration-${id}`}
+          >
+            <legend
+              id={`condition-duration-legend-${id}`}
+              className="cds--visually-hidden"
+            >
+              {t('CONDITIONS_DURATION_LEGEND')}
+            </legend>
+            <div className={styles.selectedConditionDurationInputs}>
+              {CONDITION_DURATION_FIELDS.map((field) => (
+                <TextInput
+                  key={field}
+                  id={`condition-duration-${field}-${id}`}
+                  data-testid={`condition-duration-${field}-${id}`}
+                  labelText={t(CONDITION_DURATION_LABELS[field])}
+                  value={durationValues[field]?.toString() ?? ''}
+                  onChange={(event) =>
+                    handleDurationChange(field, event.target.value)
+                  }
+                  type="text"
+                  inputMode="numeric"
+                  pattern="[0-9]*"
+                  autoComplete="off"
+                  aria-invalid={hasDurationError}
+                  aria-describedby={hasDurationError ? errorId : undefined}
+                  size="sm"
+                  className={
+                    hasDurationError
+                      ? `${styles.selectedConditionDurationInput} ${styles.selectedConditionDurationInputInvalid}`
+                      : styles.selectedConditionDurationInput
+                  }
+                />
+              ))}
+            </div>
+            {hasDurationError && (
+              <div
+                id={errorId}
+                role="alert"
+                className={styles.selectedConditionDurationError}
+                data-testid={errorId}
+              >
+                {t(errors.duration!)}
+              </div>
+            )}
+          </fieldset>
+        </div>
+      </div>
     );
   },
 );

@@ -1890,22 +1890,46 @@ describe('encounterBundleService', () => {
     const mockValidCondition: ConditionInputEntry = {
       id: '162539AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
       display: 'Diabetes Mellitus',
-      durationValue: 2,
-      durationUnit: 'years',
+      durationYears: 2,
+      durationMonths: null,
+      durationDays: null,
       errors: {},
       hasBeenValidated: true,
     };
 
+    const withDuration = (
+      years: number | null,
+      months: number | null,
+      days: number | null,
+      overrides: Partial<ConditionInputEntry> = {},
+    ): ConditionInputEntry => ({
+      ...mockValidCondition,
+      durationYears: years,
+      durationMonths: months,
+      durationDays: days,
+      ...overrides,
+    });
+
+    const buildEntries = (
+      selectedConditions: ConditionInputEntry[],
+      consultationDate: Date,
+    ) =>
+      createConditionsBundleEntries({
+        selectedConditions,
+        encounterSubject: mockEncounterSubject,
+        encounterReference: mockEncounterReference,
+        practitionerUUID: mockPractitionerUUID,
+        consultationDate,
+      });
+
+    // Local-time helper so expectations are timezone independent
+    const localISO = (y: number, m: number, d: number) =>
+      new Date(y, m, d, 10, 30).toISOString();
+
     describe('Happy Path Tests', () => {
       it('should create bundle entries for valid conditions', () => {
         const mockDate = new Date('2025-01-15T10:30:00Z');
-        const result = createConditionsBundleEntries({
-          selectedConditions: [mockValidCondition],
-          encounterSubject: mockEncounterSubject,
-          encounterReference: mockEncounterReference,
-          practitionerUUID: mockPractitionerUUID,
-          consultationDate: mockDate,
-        });
+        const result = buildEntries([mockValidCondition], mockDate);
 
         expect(result).toBeInstanceOf(Array);
         expect(result).toHaveLength(1);
@@ -1921,22 +1945,15 @@ describe('encounterBundleService', () => {
       });
 
       it('should handle multiple conditions correctly', () => {
-        const secondCondition: ConditionInputEntry = {
+        const secondCondition = withDuration(null, 6, null, {
           id: '162540AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
           display: 'Hypertension',
-          durationValue: 6,
-          durationUnit: 'months',
-          errors: {},
-          hasBeenValidated: true,
-        };
-
-        const result = createConditionsBundleEntries({
-          selectedConditions: [mockValidCondition, secondCondition],
-          encounterSubject: mockEncounterSubject,
-          encounterReference: mockEncounterReference,
-          practitionerUUID: mockPractitionerUUID,
-          consultationDate: new Date('2025-01-15T10:30:00Z'),
         });
+
+        const result = buildEntries(
+          [mockValidCondition, secondCondition],
+          new Date('2025-01-15T10:30:00Z'),
+        );
 
         expect(result).toHaveLength(2);
         const firstResource = result[0].resource as Condition;
@@ -1948,36 +1965,21 @@ describe('encounterBundleService', () => {
       });
 
       it('should calculate onset date from duration correctly', () => {
-        const mockDate = new Date('2025-01-15T10:30:00Z');
-        const result = createConditionsBundleEntries({
-          selectedConditions: [mockValidCondition],
-          encounterSubject: mockEncounterSubject,
-          encounterReference: mockEncounterReference,
-          practitionerUUID: mockPractitionerUUID,
-          consultationDate: mockDate,
-        });
+        const result = buildEntries(
+          [mockValidCondition],
+          new Date('2025-01-15T10:30:00Z'),
+        );
 
         const condition = result[0].resource as Condition;
-        expect(condition.onsetDateTime).toBeDefined();
         // 2 years ago from 2025-01-15 should be 2023-01-15
         expect(condition.onsetDateTime).toBe('2023-01-15T10:30:00.000Z');
       });
 
       it('should handle conditions with days duration', () => {
-        const conditionWithDays: ConditionInputEntry = {
-          ...mockValidCondition,
-          durationValue: 30,
-          durationUnit: 'days',
-        };
-
-        const mockDate = new Date('2025-01-15T10:30:00Z');
-        const result = createConditionsBundleEntries({
-          selectedConditions: [conditionWithDays],
-          encounterSubject: mockEncounterSubject,
-          encounterReference: mockEncounterReference,
-          practitionerUUID: mockPractitionerUUID,
-          consultationDate: mockDate,
-        });
+        const result = buildEntries(
+          [withDuration(null, null, 30)],
+          new Date('2025-01-15T10:30:00Z'),
+        );
 
         const condition = result[0].resource as Condition;
         // 30 days ago from 2025-01-15 should be 2024-12-16
@@ -1985,24 +1987,96 @@ describe('encounterBundleService', () => {
       });
 
       it('should handle conditions with months duration', () => {
-        const conditionWithMonths: ConditionInputEntry = {
-          ...mockValidCondition,
-          durationValue: 3,
-          durationUnit: 'months',
-        };
-
-        const mockDate = new Date('2025-01-15T10:30:00Z');
-        const result = createConditionsBundleEntries({
-          selectedConditions: [conditionWithMonths],
-          encounterSubject: mockEncounterSubject,
-          encounterReference: mockEncounterReference,
-          practitionerUUID: mockPractitionerUUID,
-          consultationDate: mockDate,
-        });
+        const result = buildEntries(
+          [withDuration(null, 3, null)],
+          new Date('2025-01-15T10:30:00Z'),
+        );
 
         const condition = result[0].resource as Condition;
         // 3 months ago from 2025-01-15 should be 2024-10-15
         expect(condition.onsetDateTime).toBe('2024-10-15T10:30:00.000Z');
+      });
+
+      it('should handle a years-only duration', () => {
+        const result = buildEntries(
+          [withDuration(3, null, null)],
+          new Date(2025, 0, 15, 10, 30),
+        );
+
+        const condition = result[0].resource as Condition;
+        expect(condition.onsetDateTime).toBe(localISO(2022, 0, 15));
+      });
+
+      it('should handle a combined 1 year 6 months 10 days duration', () => {
+        const result = buildEntries(
+          [withDuration(1, 6, 10)],
+          new Date(2025, 0, 15, 10, 30),
+        );
+
+        const condition = result[0].resource as Condition;
+        // 2025-01-15 - 18 months = 2023-07-15, - 10 days = 2023-07-05
+        expect(condition.onsetDateTime).toBe(localISO(2023, 6, 5));
+      });
+
+      it('should treat 18 months the same as 1 year 6 months', () => {
+        const consultationDate = new Date(2025, 0, 15, 10, 30);
+        const eighteenMonths = buildEntries(
+          [withDuration(null, 18, null)],
+          consultationDate,
+        )[0].resource as Condition;
+        const oneYearSixMonths = buildEntries(
+          [withDuration(1, 6, null)],
+          consultationDate,
+        )[0].resource as Condition;
+
+        expect(eighteenMonths.onsetDateTime).toBe(localISO(2023, 6, 15));
+        expect(eighteenMonths.onsetDateTime).toBe(
+          oneYearSixMonths.onsetDateTime,
+        );
+      });
+
+      it('should clamp to month end (2026-03-31 - 1 month = 2026-02-28)', () => {
+        const result = buildEntries(
+          [withDuration(null, 1, null)],
+          new Date(2026, 2, 31, 10, 30),
+        );
+
+        const condition = result[0].resource as Condition;
+        expect(condition.onsetDateTime).toBe(localISO(2026, 1, 28));
+      });
+
+      it('should handle leap day (2028-02-29 - 1 year = 2027-02-28)', () => {
+        const result = buildEntries(
+          [withDuration(1, null, null)],
+          new Date(2028, 1, 29, 10, 30),
+        );
+
+        const condition = result[0].resource as Condition;
+        expect(condition.onsetDateTime).toBe(localISO(2027, 1, 28));
+      });
+
+      it('should compute a separate onsetDateTime for each condition', () => {
+        const conditions = [
+          withDuration(2, null, null, { id: 'condition-a' }),
+          withDuration(null, 6, null, { id: 'condition-b' }),
+          withDuration(1, 2, 3, { id: 'condition-c' }),
+        ];
+
+        const result = buildEntries(conditions, new Date(2025, 0, 15, 10, 30));
+
+        expect(result).toHaveLength(3);
+        const resources = result.map((entry) => entry.resource as Condition);
+        expect(resources.map((r) => r.code?.coding?.[0]?.code)).toEqual([
+          'condition-a',
+          'condition-b',
+          'condition-c',
+        ]);
+        expect(resources.map((r) => r.onsetDateTime)).toEqual([
+          localISO(2023, 0, 15),
+          localISO(2024, 6, 15),
+          // 2025-01-15 - 14 months = 2023-11-15, - 3 days = 2023-11-12
+          localISO(2023, 10, 12),
+        ]);
       });
     });
 
@@ -2056,92 +2130,44 @@ describe('encounterBundleService', () => {
         ).toThrow(CONSULTATION_ERROR_MESSAGES.INVALID_PRACTITIONER);
       });
 
-      it('should throw error for conditions with invalid duration values', () => {
-        const invalidCondition: ConditionInputEntry = {
-          ...mockValidCondition,
-          durationValue: null,
-          durationUnit: 'days',
-        };
-
+      it('should throw error when all duration fields are empty', () => {
         expect(() =>
-          createConditionsBundleEntries({
-            selectedConditions: [invalidCondition],
-            encounterSubject: mockEncounterSubject,
-            encounterReference: mockEncounterReference,
-            practitionerUUID: mockPractitionerUUID,
-            consultationDate: new Date(),
-          }),
+          buildEntries([withDuration(null, null, null)], new Date()),
         ).toThrow(CONSULTATION_ERROR_MESSAGES.INVALID_CONDITION_PARAMS);
       });
 
-      it('should throw error for conditions with invalid duration units', () => {
-        const invalidCondition: ConditionInputEntry = {
-          ...mockValidCondition,
-          durationValue: 5,
-          durationUnit: null,
-        };
+      it('should throw error when all duration fields are zero', () => {
+        expect(() => buildEntries([withDuration(0, 0, 0)], new Date())).toThrow(
+          CONSULTATION_ERROR_MESSAGES.INVALID_CONDITION_PARAMS,
+        );
+      });
 
+      it('should throw error when any condition in the list has no duration', () => {
         expect(() =>
-          createConditionsBundleEntries({
-            selectedConditions: [invalidCondition],
-            encounterSubject: mockEncounterSubject,
-            encounterReference: mockEncounterReference,
-            practitionerUUID: mockPractitionerUUID,
-            consultationDate: new Date(),
-          }),
+          buildEntries(
+            [mockValidCondition, withDuration(null, 0, null)],
+            new Date(),
+          ),
+        ).toThrow(CONSULTATION_ERROR_MESSAGES.INVALID_CONDITION_PARAMS);
+      });
+
+      it('should throw error for a null condition entry', () => {
+        expect(() =>
+          buildEntries([null as unknown as ConditionInputEntry], new Date()),
         ).toThrow(CONSULTATION_ERROR_MESSAGES.INVALID_CONDITION_PARAMS);
       });
     });
 
     describe('Edge Cases', () => {
       it('should return empty array for empty conditions list', () => {
-        const result = createConditionsBundleEntries({
-          selectedConditions: [],
-          encounterSubject: mockEncounterSubject,
-          encounterReference: mockEncounterReference,
-          practitionerUUID: mockPractitionerUUID,
-          consultationDate: new Date(),
-        });
-
-        expect(result).toEqual([]);
-      });
-
-      it('should handle conditions with zero duration', () => {
-        const conditionWithZeroDuration: ConditionInputEntry = {
-          ...mockValidCondition,
-          durationValue: 0,
-          durationUnit: 'days',
-        };
-
-        const mockDate = new Date('2025-01-15T10:30:00Z');
-        const result = createConditionsBundleEntries({
-          selectedConditions: [conditionWithZeroDuration],
-          encounterSubject: mockEncounterSubject,
-          encounterReference: mockEncounterReference,
-          practitionerUUID: mockPractitionerUUID,
-          consultationDate: mockDate,
-        });
-
-        const condition = result[0].resource as Condition;
-        // 0 days ago should be the same as consultation date
-        expect(condition.onsetDateTime).toBe('2025-01-15T10:30:00.000Z');
+        expect(buildEntries([], new Date())).toEqual([]);
       });
 
       it('should handle conditions with very large duration values', () => {
-        const conditionWithLargeDuration: ConditionInputEntry = {
-          ...mockValidCondition,
-          durationValue: 50,
-          durationUnit: 'years',
-        };
-
-        const mockDate = new Date('2025-01-15T10:30:00Z');
-        const result = createConditionsBundleEntries({
-          selectedConditions: [conditionWithLargeDuration],
-          encounterSubject: mockEncounterSubject,
-          encounterReference: mockEncounterReference,
-          practitionerUUID: mockPractitionerUUID,
-          consultationDate: mockDate,
-        });
+        const result = buildEntries(
+          [withDuration(50, null, null)],
+          new Date('2025-01-15T10:30:00Z'),
+        );
 
         const condition = result[0].resource as Condition;
         // 50 years ago should be 1975-01-15

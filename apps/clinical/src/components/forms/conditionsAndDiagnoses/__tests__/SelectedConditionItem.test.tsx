@@ -1,9 +1,10 @@
 import { type ConditionInputEntry } from '@bahmni/services';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { axe, toHaveNoViolations } from 'jest-axe';
+import React, { useState } from 'react';
 import i18n from '../../../../../setupTests.i18n';
-import { DURATION_UNITS } from '../../../../constants/conditions';
+import { type ConditionDurationField } from '../../../../constants/conditions';
 import SelectedConditionItem, {
   SelectedConditionItemProps,
 } from '../SelectedConditionItem';
@@ -26,699 +27,374 @@ jest.mock('@bahmni/design-system', () => ({
   TextInput: ({
     id,
     labelText,
-    placeholder,
     value,
     onChange,
-    invalid,
-    invalidText,
     type,
-    hideLabel,
     className,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    size,
     'data-testid': dataTestId,
     ...props
   }: any) => (
     <div className={className}>
-      {!hideLabel && <label htmlFor={id}>{labelText}</label>}
+      <label htmlFor={id}>{labelText}</label>
       <input
         id={id}
         type={type}
-        placeholder={placeholder}
         value={value}
         onChange={onChange}
         data-testid={dataTestId}
-        data-invalid={invalid}
-        aria-invalid={invalid}
         {...props}
       />
-      {invalid && invalidText && (
-        <div data-testid={`${dataTestId}-error`} role="alert">
-          {invalidText}
-        </div>
-      )}
-    </div>
-  ),
-  Dropdown: ({
-    id,
-    titleText,
-    label,
-    hideLabel,
-    items,
-    selectedItem,
-    itemToString,
-    onChange,
-    invalid,
-    invalidText,
-    className,
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    autoAlign,
-    ...props
-  }: any) => (
-    <div className={className}>
-      {!hideLabel && <label htmlFor={id}>{titleText ?? label}</label>}
-      <select
-        id={id}
-        data-testid={`dropdown-${id}`}
-        onChange={(e) => {
-          const selectedValue = e.target.value;
-          const selectedOption = items.find(
-            (item: any) => item.id === selectedValue,
-          );
-          onChange({ selectedItem: selectedOption });
-        }}
-        value={selectedItem?.id ?? ''}
-        data-invalid={invalid}
-        aria-invalid={invalid}
-        aria-label={hideLabel ? (titleText ?? label) : undefined}
-        {...props}
-      >
-        <option value="">Select...</option>
-        {items.map((item: any) => (
-          <option key={item.id} value={item.id}>
-            {itemToString(item)}
-          </option>
-        ))}
-      </select>
-      {invalid && invalidText && (
-        <div data-testid={`dropdown-${id}-error`} role="alert">
-          {invalidText}
-        </div>
-      )}
     </div>
   ),
 }));
 
-describe('SelectedConditionItem Unit Tests', () => {
+const FIELDS: ConditionDurationField[] = ['years', 'months', 'days'];
+
+describe('SelectedConditionItem', () => {
   const mockUpdateConditionDuration = jest.fn();
 
-  // Mock condition data
-  const mockValidCondition: ConditionInputEntry = {
+  const createCondition = (
+    overrides: Partial<ConditionInputEntry> = {},
+  ): ConditionInputEntry => ({
     id: 'test-condition-1',
     display: 'Test Condition Name',
-    durationValue: 30,
-    durationUnit: 'days',
+    durationYears: null,
+    durationMonths: null,
+    durationDays: null,
     errors: {},
     hasBeenValidated: false,
-  };
+    ...overrides,
+  });
 
-  const mockConditionWithErrors: ConditionInputEntry = {
-    id: 'test-condition-2',
-    display: 'Invalid Condition',
-    durationValue: null,
-    durationUnit: null,
-    errors: {
-      durationValue: 'CONDITIONS_DURATION_VALUE_REQUIRED',
-      durationUnit: 'CONDITIONS_DURATION_UNIT_REQUIRED',
-    },
-    hasBeenValidated: true,
-  };
+  const renderItem = (props: Partial<SelectedConditionItemProps> = {}) =>
+    render(
+      <SelectedConditionItem
+        condition={createCondition()}
+        updateConditionDuration={mockUpdateConditionDuration}
+        {...props}
+      />,
+    );
 
-  const mockConditionWithoutValidation: ConditionInputEntry = {
-    id: 'test-condition-3',
-    display: 'Condition Without Validation',
-    durationValue: null,
-    durationUnit: null,
-    errors: {
-      durationValue: 'CONDITIONS_DURATION_VALUE_REQUIRED',
-      durationUnit: 'CONDITIONS_DURATION_UNIT_REQUIRED',
-    },
-    hasBeenValidated: false,
-  };
-
-  const defaultProps: SelectedConditionItemProps = {
-    condition: mockValidCondition,
-    updateConditionDuration: mockUpdateConditionDuration,
-  };
+  const getInput = (field: ConditionDurationField, id = 'test-condition-1') =>
+    screen.getByTestId(`condition-duration-${field}-${id}`) as HTMLInputElement;
 
   beforeEach(() => {
     jest.clearAllMocks();
     i18n.changeLanguage('en');
   });
 
-  // 1. HAPPY PATH TESTS
-  describe('Happy Path Tests', () => {
-    it('should render component with valid condition data', () => {
-      render(<SelectedConditionItem {...defaultProps} />);
+  describe('Rendering', () => {
+    test('renders condition name and three labelled duration inputs', () => {
+      renderItem();
 
       expect(screen.getByText('Test Condition Name')).toBeInTheDocument();
-      expect(screen.getByDisplayValue('30')).toBeInTheDocument();
-      expect(screen.getByDisplayValue('Days')).toBeInTheDocument();
+      expect(screen.getByLabelText('Years')).toBe(getInput('years'));
+      expect(screen.getByLabelText('Months')).toBe(getInput('months'));
+      expect(screen.getByLabelText('Days')).toBe(getInput('days'));
     });
 
-    it('should display condition name correctly', () => {
-      const conditionWithLongName = {
-        ...mockValidCondition,
-        display: 'Very Long Condition Name That Should Display Properly',
-      };
+    test('renders the duration group with a translated legend', () => {
+      renderItem();
 
-      render(
-        <SelectedConditionItem
-          {...defaultProps}
-          condition={conditionWithLongName}
-        />,
+      const group = screen.getByRole('group');
+      expect(group).toHaveAccessibleName(
+        'Test Condition Name Duration since onset',
       );
-
-      expect(
-        screen.getByText(
-          'Very Long Condition Name That Should Display Properly',
-        ),
-      ).toBeInTheDocument();
+      expect(screen.getByText('Duration since onset')).toBeInTheDocument();
     });
 
-    it('should show current duration value in TextInput', () => {
-      render(<SelectedConditionItem {...defaultProps} />);
+    test('renders inputs as numeric text inputs', () => {
+      renderItem();
 
-      const durationInput = screen.getByTestId(
-        'condition-duration-value-test-condition-1',
-      );
-      expect(durationInput).toHaveValue(30);
-    });
-
-    it('should show current duration unit in Dropdown', () => {
-      render(<SelectedConditionItem {...defaultProps} />);
-
-      const durationDropdown = screen.getByTestId(
-        'dropdown-condition-duration-unit-test-condition-1',
-      );
-      expect(durationDropdown).toHaveValue('days');
-    });
-
-    it('should call updateConditionDuration when TextInput value changes with valid number', async () => {
-      const user = userEvent.setup();
-      render(<SelectedConditionItem {...defaultProps} />);
-
-      const durationInput = screen.getByTestId(
-        'condition-duration-value-test-condition-1',
-      );
-      await user.clear(durationInput);
-      await fireEvent.change(durationInput, { target: { value: '45' } });
-      expect(mockUpdateConditionDuration).toHaveBeenCalledWith(
-        'test-condition-1',
-        45,
-        'days',
-      );
-    });
-
-    it('should call updateConditionDuration when Dropdown selection changes', async () => {
-      const user = userEvent.setup();
-      render(<SelectedConditionItem {...defaultProps} />);
-
-      const durationDropdown = screen.getByTestId(
-        'dropdown-condition-duration-unit-test-condition-1',
-      );
-      await user.selectOptions(durationDropdown, 'months');
-
-      expect(mockUpdateConditionDuration).toHaveBeenCalledWith(
-        'test-condition-1',
-        30,
-        'months',
-      );
-    });
-
-    it('should handle clearing duration value (empty string)', async () => {
-      const user = userEvent.setup();
-      render(<SelectedConditionItem {...defaultProps} />);
-
-      const durationInput = screen.getByTestId(
-        'condition-duration-value-test-condition-1',
-      );
-      await user.clear(durationInput);
-
-      expect(mockUpdateConditionDuration).toHaveBeenCalledWith(
-        'test-condition-1',
-        null,
-        'days',
-      );
-    });
-
-    it('should handle numbers that are less than 99', async () => {
-      const user = userEvent.setup();
-      render(<SelectedConditionItem {...defaultProps} />);
-
-      const durationInput = screen.getByTestId(
-        'condition-duration-value-test-condition-1',
-      );
-      await user.clear(durationInput);
-      fireEvent.change(durationInput, { target: { value: '99' } });
-
-      expect(mockUpdateConditionDuration).toHaveBeenCalledWith(
-        'test-condition-1',
-        99,
-        'days',
-      );
-
-      await user.clear(durationInput);
-      fireEvent.change(durationInput, { target: { value: '9999' } });
-
-      expect(mockUpdateConditionDuration).toHaveBeenCalledWith(
-        'test-condition-1',
-        99,
-        'days',
-      );
-    });
-  });
-
-  // 2. SAD PATH TESTS
-  describe('Sad Path Tests - Validation Errors', () => {
-    it('should show validation error for duration value when hasBeenValidated is true', () => {
-      render(
-        <SelectedConditionItem
-          {...defaultProps}
-          condition={mockConditionWithErrors}
-        />,
-      );
-
-      const durationInput = screen.getByTestId(
-        'condition-duration-value-test-condition-2',
-      );
-      expect(durationInput).toHaveAttribute('data-invalid', 'true');
-      expect(durationInput).toHaveAttribute('aria-invalid', 'true');
-
-      const errorMessage = screen.getByTestId(
-        'condition-duration-value-test-condition-2-error',
-      );
-      expect(errorMessage).toHaveTextContent('Duration value is required');
-    });
-
-    it('should show validation error for duration unit when hasBeenValidated is true', () => {
-      render(
-        <SelectedConditionItem
-          {...defaultProps}
-          condition={mockConditionWithErrors}
-        />,
-      );
-
-      const durationDropdown = screen.getByTestId(
-        'dropdown-condition-duration-unit-test-condition-2',
-      );
-      expect(durationDropdown).toHaveAttribute('data-invalid', 'true');
-      expect(durationDropdown).toHaveAttribute('aria-invalid', 'true');
-
-      const errorMessage = screen.getByTestId(
-        'dropdown-condition-duration-unit-test-condition-2-error',
-      );
-      expect(errorMessage).toHaveTextContent('Duration unit is required');
-    });
-
-    it('should NOT show validation errors when hasBeenValidated is false', () => {
-      render(
-        <SelectedConditionItem
-          {...defaultProps}
-          condition={mockConditionWithoutValidation}
-        />,
-      );
-
-      const durationInput = screen.getByTestId(
-        'condition-duration-value-test-condition-3',
-      );
-      const durationDropdown = screen.getByTestId(
-        'dropdown-condition-duration-unit-test-condition-3',
-      );
-
-      expect(durationInput).toHaveAttribute('data-invalid', 'false');
-      expect(durationDropdown).toHaveAttribute('data-invalid', 'false');
-
-      expect(
-        screen.queryByTestId('condition-duration-value-test-condition-3-error'),
-      ).not.toBeInTheDocument();
-      expect(
-        screen.queryByTestId(
-          'dropdown-condition-duration-unit-test-condition-3-error',
-        ),
-      ).not.toBeInTheDocument();
-    });
-
-    it('should reject non-numeric input in TextInput', async () => {
-      const user = userEvent.setup();
-      render(<SelectedConditionItem {...defaultProps} />);
-
-      const durationInput = screen.getByTestId(
-        'condition-duration-value-test-condition-1',
-      );
-      await user.clear(durationInput);
-      await user.type(durationInput, 'abc');
-
-      // Non-numeric input should not trigger updateConditionDuration
-      expect(mockUpdateConditionDuration).not.toHaveBeenCalledWith(
-        'test-condition-1',
-        expect.any(Number),
-        'days',
-      );
-    });
-
-    it('should reject negative numbers in TextInput', async () => {
-      const user = userEvent.setup();
-      render(<SelectedConditionItem {...defaultProps} />);
-
-      const durationInput = screen.getByTestId(
-        'condition-duration-value-test-condition-1',
-      );
-      await user.clear(durationInput);
-      await user.type(durationInput, '-5');
-
-      // Negative numbers should not trigger updateConditionDuration with the negative value
-      expect(mockUpdateConditionDuration).not.toHaveBeenCalledWith(
-        'test-condition-1',
-        -5,
-        'days',
-      );
-    });
-
-    it('should reject zero values in TextInput', async () => {
-      const user = userEvent.setup();
-      render(<SelectedConditionItem {...defaultProps} />);
-
-      const durationInput = screen.getByTestId(
-        'condition-duration-value-test-condition-1',
-      );
-      await user.clear(durationInput);
-      await user.type(durationInput, '0');
-
-      // Zero should not trigger updateConditionDuration
-      expect(mockUpdateConditionDuration).not.toHaveBeenCalledWith(
-        'test-condition-1',
-        0,
-        'days',
-      );
-    });
-
-    it('should reject decimal numbers in TextInput', async () => {
-      const user = userEvent.setup();
-      render(<SelectedConditionItem {...defaultProps} />);
-
-      const durationInput = screen.getByTestId(
-        'condition-duration-value-test-condition-1',
-      );
-      await user.clear(durationInput);
-      await user.type(durationInput, '3.5');
-
-      // Decimal numbers should not trigger updateConditionDuration
-      expect(mockUpdateConditionDuration).not.toHaveBeenCalledWith(
-        'test-condition-1',
-        3.5,
-        'days',
-      );
-    });
-  });
-
-  // 3. EDGE CASES
-  describe('Edge Cases', () => {
-    it('should handle empty condition display', () => {
-      const conditionWithEmptyDisplay = {
-        ...mockValidCondition,
-        display: '',
-      };
-
-      render(
-        <SelectedConditionItem
-          {...defaultProps}
-          condition={conditionWithEmptyDisplay}
-        />,
-      );
-
-      // Should still render the component structure
-      expect(screen.getByTestId('carbon-grid')).toBeInTheDocument();
-    });
-
-    it('should handle special characters in TextInput', async () => {
-      const user = userEvent.setup();
-      render(<SelectedConditionItem {...defaultProps} />);
-
-      const durationInput = screen.getByTestId(
-        'condition-duration-value-test-condition-1',
-      );
-      await user.clear(durationInput);
-      await user.type(durationInput, '!@#$%');
-
-      // Special characters should not trigger updateConditionDuration
-      expect(mockUpdateConditionDuration).not.toHaveBeenCalledWith(
-        'test-condition-1',
-        expect.any(Number),
-        'days',
-      );
-    });
-
-    it('should handle whitespace-only input', async () => {
-      const user = userEvent.setup();
-      render(<SelectedConditionItem {...defaultProps} />);
-
-      const durationInput = screen.getByTestId(
-        'condition-duration-value-test-condition-1',
-      );
-      await user.clear(durationInput);
-      await user.type(durationInput, '   ');
-
-      // Whitespace should be treated as empty and call with null
-      expect(mockUpdateConditionDuration).toHaveBeenCalledWith(
-        'test-condition-1',
-        null,
-        'days',
-      );
-    });
-
-    it('should render all available duration units in dropdown', () => {
-      render(<SelectedConditionItem {...defaultProps} />);
-
-      // Check that all DURATION_UNITS are present
-      ['Days', 'Months', 'Years'].forEach((unit) => {
-        expect(screen.getByText(unit)).toBeInTheDocument();
+      FIELDS.forEach((field) => {
+        const input = getInput(field);
+        expect(input).toHaveAttribute('type', 'text');
+        expect(input).toHaveAttribute('inputMode', 'numeric');
       });
     });
 
-    it('should handle invalid dropdown selection gracefully', async () => {
-      render(<SelectedConditionItem {...defaultProps} />);
+    test('displays values from the condition', () => {
+      renderItem({
+        condition: createCondition({
+          durationYears: 1,
+          durationMonths: 6,
+          durationDays: 10,
+        }),
+      });
 
-      const durationDropdown = screen.getByTestId(
-        'dropdown-condition-duration-unit-test-condition-1',
-      );
+      expect(getInput('years')).toHaveValue('1');
+      expect(getInput('months')).toHaveValue('6');
+      expect(getInput('days')).toHaveValue('10');
+    });
 
-      // Try to select an invalid option (this should not call updateConditionDuration)
-      fireEvent.change(durationDropdown, { target: { value: 'invalid-unit' } });
+    test('displays empty inputs when values are null', () => {
+      renderItem();
 
-      expect(mockUpdateConditionDuration).not.toHaveBeenCalledWith(
-        'test-condition-1',
-        expect.any(Number),
-        'invalid-unit',
-      );
+      FIELDS.forEach((field) => expect(getInput(field)).toHaveValue(''));
+    });
+
+    test('displays zero values', () => {
+      renderItem({ condition: createCondition({ durationMonths: 0 }) });
+
+      expect(getInput('months')).toHaveValue('0');
     });
   });
 
-  // 4. COMPONENT BEHAVIOR TESTS
-  describe('Component Behavior Tests', () => {
-    it('should be memoized with React.memo', () => {
-      const { rerender } = render(<SelectedConditionItem {...defaultProps} />);
+  describe('Valid input', () => {
+    test.each([
+      ['years', '2', 2],
+      ['months', '18', 18],
+      ['days', '10', 10],
+      ['years', '0', 0],
+      ['years', '150', 150],
+      ['months', '999', 999],
+      ['days', '999', 999],
+      ['days', ' 7 ', 7],
+    ] as [ConditionDurationField, string, number][])(
+      'commits %s value "%s" as %d',
+      (field, rawValue, expected) => {
+        renderItem();
 
-      // Re-render with same props
-      rerender(<SelectedConditionItem {...defaultProps} />);
-
-      // Component should have displayName set for React.memo
-      expect(SelectedConditionItem.displayName).toBe('SelectedConditionItem');
-    });
-
-    it('should have correct test-ids for all interactive elements', () => {
-      render(<SelectedConditionItem {...defaultProps} />);
-
-      expect(
-        screen.getByTestId('condition-duration-value-test-condition-1'),
-      ).toBeInTheDocument();
-      expect(
-        screen.getByTestId('dropdown-condition-duration-unit-test-condition-1'),
-      ).toBeInTheDocument();
-    });
-
-    it('should have correct HTML structure', () => {
-      render(<SelectedConditionItem {...defaultProps} />);
-
-      expect(screen.getByTestId('carbon-grid')).toBeInTheDocument();
-      expect(screen.getAllByTestId('carbon-column')).toHaveLength(2);
-    });
-
-    it('should preserve focus on TextInput during input', async () => {
-      const user = userEvent.setup();
-      render(<SelectedConditionItem {...defaultProps} />);
-
-      const durationInput = screen.getByTestId(
-        'condition-duration-value-test-condition-1',
-      );
-      await user.click(durationInput);
-
-      expect(durationInput).toHaveFocus();
-
-      await user.type(durationInput, '5');
-
-      expect(durationInput).toHaveFocus();
-    });
-
-    it('should work with different duration units', async () => {
-      const user = userEvent.setup();
-
-      // Test with each duration unit
-      for (const unit of DURATION_UNITS) {
-        const conditionWithUnit = {
-          ...mockValidCondition,
-          id: `test-${unit.id}`,
-          durationUnit: unit.id as 'days' | 'months' | 'years',
-        };
-
-        const { unmount } = render(
-          <SelectedConditionItem
-            condition={conditionWithUnit}
-            updateConditionDuration={mockUpdateConditionDuration}
-          />,
-        );
-
-        const durationInput = screen.getByTestId(
-          `condition-duration-value-test-${unit.id}`,
-        );
-        await user.clear(durationInput);
-        await fireEvent.change(durationInput, { target: { value: '10' } });
+        fireEvent.change(getInput(field), { target: { value: rawValue } });
 
         expect(mockUpdateConditionDuration).toHaveBeenCalledWith(
-          `test-${unit.id}`,
-          10,
-          unit.id,
+          'test-condition-1',
+          field,
+          expected,
         );
+      },
+    );
 
-        unmount();
-        jest.clearAllMocks();
-      }
-    });
+    test('commits null when an input is cleared', () => {
+      renderItem({ condition: createCondition({ durationYears: 2 }) });
 
-    it('should not call updateConditionDuration when numValue is zero', async () => {
-      render(<SelectedConditionItem {...defaultProps} />);
+      fireEvent.change(getInput('years'), { target: { value: '' } });
 
-      const durationInput = screen.getByTestId(
-        'condition-duration-value-test-condition-1',
+      expect(mockUpdateConditionDuration).toHaveBeenCalledWith(
+        'test-condition-1',
+        'years',
+        null,
       );
-
-      jest.clearAllMocks();
-      fireEvent.change(durationInput, { target: { value: 0 } });
-
-      // Should not call updateConditionDuration because numValue is not > 0
-      expect(mockUpdateConditionDuration).not.toHaveBeenCalled();
-    });
-
-    it('should not call updateConditionDuration when numValue is negative', async () => {
-      render(<SelectedConditionItem {...defaultProps} />);
-
-      const durationInput = screen.getByTestId(
-        'condition-duration-value-test-condition-1',
-      );
-
-      const negativeInputs = ['-1', '-5', '-100'];
-
-      for (const input of negativeInputs) {
-        jest.clearAllMocks();
-        fireEvent.change(durationInput, { target: { value: input } });
-
-        // Should not call updateConditionDuration because numValue is not > 0
-        expect(mockUpdateConditionDuration).not.toHaveBeenCalled();
-      }
-    });
-
-    it('should return empty string when item is null', () => {
-      // Create a condition with no duration unit to test null item
-      const conditionWithoutUnit = {
-        ...mockValidCondition,
-        durationUnit: null,
-      };
-
-      render(
-        <SelectedConditionItem
-          {...defaultProps}
-          condition={conditionWithoutUnit}
-        />,
-      );
-
-      // When durationUnit is null, selectedItem will be null
-      // The itemToString function should return '' for null item
-      const durationDropdown = screen.getByTestId(
-        'dropdown-condition-duration-unit-test-condition-1',
-      );
-
-      // Check that the dropdown shows empty option when no unit is selected
-      expect(durationDropdown).toHaveValue('');
-    });
-
-    it('should return empty string when item exists but display is falsy', () => {
-      render(<SelectedConditionItem {...defaultProps} />);
-
-      // The dropdown should handle items with falsy display values gracefully
-      const durationDropdown = screen.getByTestId(
-        'dropdown-condition-duration-unit-test-condition-1',
-      );
-
-      expect(durationDropdown).toBeInTheDocument();
-    });
-
-    it('should return translated display when item has display property', () => {
-      render(<SelectedConditionItem {...defaultProps} />);
-
-      // Verify that translated duration units are displayed
-      expect(screen.getByText('Days')).toBeInTheDocument();
-      expect(screen.getByText('Months')).toBeInTheDocument();
-      expect(screen.getByText('Years')).toBeInTheDocument();
-    });
-
-    it('should handle undefined item in itemToString function', () => {
-      // Test with a condition that has an invalid duration unit
-      const conditionWithInvalidUnit = {
-        ...mockValidCondition,
-
-        durationUnit: 'invalid-unit' as any,
-      };
-
-      render(
-        <SelectedConditionItem
-          {...defaultProps}
-          condition={conditionWithInvalidUnit}
-        />,
-      );
-
-      // When duration unit doesn't match any DURATION_UNITS item,
-      // selectedItem will be null, testing the item?.display branch
-      const durationDropdown = screen.getByTestId(
-        'dropdown-condition-duration-unit-test-condition-1',
-      );
-
-      expect(durationDropdown).toHaveValue('');
-    });
-
-    it('should handle edge case of parseInt with leading/trailing whitespace', async () => {
-      render(<SelectedConditionItem {...defaultProps} />);
-
-      const durationInput = screen.getByTestId(
-        'condition-duration-value-test-condition-1',
-      );
-
-      // Test inputs with whitespace that parseInt can handle
-      const whitespaceInputs = [
-        { input: '  5  ', expectedValue: 5 }, // Leading/trailing spaces trimmed, parseInt should work
-        { input: '10\n', expectedValue: 10 }, // Trailing newline
-        { input: '\t15', expectedValue: 15 }, // Leading tab
-      ];
-
-      for (const test of whitespaceInputs) {
-        jest.clearAllMocks();
-        fireEvent.change(durationInput, { target: { value: test.input } });
-
-        // Since the component trims the input, parseInt should work correctly
-        waitFor(() =>
-          expect(mockUpdateConditionDuration).toHaveBeenCalledWith(
-            'test-condition-1',
-            test.expectedValue,
-            'days',
-          ),
-        );
-      }
     });
   });
 
-  // 7. ACCESSIBILITY TESTS
-  describe('Accessibility Tests', () => {
-    it('should pass accessibility checks', async () => {
-      const { container } = render(<SelectedConditionItem {...defaultProps} />);
-      const results = await axe(container);
-      expect(results).toHaveNoViolations();
+  describe('Invalid input', () => {
+    test.each([
+      ['years', '-3'],
+      ['years', '2.4'],
+      ['years', 'abc'],
+      ['years', '1e2'],
+      ['years', '151'],
+      ['months', '1000'],
+      ['days', '1000'],
+      ['months', '-1'],
+      ['days', '3.5'],
+    ] as [ConditionDurationField, string][])(
+      'rejects %s value "%s" and keeps sibling values',
+      (field, rawValue) => {
+        renderItem({
+          condition: createCondition({
+            durationYears: 1,
+            durationMonths: 6,
+            durationDays: 10,
+          }),
+        });
+
+        fireEvent.change(getInput(field), { target: { value: rawValue } });
+
+        expect(mockUpdateConditionDuration).not.toHaveBeenCalled();
+        expect(getInput('years')).toHaveValue('1');
+        expect(getInput('months')).toHaveValue('6');
+        expect(getInput('days')).toHaveValue('10');
+      },
+    );
+
+    test('ignores invalid keystrokes while typing', async () => {
+      const user = userEvent.setup();
+      const updates: Array<[string, ConditionDurationField, number | null]> =
+        [];
+
+      const StatefulItem = () => {
+        const [condition, setCondition] = useState(createCondition());
+        return (
+          <SelectedConditionItem
+            condition={condition}
+            updateConditionDuration={(id, field, value) => {
+              updates.push([id, field, value]);
+              const key = {
+                years: 'durationYears',
+                months: 'durationMonths',
+                days: 'durationDays',
+              }[field];
+              setCondition((prev) => ({ ...prev, [key]: value }));
+            }}
+          />
+        );
+      };
+      render(<StatefulItem />);
+
+      await user.type(getInput('years'), '2.4');
+      await user.type(getInput('months'), 'x6');
+
+      expect(getInput('years')).toHaveValue('24');
+      expect(getInput('months')).toHaveValue('6');
+      expect(getInput('days')).toHaveValue('');
+      expect(updates.every(([, , value]) => Number.isInteger(value))).toBe(
+        true,
+      );
+    });
+  });
+
+  describe('Validation errors', () => {
+    const conditionWithError = createCondition({
+      errors: { duration: 'CONDITIONS_DURATION_REQUIRED' },
+      hasBeenValidated: true,
+    });
+
+    test('does not show error before validation', () => {
+      renderItem({
+        condition: createCondition({
+          errors: { duration: 'CONDITIONS_DURATION_REQUIRED' },
+          hasBeenValidated: false,
+        }),
+      });
+
+      expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+      FIELDS.forEach((field) =>
+        expect(getInput(field)).toHaveAttribute('aria-invalid', 'false'),
+      );
+    });
+
+    test('shows a single translated error after validation', () => {
+      renderItem({ condition: conditionWithError });
+
+      const alerts = screen.getAllByRole('alert');
+      expect(alerts).toHaveLength(1);
+      expect(alerts[0]).toHaveTextContent(
+        'Enter duration in years, months or days',
+      );
+      expect(
+        screen.queryByText('CONDITIONS_DURATION_REQUIRED'),
+      ).not.toBeInTheDocument();
+    });
+
+    test('marks every input invalid and describes it with the error', () => {
+      renderItem({ condition: conditionWithError });
+
+      const errorId = 'condition-duration-error-test-condition-1';
+      expect(screen.getByRole('alert')).toHaveAttribute('id', errorId);
+      FIELDS.forEach((field) => {
+        const input = getInput(field);
+        expect(input).toHaveAttribute('aria-invalid', 'true');
+        expect(input).toHaveAttribute('aria-describedby', errorId);
+        expect(input).toHaveAccessibleDescription(
+          'Enter duration in years, months or days',
+        );
+      });
+    });
+
+    test('shows translated error in another language', async () => {
+      await i18n.changeLanguage('es');
+      i18n.addResourceBundle(
+        'es',
+        'clinical',
+        { CONDITIONS_DURATION_REQUIRED: 'Ingrese la duración' },
+        true,
+        true,
+      );
+
+      renderItem({ condition: conditionWithError });
+
+      expect(screen.getByRole('alert')).toHaveTextContent(
+        'Ingrese la duración',
+      );
+    });
+
+    test('clears error when condition no longer has an error', () => {
+      const { rerender } = renderItem({ condition: conditionWithError });
+      expect(screen.getByRole('alert')).toBeInTheDocument();
+
+      rerender(
+        <SelectedConditionItem
+          condition={{ ...conditionWithError, durationYears: 2, errors: {} }}
+          updateConditionDuration={mockUpdateConditionDuration}
+        />,
+      );
+
+      expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+      expect(getInput('years')).not.toHaveAttribute('aria-describedby');
+    });
+  });
+
+  describe('Keyboard navigation', () => {
+    test('focus moves Years → Months → Days', async () => {
+      const user = userEvent.setup();
+      renderItem();
+
+      await user.tab();
+      expect(getInput('years')).toHaveFocus();
+      await user.tab();
+      expect(getInput('months')).toHaveFocus();
+      await user.tab();
+      expect(getInput('days')).toHaveFocus();
+    });
+  });
+
+  describe('Multiple rows', () => {
+    test('renders independent inputs per condition', () => {
+      render(
+        <>
+          <SelectedConditionItem
+            condition={createCondition({ id: 'c1', durationYears: 2 })}
+            updateConditionDuration={mockUpdateConditionDuration}
+          />
+          <SelectedConditionItem
+            condition={createCondition({ id: 'c2', durationDays: 5 })}
+            updateConditionDuration={mockUpdateConditionDuration}
+          />
+        </>,
+      );
+
+      expect(getInput('years', 'c1')).toHaveValue('2');
+      expect(getInput('days', 'c1')).toHaveValue('');
+      expect(getInput('years', 'c2')).toHaveValue('');
+      expect(getInput('days', 'c2')).toHaveValue('5');
+
+      fireEvent.change(getInput('months', 'c2'), { target: { value: '3' } });
+      expect(mockUpdateConditionDuration).toHaveBeenCalledWith(
+        'c2',
+        'months',
+        3,
+      );
+      expect(mockUpdateConditionDuration).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  describe('Memoization', () => {
+    test('is wrapped in React.memo', () => {
+      expect(SelectedConditionItem.displayName).toBe('SelectedConditionItem');
+      expect((SelectedConditionItem as any).$$typeof).toBe(
+        Symbol.for('react.memo'),
+      );
+    });
+  });
+
+  describe('Accessibility', () => {
+    test('has no axe violations', async () => {
+      const { container } = renderItem();
+      expect(await axe(container)).toHaveNoViolations();
+    });
+
+    test('has no axe violations when showing an error', async () => {
+      const { container } = renderItem({
+        condition: createCondition({
+          errors: { duration: 'CONDITIONS_DURATION_REQUIRED' },
+          hasBeenValidated: true,
+        }),
+      });
+      expect(await axe(container)).toHaveNoViolations();
     });
   });
 });
