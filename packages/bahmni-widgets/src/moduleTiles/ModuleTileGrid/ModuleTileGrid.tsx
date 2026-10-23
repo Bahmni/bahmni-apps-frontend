@@ -133,6 +133,7 @@ export const ModuleTileGrid: React.FC<ModuleTileGridProps> = ({
             key={module.id}
             id={module.id}
             label={module.translationKey ?? module.label}
+            fallbackLabel={module.label}
             icon={module.icon}
             url={module.url}
           />
