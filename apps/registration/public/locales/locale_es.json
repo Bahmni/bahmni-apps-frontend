@@ -217,6 +217,7 @@
   "REGISTRATION_PATIENT_SEARCH_APPOINTMENT": "Búsqueda por cita",
   "REGISTRATION_ACTION_BUTTON_GENERIC_ERROR": "Algo salió mal. Por favor, inténtelo de nuevo.",
   "SUCCESS": "Éxito",
+  "LOGIN_LOCATION_LABEL": "Ubicación de inicio de sesión: {{name}}",
   "USER_CHANGE_PASSWORD_GLOBAL_ACTION": "Cambiar contraseña",
   "USER_GLOBAL_ACTION_BUTTON": "Menú de usuario",
   "USER_GLOBAL_ACTION_ERROR": "Algo salió mal. Por favor, inténtelo de nuevo.",
