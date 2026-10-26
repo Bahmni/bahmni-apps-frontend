@@ -1,4 +1,5 @@
 import {
+  DocumentSaveFile,
   DocumentSaveInput,
   saveVisitDocuments,
 } from '../visitDocumentSaveService';
@@ -31,15 +32,26 @@ const CREATE_ENCOUNTER_TARGET = {
   },
 };
 const LAB_REPORT = { id: 'type-1', label: 'Lab Report' };
+const PRESCRIPTION = { id: 'type-2', label: 'Prescription' };
 
-const pending = (
+const file = (
   fileName: string,
-  overrides: Partial<DocumentSaveInput> = {},
-): DocumentSaveInput => ({
-  id: `pending-${fileName}`,
+  overrides: Partial<DocumentSaveFile> = {},
+): DocumentSaveFile => ({
+  id: `file-${fileName}`,
   file: new File([new Uint8Array(4)], fileName, { type: 'image/png' }),
   fileName,
   contentType: 'image/png',
+  ...overrides,
+});
+
+const document = (
+  id: string,
+  files: DocumentSaveFile[],
+  overrides: Partial<DocumentSaveInput> = {},
+): DocumentSaveInput => ({
+  id,
+  files,
   documentType: null,
   note: '',
   ...overrides,
@@ -60,11 +72,13 @@ const save = (
     authorPractitionerUuid: 'practitioner-uuid',
   });
 
+const savedDocuments = () => saveDocuments.mock.calls[0][0].documents;
+
 describe('saveVisitDocuments', () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    uploadDocument.mockImplementation(async (file: File) => ({
-      url: `patient/${file.name}`,
+    uploadDocument.mockImplementation(async (uploaded: File) => ({
+      url: `patient/${uploaded.name}`,
     }));
     saveDocuments.mockResolvedValue({});
   });
@@ -80,7 +94,7 @@ describe('saveVisitDocuments', () => {
       return {};
     });
 
-    const result = await save([pending('doc.png')]);
+    const result = await save([document('doc-1', [file('doc.png')])]);
 
     expect(callOrder).toEqual(['upload', 'save']);
     expect(uploadDocument).toHaveBeenCalledWith(
@@ -93,9 +107,13 @@ describe('saveVisitDocuments', () => {
       target: EXISTING_ENCOUNTER_TARGET,
       documents: [
         {
-          url: 'server/new-url.png',
-          contentType: 'image/png',
-          title: 'doc.png',
+          files: [
+            {
+              url: 'server/new-url.png',
+              contentType: 'image/png',
+              title: 'doc.png',
+            },
+          ],
           typeCode: 'type-1',
           typeDisplay: 'Lab Report',
           description: undefined,
@@ -104,84 +122,127 @@ describe('saveVisitDocuments', () => {
       ],
     });
     expect(result).toEqual({
-      savedIds: ['pending-doc.png'],
-      uploadedUrls: { 'pending-doc.png': 'server/new-url.png' },
+      savedIds: ['doc-1'],
+      uploadedUrls: { 'file-doc.png': 'server/new-url.png' },
       failures: [],
     });
   });
 
-  it('passes the create-encounter save target through when no encounter exists yet', async () => {
-    await save([pending('doc.png')], CREATE_ENCOUNTER_TARGET);
-
-    expect(saveDocuments).toHaveBeenCalledWith(
-      expect.objectContaining({ target: CREATE_ENCOUNTER_TARGET }),
-    );
-  });
-
-  it('sends the trimmed note as the description and the chosen type over the default', async () => {
-    await save([
-      pending('doc.png', {
-        note: '  follow up in 2 weeks ',
-        documentType: { id: 'type-2', label: 'Prescription' },
+  it('saves several files as a single document under one type and note', async () => {
+    const result = await save([
+      document('doc-1', [file('a.png'), file('b.png'), file('c.png')], {
+        documentType: PRESCRIPTION,
+        note: '  three pages  ',
       }),
     ]);
 
-    expect(saveDocuments.mock.calls[0][0].documents).toEqual([
-      expect.objectContaining({
-        description: 'follow up in 2 weeks',
-        typeCode: 'type-2',
-        typeDisplay: 'Prescription',
-      }),
-    ]);
+    expect(uploadDocument).toHaveBeenCalledTimes(3);
+    expect(savedDocuments()).toHaveLength(1);
+    expect(savedDocuments()[0]).toMatchObject({
+      typeCode: 'type-2',
+      typeDisplay: 'Prescription',
+      description: 'three pages',
+    });
+    expect(
+      savedDocuments()[0].files.map((f: { title: string }) => f.title),
+    ).toEqual(['a.png', 'b.png', 'c.png']);
+    expect(result.savedIds).toEqual(['doc-1']);
   });
 
-  it('saves a batch in one transaction, each document with its own note', async () => {
-    const result = await save(
-      [pending('scan.png'), pending('report.pdf', { note: 'second only' })],
+  it('falls back to the default type when none was chosen', async () => {
+    await save([document('doc-1', [file('a.png')])]);
+
+    expect(savedDocuments()[0]).toMatchObject({
+      typeCode: 'type-1',
+      typeDisplay: 'Lab Report',
+    });
+  });
+
+  it('saves a batch of documents in one transaction, each with its own type and note', async () => {
+    await save(
+      [
+        document('doc-1', [file('scan.png')]),
+        document('doc-2', [file('report.pdf')], {
+          documentType: PRESCRIPTION,
+          note: 'second only',
+        }),
+      ],
       CREATE_ENCOUNTER_TARGET,
     );
 
     expect(uploadDocument).toHaveBeenCalledTimes(2);
-    // One call, so the batch shares a single new document encounter.
     expect(saveDocuments).toHaveBeenCalledTimes(1);
-    expect(saveDocuments.mock.calls[0][0].documents).toEqual([
-      expect.objectContaining({ title: 'scan.png', description: undefined }),
+    expect(saveDocuments.mock.calls[0][0].target).toEqual(
+      CREATE_ENCOUNTER_TARGET,
+    );
+    expect(savedDocuments()).toEqual([
       expect.objectContaining({
-        title: 'report.pdf',
+        files: [expect.objectContaining({ title: 'scan.png' })],
+        description: undefined,
+      }),
+      expect.objectContaining({
+        files: [expect.objectContaining({ title: 'report.pdf' })],
+        typeCode: 'type-2',
         description: 'second only',
       }),
     ]);
-    expect(result.savedIds).toEqual(['pending-scan.png', 'pending-report.pdf']);
   });
 
-  it('fails only the document whose upload failed, and saves the rest', async () => {
-    uploadDocument
-      .mockResolvedValueOnce({ url: 'patient/scan.png' })
-      .mockRejectedValueOnce(new Error('Upload rejected'));
+  it('leaves a document unsaved when any of its files fails to upload, and saves the rest', async () => {
+    uploadDocument.mockImplementation(async (uploaded: File) => {
+      if (uploaded.name === 'b.png') throw new Error('Upload rejected');
+      return { url: `patient/${uploaded.name}` };
+    });
 
-    const result = await save([pending('scan.png'), pending('report.pdf')]);
+    const result = await save([
+      document('doc-1', [file('a.png'), file('b.png')]),
+      document('doc-2', [file('c.png')]),
+    ]);
 
-    expect(saveDocuments.mock.calls[0][0].documents).toEqual([
-      expect.objectContaining({ title: 'scan.png' }),
+    expect(savedDocuments()).toEqual([
+      expect.objectContaining({
+        files: [expect.objectContaining({ title: 'c.png' })],
+      }),
     ]);
     expect(result).toEqual({
-      savedIds: ['pending-scan.png'],
-      uploadedUrls: { 'pending-scan.png': 'patient/scan.png' },
-      failures: [{ fileName: 'report.pdf', message: 'Upload rejected' }],
+      savedIds: ['doc-2'],
+      // The file of the unsaved document that did upload is remembered, so a retry skips it.
+      uploadedUrls: {
+        'file-a.png': 'patient/a.png',
+        'file-c.png': 'patient/c.png',
+      },
+      failures: [{ fileName: 'b.png', message: 'Upload rejected' }],
     });
   });
 
   it('does not save when every upload failed', async () => {
-    uploadDocument.mockRejectedValueOnce(new Error('File too large on server'));
+    uploadDocument.mockRejectedValue(new Error('Upload rejected'));
 
-    const result = await save([pending('doc.png')]);
+    const result = await save([document('doc-1', [file('a.png')])]);
 
     expect(saveDocuments).not.toHaveBeenCalled();
     expect(result).toEqual({
       savedIds: [],
       uploadedUrls: {},
-      failures: [{ fileName: 'doc.png', message: 'File too large on server' }],
+      failures: [{ fileName: 'a.png', message: 'Upload rejected' }],
     });
+  });
+
+  it('reuses the stored upload when retrying instead of uploading again', async () => {
+    await save([
+      document('doc-1', [
+        file('a.png', { uploadedUrl: 'patient/stored-once.png' }),
+        file('b.png'),
+      ]),
+    ]);
+
+    expect(uploadDocument).toHaveBeenCalledTimes(1);
+    expect(uploadDocument).toHaveBeenCalledWith(
+      expect.objectContaining({ name: 'b.png' }),
+      'Patient Document',
+      'patient-uuid',
+    );
+    expect(savedDocuments()[0].files[0].url).toBe('patient/stored-once.png');
   });
 
   it.each([
@@ -189,43 +250,37 @@ describe('saveVisitDocuments', () => {
     ['new encounter', CREATE_ENCOUNTER_TARGET],
   ])(
     'fails the whole %s batch when the transaction is rejected, keeping the upload urls',
-    async (_, target) => {
-      saveDocuments.mockRejectedValueOnce(new Error('Bundle rejected'));
+    async (_label, target) => {
+      saveDocuments.mockRejectedValue(new Error('Bundle rejected'));
 
       const result = await save(
-        [pending('scan.png'), pending('report.pdf')],
+        [
+          document('doc-1', [file('a.png'), file('b.png')]),
+          document('doc-2', [file('c.png')]),
+        ],
         target,
       );
 
-      // Atomic: nothing was written, so neither is saved.
-      expect(result).toEqual({
-        savedIds: [],
-        uploadedUrls: {
-          'pending-scan.png': 'patient/scan.png',
-          'pending-report.pdf': 'patient/report.pdf',
-        },
-        failures: [
-          { fileName: 'scan.png', message: 'Bundle rejected' },
-          { fileName: 'report.pdf', message: 'Bundle rejected' },
-        ],
+      expect(result.savedIds).toEqual([]);
+      expect(result.uploadedUrls).toEqual({
+        'file-a.png': 'patient/a.png',
+        'file-b.png': 'patient/b.png',
+        'file-c.png': 'patient/c.png',
       });
+      expect(result.failures).toEqual([
+        { fileName: 'a.png', message: 'Bundle rejected' },
+        { fileName: 'b.png', message: 'Bundle rejected' },
+        { fileName: 'c.png', message: 'Bundle rejected' },
+      ]);
       expect(dispatchAuditEvent).not.toHaveBeenCalled();
     },
   );
 
-  it('reuses the stored upload when retrying instead of uploading again', async () => {
-    await save([
-      pending('doc.png', { uploadedUrl: 'patient/stored-once.png' }),
-    ]);
-
-    expect(uploadDocument).not.toHaveBeenCalled();
-    expect(saveDocuments.mock.calls[0][0].documents).toEqual([
-      expect.objectContaining({ url: 'patient/stored-once.png' }),
-    ]);
-  });
-
   it('dispatches an audit event per saved document with the encounter type', async () => {
-    await save([pending('scan.png'), pending('report.pdf')]);
+    await save([
+      document('doc-1', [file('a.png'), file('b.png')]),
+      document('doc-2', [file('c.png')]),
+    ]);
 
     expect(dispatchAuditEvent).toHaveBeenCalledTimes(2);
     expect(dispatchAuditEvent).toHaveBeenCalledWith(

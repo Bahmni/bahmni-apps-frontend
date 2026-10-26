@@ -2,7 +2,7 @@ import { DocumentReference, Encounter } from 'fhir/r4';
 import { post } from '../../api';
 import { ENCOUNTER_BUNDLE_URL } from '../../encounterBundle';
 import { getUserLoginLocation } from '../../userService';
-import { saveDocuments } from '../documentWriteService';
+import { buildDocumentReference, saveDocuments } from '../documentWriteService';
 import { DocumentPayload } from '../models';
 
 jest.mock('../../api');
@@ -44,17 +44,25 @@ const NOW = '2026-07-01T10:15:00.000Z';
 const VISIT_START = '2026-06-29T09:00:00.000Z';
 
 const firstDocument: DocumentPayload = {
-  url: '100/doc-uuid__file.pdf',
-  contentType: 'application/pdf',
-  title: 'file.pdf',
+  files: [
+    {
+      url: '100/doc-uuid__file.pdf',
+      contentType: 'application/pdf',
+      title: 'file.pdf',
+    },
+  ],
   typeCode: 'type-uuid',
   typeDisplay: 'Prescription',
 };
 
 const secondDocument: DocumentPayload = {
-  url: '100/doc-uuid__scan.png',
-  contentType: 'image/png',
-  title: 'scan.png',
+  files: [
+    {
+      url: '100/doc-uuid__scan.png',
+      contentType: 'image/png',
+      title: 'scan.png',
+    },
+  ],
 };
 
 interface TestBundle {
@@ -135,7 +143,9 @@ describe('documentWriteService', () => {
       expect(docAt(1).context?.encounter?.[0].reference).toBe(
         'Encounter/enc-uuid',
       );
-      expect(docAt(1).content?.[0].attachment.url).toBe(firstDocument.url);
+      expect(docAt(1).content?.[0].attachment.url).toBe(
+        firstDocument.files[0].url,
+      );
       expect(docAt(1).type?.coding?.[0].code).toBe('type-uuid');
     });
 
@@ -199,7 +209,11 @@ describe('documentWriteService', () => {
       await saveDocuments({
         patientUuid: PATIENT_UUID,
         target: existingEncounterTarget,
-        documents: [{ url: '100/doc.pdf', contentType: 'application/pdf' }],
+        documents: [
+          {
+            files: [{ url: '100/doc.pdf', contentType: 'application/pdf' }],
+          },
+        ],
       });
 
       expect(docAt(1).type).toBeUndefined();
@@ -331,5 +345,63 @@ describe('documentWriteService', () => {
       }),
     ).resolves.toEqual([]);
     expect(mockedPost).not.toHaveBeenCalled();
+  });
+
+  describe('buildDocumentReference', () => {
+    it('builds one content entry per file', () => {
+      const reference = buildDocumentReference(
+        PATIENT_UUID,
+        { files: [...firstDocument.files, ...secondDocument.files] },
+        'Encounter/enc-uuid',
+      );
+
+      expect(reference.content).toEqual([
+        {
+          attachment: {
+            contentType: 'application/pdf',
+            url: '100/doc-uuid__file.pdf',
+            title: 'file.pdf',
+          },
+        },
+        {
+          attachment: {
+            contentType: 'image/png',
+            url: '100/doc-uuid__scan.png',
+            title: 'scan.png',
+          },
+        },
+      ]);
+    });
+
+    it('sets the masterIdentifier only when one is given', () => {
+      const withIdentifier = buildDocumentReference(
+        PATIENT_UUID,
+        { ...firstDocument, masterIdentifier: 'DOC-1' },
+        'Encounter/enc-uuid',
+      );
+      const withoutIdentifier = buildDocumentReference(
+        PATIENT_UUID,
+        firstDocument,
+        'Encounter/enc-uuid',
+      );
+
+      expect(withIdentifier.masterIdentifier).toEqual({ value: 'DOC-1' });
+      expect(withoutIdentifier.masterIdentifier).toBeUndefined();
+    });
+
+    it('sets a single Practitioner author', () => {
+      const reference = buildDocumentReference(
+        PATIENT_UUID,
+        { ...firstDocument, authorPractitionerUuid: 'prac-uuid' },
+        'urn:uuid:placeholder',
+      );
+
+      expect(reference.author).toEqual([
+        { reference: 'Practitioner/prac-uuid', type: 'Practitioner' },
+      ]);
+      expect(reference.context?.encounter).toEqual([
+        { reference: 'urn:uuid:placeholder' },
+      ]);
+    });
   });
 });
