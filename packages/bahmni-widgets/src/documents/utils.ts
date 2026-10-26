@@ -1,3 +1,8 @@
+import {
+  printPdfViaIframe,
+  printViaIframe,
+} from '../documentPrintButton/printViaIframe';
+
 const DOCUMENT_FIELD_I18N_KEYS: Record<string, string> = {
   documentIdentifier: 'DOCUMENTS_DOCUMENT_IDENTIFIER',
   documentType: 'DOCUMENTS_TYPE',
@@ -80,4 +85,26 @@ export function buildAttachmentPrintHtml(
   )}</title><style>${PRINT_STYLES}</style></head><body><img src="${src}" alt="${escapeHtml(
     title,
   )}" /></body></html>`;
+}
+
+export async function printAttachmentsInOrder(
+  attachments: PrintableAttachment[],
+  title: string,
+  {
+    container,
+    signal,
+  }: { container?: HTMLElement | null; signal: AbortSignal },
+): Promise<void> {
+  const options = { container, focus: false, signal };
+  for (const attachment of attachments) {
+    if (signal.aborted) break;
+    if (isPdfAttachment(attachment)) {
+      await printPdfViaIframe(toPrintUrl(attachment.url), options);
+    } else {
+      await printViaIframe(
+        buildAttachmentPrintHtml(attachment, title),
+        options,
+      );
+    }
+  }
 }

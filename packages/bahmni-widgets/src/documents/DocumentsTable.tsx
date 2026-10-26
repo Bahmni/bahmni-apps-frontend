@@ -26,10 +26,6 @@ import React, {
   useRef,
   useState,
 } from 'react';
-import {
-  printPdfViaIframe,
-  printViaIframe,
-} from '../documentPrintButton/printViaIframe';
 import { usePatientUUID } from '../hooks/usePatientUUID';
 import { useNotification } from '../notification';
 import { WidgetActionConfig, WidgetProps } from '../registry/model';
@@ -37,24 +33,21 @@ import { useHasPrivilege } from '../userPrivileges/useHasPrivilege';
 import styles from './styles/DocumentsTable.module.scss';
 import {
   buildDocumentUrl,
-  buildAttachmentPrintHtml,
   createDocumentHeaders,
-  isPdfAttachment,
   PrintableAttachment,
-  toPrintUrl,
+  printAttachmentsInOrder,
 } from './utils';
 
 const CONSULTATION_START_EVENT = 'startConsultation';
 const ADD_DOCUMENT_ACTION_TYPE = 'add';
 const DOCUMENTS_INPUT_CONTROL_KEY = 'documents';
+const PRINT_CONTAINER_ID = 'document-print-container';
 
 interface AddDocumentActionConfig extends WidgetActionConfig {
   encounterType?: string;
   editOnly?: string;
   editTitle?: string;
 }
-
-// Stands in for the printer icon on the button whose print is being prepared.
 const PrintSpinner: React.FC = () => <InlineLoading />;
 
 const SCROLL_KEYS = new Set([
@@ -67,7 +60,6 @@ const SCROLL_KEYS = new Set([
   ' ',
 ]);
 
-// A frame that never reports loading must not keep printing disabled for good.
 const ATTACHMENT_LOAD_TIMEOUT_MS = 15000;
 
 const DEFAULT_DOCUMENT_FIELDS = [
@@ -98,13 +90,10 @@ const DocumentsTable: React.FC<WidgetProps> = ({ config, encounterUuids }) => {
   const [failedAttachments, setFailedAttachments] = useState<Set<number>>(
     new Set(),
   );
-  // Attachments the viewer has finished loading; each shows a spinner until it has.
   const [loadedAttachments, setLoadedAttachments] = useState<Set<number>>(
     new Set(),
   );
-  // The print run belongs to the open viewer: closing the viewer abandons what is left of it.
   const printAbortRef = useRef<AbortController | null>(null);
-  // Which print button started the run, so only that one shows it is working.
   const [printingTarget, setPrintingTarget] = useState<number | 'all' | null>(
     null,
   );
@@ -251,9 +240,6 @@ const DocumentsTable: React.FC<WidgetProps> = ({ config, encounterUuids }) => {
     return () => controller.abort();
   }, [isModalOpen, selectedDoc]);
 
-  // A pdf grabs focus when it finishes loading, and the browser scrolls it into view: opened on a
-  // document of several attachments the viewer jumps to the last one, under the user's hand. Hold
-  // the viewer where it opened until the user scrolls it themselves.
   useEffect(() => {
     if (!isModalOpen || !selectedDoc) return;
     const scroller = document.querySelector<HTMLElement>(
@@ -264,8 +250,6 @@ const DocumentsTable: React.FC<WidgetProps> = ({ config, encounterUuids }) => {
     const markScrolled = () => {
       userHasScrolled = true;
     };
-    // Only what moves a viewer counts: a click on a button, or Enter on one, must not release the
-    // hold, since a loading attachment can still scroll it right after.
     const markScrolledByScrollbar = (event: MouseEvent) => {
       if (event.target === scroller) markScrolled();
     };
@@ -343,8 +327,6 @@ const DocumentsTable: React.FC<WidgetProps> = ({ config, encounterUuids }) => {
     [selectedDoc],
   );
 
-  // Printing waits until the attachments have loaded (or failed): a pdf finishing its load takes
-  // focus and scrolls the viewer, which swallowed a click and interrupted a print started meanwhile.
   const allAttachmentsLoaded = normalizedAttachments.every(
     (attachment, index) =>
       loadedAttachments.has(index) ||
@@ -360,45 +342,20 @@ const DocumentsTable: React.FC<WidgetProps> = ({ config, encounterUuids }) => {
     );
     return () => clearTimeout(timeoutId);
   }, [isModalOpen, normalizedAttachments]);
-
-  // One print run at a time: while it runs the print buttons are disabled, so a second click cannot
-  // queue a second print that opens its preview again once the first is cancelled.
   const printAttachments = useCallback(
-    async (
-      attachments: PrintableAttachment[],
-      trigger: HTMLElement | null,
-      target: number | 'all',
-    ) => {
+    async (attachments: PrintableAttachment[], target: number | 'all') => {
       if (!selectedDoc || printAbortRef.current) return;
       const controller = new AbortController();
       const { signal } = controller;
       printAbortRef.current = controller;
       setPrintingTarget(target);
-      // Every print frame goes inside the modal's own container, the only place its focus trap
-      // allows focus: browsers focus the frame they print, and focus landing outside the modal
-      // makes the trap pull it back, scrolling the modal to the bottom and interrupting the print.
-      const container = trigger?.closest<HTMLElement>('.cds--modal-container');
+      const container = document.getElementById(PRINT_CONTAINER_ID);
       try {
-        // Each file gets its own print preview, one after the other: the next opens once the
-        // previous dialog has been closed.
-        for (const attachment of attachments) {
-          if (signal.aborted) break;
-          if (isPdfAttachment(attachment)) {
-            await printPdfViaIframe(toPrintUrl(attachment.url), {
-              container,
-              focus: false,
-              signal,
-            });
-          } else {
-            await printViaIframe(
-              buildAttachmentPrintHtml(
-                attachment,
-                selectedDoc.documentIdentifier,
-              ),
-              { container, focus: false, signal },
-            );
-          }
-        }
+        await printAttachmentsInOrder(
+          attachments,
+          selectedDoc.documentIdentifier,
+          { container, signal },
+        );
       } catch {
         if (!signal.aborted) {
           addNotification({
@@ -531,13 +488,7 @@ const DocumentsTable: React.FC<WidgetProps> = ({ config, encounterUuids }) => {
                 renderIcon={printingTarget === 'all' ? PrintSpinner : Printer}
                 disabled={isPrinting || !allAttachmentsLoaded}
                 testId="print-all-attachments"
-                onClick={(event) =>
-                  printAttachments(
-                    printableAttachments,
-                    event.currentTarget,
-                    'all',
-                  )
-                }
+                onClick={() => printAttachments(printableAttachments, 'all')}
               >
                 {t('DOCUMENTS_PRINT_ALL')}
               </Button>
@@ -597,13 +548,7 @@ const DocumentsTable: React.FC<WidgetProps> = ({ config, encounterUuids }) => {
                       })}
                       disabled={isPrinting || !allAttachmentsLoaded}
                       testId={`print-attachment-${index}`}
-                      onClick={(event) =>
-                        printAttachments(
-                          [attachment],
-                          event.currentTarget,
-                          index,
-                        )
-                      }
+                      onClick={() => printAttachments([attachment], index)}
                     >
                       {printingTarget === index ? (
                         <PrintSpinner />
@@ -652,6 +597,7 @@ const DocumentsTable: React.FC<WidgetProps> = ({ config, encounterUuids }) => {
                 </div>
               );
             })}
+            <div id={PRINT_CONTAINER_ID} className={styles.printContainer} />
           </div>
         </Modal>
       )}

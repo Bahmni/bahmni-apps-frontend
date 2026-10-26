@@ -1,10 +1,20 @@
 import {
+  printPdfViaIframe,
+  printViaIframe,
+} from '../../documentPrintButton/printViaIframe';
+import {
   getFileTypeCategory,
   buildDocumentUrl,
   createDocumentHeaders,
   buildAttachmentPrintHtml,
   isPdfAttachment,
+  printAttachmentsInOrder,
 } from '../utils';
+
+jest.mock('../../documentPrintButton/printViaIframe', () => ({
+  printViaIframe: jest.fn(),
+  printPdfViaIframe: jest.fn(),
+}));
 
 describe('Documents Utils', () => {
   describe('getFileTypeCategory', () => {
@@ -155,6 +165,90 @@ describe('Documents Utils', () => {
       [undefined, false],
     ])('%s -> %s', (contentType, expected) => {
       expect(isPdfAttachment({ url: '1/a', contentType })).toBe(expected);
+    });
+  });
+
+  describe('printAttachmentsInOrder', () => {
+    const image = (name: string) => ({
+      url: `1/${name}`,
+      contentType: 'image/png',
+    });
+    const pdf = (name: string) => ({
+      url: `1/${name}`,
+      contentType: 'application/pdf',
+    });
+
+    beforeEach(() => {
+      jest.clearAllMocks();
+      (printViaIframe as jest.Mock).mockResolvedValue(undefined);
+      (printPdfViaIframe as jest.Mock).mockResolvedValue(undefined);
+    });
+
+    it('prints each file on its own with the right printer, one after the other', async () => {
+      let closeFirst: () => void = () => {};
+      (printViaIframe as jest.Mock).mockImplementationOnce(
+        () =>
+          new Promise<void>((resolve) => {
+            closeFirst = resolve;
+          }),
+      );
+      const container = document.createElement('div');
+      const signal = new AbortController().signal;
+
+      const printing = printAttachmentsInOrder(
+        [image('a.png'), pdf('b.pdf'), image('c.png')],
+        'Doc',
+        { container, signal },
+      );
+      await Promise.resolve();
+
+      expect(printViaIframe).toHaveBeenCalledTimes(1);
+      expect(printPdfViaIframe).not.toHaveBeenCalled();
+
+      closeFirst();
+      await printing;
+
+      expect(printPdfViaIframe).toHaveBeenCalledWith(
+        expect.stringContaining('1/b.pdf'),
+        { container, focus: false, signal },
+      );
+      expect(printViaIframe).toHaveBeenCalledTimes(2);
+      const [[firstHtml], [secondHtml]] = (printViaIframe as jest.Mock).mock
+        .calls;
+      expect(firstHtml).toContain('a.png');
+      expect(firstHtml).not.toContain('c.png');
+      expect(secondHtml).toContain('c.png');
+      expect(secondHtml).toContain('<title>Doc</title>');
+      expect((printViaIframe as jest.Mock).mock.calls[0][1]).toEqual({
+        container,
+        focus: false,
+        signal,
+      });
+    });
+
+    it('stops printing once the print is aborted', async () => {
+      const controller = new AbortController();
+      (printViaIframe as jest.Mock).mockImplementationOnce(async () =>
+        controller.abort(),
+      );
+
+      await printAttachmentsInOrder([image('a.png'), image('b.png')], 'Doc', {
+        signal: controller.signal,
+      });
+
+      expect(printViaIframe).toHaveBeenCalledTimes(1);
+    });
+
+    it('stops at the file that cannot be printed and rejects', async () => {
+      (printViaIframe as jest.Mock).mockRejectedValueOnce(new Error('boom'));
+
+      await expect(
+        printAttachmentsInOrder([image('a.png'), image('b.png')], 'Doc', {
+          signal: new AbortController().signal,
+        }),
+      ).rejects.toThrow('boom');
+
+      expect(printViaIframe).toHaveBeenCalledTimes(1);
     });
   });
 });

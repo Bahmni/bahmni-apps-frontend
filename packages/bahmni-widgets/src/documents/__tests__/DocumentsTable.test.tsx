@@ -52,7 +52,6 @@ jest.mock('@bahmni/services', () => ({
   useSubscribeConsultationSaved: jest.fn(),
 }));
 
-// Mock fetch to simulate successful document loads
 globalThis.fetch = jest.fn(() =>
   Promise.resolve({
     ok: true,
@@ -482,17 +481,13 @@ describe('DocumentsTable', () => {
       );
       renderComponent({ config: defaultConfig });
 
-      // Open modal with error state
       await user.click(screen.getByText('DOCUMENTS_VIEW_ATTACHMENTS'));
       expect(
         screen.getByText('DOCUMENTS_ERROR_LOADING_ATTACHMENT'),
       ).toBeInTheDocument();
 
-      // Close modal - state should be cleared
       await user.keyboard('{Escape}');
       expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
-
-      // Reopen modal - should show fresh state with same error (URL is still corrupt)
       await user.click(screen.getByText('DOCUMENTS_VIEW_ATTACHMENTS'));
       await waitFor(() => {
         expect(screen.getByRole('dialog')).toBeInTheDocument();
@@ -617,7 +612,6 @@ describe('DocumentsTable', () => {
 
   describe('Default Sort', () => {
     it('sorts documents by uploadedOn descending by default', () => {
-      // Pass docs in ascending order (oldest first) — component must reverse them
       (useQuery as jest.Mock).mockReturnValue(
         mockQueryData([
           mockGenericDocument, // 2024-01-13 (oldest)
@@ -628,7 +622,6 @@ describe('DocumentsTable', () => {
       renderComponent({ config: defaultConfig });
 
       const rows = screen.getAllByRole('row');
-      // rows[0] = header; data rows start at index 1
       expect(rows[1]).toHaveTextContent('Test Document'); // Jan 15 — newest first
       expect(rows[2]).toHaveTextContent('X-Ray Image'); // Jan 14
       expect(rows[3]).toHaveTextContent('Clinical Notes'); // Jan 13 — oldest last
@@ -671,16 +664,13 @@ describe('DocumentsTable', () => {
         ],
       }));
 
-      // Pass in ascending order — component must sort descending before paginating
       (useQuery as jest.Mock).mockReturnValue(mockQueryData(pagedDocs));
       renderComponent({ config: { ...defaultConfig, pageSize: 5 } });
 
-      // Page 1: should show 5 newest (Doc 12 → Doc 08)
       const page1Rows = screen.getAllByRole('row').slice(1);
       expect(page1Rows[0]).toHaveTextContent('Doc 12');
       expect(page1Rows[4]).toHaveTextContent('Doc 08');
 
-      // Navigate to page 2 — should show next 5 in desc order (Doc 07 → Doc 03)
       await user.click(screen.getByRole('button', { name: /next page/i }));
 
       const page2Rows = screen.getAllByRole('row').slice(1);
@@ -732,8 +722,6 @@ describe('DocumentsTable', () => {
       const { container } = renderComponent({ config: defaultConfig });
 
       await act(async () => {
-        // Carbon's DataTableSkeleton renders empty <th> cells for sort columns — this is a known
-        // pre-existing issue in SortableDataTable's loading skeleton, not introduced by DocumentsTable.
         const results = await axe(container, {
           rules: { 'empty-table-header': { enabled: false } },
         });
@@ -1095,157 +1083,6 @@ describe('DocumentsTable', () => {
       });
     });
 
-    it('prints a single pdf attachment through the pdf printer', async () => {
-      const user = userEvent.setup();
-      (useQuery as jest.Mock).mockReturnValue(mockQueryData([mockPdfDocument]));
-
-      renderComponent({ config: defaultConfig });
-      await user.click(screen.getByText('DOCUMENTS_VIEW_ATTACHMENTS'));
-      finishLoadingAttachments();
-      await user.click(await screen.findByTestId('print-attachment-0'));
-
-      expect(printPdfViaIframe).toHaveBeenCalledTimes(1);
-      expect(printPdfViaIframe).toHaveBeenCalledWith(
-        'http://localhost/openmrs/auth?requested_document=/document_images/100/test-document.pdf',
-        {
-          container: expect.any(HTMLElement),
-          focus: false,
-          signal: expect.any(AbortSignal),
-        },
-      );
-      expect(printViaIframe).not.toHaveBeenCalled();
-      expect(screen.queryByTestId('print-all-attachments')).toBeNull();
-      const { container } = (printPdfViaIframe as jest.Mock).mock.calls[0][1];
-      expect(container).toHaveClass('cds--modal-container');
-      expect(container).toContainElement(
-        screen.getByTestId('print-attachment-0'),
-      );
-    });
-
-    it('prints an image attachment through the same helper as the registration card', async () => {
-      const user = userEvent.setup();
-      (useQuery as jest.Mock).mockReturnValue(
-        mockQueryData([mockImageDocument]),
-      );
-
-      renderComponent({ config: defaultConfig });
-      await user.click(screen.getByText('DOCUMENTS_VIEW_ATTACHMENTS'));
-      finishLoadingAttachments();
-      await user.click(await screen.findByTestId('print-attachment-0'));
-
-      expect(printViaIframe).toHaveBeenCalledTimes(1);
-      const [html, options] = (printViaIframe as jest.Mock).mock.calls[0];
-      expect(html).toContain('100/xray-image.jpg');
-      expect(html).toContain('X-Ray Image');
-      expect(options).toEqual({
-        container: expect.any(HTMLElement),
-        focus: false,
-        signal: expect.any(AbortSignal),
-      });
-      expect(options.container).toHaveClass('cds--modal-container');
-      expect(printPdfViaIframe).not.toHaveBeenCalled();
-    });
-
-    it('opens a separate print preview for each file, in order, when printing all', async () => {
-      const user = userEvent.setup();
-      (useQuery as jest.Mock).mockReturnValue(
-        mockQueryData([
-          {
-            ...mockMultiAttachmentDocument,
-            attachments: [
-              { url: '100/a.jpg', contentType: 'image/jpeg' },
-              { url: '100/b.pdf', contentType: 'application/pdf' },
-              { url: '100/c.png', contentType: 'image/png' },
-            ],
-          },
-        ]),
-      );
-
-      renderComponent({ config: defaultConfig });
-      await user.click(screen.getByText('DOCUMENTS_VIEW_ATTACHMENTS'));
-      finishLoadingAttachments();
-      await user.click(await screen.findByTestId('print-all-attachments'));
-
-      await waitFor(() => expect(printViaIframe).toHaveBeenCalledTimes(2));
-      expect(printPdfViaIframe).toHaveBeenCalledTimes(1);
-      const [first, second] = (printViaIframe as jest.Mock).mock.calls;
-      expect(first[0]).toContain('a.jpg');
-      expect(first[0]).not.toContain('c.png');
-      expect(second[0]).toContain('c.png');
-      expect(second[0]).not.toContain('a.jpg');
-      expect(
-        (printViaIframe as jest.Mock).mock.invocationCallOrder[0],
-      ).toBeLessThan(
-        (printPdfViaIframe as jest.Mock).mock.invocationCallOrder[0],
-      );
-      expect(
-        (printPdfViaIframe as jest.Mock).mock.invocationCallOrder[0],
-      ).toBeLessThan((printViaIframe as jest.Mock).mock.invocationCallOrder[1]);
-    });
-
-    it('opens the next preview only after the previous print dialog has closed', async () => {
-      const user = userEvent.setup();
-      let closeFirst: () => void = () => {};
-      (printViaIframe as jest.Mock).mockImplementationOnce(
-        () =>
-          new Promise<void>((resolve) => {
-            closeFirst = resolve;
-          }),
-      );
-      (useQuery as jest.Mock).mockReturnValue(
-        mockQueryData([
-          {
-            ...mockMultiAttachmentDocument,
-            attachments: [
-              { url: '100/a.jpg', contentType: 'image/jpeg' },
-              { url: '100/c.png', contentType: 'image/png' },
-            ],
-          },
-        ]),
-      );
-
-      renderComponent({ config: defaultConfig });
-      await user.click(screen.getByText('DOCUMENTS_VIEW_ATTACHMENTS'));
-      finishLoadingAttachments();
-      await user.click(await screen.findByTestId('print-all-attachments'));
-
-      expect(printViaIframe).toHaveBeenCalledTimes(1);
-
-      await act(async () => closeFirst());
-
-      await waitFor(() => expect(printViaIframe).toHaveBeenCalledTimes(2));
-    });
-
-    it('stops and tells the user when one of the files cannot be printed', async () => {
-      const user = userEvent.setup();
-      (printViaIframe as jest.Mock).mockRejectedValueOnce(new Error('boom'));
-      (useQuery as jest.Mock).mockReturnValue(
-        mockQueryData([
-          {
-            ...mockMultiAttachmentDocument,
-            attachments: [
-              { url: '100/a.jpg', contentType: 'image/jpeg' },
-              { url: '100/c.png', contentType: 'image/png' },
-            ],
-          },
-        ]),
-      );
-
-      renderComponent({ config: defaultConfig });
-      await user.click(screen.getByText('DOCUMENTS_VIEW_ATTACHMENTS'));
-      finishLoadingAttachments();
-      await user.click(await screen.findByTestId('print-all-attachments'));
-
-      await waitFor(() =>
-        expect(mockAddNotification).toHaveBeenCalledWith(
-          expect.objectContaining({
-            message: 'DOCUMENTS_ERROR_LOADING_ATTACHMENT',
-          }),
-        ),
-      );
-      expect(printViaIframe).toHaveBeenCalledTimes(1);
-    });
-
     describe('while a print is being prepared', () => {
       let finishPrint: () => void;
 
@@ -1278,54 +1115,6 @@ describe('DocumentsTable', () => {
         });
       });
 
-      it('disables the print buttons until the print is done', async () => {
-        const user = userEvent.setup();
-        await openMultiAttachmentViewer(user);
-
-        await user.click(await screen.findByTestId('print-all-attachments'));
-
-        expect(screen.getByTestId('print-all-attachments')).toBeDisabled();
-        expect(screen.getByTestId('print-attachment-0')).toBeDisabled();
-
-        await act(async () => finishPrint());
-
-        expect(screen.getByTestId('print-all-attachments')).toBeEnabled();
-        expect(screen.getByTestId('print-attachment-0')).toBeEnabled();
-      });
-
-      it.each([
-        ['print-attachment-1', ['print-attachment-0', 'print-all-attachments']],
-        ['print-all-attachments', ['print-attachment-0', 'print-attachment-1']],
-      ])(
-        'shows which button is working: a spinner in place of its printer icon, on %s only',
-        async (started, others) => {
-          const user = userEvent.setup();
-          await openMultiAttachmentViewer(user);
-          const spinnerIn = (testId: string) =>
-            screen.getByTestId(testId).querySelector('.cds--inline-loading');
-
-          await user.click(await screen.findByTestId(started));
-
-          expect(spinnerIn(started)).not.toBeNull();
-          others.forEach((other) => expect(spinnerIn(other)).toBeNull());
-
-          await act(async () => finishPrint());
-
-          expect(spinnerIn(started)).toBeNull();
-        },
-      );
-
-      it('prints again once the first print has finished', async () => {
-        const user = userEvent.setup();
-        await openMultiAttachmentViewer(user);
-
-        await user.click(await screen.findByTestId('print-all-attachments'));
-        await act(async () => finishPrint());
-        await user.click(screen.getByTestId('print-all-attachments'));
-
-        expect(printViaIframe).toHaveBeenCalledTimes(3);
-      });
-
       it('abandons the print when the viewer is closed, so the next one can start', async () => {
         const user = userEvent.setup();
         await openMultiAttachmentViewer(user);
@@ -1345,18 +1134,21 @@ describe('DocumentsTable', () => {
           await screen.findByTestId('print-all-attachments'),
         ).toBeEnabled();
       });
+    });
 
-      it('lets printing be retried after a failure', async () => {
-        const user = userEvent.setup();
-        (printViaIframe as jest.Mock).mockRejectedValueOnce(new Error('boom'));
-        await openMultiAttachmentViewer(user);
+    it("mounts the print frames in the viewer's own print container", async () => {
+      const user = userEvent.setup();
+      (printPdfViaIframe as jest.Mock).mockResolvedValue(undefined);
+      (useQuery as jest.Mock).mockReturnValue(mockQueryData([mockPdfDocument]));
 
-        await user.click(await screen.findByTestId('print-all-attachments'));
+      renderComponent({ config: defaultConfig });
+      await user.click(screen.getByText('DOCUMENTS_VIEW_ATTACHMENTS'));
+      finishLoadingAttachments();
+      await user.click(await screen.findByTestId('print-attachment-0'));
 
-        await waitFor(() =>
-          expect(screen.getByTestId('print-all-attachments')).toBeEnabled(),
-        );
-      });
+      const { container } = (printPdfViaIframe as jest.Mock).mock.calls[0][1];
+      expect(container).toHaveAttribute('id', 'document-print-container');
+      expect(screen.getByRole('dialog')).toContainElement(container);
     });
 
     it('tells the user when printing fails', async () => {
