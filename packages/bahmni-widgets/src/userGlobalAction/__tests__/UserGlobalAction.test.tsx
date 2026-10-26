@@ -494,7 +494,9 @@ describe('UserGlobalAction', () => {
 
     it('should have no accessibility violations when the menu is open', async () => {
       registerChangePasswordAndLogout();
-      renderWithProviders(buildActivePractitionerValue());
+      renderWithProviders(buildActivePractitionerValue(), {
+        locationName: 'Bahmni Clinic',
+      });
       await userEvent.click(
         screen.getByTestId('user-global-action-button-test-id'),
       );
@@ -581,14 +583,12 @@ describe('UserGlobalAction', () => {
         screen.getByTestId('user-global-action-button-test-id'),
       );
 
-      // Assert the mechanism directly: only the 2 actual actions get the menuitem role
-      const items = await screen.findAllByRole('menuitem');
-      expect(items).toHaveLength(2);
+      //simulate pressing the down arrow key
+      await userEvent.keyboard('{ArrowDown}');
 
-      // Assert the location row is NOT a menuitem
-      expect(
-        screen.queryByRole('menuitem', { name: /Bahmni Clinic/i }),
-      ).not.toBeInTheDocument();
+      const items = await screen.findAllByRole('menuitem');
+      expect(items[0]).toHaveFocus();
+      expect(items[0]).toHaveTextContent('USER_CHANGE_PASSWORD_GLOBAL_ACTION');
     });
   });
 });
