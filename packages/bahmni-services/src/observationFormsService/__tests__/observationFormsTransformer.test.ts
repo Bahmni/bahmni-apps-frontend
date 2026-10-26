@@ -5,6 +5,7 @@ import {
   transformContainerObservationsToForm2Observations,
   convertImmutableToPlainObject,
   extractNotesFromFormData,
+  findConceptDatatype,
   FormData,
   ConceptValue,
   Form2Observation,
@@ -1228,6 +1229,28 @@ describe('observationFormsTransformer', () => {
       );
 
       expect(result[0].concept.datatype).toBe('Text');
+    });
+  });
+
+  describe('findConceptDatatype', () => {
+    const metadata: FormMetadata = {
+      uuid: 'form-uuid',
+      name: 'Test Form',
+      version: '1',
+      published: true,
+      schema: {
+        controls: [
+          { concept: { uuid: 'date-concept-uuid', datatype: 'Date' } },
+        ],
+      },
+    };
+
+    it('returns the schema datatype for a known concept', () => {
+      expect(findConceptDatatype(metadata, 'date-concept-uuid')).toBe('Date');
+    });
+
+    it('returns undefined for an unknown concept', () => {
+      expect(findConceptDatatype(metadata, 'unknown-uuid')).toBeUndefined();
     });
   });
 });

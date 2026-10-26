@@ -27,7 +27,7 @@ import {
 } from './models';
 
 // encounterReference is a concrete "Encounter/{uuid}" or a bundle-local "urn:uuid:..." placeholder.
-function buildDocumentReference(
+export function buildDocumentReference(
   patientUuid: string,
   input: DocumentPayload,
   encounterReference: string,
@@ -37,17 +37,14 @@ function buildDocumentReference(
     status: 'current',
     docStatus: 'final',
     subject: { reference: `Patient/${patientUuid}` },
-    content: [
-      {
-        attachment: {
-          contentType: input.contentType,
-          url: input.url,
-          title: input.title,
-        },
-      },
-    ],
+    content: input.files.map(({ contentType, url, title }) => ({
+      attachment: { contentType, url, title },
+    })),
     context: { encounter: [{ reference: encounterReference }] },
   };
+  if (input.masterIdentifier) {
+    documentReference.masterIdentifier = { value: input.masterIdentifier };
+  }
   if (input.typeCode) {
     documentReference.type = {
       coding: [{ code: input.typeCode, display: input.typeDisplay }],
