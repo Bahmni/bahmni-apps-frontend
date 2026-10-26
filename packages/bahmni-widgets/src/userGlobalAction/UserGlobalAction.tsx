@@ -51,9 +51,10 @@ const HeaderGlobalActionWithHtmlAttrs = HeaderGlobalAction as ComponentType<
   }
 >;
 
-export interface UserGlobalActionProps {
+interface UserGlobalActionProps {
+  /** The logged-in user's location, shown as a read-only row at the top of the menu when present. */
   locationName?: string;
-} // The logged-in users location to display in the user profile menu
+}
 
 export const UserGlobalAction = ({ locationName }: UserGlobalActionProps) => {
   const { t } = useTranslation();
@@ -183,6 +184,9 @@ export const UserGlobalAction = ({ locationName }: UserGlobalActionProps) => {
         aria-haspopup="menu"
         aria-expanded={isOpen}
         aria-controls={MENU_ID}
+        aria-describedby={
+          isOpen && locationName ? `${MENU_ID}-location` : undefined
+        }
         isActive={isOpen}
         onClick={() => setIsOpen((open) => !open)}
         className={styles.userAction}
@@ -209,6 +213,7 @@ export const UserGlobalAction = ({ locationName }: UserGlobalActionProps) => {
           <li role="presentation">
             <div
               role="group"
+              id={`${MENU_ID}-location`}
               aria-label={t('LOGIN_LOCATION_LABEL', { name: locationName })}
               title={locationName}
               className={styles.locationInfo}
