@@ -502,4 +502,67 @@ describe('createObservationEntries', () => {
       expect(entries).toHaveLength(0);
     });
   });
+
+  describe('cleared conditional field (voided-leaf shape)', () => {
+    // These exercise the bundle builder in isolation — the voided obs shape here is
+    // the exact post-reconciliation input processLeafObservation sees. The pipeline
+    // that produces this shape is covered end-to-end in observationReconciliation.test.ts.
+    it('emits DELETE (not PUT) for a previously-saved leaf flagged voided', () => {
+      const obs: Form2Observation = {
+        concept: { uuid: 'interpreter-name-concept' },
+        value: null,
+        uuid: 'interpreter-name-obs-uuid',
+        voided: true,
+      };
+
+      const entries = createObservationEntries(
+        [obs],
+        subject,
+        encounter,
+        performer,
+      );
+
+      expect(entries).toHaveLength(1);
+      expect(entries[0].request?.method).toBe('DELETE');
+      expect(entries[0].request?.url).toBe(
+        'Observation/interpreter-name-obs-uuid',
+      );
+    });
+
+    it('emits DELETE for a voided grouped child and leaves the parent untouched', () => {
+      const groupObs: Form2Observation = {
+        concept: { uuid: 'grp-concept' },
+        value: null,
+        uuid: 'parent-uuid',
+        groupMembers: [
+          {
+            concept: { uuid: 'child-cleared-concept' },
+            value: null,
+            uuid: 'child-cleared-uuid',
+            voided: true,
+          },
+          {
+            concept: { uuid: 'child-kept-concept' },
+            value: 42,
+            uuid: 'child-kept-uuid',
+            unchanged: true,
+          },
+        ],
+      };
+
+      const entries = createObservationEntries(
+        [groupObs],
+        subject,
+        encounter,
+        performer,
+      );
+
+      expect(entries).toHaveLength(1);
+      expect(entries[0].fullUrl).toBe('Observation/child-cleared-uuid');
+      expect(entries[0].request?.method).toBe('DELETE');
+      expect(entries.some((e) => e.fullUrl === 'Observation/parent-uuid')).toBe(
+        false,
+      );
+    });
+  });
 });
