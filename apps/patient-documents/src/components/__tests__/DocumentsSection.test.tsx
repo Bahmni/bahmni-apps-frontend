@@ -26,15 +26,12 @@ interface SaveSummary {
   savedCount: number;
   failures: { fileName: string; message: string }[];
 }
-
-// The section only reads savedIds for counting, so a summary maps onto any ids of that length.
 const resultOf = ({ savedCount, failures }: SaveSummary) => ({
   savedIds: Array.from({ length: savedCount }, (_, index) => `saved-${index}`),
   uploadedUrls: {},
   failures,
 });
 
-// jsdom has no object URLs; the section releases the previews it holds.
 global.URL.revokeObjectURL = jest.fn();
 
 const mockAddNotification = jest.fn();
@@ -44,6 +41,30 @@ jest.mock('../../services/visitDocumentSaveService', () => ({
 }));
 
 let mockNextDocumentId = 0;
+
+interface StubEntry {
+  id: string;
+  documentType: null;
+  documentId: string;
+  note: string;
+  files: StubDocument[];
+  errors: Record<string, string>;
+}
+
+const emptyEntry = (id: string): StubEntry => ({
+  id,
+  documentType: null,
+  documentId: '',
+  note: '',
+  files: [],
+  errors: {},
+});
+
+interface StubWidgetProps {
+  documents: StubEntry[];
+  onDocumentsChange: (documents: StubEntry[]) => void;
+  isSaving: boolean;
+}
 jest.mock('@bahmni/widgets', () => ({
   ...jest.requireActual('@bahmni/widgets'),
   useNotification: () => ({ addNotification: mockAddNotification }),
@@ -54,32 +75,55 @@ jest.mock('@bahmni/widgets', () => ({
     documents,
     onDocumentsChange,
     isSaving,
-  }: {
-    documents: StubDocument[];
-    onDocumentsChange: (documents: StubDocument[]) => void;
-    isSaving: boolean;
-  }) => (
-    <div
-      data-testid="document-upload"
-      data-saving={String(isSaving)}
-      data-documents={JSON.stringify(documents)}
-    >
-      <button
-        data-testid="select-file"
-        onClick={() => {
-          const id = `pending-${mockNextDocumentId++}`;
-          onDocumentsChange([
-            ...documents,
-            { id, fileName: `${id}.png`, url: `blob:${id}` },
-          ]);
-        }}
-      />
-      <button
-        data-testid="discard-file"
-        onClick={() => onDocumentsChange([])}
-      />
-    </div>
-  ),
+  }: StubWidgetProps) => {
+    const shown = documents.length > 0 ? documents : [emptyEntry('new')];
+    return (
+      <div
+        data-testid="document-upload"
+        data-saving={String(isSaving)}
+        data-documents={JSON.stringify(
+          documents.flatMap((entry) => entry.files),
+        )}
+      >
+        {shown.map((entry) => (
+          <button
+            key={entry.id}
+            data-testid="select-file"
+            onClick={() => {
+              const fileId = `pending-${mockNextDocumentId++}`;
+              const file = {
+                id: fileId,
+                fileName: `${fileId}.png`,
+                url: `blob:${fileId}`,
+              };
+              onDocumentsChange(
+                shown.map((candidate) =>
+                  candidate.id === entry.id
+                    ? { ...candidate, files: [...candidate.files, file] }
+                    : candidate,
+                ),
+              );
+            }}
+          />
+        ))}
+        <button
+          data-testid="add-document"
+          onClick={() =>
+            onDocumentsChange([
+              ...shown,
+              emptyEntry(`doc-${mockNextDocumentId++}`),
+            ])
+          }
+        />
+        <button
+          data-testid="discard-file"
+          onClick={() =>
+            onDocumentsChange(shown.map((entry) => ({ ...entry, files: [] })))
+          }
+        />
+      </div>
+    );
+  },
 }));
 
 const documentsOf = (widget: HTMLElement): StubDocument[] =>
@@ -180,7 +224,7 @@ describe('DocumentsSection', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockSave.mockImplementation(
-      async ({ documents }: { documents: StubDocument[] }) => ({
+      async ({ documents }: { documents: StubEntry[] }) => ({
         savedIds: documents.map((document) => document.id),
         uploadedUrls: {},
         failures: [],
@@ -234,7 +278,6 @@ describe('DocumentsSection', () => {
         expect.objectContaining({ type: 'error' }),
       ),
     );
-    // Document type is optional, so upload widgets still render.
     expect(screen.getAllByTestId('document-upload').length).toBeGreaterThan(0);
   });
 
@@ -275,8 +318,6 @@ describe('DocumentsSection', () => {
 
     await waitFor(() => expect(mockSave).toHaveBeenCalledTimes(2));
     const targets = mockSave.mock.calls.map(([input]) => input.target);
-
-    // The encounter travels whole, not just its uuid: the save bundle re-sends it as a PUT.
     expect(targets[0]).toEqual({
       encounterUuid: 'doc-enc-1',
       existingEncounter: {
@@ -422,7 +463,8 @@ describe('DocumentsSection', () => {
     );
 
     fireEvent.click(screen.getAllByTestId('select-file')[0]);
-    fireEvent.click(screen.getAllByTestId('select-file')[0]);
+    fireEvent.click(screen.getAllByTestId('add-document')[0]);
+    fireEvent.click(screen.getAllByTestId('select-file')[1]);
     fireEvent.click(screen.getByTestId('save-documents'));
 
     await waitFor(() => expect(mockSave).toHaveBeenCalledTimes(1));
@@ -436,6 +478,35 @@ describe('DocumentsSection', () => {
       }),
     );
     expect(input.documents).toHaveLength(2);
+  });
+
+  it('saves several files picked into one document as a single document', async () => {
+    renderSection();
+
+    fireEvent.click(screen.getAllByTestId('select-file')[0]);
+    fireEvent.click(screen.getAllByTestId('select-file')[0]);
+    fireEvent.click(screen.getAllByTestId('select-file')[0]);
+    fireEvent.click(screen.getByTestId('save-documents'));
+
+    await waitFor(() => expect(mockSave).toHaveBeenCalledTimes(1));
+    const { documents } = mockSave.mock.calls[0][0];
+    expect(documents).toHaveLength(1);
+    expect(documents[0].files).toHaveLength(3);
+  });
+
+  it('ignores a document with no files when saving and when counting what is unsaved', async () => {
+    renderSection();
+
+    fireEvent.click(screen.getAllByTestId('add-document')[0]);
+    fireEvent.click(screen.getAllByTestId('add-document')[0]);
+
+    expect(screen.getByTestId('save-documents')).toBeDisabled();
+
+    fireEvent.click(screen.getAllByTestId('select-file')[1]);
+    fireEvent.click(screen.getByTestId('save-documents'));
+
+    await waitFor(() => expect(mockSave).toHaveBeenCalledTimes(1));
+    expect(mockSave.mock.calls[0][0].documents).toHaveLength(1);
   });
 
   it('locks every upload widget while the save is in flight', async () => {
@@ -472,18 +543,21 @@ describe('DocumentsSection', () => {
 
   it('clears saved documents and keeps failed ones with their upload url for a retry', async () => {
     mockSave.mockImplementationOnce(
-      async ({ documents }: { documents: StubDocument[] }) => ({
+      async ({ documents }: { documents: StubEntry[] }) => ({
         savedIds: [documents[0].id],
         uploadedUrls: {
-          [documents[0].id]: 'patient/saved.png',
-          [documents[1].id]: 'patient/failed.png',
+          [documents[0].files[0].id]: 'patient/saved.png',
+          [documents[1].files[0].id]: 'patient/failed.png',
         },
-        failures: [{ fileName: documents[1].fileName, message: 'rejected' }],
+        failures: [
+          { fileName: documents[1].files[0].fileName, message: 'rejected' },
+        ],
       }),
     );
     renderSection();
     fireEvent.click(screen.getAllByTestId('select-file')[0]);
-    fireEvent.click(screen.getAllByTestId('select-file')[0]);
+    fireEvent.click(screen.getAllByTestId('add-document')[0]);
+    fireEvent.click(screen.getAllByTestId('select-file')[1]);
     const [saved, failed] = documentsOf(
       screen.getAllByTestId('document-upload')[0],
     );
@@ -660,8 +734,6 @@ describe('DocumentsSection', () => {
 
     const clickBackToSearch = () =>
       fireEvent.click(screen.getByTestId('back-to-search'));
-
-    // Carbon keeps the modal mounted and marks it visible with a class, so presence proves nothing.
     const isModalShown = () =>
       screen
         .getByTestId('unsaved-documents-modal')

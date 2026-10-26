@@ -115,4 +115,41 @@ describe('submitConsultation', () => {
       expect.objectContaining({ statDurationInMilliseconds: 5000 }),
     );
   });
+
+  it('lets a form entry finish its preparation before its bundle entries are built', async () => {
+    const order: string[] = [];
+    const entry = mockFormEntry({
+      prepareBundleEntries: jest.fn(async () => {
+        await Promise.resolve();
+        order.push('prepared');
+      }),
+      createBundleEntries: jest.fn(() => {
+        order.push('built');
+        return [];
+      }),
+    });
+
+    await submitConsultation({
+      activeEncounter: null,
+      episodeOfCareUuids: [],
+      activeEntries: [entry],
+    });
+
+    expect(order).toEqual(['prepared', 'built']);
+  });
+
+  it('does not prepare form entries that have no data', async () => {
+    const entry = mockFormEntry({
+      hasData: jest.fn().mockReturnValue(false),
+      prepareBundleEntries: jest.fn(),
+    });
+
+    await submitConsultation({
+      activeEncounter: null,
+      episodeOfCareUuids: [],
+      activeEntries: [entry],
+    });
+
+    expect(entry.prepareBundleEntries).not.toHaveBeenCalled();
+  });
 });
