@@ -276,7 +276,7 @@ describe('DocumentUpload', () => {
   describe('files', () => {
     it('adds accepted files to the document they were picked for', async () => {
       renderWidget({ initial: [entry('e1'), entry('e2')] });
-      await screen.findAllByText('DOCUMENT_UPLOAD_HELP');
+      await screen.findAllByText('DOCUMENT_UPLOAD_MAX_SIZE');
 
       pick(1, fileOf('a.png'), fileOf('b.pdf', 'application/pdf'));
 
@@ -315,7 +315,7 @@ describe('DocumentUpload', () => {
 
     it('rejects a file over the configured size limit', async () => {
       renderWidget();
-      await screen.findByText('DOCUMENT_UPLOAD_HELP');
+      await screen.findByText('DOCUMENT_UPLOAD_MAX_SIZE');
 
       pick(0, fileOf('big.png', 'image/png', 6 * 1000 * 1000));
 

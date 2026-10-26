@@ -181,7 +181,9 @@ const DocumentEntryCard: React.FC<DocumentEntryCardProps> = ({
       <Column sm={4} md={8} lg={16} className={styles.column}>
         <div className={styles.uploader} onClickCapture={handleClickCapture}>
           <p className={styles.uploaderTitle}>{t('DOCUMENT_UPLOAD_TITLE')}</p>
-          <p className={styles.uploaderHelp}>{uploadHelpText}</p>
+          {uploadHelpText && (
+            <p className={styles.uploaderHelp}>{uploadHelpText}</p>
+          )}
           <FileUploaderButton
             labelText={t('DOCUMENT_UPLOAD_BUTTON')}
             buttonKind="primary"
@@ -298,23 +300,16 @@ export const DocumentUpload: React.FC<DocumentUploadProps> = ({
     }
   }, [documents.length]);
 
-  const uploadHelpText = (() => {
-    const types = supportedFileTypes?.length
-      ? formatFileTypes(accept, i18n.language)
-      : undefined;
-    if (types && maxFileSizeMb !== undefined) {
-      return t('DOCUMENT_UPLOAD_HELP_WITH_TYPES', {
-        size: maxFileSizeMb,
-        types,
-      });
-    }
-    if (types) {
-      return t('DOCUMENT_UPLOAD_SUPPORTED_TYPES_LIST', { types });
-    }
-    return maxFileSizeMb === undefined
-      ? t('DOCUMENT_UPLOAD_SUPPORTED_TYPES')
-      : t('DOCUMENT_UPLOAD_HELP', { size: maxFileSizeMb });
-  })();
+  const uploadHelpText = [
+    maxFileSizeMb !== undefined &&
+      t('DOCUMENT_UPLOAD_MAX_SIZE', { size: maxFileSizeMb }),
+    supportedFileTypes?.length &&
+      t('DOCUMENT_UPLOAD_SUPPORTED_TYPES_LIST', {
+        types: formatFileTypes(accept, i18n.language),
+      }),
+  ]
+    .filter(Boolean)
+    .join(' ');
 
   const updateEntry = (id: string, patch: Partial<DocumentEntry>) =>
     onDocumentsChange(
