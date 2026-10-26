@@ -26,15 +26,12 @@ interface SaveSummary {
   savedCount: number;
   failures: { fileName: string; message: string }[];
 }
-
-// The section only reads savedIds for counting, so a summary maps onto any ids of that length.
 const resultOf = ({ savedCount, failures }: SaveSummary) => ({
   savedIds: Array.from({ length: savedCount }, (_, index) => `saved-${index}`),
   uploadedUrls: {},
   failures,
 });
 
-// jsdom has no object URLs; the section releases the previews it holds.
 global.URL.revokeObjectURL = jest.fn();
 
 const mockAddNotification = jest.fn();
@@ -68,10 +65,6 @@ interface StubWidgetProps {
   onDocumentsChange: (documents: StubEntry[]) => void;
   isSaving: boolean;
 }
-
-// The widget itself is covered in @bahmni/widgets. Here it only needs to hold the documents and
-// their files, which is all the section's own behaviour (saving, counting, releasing previews)
-// depends on. Like the widget, it always shows at least one document.
 jest.mock('@bahmni/widgets', () => ({
   ...jest.requireActual('@bahmni/widgets'),
   useNotification: () => ({ addNotification: mockAddNotification }),
@@ -285,7 +278,6 @@ describe('DocumentsSection', () => {
         expect.objectContaining({ type: 'error' }),
       ),
     );
-    // Document type is optional, so upload widgets still render.
     expect(screen.getAllByTestId('document-upload').length).toBeGreaterThan(0);
   });
 
@@ -326,8 +318,6 @@ describe('DocumentsSection', () => {
 
     await waitFor(() => expect(mockSave).toHaveBeenCalledTimes(2));
     const targets = mockSave.mock.calls.map(([input]) => input.target);
-
-    // The encounter travels whole, not just its uuid: the save bundle re-sends it as a PUT.
     expect(targets[0]).toEqual({
       encounterUuid: 'doc-enc-1',
       existingEncounter: {
@@ -744,8 +734,6 @@ describe('DocumentsSection', () => {
 
     const clickBackToSearch = () =>
       fireEvent.click(screen.getByTestId('back-to-search'));
-
-    // Carbon keeps the modal mounted and marks it visible with a class, so presence proves nothing.
     const isModalShown = () =>
       screen
         .getByTestId('unsaved-documents-modal')

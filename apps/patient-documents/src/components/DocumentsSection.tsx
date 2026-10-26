@@ -76,7 +76,6 @@ const saveTargetOf = (
         },
       };
 
-/** Strips the UI-only state, so the save service owes nothing to the widget package. */
 const toDocumentSaveInput = (entry: DocumentEntry): DocumentSaveInput => ({
   id: entry.id,
   files: entry.files.map((file) => ({
@@ -90,7 +89,6 @@ const toDocumentSaveInput = (entry: DocumentEntry): DocumentSaveInput => ({
   note: entry.note,
 });
 
-/** A document with no files is not a document yet; it is neither saved nor counted as unsaved. */
 const filledEntries = (entries: DocumentEntry[] = []) =>
   entries.filter((entry) => entry.files.length > 0);
 
@@ -109,8 +107,6 @@ export const DocumentsSection: React.FC<DocumentsSectionProps> = ({
   );
 
   const { practitioner } = useActivePractitioner();
-  // Pending documents per visit live here rather than in each upload widget, so the save below can
-  // reach them and a widget remount cannot lose them.
   const [pendingByVisit, setPendingByVisit] = useState<
     Record<string, DocumentEntry[]>
   >({});
@@ -121,8 +117,6 @@ export const DocumentsSection: React.FC<DocumentsSectionProps> = ({
   const visitKeys = visitGroups.map(
     (group, index) => group.visit.id ?? `visit-${index}`,
   );
-  // Derived from the visits on screen, so documents held for a visit that is no longer listed are
-  // neither saved nor counted as unsaved.
   const visitsWithPendingDocument = visitKeys.filter(
     (visitKey) => filledEntries(pendingByVisit[visitKey]).length > 0,
   );
@@ -167,8 +161,6 @@ export const DocumentsSection: React.FC<DocumentsSectionProps> = ({
   const leaveToSearch = () => {
     setIsLeaveConfirmationOpen(false);
     if (searchHref) {
-      // Only disarm the unload guard when we are actually navigating away. Setting it
-      // unconditionally would leave the user on the page with unsaved documents and no warning.
       isLeavingIntentionally.current = true;
       window.location.href = searchHref;
     }
@@ -177,7 +169,6 @@ export const DocumentsSection: React.FC<DocumentsSectionProps> = ({
   const setVisitDocuments = (visitKey: string, entries: DocumentEntry[]) =>
     setPendingByVisit((previous) => ({ ...previous, [visitKey]: entries }));
 
-  // Drops what was saved and remembers the upload urls of what was not, so a retry reuses them.
   const applySaveResult = (
     visitKey: string,
     entries: DocumentEntry[],
@@ -286,13 +277,21 @@ export const DocumentsSection: React.FC<DocumentsSectionProps> = ({
     queryFn: () => getDocumentTypes(topLevelConcept!),
     enabled: !!topLevelConcept,
   });
+  const documentUploadConfig = useMemo(
+    () =>
+      topLevelConcept
+        ? {
+            attributes: [{ name: 'documentType', required: false }],
+            metadata: { documentTypeConceptName: topLevelConcept },
+          }
+        : undefined,
+    [topLevelConcept],
+  );
   const defaultDocumentType = useMemo(
     () => getDefaultDocumentType(documentTypes ?? [], defaultOption),
     [documentTypes, defaultOption],
   );
 
-  // Document types populate an optional dropdown, so a failure must not block upload — but the
-  // user should still be told the list could not be loaded rather than seeing an empty dropdown.
   useEffect(() => {
     if (documentTypesError) {
       const { title, message } = getFormattedError(documentTypesError);
@@ -318,7 +317,6 @@ export const DocumentsSection: React.FC<DocumentsSectionProps> = ({
     );
   }
 
-  // Documents are attached to visits; with no visits there is nothing to show or upload into.
   if (visitGroups.length === 0) {
     return null;
   }
@@ -337,9 +335,6 @@ export const DocumentsSection: React.FC<DocumentsSectionProps> = ({
             : '';
           let visitLabel = t('DOCUMENTS_VISIT');
           if (startDate && endDate) {
-            // A visit that begins and ends on the same day reads better as "Visit on <date>" than
-            // as a range repeating one date twice. Compared on the formatted values rather than the
-            // raw timestamps, so the label can never disagree with the dates it would have shown.
             visitLabel =
               startDate === endDate
                 ? t('DOCUMENTS_VISIT_ON', { date: startDate })
@@ -398,7 +393,7 @@ export const DocumentsSection: React.FC<DocumentsSectionProps> = ({
                 onDocumentsChange={(entries) =>
                   setVisitDocuments(visitKey, entries)
                 }
-                documentTypeConceptName={topLevelConcept ?? undefined}
+                config={documentUploadConfig}
                 isSaving={isSaving}
               />
             </AccordionItem>

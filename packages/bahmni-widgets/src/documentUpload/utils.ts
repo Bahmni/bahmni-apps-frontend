@@ -6,7 +6,6 @@ export const isAcceptedFileType = (mimeType: string): boolean =>
   mimeType.startsWith('video/') ||
   mimeType === 'application/pdf';
 
-/** The configured default option when it is one of the types, otherwise the first type. */
 export const getDefaultDocumentType = (
   documentTypes: DocumentType[],
   defaultOption?: string | null,
@@ -18,7 +17,6 @@ export const getDefaultDocumentType = (
   documentTypes[0] ??
   null;
 
-/** Releases the local preview of a pending document once it is saved or discarded. */
 export const revokeDocumentPreview = (document: PendingDocument) => {
   if (document.url.startsWith('blob:')) {
     URL.revokeObjectURL(document.url);
@@ -33,7 +31,6 @@ export const exceedsMaxFileSize = (
 ): boolean =>
   maxFileSizeMb !== undefined && file.size > maxFileSizeMb * MEGABYTE;
 
-// Config lists extensions with or without the leading dot, in any case.
 export const toDottedExtension = (extension: string): string =>
   `.${extension.trim().replace(/^\./, '').toLowerCase()}`;
 
@@ -66,7 +63,6 @@ export const createEmptyDocumentEntry = (): DocumentEntry => ({
   errors: {},
 });
 
-/** An entry nothing has been entered into, which is ignored rather than validated or saved. */
 export const isDocumentEntryEmpty = (entry: DocumentEntry): boolean =>
   !entry.documentType &&
   !entry.documentId.trim() &&

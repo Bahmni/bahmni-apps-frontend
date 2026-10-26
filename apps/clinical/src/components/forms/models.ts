@@ -26,13 +26,6 @@ export interface InputControl {
   createBundleEntries?: (ctx: EncounterContext) => BundleEntry[];
   prepareBundleEntries?: () => Promise<void>;
   getSubmissionWarning?: () => { title: string; message: string } | undefined;
-  /**
-   * Only consulted when onDirectSubmit is also defined. A control with
-   * onDirectSubmit but no hasBundleData is assumed to have moved all its data
-   * to the direct-submit path and will NOT contribute to the bundle. May
-   * return a promise if answering requires resolving install-specific
-   * config first; consultationPad awaits it before building the bundle.
-   */
   hasBundleData?: () => boolean | Promise<boolean>;
   updateItemCDSCards?: (itemId: string, cards: CDSCard[]) => void;
   hasCriticalCDSCards?: () => boolean;

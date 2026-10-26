@@ -12,7 +12,6 @@
   padding-bottom: $spacing-06;
 }
 
-// A lone document has no SelectedItem around it, so it needs the inset that gives its content.
 .singleEntry {
   padding: $spacing-04 $spacing-05 $spacing-06;
   border-bottom: 1px solid $border-subtle-02;
@@ -21,16 +20,12 @@
 .column {
   margin-top: $spacing-04;
   margin-left: 0;
-
-  // The dropdown and text input labels differ by a few pixels; match them so side-by-side fields
-  // line up.
   :global(.cds--label) {
     margin-block-end: $spacing-03;
     line-height: 1rem;
   }
 }
 
-// Alone on its row, so it would otherwise stretch across the whole card.
 .typeOnly {
   max-inline-size: 20rem;
 }

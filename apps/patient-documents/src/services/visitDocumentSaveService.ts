@@ -22,7 +22,6 @@ export interface DocumentSaveFile {
 }
 
 export interface DocumentSaveInput {
-  /** Identifies the document in the caller's state and in {@link VisitDocumentSaveResult}. */
   id: string;
   files: DocumentSaveFile[];
   documentType: DocumentType | null;

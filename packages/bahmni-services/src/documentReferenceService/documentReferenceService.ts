@@ -1,6 +1,9 @@
 import { Bundle, DocumentReference } from 'fhir/r4';
 import { get } from '../api';
-import { searchConceptByName } from '../conceptService/conceptService';
+import {
+  getConceptById,
+  searchConceptByName,
+} from '../conceptService/conceptService';
 import type { ConceptData } from '../conceptService/models';
 import {
   DOCUMENT_UPLOAD_MAX_SIZE_URL,
@@ -8,11 +11,6 @@ import {
 } from './constants';
 import { DocumentType, DocumentViewModel } from './models';
 
-/**
- * Reads the configured max document upload size (MB) from the
- * `bahmni.documentUpload.maxFileSizeInMB` system setting. Returns undefined when unset so callers
- * can fall back to their own default.
- */
 export async function getDocumentUploadMaxSizeMb(): Promise<
   number | undefined
 > {
@@ -33,11 +31,6 @@ const toDocumentTypes = (
     label: member.display ?? '',
   }));
 
-/**
- * Fetches the configurable document types (set members of the given document-type concept),
- * e.g. Prescription, Radiology Report. Used to populate the document-type dropdown.
- * @param conceptName - fully specified name of the document-type concept set
- */
 export async function getDocumentTypes(
   conceptName: string,
 ): Promise<DocumentType[]> {
@@ -46,11 +39,14 @@ export async function getDocumentTypes(
   );
 }
 
-/**
- * Maps FHIR DocumentReference entries to DocumentViewModel for UI consumption
- * @param entries - Array of FHIR Bundle entries containing DocumentReference resources
- * @returns Array of formatted DocumentViewModel objects
- */
+export async function getDocumentTypesByConceptUuid(
+  conceptUuid: string,
+): Promise<DocumentType[]> {
+  return toDocumentTypes(
+    await getConceptById(conceptUuid, DOCUMENT_TYPES_VIEW),
+  );
+}
+
 function mapDocumentReferencesToViewModels(
   entries: Array<{ resource: DocumentReference }>,
 ): DocumentViewModel[] {
@@ -87,13 +83,6 @@ function mapDocumentReferencesToViewModels(
     });
 }
 
-/**
- * Fetches patient documents from the FHIR DocumentReference endpoint
- * The request includes _sort=-date; actual ordering depends on server support.
- * @param patientUuid - The UUID of the patient to fetch documents for
- * @param encounterUuids - Optional array of encounter UUIDs to filter documents
- * @returns Promise resolving to a FHIR Bundle containing DocumentReference resources
- */
 export async function getDocumentReferences(
   patientUuid: string,
   encounterUuids?: string[],
@@ -102,14 +91,6 @@ export async function getDocumentReferences(
   return get<Bundle<DocumentReference>>(url);
 }
 
-/**
- * Fetches and formats patient documents from the FHIR DocumentReference endpoint
- * Returns documents transformed to DocumentViewModel; consumers are responsible
- * for client-side sorting where server-side _sort=-date is unsupported.
- * @param patientUuid - The UUID of the patient to fetch documents for
- * @param encounterUuids - Optional array of encounter UUIDs to filter documents
- * @returns Promise resolving to an array of formatted DocumentViewModel objects
- */
 export async function getFormattedDocumentReferences(
   patientUuid: string,
   encounterUuids?: string[],
@@ -126,15 +107,6 @@ export interface DocumentReferencePage {
   total: number;
 }
 
-/**
- * Fetches a single page of patient documents using offset-based pagination.
- * Uses _getpagesoffset = (page - 1) * count to jump directly to any page.
- * @param patientUuid - The UUID of the patient to fetch documents for
- * @param encounterUuids - Optional array of encounter UUIDs to filter documents
- * @param count - Number of items per page (default 10)
- * @param page - 1-based page number (default 1)
- * @returns Promise resolving to a DocumentReferencePage with documents and total count
- */
 export async function getDocumentReferencePage(
   patientUuid: string,
   encounterUuids?: string[],

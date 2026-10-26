@@ -15,11 +15,12 @@ import {
 import {
   DocumentType,
   getDocumentTypes,
+  getDocumentTypesByConceptUuid,
   getDocumentUploadMaxSizeMb,
+  useTranslation,
 } from '@bahmni/services';
 import { useQuery } from '@tanstack/react-query';
 import React, { useEffect, useRef, useState } from 'react';
-import { useTranslation } from 'react-i18next';
 import styles from './__styles__/DocumentUpload.module.scss';
 import { MAX_NOTE_LENGTH } from './constants';
 import {
@@ -246,14 +247,11 @@ export const DocumentUpload: React.FC<DocumentUploadProps> = ({
   documents,
   onDocumentsChange,
   config,
-  documentTypeConceptName: fallbackConceptName,
   documentsTitle,
   isSaving = false,
 }) => {
   const { t, i18n } = useTranslation();
 
-  // Max size comes solely from the bahmni.documentUpload.maxFileSizeInMB setting; when it is not
-  // set there is no client-side size limit (the backend remains the authority).
   const { data: maxFileSizeMb } = useQuery({
     queryKey: ['documentUploadMaxSizeMb'],
     queryFn: getDocumentUploadMaxSizeMb,
@@ -265,17 +263,23 @@ export const DocumentUpload: React.FC<DocumentUploadProps> = ({
     attribute('documentType')?.required ?? !!config;
   const showDocumentId = !!attribute('documentId');
   const isDocumentIdRequired = attribute('documentId')?.required ?? false;
-  const conceptName =
-    (config?.metadata?.documentTypeConceptName as string | undefined) ??
-    fallbackConceptName;
+  const conceptUuid = config?.metadata?.documentTypeConceptSetUuid as
+    | string
+    | undefined;
+  const conceptName = config?.metadata?.documentTypeConceptName as
+    | string
+    | undefined;
   const supportedFileTypes = config?.metadata?.supportedFileTypes as
     | string[]
     | undefined;
 
   const { data: loadedDocumentTypes, isError } = useQuery({
-    queryKey: ['documentTypes', conceptName],
-    queryFn: () => getDocumentTypes(conceptName!),
-    enabled: !!conceptName,
+    queryKey: ['documentTypes', conceptUuid ?? conceptName],
+    queryFn: () =>
+      conceptUuid
+        ? getDocumentTypesByConceptUuid(conceptUuid)
+        : getDocumentTypes(conceptName!),
+    enabled: !!(conceptUuid ?? conceptName),
   });
   const documentTypes = loadedDocumentTypes ?? [];
 
@@ -356,7 +360,7 @@ export const DocumentUpload: React.FC<DocumentUploadProps> = ({
 
   const errorKey = !config
     ? undefined
-    : !conceptName
+    : !conceptUuid && !conceptName
       ? 'DOCUMENTS_ERROR_INVALID_CONFIGURATION'
       : isError
         ? 'DOCUMENTS_ERROR_LOADING_DOCUMENT_TYPES'

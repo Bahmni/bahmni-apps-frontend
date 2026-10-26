@@ -30,15 +30,10 @@ export interface DocumentUploadConfig {
   metadata?: Record<string, unknown>;
 }
 
-/**
- * Controlled: the consumer owns the documents and saving them. The widget lists them, edits them
- * through onDocumentsChange, and always shows at least one, so it holds no state a remount could lose.
- */
 export interface DocumentUploadProps {
   documents: DocumentEntry[];
   onDocumentsChange: (documents: DocumentEntry[]) => void;
   config?: DocumentUploadConfig;
-  documentTypeConceptName?: string;
   documentsTitle?: string;
   isSaving?: boolean;
 }

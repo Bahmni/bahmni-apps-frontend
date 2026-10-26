@@ -8,6 +8,7 @@ jest.mock('@bahmni/services', () => ({
   ...jest.requireActual('@bahmni/services'),
   getDocumentUploadMaxSizeMb: jest.fn(),
   getDocumentTypes: jest.fn(),
+  getDocumentTypesByConceptUuid: jest.fn(),
 }));
 
 global.URL.createObjectURL = jest.fn(
@@ -20,8 +21,11 @@ jest.mock('../../notification', () => ({
   useNotification: () => ({ addNotification: mockAddNotification }),
 }));
 
-const { getDocumentUploadMaxSizeMb, getDocumentTypes } =
-  jest.requireMock('@bahmni/services');
+const {
+  getDocumentUploadMaxSizeMb,
+  getDocumentTypes,
+  getDocumentTypesByConceptUuid,
+} = jest.requireMock('@bahmni/services');
 
 const TYPES = [
   { id: 'type-1', label: 'Lab Report' },
@@ -66,6 +70,11 @@ const TYPE_REQUIRED_CONFIG = {
   metadata: METADATA,
 };
 
+const DEFAULT_CONFIG = {
+  attributes: [{ name: 'documentType', required: false }],
+  metadata: METADATA,
+};
+
 const onChange = jest.fn();
 
 type HarnessProps = Partial<
@@ -76,7 +85,7 @@ const Harness = ({ initial = [entry('e1')], ...props }: HarnessProps) => {
   const [documents, setDocuments] = useState<DocumentEntry[]>(initial);
   return (
     <DocumentUpload
-      documentTypeConceptName="Document Type"
+      config={DEFAULT_CONFIG}
       {...props}
       documents={documents}
       onDocumentsChange={(next) => {
@@ -113,6 +122,7 @@ describe('DocumentUpload', () => {
     jest.clearAllMocks();
     getDocumentUploadMaxSizeMb.mockResolvedValue(5);
     getDocumentTypes.mockResolvedValue(TYPES);
+    getDocumentTypesByConceptUuid.mockResolvedValue(TYPES);
   });
 
   describe('documents', () => {
@@ -427,34 +437,19 @@ describe('DocumentUpload', () => {
       );
     });
 
-    it('falls back to the given concept name when the config does not name one', async () => {
+    it('loads the document types by the concept uuid in the config', async () => {
       renderWidget({
-        config: { attributes: [] },
-        documentTypeConceptName: 'Fallback Type',
+        config: { metadata: { documentTypeConceptSetUuid: 'set-uuid' } },
       });
 
       await waitFor(() =>
-        expect(getDocumentTypes).toHaveBeenCalledWith('Fallback Type'),
+        expect(getDocumentTypesByConceptUuid).toHaveBeenCalledWith('set-uuid'),
       );
+      expect(getDocumentTypes).not.toHaveBeenCalled();
     });
 
-    it('prefers the concept name in the config over the given one', async () => {
-      renderWidget({
-        config: { metadata: METADATA },
-        documentTypeConceptName: 'Fallback Type',
-      });
-
-      await waitFor(() =>
-        expect(getDocumentTypes).toHaveBeenCalledWith('Document Type'),
-      );
-      expect(getDocumentTypes).not.toHaveBeenCalledWith('Fallback Type');
-    });
-
-    it('shows a configuration error instead of the widget without a concept name', () => {
-      renderWidget({
-        config: { metadata: {} },
-        documentTypeConceptName: undefined,
-      });
+    it('shows a configuration error instead of the widget without a concept uuid or name', () => {
+      renderWidget({ config: { metadata: {} } });
 
       expect(
         screen.getByText('DOCUMENTS_ERROR_INVALID_CONFIGURATION'),
