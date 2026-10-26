@@ -20,4 +20,13 @@ export const CONDITION_DURATION_LABELS: Record<ConditionDurationField, string> =
     days: 'CONDITIONS_DURATION_DAYS',
   };
 
+export const CONDITION_DURATION_FIELD_KEYS: Record<
+  ConditionDurationField,
+  'durationYears' | 'durationMonths' | 'durationDays'
+> = {
+  years: 'durationYears',
+  months: 'durationMonths',
+  days: 'durationDays',
+};
+
 export const CONDITION_DURATION_REQUIRED_ERROR = 'CONDITIONS_DURATION_REQUIRED';

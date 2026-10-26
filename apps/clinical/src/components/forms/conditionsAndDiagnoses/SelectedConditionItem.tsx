@@ -70,6 +70,12 @@ const SelectedConditionItem: React.FC<SelectedConditionItemProps> = React.memo(
               {t('CONDITIONS_DURATION_LEGEND')}
             </legend>
             <div className={styles.selectedConditionDurationInputs}>
+              {/* One duration error is shared across all three inputs, which
+                  Carbon's per-input invalidText doesn't support. So the error
+                  state is wired manually: aria-invalid/aria-describedby on each
+                  input, the single message rendered once below the fieldset,
+                  and the invalid outline via the SCSS override instead of
+                  Carbon's invalid prop. */}
               {CONDITION_DURATION_FIELDS.map((field) => (
                 <TextInput
                   key={field}

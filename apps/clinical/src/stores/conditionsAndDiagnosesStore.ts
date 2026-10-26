@@ -6,6 +6,7 @@ import {
 import { Coding } from 'fhir/r4';
 import { create } from 'zustand';
 import {
+  CONDITION_DURATION_FIELD_KEYS,
   CONDITION_DURATION_REQUIRED_ERROR,
   type ConditionDurationField,
 } from '../constants/conditions';
@@ -13,15 +14,6 @@ import {
   hasConditionDuration,
   isValidConditionDurationValue,
 } from '../utils/conditionDuration';
-
-const DURATION_FIELD_KEYS: Record<
-  ConditionDurationField,
-  'durationYears' | 'durationMonths' | 'durationDays'
-> = {
-  years: 'durationYears',
-  months: 'durationMonths',
-  days: 'durationDays',
-};
 
 /**
  * Interface defining the state and actions for managing conditions and diagnoses
@@ -288,7 +280,7 @@ export const useConditionsAndDiagnosesStore =
         return;
       }
 
-      const fieldKey = DURATION_FIELD_KEYS[field];
+      const fieldKey = CONDITION_DURATION_FIELD_KEYS[field];
       if (!fieldKey || !isValidConditionDurationValue(field, value)) {
         return;
       }

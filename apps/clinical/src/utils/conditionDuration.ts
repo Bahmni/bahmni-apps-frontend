@@ -1,14 +1,13 @@
-import { calculateOnsetDate } from '@bahmni/services';
+import { calculateOnsetDate, type ConditionInputEntry } from '@bahmni/services';
 import {
   CONDITION_DURATION_LIMITS,
   type ConditionDurationField,
 } from '../constants/conditions';
 
-interface ConditionDuration {
-  durationYears: number | null;
-  durationMonths: number | null;
-  durationDays: number | null;
-}
+type ConditionDuration = Pick<
+  ConditionInputEntry,
+  'durationYears' | 'durationMonths' | 'durationDays'
+>;
 
 /**
  * Checks whether a value can be stored in a condition duration field
@@ -36,7 +35,7 @@ export const parseConditionDurationInput = (
   const value = rawValue.trim();
   if (value === '') return null;
   if (!/^\d+$/.test(value)) return undefined;
-  const numValue = parseInt(value, 10);
+  const numValue = Number.parseInt(value, 10);
   return isValidConditionDurationValue(field, numValue) ? numValue : undefined;
 };
 
@@ -52,8 +51,8 @@ export const hasConditionDuration = (condition: ConditionDuration): boolean =>
 
 /**
  * Calculates the condition onset date by subtracting the duration from the
- * consultation date. Years and months are subtracted together as a single
- * month offset (clamping to month end), followed by days.
+ * consultation date, applied in order — years, then months, then days, each
+ * step clamping to month end (per the AC's "applied in that order" wording).
  * @returns The onset date, or undefined when the condition has no duration
  */
 export const calculateConditionOnsetDate = (
@@ -61,13 +60,14 @@ export const calculateConditionOnsetDate = (
   condition: ConditionDuration,
 ): Date | undefined => {
   if (!hasConditionDuration(condition)) return undefined;
-  const totalMonths =
-    (condition.durationYears ?? 0) * 12 + (condition.durationMonths ?? 0);
-  const afterMonths = calculateOnsetDate(
+  const afterYears = calculateOnsetDate(
     consultationDate,
-    totalMonths,
-    'months',
+    condition.durationYears ?? 0,
+    'years',
   );
+  const afterMonths =
+    afterYears &&
+    calculateOnsetDate(afterYears, condition.durationMonths ?? 0, 'months');
   return (
     afterMonths &&
     calculateOnsetDate(afterMonths, condition.durationDays ?? 0, 'days')

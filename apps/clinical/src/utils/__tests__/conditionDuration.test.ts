@@ -108,6 +108,23 @@ describe('conditionDuration utils', () => {
       ).toEqual(new Date(2027, 1, 28));
     });
 
+    it('subtracts years before months across a leap-day boundary', () => {
+      // Sequential: Feb 29 2028 - 1y = Feb 28 2027, - 1m = Jan 28 2027
+      // (a lumped 13-month offset would give Jan 29 2027)
+      expect(
+        calculateConditionOnsetDate(
+          new Date(2028, 1, 29),
+          duration(1, 1, null),
+        ),
+      ).toEqual(new Date(2027, 0, 28));
+    });
+
+    it('handles a days-only duration', () => {
+      expect(
+        calculateConditionOnsetDate(consultationDate, duration(null, null, 30)),
+      ).toEqual(new Date(2026, 8, 23, 10, 30));
+    });
+
     it('returns undefined when there is no duration', () => {
       expect(
         calculateConditionOnsetDate(

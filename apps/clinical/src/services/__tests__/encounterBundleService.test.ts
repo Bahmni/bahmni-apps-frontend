@@ -1,4 +1,9 @@
-import { DiagnosisInputEntry, post, Form2Observation } from '@bahmni/services';
+import {
+  ConditionInputEntry,
+  DiagnosisInputEntry,
+  post,
+  Form2Observation,
+} from '@bahmni/services';
 import {
   Reference,
   Condition,
@@ -9,7 +14,6 @@ import {
 } from 'fhir/r4';
 import { CONSULTATION_ERROR_MESSAGES } from '../../constants/errors';
 import { AllergyInputEntry } from '../../models/allergy';
-import { ConditionInputEntry } from '../../models/condition';
 import { FhirEncounter } from '../../models/encounter';
 import { ServiceRequestInputEntry } from '../../models/serviceRequest';
 import {
