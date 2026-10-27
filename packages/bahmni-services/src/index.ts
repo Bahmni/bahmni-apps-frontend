@@ -277,6 +277,21 @@ export {
 export { logout, validateSessionUser } from './authService';
 export { USER_PINNED_PREFERENCE_URL } from './observationFormsService/constants';
 export {
+  streamChatMessage,
+  confirmChatActions,
+  listAiConversations,
+  getAiConversation,
+  deleteAiConversation,
+  type AiConversationSummary,
+  type AiConversationTranscript,
+  type AiTranscriptMessage,
+  type AiChatActivity,
+  type AiChatConfirmation,
+  type AiChatPendingAction,
+  type AiChatStreamHandlers,
+  type AiChatStreamResult,
+} from './aiChatService';
+export {
   getPatientObservationsBundle,
   getPatientObservationsWithEncounterBundle,
   getPatientLatestObservations,
