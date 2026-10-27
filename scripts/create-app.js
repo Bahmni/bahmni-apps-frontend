@@ -139,12 +139,14 @@ export default [
 }
 
 function getJestConfigTemplate(appNameKebab) {
-  return `export default {
+  return `import { esmTransformIgnorePattern } from '../../jest.esm-packages';
+
+export default {
   displayName: '@bahmni/${appNameKebab}',
   preset: '../../jest.preset.js',
   setupFilesAfterEnv: ['<rootDir>/setupTests.ts'],
   transformIgnorePatterns: [
-    'node_modules/(?!(@bahmni/design-system|@bahmni/services)/)',
+    esmTransformIgnorePattern(['@bahmni/design-system', '@bahmni/services']),
   ],
   moduleNameMapper: {
     '^i18next$': '<rootDir>/../../node_modules/i18next',
