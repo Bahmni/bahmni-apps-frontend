@@ -119,7 +119,8 @@
     "picomatch": "4.0.4",
     "fast-uri": "3.1.7",
     "immutable": "4.3.9",
-    "proxy-addr": "2.0.8"
+    "proxy-addr": "2.0.8",
+    "@carbon/icons-react": "11.65.0"
   },
   "workspaces": [
     "apps/*",
