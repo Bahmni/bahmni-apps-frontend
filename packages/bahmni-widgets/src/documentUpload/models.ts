@@ -6,20 +6,34 @@ export interface PendingDocument {
   url: string;
   fileName: string;
   contentType: string;
-  documentType: DocumentType | null;
-  note: string;
-  isNoteVisible: boolean;
   uploadedUrl?: string;
+  status?: 'uploading' | 'uploaded' | 'error';
+  error?: string;
 }
 
-/**
- * Controlled: the consumer owns the pending documents and saving them. The widget only selects,
- * edits and discards them, so it holds no state a remount could lose.
- */
+export interface DocumentEntryErrors {
+  documentType?: string;
+  documentId?: string;
+  files?: string;
+}
+export interface DocumentEntry {
+  id: string;
+  documentType: DocumentType | null;
+  documentId: string;
+  note: string;
+  files: PendingDocument[];
+  errors: DocumentEntryErrors;
+}
+
+export interface DocumentUploadConfig {
+  attributes?: Array<{ name: string; required?: boolean }>;
+  metadata?: Record<string, unknown>;
+}
+
 export interface DocumentUploadProps {
-  documents: PendingDocument[];
-  onDocumentsChange: (documents: PendingDocument[]) => void;
-  documentTypes?: DocumentType[];
-  defaultOption?: string | null;
+  documents: DocumentEntry[];
+  onDocumentsChange: (documents: DocumentEntry[]) => void;
+  config?: DocumentUploadConfig;
+  documentsTitle?: string;
   isSaving?: boolean;
 }

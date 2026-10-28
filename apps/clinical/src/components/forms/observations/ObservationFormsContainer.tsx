@@ -24,6 +24,7 @@ import {
   convertImmutableToPlainObject,
   extractNotesFromFormData,
   formatDateForControl,
+  findConceptDatatype,
   DATETIME_REGEX_PATTERN,
   type AgeDetails,
   computeAgeDetails,
@@ -276,9 +277,20 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
     };
 
     const convertDateTime = (obs: Form2Observation): Form2Observation => {
+      // Date-only concepts must match the date-only value form calculations write,
+      // otherwise CarbonContainer flags the form as updated on load. Take the calendar
+      // date from the string as-is: converting through Date shifts it by a day when the
+      // browser is behind the server's timezone (e.g. 00:00 UTC is the previous day in UTC-3).
       const converted =
         typeof obs.value === 'string' && DATETIME_REGEX_PATTERN.test(obs.value)
-          ? { ...obs, value: formatDateForControl(new Date(obs.value)) }
+          ? {
+              ...obs,
+              value:
+                formMetadata &&
+                findConceptDatatype(formMetadata, obs.concept.uuid) === 'Date'
+                  ? obs.value.slice(0, 10)
+                  : formatDateForControl(new Date(obs.value)),
+            }
           : obs;
       if (converted.groupMembers) {
         return {
@@ -318,7 +330,7 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
       .map(convertComplex)
       .map(convertDateTime)
       .map(normalizeInterpretation);
-  }, [existingObservations]);
+  }, [existingObservations, formMetadata]);
 
   const handlePinToggle = (e: React.MouseEvent) => {
     e.preventDefault();
