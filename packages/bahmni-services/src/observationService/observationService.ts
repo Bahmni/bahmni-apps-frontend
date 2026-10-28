@@ -11,8 +11,24 @@ export async function getPatientObservationsBundle(
   conceptCodes?: string[],
   serviceRequestId?: string,
 ): Promise<Bundle<Observation>> {
-  const url = FHIR_OBSERVATION_URL(patientUuid, conceptCodes, serviceRequestId);
-  return await get<Bundle<Observation>>(url);
+  const bundle = await get<Bundle<Observation>>(
+    FHIR_OBSERVATION_URL(patientUuid, conceptCodes, serviceRequestId),
+  );
+
+  let nextUrl = getNextPageUrl(bundle);
+  while (nextUrl) {
+    const page = await get<Bundle<Observation>>(nextUrl);
+    bundle.entry = [...(bundle.entry ?? []), ...(page.entry ?? [])];
+    nextUrl = getNextPageUrl(page);
+  }
+  return bundle;
+}
+
+function getNextPageUrl(bundle: Bundle): string | undefined {
+  const next = bundle.link?.find((l) => l.relation === 'next')?.url;
+  if (!next) return undefined;
+  const { pathname, search } = new URL(next, 'http://placeholder');
+  return `${pathname}${search}`;
 }
 
 export async function getPatientObservationsWithEncounterBundle(
