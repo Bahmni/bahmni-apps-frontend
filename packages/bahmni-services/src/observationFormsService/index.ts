@@ -21,6 +21,7 @@ export {
   transformFormDataToObservations,
   transformObservationsToFormData,
   transformContainerObservationsToForm2Observations,
+  findConceptDatatype,
   convertImmutableToPlainObject,
   extractNotesFromFormData,
   formatDateForControl,

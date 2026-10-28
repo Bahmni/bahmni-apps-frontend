@@ -6,7 +6,14 @@ export {
   type BahmniThemeConfig,
 } from './utils/applyTheme';
 
-export { Add, Close, Edit, TrashCan, Printer } from '@carbon/icons-react';
+export {
+  Add,
+  Close,
+  DocumentView,
+  Edit,
+  TrashCan,
+  Printer,
+} from '@carbon/icons-react';
 
 export { ArrowRight, type ArrowRightProps } from './atoms/arrowRight';
 
@@ -170,7 +177,14 @@ export {
 } from './molecules/formCardContainer';
 export { FormCard, type FormCardProps } from './molecules/formCard';
 export { Modal, type ModalProps } from './atoms/modal';
-export { FileUploader, type FileUploaderProps } from './atoms/fileUploader';
+export {
+  FileUploader,
+  FileUploaderButton,
+  FileUploaderItem,
+  type FileUploaderProps,
+  type FileUploaderButtonProps,
+  type FileUploaderItemProps,
+} from './molecules/fileUploader';
 export {
   InlineNotification,
   type InlineNotificationProps,
