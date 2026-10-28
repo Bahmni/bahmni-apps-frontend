@@ -69,7 +69,9 @@ const StopMedicationForm: React.FC<StopMedicationFormProps> = React.memo(
     // Stable ref for the DatePicker `value` prop — prevents the controlled-value cycle
     // where Carbon calls fp.setDate(value) on every Zustand update and clears the input
     // when the user re-selects the same date that is already in the store.
-    const initialStopDateRef = useRef(stopDate);
+    const initialStopDateRef = useRef(
+      isCancelVaccination ? new Date() : stopDate,
+    );
     const prevMedicationIdRef = useRef<string | undefined>(stopMedication?.id);
     // Update synchronously during render so the DatePicker re-initialises to today
     // whenever a different medication is being stopped.
