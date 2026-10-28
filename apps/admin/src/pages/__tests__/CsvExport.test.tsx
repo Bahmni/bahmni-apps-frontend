@@ -186,45 +186,95 @@ describe('CsvExport', () => {
     ).toBeInTheDocument();
   });
 
-  it('shows a validation error and blocks export when no concept is selected', () => {
+  it('disables the export button when no concept is entered', () => {
     renderPage();
 
+    expect(getExportButton()).toBeDisabled();
     fireEvent.click(getExportButton());
 
     expect(mockExport).not.toHaveBeenCalled();
-    expect(mockAddNotification).toHaveBeenCalledWith(
-      expect.objectContaining({
-        type: 'error',
-        title: 'No concept selected',
-      }),
-    );
+    expect(mockAddNotification).not.toHaveBeenCalled();
+    expect(
+      screen.queryByText('Please select a concept from the list.'),
+    ).not.toBeInTheDocument();
   });
 
-  it('blocks export when typed text was not picked from the dropdown', async () => {
+  it('shows the mandatory asterisk and error when a selected concept is voided', async () => {
+    renderPage();
+
+    await selectConcept('Vital signs');
+    expect(getExportButton()).not.toBeDisabled();
+
+    await typeSearch('Vit');
+
+    expect(getExportButton()).toBeDisabled();
+    expect(mockExport).not.toHaveBeenCalled();
+    expect(
+      screen.getByText('Please select a concept from the list.'),
+    ).toBeInTheDocument();
+    expect(screen.getByText('*')).toBeInTheDocument();
+  });
+
+  it('keeps the export button disabled when typed text was not picked from the dropdown', async () => {
     renderPage();
 
     await typeSearch('Vital signs');
-    fireEvent.click(getExportButton());
 
-    expect(mockExport).not.toHaveBeenCalled();
-    expect(mockAddNotification).toHaveBeenCalledWith(
-      expect.objectContaining({ title: 'No concept selected' }),
-    );
+    expect(getExportButton()).toBeDisabled();
+    expect(mockAddNotification).not.toHaveBeenCalled();
+    expect(
+      screen.queryByText('Please select a concept from the list.'),
+    ).not.toBeInTheDocument();
   });
 
-  it('keeps the typed text when the search box loses focus', async () => {
+  it('shows no error when the input loses focus with unmatched typed text', async () => {
     renderPage();
 
     await typeSearch('Vital');
     fireEvent.blur(getInput());
 
     expect(getInput()).toHaveValue('Vital');
-
-    fireEvent.click(getExportButton());
+    expect(getExportButton()).toBeDisabled();
     expect(mockGetConcept).not.toHaveBeenCalled();
-    expect(mockAddNotification).toHaveBeenCalledWith(
-      expect.objectContaining({ title: 'No concept selected' }),
-    );
+    expect(
+      screen.queryByText('Please select a concept from the list.'),
+    ).not.toBeInTheDocument();
+  });
+
+  it('shows the error when the user voids the value typed in the input box', async () => {
+    renderPage();
+
+    await typeSearch('Vital');
+    fireEvent.blur(getInput());
+
+    await typeSearch('');
+
+    expect(getExportButton()).toBeDisabled();
+    expect(
+      screen.getByText('Please select a concept from the list.'),
+    ).toBeInTheDocument();
+    expect(screen.getByText('*')).toBeInTheDocument();
+  });
+
+  it('clears the error and re-enables the export button when a concept is re-selected', async () => {
+    Element.prototype.scrollIntoView = jest.fn();
+    renderPage();
+
+    await selectConcept('Vital signs');
+    await typeSearch('Vit');
+    expect(
+      screen.getByText('Please select a concept from the list.'),
+    ).toBeInTheDocument();
+
+    await typeSearch('vit');
+    const option = await screen.findByRole('option', { name: 'Vital signs' });
+    fireEvent.click(option);
+
+    expect(
+      screen.queryByText('Please select a concept from the list.'),
+    ).not.toBeInTheDocument();
+    expect(screen.queryByText('*')).not.toBeInTheDocument();
+    expect(getExportButton()).not.toBeDisabled();
   });
 
   it('downloads the zip and shows a success notification when the export has data', async () => {

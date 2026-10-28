@@ -23,3 +23,8 @@
 .search {
   inline-size: 16rem;
 }
+
+.requiredAsterisk {
+  color: $text-error;
+  margin-inline-start: $spacing-02;
+}
