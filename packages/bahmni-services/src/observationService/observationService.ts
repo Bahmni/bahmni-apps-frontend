@@ -27,7 +27,7 @@ export async function getPatientObservationsBundle(
 function getNextPageUrl(bundle: Bundle): string | undefined {
   const next = bundle.link?.find((l) => l.relation === 'next')?.url;
   if (!next) return undefined;
-  const { pathname, search } = new URL(next, 'http://placeholder');
+  const { pathname, search } = new URL(next, 'https://placeholder');
   return `${pathname}${search}`;
 }
 
