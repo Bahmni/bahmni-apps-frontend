@@ -104,8 +104,15 @@ function transformGroupMembers(
   });
 }
 
-// Helper function to find concept datatype from metadata schema
-function findConceptDatatype(
+/**
+ * Finds a concept's datatype in the form schema, walking nested obsGroup/section controls.
+ * Returns undefined if the concept is not in the schema or the schema has no controls.
+ *
+ * Prefer this over `obs.concept.datatype` for observations loaded from FHIR: FHIR has no
+ * separate value[x] for Date vs Datetime (both arrive as valueDateTime), so the datatype
+ * echoed back on fetched observations cannot tell them apart; the form schema can.
+ */
+export function findConceptDatatype(
   metadata: FormMetadata,
   conceptUuid: string,
 ): string | undefined {

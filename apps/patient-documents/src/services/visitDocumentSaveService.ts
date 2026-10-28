@@ -13,28 +13,23 @@ export interface DocumentSaveFailure {
   fileName: string;
   message: string;
 }
-
-/**
- * The data the save needs per document. Deliberately owned here rather than reusing an upload
- * widget's view model, so this service stays reusable by any caller with files and owes nothing
- * to the widget package; callers map their own state into this shape.
- */
-export interface DocumentSaveInput {
-  /** Identifies the document in the caller's state and in {@link VisitDocumentSaveResult}. */
+export interface DocumentSaveFile {
   id: string;
   file: File;
   fileName: string;
   contentType: string;
-  documentType: DocumentType | null;
-  note: string;
-  /** Upload url when the bytes were already uploaded, so a retry does not upload again. */
   uploadedUrl?: string;
 }
 
+export interface DocumentSaveInput {
+  id: string;
+  files: DocumentSaveFile[];
+  documentType: DocumentType | null;
+  note: string;
+}
+
 export interface VisitDocumentSaveResult {
-  /** Ids of the input documents that are now saved. */
   savedIds: string[];
-  /** Upload url per document id, so a retry after a failed save does not upload again. */
   uploadedUrls: Record<string, string>;
   failures: DocumentSaveFailure[];
 }
@@ -51,11 +46,6 @@ interface SaveVisitDocumentsInput {
 const messageOf = (error: unknown): string =>
   error instanceof Error ? error.message : String(error);
 
-/**
- * Uploads each document's bytes, then saves the uploaded batch against the visit in one
- * transaction. A failed upload fails only its own document; a rejected transaction fails the whole
- * batch, since nothing in it was written.
- */
 export async function saveVisitDocuments({
   patientUuid,
   encounterTypeName,
@@ -67,26 +57,29 @@ export async function saveVisitDocuments({
   const failures: DocumentSaveFailure[] = [];
   const uploadedUrls: Record<string, string> = {};
 
+  const files = documents.flatMap((document) => document.files);
   const uploads = await Promise.allSettled(
-    documents.map((document) =>
-      document.uploadedUrl
-        ? Promise.resolve({ url: document.uploadedUrl })
-        : uploadDocument(document.file, encounterTypeName, patientUuid),
+    files.map((file) =>
+      file.uploadedUrl
+        ? Promise.resolve({ url: file.uploadedUrl })
+        : uploadDocument(file.file, encounterTypeName, patientUuid),
     ),
   );
-  const uploaded: DocumentSaveInput[] = [];
-  documents.forEach((document, index) => {
+  files.forEach((file, index) => {
     const upload = uploads[index];
     if (upload.status === 'fulfilled') {
-      uploadedUrls[document.id] = upload.value.url;
-      uploaded.push(document);
+      uploadedUrls[file.id] = upload.value.url;
     } else {
       failures.push({
-        fileName: document.fileName,
+        fileName: file.fileName,
         message: messageOf(upload.reason),
       });
     }
   });
+
+  const uploaded = documents.filter((document) =>
+    document.files.every((file) => uploadedUrls[file.id]),
+  );
 
   if (uploaded.length === 0) {
     return { savedIds: [], uploadedUrls, failures };
@@ -99,9 +92,11 @@ export async function saveVisitDocuments({
       documents: uploaded.map((document) => {
         const type = document.documentType ?? defaultDocumentType;
         return {
-          url: uploadedUrls[document.id],
-          contentType: document.contentType,
-          title: document.fileName,
+          files: document.files.map((file) => ({
+            url: uploadedUrls[file.id],
+            contentType: file.contentType,
+            title: file.fileName,
+          })),
           typeCode: type?.id,
           typeDisplay: type?.label,
           description: document.note.trim() || undefined,
@@ -111,7 +106,9 @@ export async function saveVisitDocuments({
     });
   } catch (error) {
     uploaded.forEach((document) =>
-      failures.push({ fileName: document.fileName, message: messageOf(error) }),
+      document.files.forEach((file) =>
+        failures.push({ fileName: file.fileName, message: messageOf(error) }),
+      ),
     );
     return { savedIds: [], uploadedUrls, failures };
   }

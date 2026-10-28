@@ -87,6 +87,18 @@ describe('updateRowField', () => {
       expect(result.errors.overlap).toBeUndefined();
     });
 
+    it('should clear a stale end time error when the start time changes', () => {
+      const row = makeRow({
+        errors: {
+          endTime: 'ADMIN_ADD_SERVICE_VALIDATION_END_TIME_AFTER_START',
+        },
+      });
+
+      const result = updateRowField(row, 'row-1', 'startTime', '8:00', null);
+
+      expect(result.errors.endTime).toBeUndefined();
+    });
+
     it.each([
       {
         scenario: 'same meridiem — no crossing',
