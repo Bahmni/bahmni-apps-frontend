@@ -1,8 +1,9 @@
 .filtersContainer {
-  // Carbon's Tile resolves to the theme's `--cds-layer` background, which
-  // renders gray in this app's theme — force white so it reads as a card
-  // against the gray page, matching the admin module's reports mockup.
-  background-color: #fff !important;
+  // `--cds-background` is now set explicitly in applyTheme.ts (Bahmni's
+  // design tokens never apply a Carbon theme class, so Carbon's own default
+  // never activates). No `!important` needed — nothing else targets this
+  // element's background.
+  background-color: var(--cds-background);
   padding: 1.75rem;
   margin-bottom: 2rem;
 }
