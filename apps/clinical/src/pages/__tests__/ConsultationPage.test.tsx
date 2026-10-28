@@ -1,4 +1,8 @@
-import { getConfig, getFormattedPatientById } from '@bahmni/services';
+import {
+  getConfig,
+  getFormattedPatientById,
+  dispatchConsultationStart,
+} from '@bahmni/services';
 import {
   useHasPrivilege,
   useNotification,
@@ -17,7 +21,6 @@ import i18n from 'i18next';
 import { axe, toHaveNoViolations } from 'jest-axe';
 import React, { ReactNode } from 'react';
 import { MemoryRouter } from 'react-router-dom';
-import { dispatchConsultationStart } from '../../events/startConsultation';
 import { useClinicalConfig } from '../../providers/clinicalConfig';
 import ConsultationPage from '../ConsultationPage';
 
@@ -1011,7 +1014,9 @@ describe('ConsultationPage', () => {
       });
 
       act(() => {
-        dispatchConsultationStart({ encounterType: 'Consultation' });
+        dispatchConsultationStart({
+          context: { encounterType: 'Consultation' },
+        });
       });
 
       await waitFor(() => {
@@ -1044,7 +1049,9 @@ describe('ConsultationPage', () => {
       });
 
       act(() => {
-        dispatchConsultationStart({ encounterType: 'Consultation' });
+        dispatchConsultationStart({
+          context: { encounterType: 'Consultation' },
+        });
       });
 
       await waitFor(() => {
@@ -1068,7 +1075,9 @@ describe('ConsultationPage', () => {
       });
 
       act(() => {
-        dispatchConsultationStart({ encounterType: 'Consultation' });
+        dispatchConsultationStart({
+          context: { encounterType: 'Consultation' },
+        });
       });
 
       await waitFor(() => {

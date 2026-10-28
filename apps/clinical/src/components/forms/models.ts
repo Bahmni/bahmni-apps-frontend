@@ -1,6 +1,5 @@
-import { type CDSCard } from '@bahmni/services';
+import { type CDSCard, type ConsultationEventPayload } from '@bahmni/services';
 import type { BundleEntry, Reference } from 'fhir/r4';
-import type { EncounterSessionStartContext } from '../../events/startConsultation';
 import type { InputControl as ClinicalInputControlConfig } from '../../providers/clinicalConfig/models';
 
 export interface SubmissionResult {
@@ -13,14 +12,19 @@ export interface InputControl {
   key: string;
   encounterTypes?: string[];
   privilege?: string[];
-  onActionTriggered?: boolean;
-  /** Action types that this control handles exclusively (e.g. ['delete'] for stopMedications). */
+  /** When set, the control only appears for these action types (e.g. ['delete'] for stopMedications) and is hidden in a plain consultation. */
   handledActionTypes?: ('create' | 'update' | 'delete')[];
-  /** FHIR resource types this control handles (e.g. ['MedicationRequest'] for stopMedications). */
+  /** FHIR resource types this control is the target for when an action names a resource. */
   handledResourceTypes?: string[];
+  /**
+   * Narrows controls sharing a resource type by the target resource's status
+   * (e.g. ['not-done'] for the immunization waiver). A control that declares
+   * none is the generic target; an explicit match takes precedence over it.
+   */
+  handledResourceStatuses?: string[];
   inputControlConfig?: ClinicalInputControlConfig;
   component: React.ComponentType<{
-    encounterSessionStartContext?: EncounterSessionStartContext;
+    encounterSessionStartContext?: ConsultationEventPayload;
     inputControlConfig?: ClinicalInputControlConfig;
   }>;
   reset: () => void;

@@ -9,10 +9,14 @@ import { MedicationRequestStoreKey } from './models';
 import { getMedicationRequestStore } from './store';
 import { createMedicationRequestEntries } from './utils';
 
-const registerMedicationRequestControl = (key: MedicationRequestStoreKey) => {
+const registerMedicationRequestControl = (
+  key: MedicationRequestStoreKey,
+  handledResourceTypes?: string[],
+) => {
   const store = () => getMedicationRequestStore(key);
   registerInputControl({
     key,
+    handledResourceTypes,
     component: MedicationRequestForm,
     reset: () => store().getState().reset(),
     validate: () => store().getState().validateAll(),
@@ -33,7 +37,9 @@ const registerMedicationRequestControl = (key: MedicationRequestStoreKey) => {
   });
 };
 
-registerMedicationRequestControl(MEDICATIONS_INPUT_CONTROL_KEY);
+registerMedicationRequestControl(MEDICATIONS_INPUT_CONTROL_KEY, [
+  'MedicationRequest',
+]);
 registerMedicationRequestControl(VACCINATIONS_INPUT_CONTROL_KEY);
 
 export { default } from './MedicationRequestForm';

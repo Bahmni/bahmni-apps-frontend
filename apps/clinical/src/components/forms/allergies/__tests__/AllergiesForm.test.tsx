@@ -1,3 +1,4 @@
+import * as services from '@bahmni/services';
 import { OTHER_NON_CODED_ALLERGEN_UUID } from '@bahmni/services';
 import { useHasPrivilege } from '@bahmni/widgets';
 import {
@@ -964,6 +965,83 @@ describe('AllergiesForm', () => {
         resources: [{ resourceType: 'AllergyIntolerance', id: 'allergy-1' }],
       },
     };
+
+    it('pre-fills the allergy store from the action resources once the non-coded concept resolves', async () => {
+      const preloadAllergies = jest.fn();
+      const getStateSpy = jest
+        .spyOn(useAllergyStore, 'getState')
+        .mockReturnValue({ preloadAllergies } as never);
+      const fetchSpy = jest
+        .spyOn(services, 'fetchOtherNonCodedAllergenUUID')
+        .mockResolvedValue('other-non-coded-uuid');
+
+      renderAllergiesForm(
+        {},
+        {
+          encounterSessionStartContext: {
+            action: {
+              type: 'update' as const,
+              resources: [
+                {
+                  resourceType: 'AllergyIntolerance',
+                  id: 'allergy-1',
+                  code: {
+                    coding: [{ code: 'peanut-uuid' }],
+                    text: 'Peanut',
+                  },
+                  category: ['food'],
+                  reaction: [
+                    {
+                      severity: 'severe',
+                      manifestation: [{ coding: [{ code: 'hives-uuid' }] }],
+                    },
+                  ],
+                },
+              ],
+            },
+          },
+        },
+      );
+
+      await waitFor(() => expect(preloadAllergies).toHaveBeenCalledTimes(1));
+      expect(preloadAllergies).toHaveBeenCalledWith([
+        expect.objectContaining({
+          id: 'peanut-uuid',
+          resourceId: 'allergy-1',
+          display: 'Peanut',
+          type: 'food',
+          selectedSeverity: expect.objectContaining({ code: 'severe' }),
+          selectedReactions: [expect.objectContaining({ code: 'hives-uuid' })],
+        }),
+      ]);
+
+      getStateSpy.mockRestore();
+      fetchSpy.mockRestore();
+    });
+
+    it('does not pre-fill the store when opened to add a new allergy', async () => {
+      const preloadAllergies = jest.fn();
+      const getStateSpy = jest
+        .spyOn(useAllergyStore, 'getState')
+        .mockReturnValue({ preloadAllergies } as never);
+
+      renderAllergiesForm(
+        {},
+        {
+          encounterSessionStartContext: {
+            action: {
+              type: 'create' as const,
+              resourceType: 'AllergyIntolerance',
+            },
+          },
+        },
+      );
+
+      await waitFor(() => expect(getSearchCombobox()).toBeInTheDocument());
+      expect(preloadAllergies).not.toHaveBeenCalled();
+
+      getStateSpy.mockRestore();
+    });
 
     it('isEditMode is true when action.type is update with AllergyIntolerance', () => {
       renderAllergiesForm({}, { encounterSessionStartContext: editPayload });

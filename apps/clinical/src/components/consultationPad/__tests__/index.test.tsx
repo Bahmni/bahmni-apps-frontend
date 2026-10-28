@@ -1097,6 +1097,51 @@ describe('ConsultationPad', () => {
     });
   });
 
+  describe('Source encounter handling', () => {
+    const encounter = {
+      resourceType: 'Encounter' as const,
+      id: 'enc-123',
+      status: 'in-progress' as const,
+    };
+
+    beforeEach(() => {
+      jest.mocked(getEncounterByUuid).mockClear();
+      jest.mocked(getEncounterByUuid).mockResolvedValue(encounter as any);
+    });
+
+    it('does not fetch the encounter again for a plain Continue (encounter, no action)', async () => {
+      renderComponent({
+        encounterSessionStartContext: {
+          context: { encounterType: 'Consultation', encounter },
+        },
+      });
+
+      await waitFor(() => {
+        expect(screen.getByTestId('action-area')).toBeInTheDocument();
+      });
+      expect(getEncounterByUuid).not.toHaveBeenCalled();
+    });
+
+    it('fetches the source encounter for an edit action', async () => {
+      renderComponent({
+        encounterSessionStartContext: {
+          context: { encounterType: 'Consultation', encounter },
+          action: {
+            type: 'update',
+            resources: [{ resourceType: 'MedicationRequest', id: 'm-1' }],
+          },
+        },
+      });
+
+      await waitFor(() => {
+        expect(getEncounterByUuid).toHaveBeenCalledWith(
+          'enc-123',
+          expect.anything(),
+        );
+      });
+    });
+  });
+
   describe('Pad title derivation', () => {
     it('shows "Continue" when context.encounter is present', () => {
       renderComponent({
@@ -1126,6 +1171,35 @@ describe('ConsultationPad', () => {
 
       expect(screen.getByTestId('action-area-title')).toHaveTextContent(
         'New Consultation',
+      );
+    });
+
+    it.each([
+      [
+        'edit allergy',
+        { type: 'update' as const, resourceType: 'AllergyIntolerance' },
+        'Edit Allergies',
+      ],
+      [
+        'edit medication',
+        { type: 'update' as const, resourceType: 'MedicationRequest' },
+        'Edit Medications',
+      ],
+      [
+        'stop medication',
+        { type: 'delete' as const, resourceType: 'MedicationRequest' },
+        'Stop Medication',
+      ],
+    ])('shows the %s title from the action', (_, action, expectedTitle) => {
+      renderComponent({
+        encounterSessionStartContext: {
+          context: { encounterType: 'Consultation' },
+          action,
+        },
+      });
+
+      expect(screen.getByTestId('action-area-title')).toHaveTextContent(
+        expectedTitle,
       );
     });
 

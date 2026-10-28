@@ -1,9 +1,10 @@
+import {
+  type ConsultationEventAction,
+  type ConsultationEventContext,
+} from '@bahmni/services';
+import { CANCEL_VACCINATION_INPUT_CONTROL_KEY } from '@bahmni/widgets';
 import type { Encounter } from 'fhir/r4';
 import { extractId } from '../../../../../packages/bahmni-widgets/src/utils/Observations';
-import type {
-  ConsultationEventAction,
-  ConsultationEventContext,
-} from '../../events/startConsultation';
 import type { ConsultationPad } from '../../providers/clinicalConfig/models';
 import { useServiceRequestStore, useObservationFormsStore } from '../../stores';
 import type { InputControl } from '../forms';
@@ -71,127 +72,94 @@ export function getActiveEntries(
   registry: InputControl[],
   context: ConsultationEventContext | undefined,
   action: ConsultationEventAction | undefined,
-): InputControl[];
-/** @deprecated Use the (registry, context, action) overload instead. */
-export function getActiveEntries(
-  registry: InputControl[],
-  encounterType: string | null | undefined,
-  editOnlyKey: string | undefined,
-): InputControl[];
-export function getActiveEntries(
-  registry: InputControl[],
-  contextOrEncounterType: ConsultationEventContext | string | null | undefined,
-  actionOrEditOnlyKey: ConsultationEventAction | string | undefined,
 ): InputControl[] {
-  // Detect which overload is being used
-  const isNewSignature =
-    contextOrEncounterType === undefined ||
-    contextOrEncounterType === null ||
-    typeof contextOrEncounterType === 'object';
+  const encounterType = context?.encounterType;
+  const byEncounterType = registry.filter(
+    (entry) =>
+      !entry.encounterTypes ||
+      !encounterType ||
+      entry.encounterTypes.includes(encounterType),
+  );
 
-  if (isNewSignature) {
-    const context = contextOrEncounterType as
-      | ConsultationEventContext
-      | undefined;
-    const action = actionOrEditOnlyKey as ConsultationEventAction | undefined;
-    return getActiveEntriesNew(registry, context, action);
+  if (!action) {
+    return byEncounterType.filter((entry) => !entry.handledActionTypes?.length);
   }
 
-  // Legacy signature: (registry, encounterType, editOnlyKey)
-  const encounterType = contextOrEncounterType as string;
-  const editOnlyKey = actionOrEditOnlyKey as string | undefined;
-  return getActiveEntriesLegacy(registry, encounterType, editOnlyKey);
-}
+  const resourceType = getActionResourceType(action);
+  const resourceStatus = getActionResourceStatus(action);
 
-function getActiveEntriesLegacy(
-  registry: InputControl[],
-  encounterType: string,
-  editOnlyKey?: string,
-): InputControl[] {
-  return registry.filter((entry) => {
-    const matchesEncounterType =
-      !entry.encounterTypes || entry.encounterTypes.includes(encounterType);
-    if (!matchesEncounterType) return false;
+  const targets = byEncounterType.filter((entry) => {
+    if (entry.key === ENCOUNTER_DETAILS_INPUT_CONTROL_KEY) return true;
 
-    if (entry.onActionTriggered && entry.key !== editOnlyKey) return false;
+    const handlesAction = entry.handledActionTypes?.length
+      ? entry.handledActionTypes.includes(action.type)
+      : action.type !== 'delete';
+    if (!handlesAction) return false;
 
-    // When editOnly is set, show only the target form + encounterDetails.
-    if (editOnlyKey) {
-      return (
-        entry.key === editOnlyKey ||
-        entry.key === ENCOUNTER_DETAILS_INPUT_CONTROL_KEY
-      );
+    if (resourceType && !entry.handledResourceTypes?.includes(resourceType)) {
+      return false;
     }
-    return true;
+
+    return (
+      !resourceStatus ||
+      !entry.handledResourceStatuses?.length ||
+      entry.handledResourceStatuses.includes(resourceStatus)
+    );
   });
+
+  const hasExplicitStatusMatch =
+    !!resourceStatus &&
+    targets.some((entry) =>
+      entry.handledResourceStatuses?.includes(resourceStatus),
+    );
+
+  return hasExplicitStatusMatch
+    ? targets.filter(
+        (entry) =>
+          entry.key === ENCOUNTER_DETAILS_INPUT_CONTROL_KEY ||
+          entry.handledResourceStatuses?.includes(resourceStatus),
+      )
+    : targets;
 }
 
-function getActiveEntriesNew(
-  registry: InputControl[],
+function getActionResourceType(
+  action: ConsultationEventAction,
+): string | undefined {
+  return action.resourceType ?? action.resources?.[0]?.resourceType;
+}
+
+function getActionResourceStatus(
+  action: ConsultationEventAction,
+): string | undefined {
+  return (action.resources?.[0] as { status?: string } | undefined)?.status;
+}
+
+const ACTION_TITLE_KEYS: Record<string, string> = {
+  'update:AllergyIntolerance': 'EDIT_ALLERGIES_TITLE',
+  'update:MedicationRequest': 'MEDICATIONS_EDIT_FORM_TITLE',
+  'update:Observation': 'EDIT_OBSERVATION_FORM_TITLE',
+  'delete:MedicationRequest': 'STOP_MEDICATION_FORM_TITLE',
+};
+
+export function getPadTitleKey(
   context: ConsultationEventContext | undefined,
   action: ConsultationEventAction | undefined,
-): InputControl[] {
-  // Derive encounterType from context
-  const encounterType =
-    context?.encounterType ??
-    (context?.encounter?.type?.[0]?.coding?.[0]?.display as string | undefined);
-
-  // Step 1: Filter by encounterType
-  const byEncounterType = registry.filter((entry) => {
-    if (!entry.encounterTypes) return true;
-    if (!encounterType) return true;
-    return entry.encounterTypes.includes(encounterType);
-  });
-
-  // Step 2: No action — hide controls that are action-only (have handledActionTypes)
-  if (!action) {
-    return byEncounterType.filter(
-      (entry) => !entry.handledActionTypes?.length && !entry.onActionTriggered,
-    );
-  }
-
-  // Step 3: action.type === 'delete' — show ONLY controls with handledActionTypes containing 'delete'
-  if (action.type === 'delete') {
-    const resourceType =
-      action.resourceType ??
-      (action.resources?.[0] as { resourceType?: string } | undefined)
-        ?.resourceType;
-
-    return byEncounterType.filter((entry) => {
-      if (entry.key === ENCOUNTER_DETAILS_INPUT_CONTROL_KEY) return true;
-      if (!entry.handledActionTypes?.includes('delete')) return false;
-      // If resourceType is specified, also match handledResourceTypes
-      if (resourceType && entry.handledResourceTypes) {
-        return entry.handledResourceTypes.includes(resourceType);
-      }
-      return true;
-    });
-  }
-
-  // Step 4: action.type === 'create' | 'update' — exclude action-only (delete) controls
-  const resourceType =
-    action.resourceType ??
-    (action.resources?.[0] as { resourceType?: string } | undefined)
-      ?.resourceType;
-
-  return byEncounterType.filter((entry) => {
-    // Exclude delete-only controls
+  activeEntries: InputControl[],
+): string {
+  if (action) {
     if (
-      entry.handledActionTypes?.length &&
-      !entry.handledActionTypes.includes(action.type)
+      action.type === 'delete' &&
+      activeEntries.some((e) => e.key === CANCEL_VACCINATION_INPUT_CONTROL_KEY)
     ) {
-      return false;
+      return 'CANCEL_VACCINATION_FORM_TITLE';
     }
-    // Exclude legacy onActionTriggered controls that are not action targets
-    if (entry.onActionTriggered && !entry.handledActionTypes?.length) {
-      return false;
-    }
-    // If resourceType is specified, filter to matching controls
-    if (resourceType && entry.handledResourceTypes) {
-      return entry.handledResourceTypes.includes(resourceType);
-    }
-    return true;
-  });
+    const titleKey =
+      ACTION_TITLE_KEYS[`${action.type}:${getActionResourceType(action)}`];
+    if (titleKey) return titleKey;
+  } else if (context?.encounter) {
+    return 'CONSULTATION_ACTION_CONTINUE';
+  }
+  return 'CONSULTATION_ACTION_NEW';
 }
 
 /**

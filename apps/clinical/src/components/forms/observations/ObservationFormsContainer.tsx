@@ -27,6 +27,7 @@ import {
   DATETIME_REGEX_PATTERN,
   type AgeDetails,
   computeAgeDetails,
+  type ConsultationEventPayload,
 } from '@bahmni/services';
 import { useActivePractitioner, usePatientUUID } from '@bahmni/widgets';
 import { useQuery } from '@tanstack/react-query';
@@ -40,7 +41,6 @@ import {
   VALIDATION_STATE_INVALID,
   VALIDATION_STATE_SCRIPT_ERROR,
 } from '../../../constants/forms';
-import type { EncounterSessionStartContext } from '../../../events/startConsultation';
 import { useActionAreaExpandProps } from '../../../hooks/useActionAreaExpandProps';
 import { useClinicalAppData } from '../../../hooks/useClinicalAppData';
 import { useObservationFormData } from '../../../hooks/useObservationFormData';
@@ -82,7 +82,7 @@ interface ObservationFormsContainerProps {
   directMode?: boolean;
   onDirectModeSubmit?: () => void | Promise<void>;
   onDirectModeCancel?: () => void;
-  encounterSessionStartContext?: EncounterSessionStartContext;
+  encounterSessionStartContext?: ConsultationEventPayload;
   isActionAreaExpanded?: boolean;
   onToggleActionAreaExpand?: () => void;
 }
@@ -120,7 +120,7 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
     | Encounter
     | null
     | undefined;
-  const sourceEncounterUuidFromContext = ctx?.encounter?.id;
+  const sourceEncounterUuidFromContext = act ? ctx?.encounter?.id : undefined;
   const isCopyover: boolean | undefined =
     !sourceEncounterUuidFromContext || activeEncounter === undefined
       ? undefined

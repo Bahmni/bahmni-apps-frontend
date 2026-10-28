@@ -15,6 +15,8 @@ import {
   capitalize,
   hasPrivilege,
   PATIENT_NOT_FOUND_ERROR_KEY,
+  type ConsultationEventPayload,
+  useSubscribeConsultationStart,
 } from '@bahmni/services';
 import {
   ProgramDetails,
@@ -37,8 +39,6 @@ import DashboardContainer from '../components/dashboardContainer/DashboardContai
 import PatientHeader from '../components/patientHeader/PatientHeader';
 import PatientSearch from '../components/patientSearch/PatientSearch';
 import { BAHMNI_CLINICAL_PATH } from '../constants/app';
-import type { EncounterSessionStartContext } from '../events/startConsultation';
-import { useSubscribeConsultationStart } from '../events/startConsultation';
 import { ClinicalAppProvider } from '../providers/ClinicalAppProvider';
 import { useClinicalConfig } from '../providers/clinicalConfig';
 import { useObservationFormsStore } from '../stores/observationFormsStore';
@@ -85,12 +85,12 @@ const ConsultationPage: React.FC = () => {
   const { addNotification } = useNotification();
   const [isActionAreaVisible, setIsActionAreaVisible] = useState(false);
   const [isActionAreaExpanded, setIsActionAreaExpanded] = useState(false);
-  const [encounterSessionStartContext, setEncounterSessionStartContext] =
-    useState<EncounterSessionStartContext | null>(null);
+  const [consultationPayload, setConsultationPayload] =
+    useState<ConsultationEventPayload | null>(null);
 
   useSubscribeConsultationStart(
     useCallback((event) => {
-      setEncounterSessionStartContext(event);
+      setConsultationPayload(event);
       setIsActionAreaVisible(true);
       setIsActionAreaExpanded(false);
     }, []),
@@ -405,9 +405,9 @@ const ConsultationPage: React.FC = () => {
         isActionAreaExpanded={isActionAreaExpanded}
         layoutVariant={viewingForm ? 'extended' : 'default'}
         actionArea={
-          encounterSessionStartContext && (
+          consultationPayload && (
             <ConsultationPadContainer
-              encounterSessionStartContext={encounterSessionStartContext}
+              encounterSessionStartContext={consultationPayload}
               onClose={() => {
                 setIsActionAreaVisible((prev) => !prev);
                 setIsActionAreaExpanded(false);

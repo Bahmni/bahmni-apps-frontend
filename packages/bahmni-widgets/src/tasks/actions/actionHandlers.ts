@@ -1,4 +1,7 @@
-import { getPatientObservationsBundle } from '@bahmni/services';
+import {
+  dispatchConsultationStart,
+  getPatientObservationsBundle,
+} from '@bahmni/services';
 import type { QueryClient } from '@tanstack/react-query';
 import type { Observation } from 'fhir/r4';
 import { extractFormName } from '../../observations/utils';
@@ -16,19 +19,15 @@ const handleLaunchFormAction = (
     action.handlerConfig.formInputCode as string,
   );
 
-  globalThis.dispatchEvent(
-    new CustomEvent('startConsultation', {
-      detail: {
-        context: {
-          encounterType: action.handlerConfig.encounterType,
-          formName,
-          directFormMode: true,
-          basedOn: task.fhirResource,
-        },
-        action: { type: 'create', resourceType: 'Observation' },
-      },
-    }),
-  );
+  dispatchConsultationStart({
+    context: {
+      encounterType: action.handlerConfig.encounterType as string | undefined,
+      formName,
+      directFormMode: true,
+      basedOn: task.fhirResource,
+    },
+    action: { type: 'create', resourceType: 'Observation' },
+  });
 };
 
 const resolveSourceEncounterUuid = async (
@@ -69,32 +68,28 @@ const handleEditFormAction = async (
     queryClient,
   );
 
-  globalThis.dispatchEvent(
-    new CustomEvent('startConsultation', {
-      detail: {
-        context: {
-          encounter: sourceEncounterUuid
-            ? { resourceType: 'Encounter', id: sourceEncounterUuid }
-            : undefined,
-          formName,
-          directFormMode: true,
-          basedOn: task.fhirResource,
-        },
-        action: { type: 'update', resourceType: 'Observation' },
-      },
-    }),
-  );
+  dispatchConsultationStart({
+    context: {
+      encounter: sourceEncounterUuid
+        ? { resourceType: 'Encounter', id: sourceEncounterUuid }
+        : undefined,
+      formName,
+      directFormMode: true,
+      basedOn: task.fhirResource,
+    },
+    action: { type: 'update', resourceType: 'Observation' },
+  });
 };
 
 export const handleTaskAction = (
   action: TaskAction,
   task: TaskViewModel,
-  queryClient?: QueryClient,
+  queryClient: QueryClient,
 ): void | Promise<void> => {
   if (action.type === TaskActionType.LAUNCH_FORM) {
     return handleLaunchFormAction(action, task);
   }
   if (action.type === TaskActionType.EDIT_FORM) {
-    return handleEditFormAction(action, task, queryClient!);
+    return handleEditFormAction(action, task, queryClient);
   }
 };

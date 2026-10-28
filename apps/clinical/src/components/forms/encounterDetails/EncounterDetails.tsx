@@ -6,10 +6,13 @@ import {
   Column,
   SkeletonText,
 } from '@bahmni/design-system';
-import { useTranslation, type Provider } from '@bahmni/services';
+import {
+  useTranslation,
+  type Provider,
+  type ConsultationEventPayload,
+} from '@bahmni/services';
 import { useActivePractitioner, usePatientUUID } from '@bahmni/widgets';
 import React, { useEffect, useMemo, useState } from 'react';
-import type { EncounterSessionStartContext } from '../../../events/startConsultation';
 import { useEncounterConcepts } from '../../../hooks/useEncounterConcepts';
 import { useLocations } from '../../../hooks/useLocations';
 import { usePatientVisit } from '../../../hooks/usePatientVisit';
@@ -20,7 +23,7 @@ import { useEncounterDetailsStore } from '../../../stores';
 import styles from './styles/EncounterDetails.module.scss';
 
 export interface EncounterDetailsProps {
-  encounterSessionStartContext?: EncounterSessionStartContext;
+  encounterSessionStartContext?: ConsultationEventPayload;
   inputControlConfig?: ClinicalInputControlConfig;
 }
 

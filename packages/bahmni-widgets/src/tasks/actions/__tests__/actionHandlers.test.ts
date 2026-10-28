@@ -1,3 +1,4 @@
+import { QueryClient } from '@tanstack/react-query';
 import {
   mockLaunchFormAction,
   mockTaskViewModelWithInput,
@@ -99,6 +100,7 @@ describe('isFormActionVisible', () => {
 
 describe('handleTaskAction', () => {
   let dispatchEventSpy: jest.SpyInstance;
+  const queryClient = new QueryClient();
 
   beforeEach(() => {
     dispatchEventSpy = jest.spyOn(globalThis, 'dispatchEvent');
@@ -110,7 +112,11 @@ describe('handleTaskAction', () => {
 
   describe('launchForm action type', () => {
     it('should dispatch startConsultation event with context and action', () => {
-      handleTaskAction(mockLaunchFormAction, mockTaskViewModelWithInput);
+      handleTaskAction(
+        mockLaunchFormAction,
+        mockTaskViewModelWithInput,
+        queryClient,
+      );
 
       expect(dispatchEventSpy).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -137,7 +143,7 @@ describe('handleTaskAction', () => {
         },
       };
 
-      handleTaskAction(customAction, mockTaskViewModelWithInput);
+      handleTaskAction(customAction, mockTaskViewModelWithInput, queryClient);
 
       expect(dispatchEventSpy).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -156,7 +162,7 @@ describe('handleTaskAction', () => {
     ])(
       'should extract form name %s from task into context.formName',
       (expectedFormName, task) => {
-        handleTaskAction(mockLaunchFormAction, task);
+        handleTaskAction(mockLaunchFormAction, task, queryClient);
 
         expect(dispatchEventSpy).toHaveBeenCalledWith(
           expect.objectContaining({
@@ -176,7 +182,7 @@ describe('handleTaskAction', () => {
         type: 'unknownType',
       };
 
-      handleTaskAction(unknownAction, mockTaskViewModelWithInput);
+      handleTaskAction(unknownAction, mockTaskViewModelWithInput, queryClient);
 
       expect(dispatchEventSpy).not.toHaveBeenCalled();
     });

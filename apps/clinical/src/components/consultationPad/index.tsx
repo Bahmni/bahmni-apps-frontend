@@ -13,6 +13,7 @@ import {
   type CDSSServerConfig,
   useCDSSCheckListener,
   useTranslation,
+  type ConsultationEventPayload,
 } from '@bahmni/services';
 import { useActivePractitioner, useNotification } from '@bahmni/widgets';
 import { useQuery } from '@tanstack/react-query';
@@ -31,7 +32,6 @@ import {
   ERROR_TITLES,
 } from '../../constants/errors';
 import { MEDICATIONS_INPUT_CONTROL_KEY } from '../../constants/medications';
-import type { EncounterSessionStartContext } from '../../events/startConsultation';
 import { useActionAreaExpandProps } from '../../hooks/useActionAreaExpandProps';
 import { useClinicalAppData } from '../../hooks/useClinicalAppData';
 import { useEncounterConcepts } from '../../hooks/useEncounterConcepts';
@@ -50,12 +50,13 @@ import {
   captureUpdatedResources,
   getActiveEncounter,
   getActiveEntries,
+  getPadTitleKey,
   loadEncounterInputControls,
   resolveSubmissionEntries,
 } from './utils';
 
 interface ConsultationPadProps {
-  encounterSessionStartContext: EncounterSessionStartContext;
+  encounterSessionStartContext: ConsultationEventPayload;
   onClose: () => void;
   isActionAreaExpanded?: boolean;
   onToggleActionAreaExpand?: () => void;
@@ -70,7 +71,7 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
   const context = encounterSessionStartContext.context;
   const action = encounterSessionStartContext.action;
   const encounterType = context?.encounterType;
-  const sourceEncounterUuid = context?.encounter?.id;
+  const sourceEncounterUuid = action ? context?.encounter?.id : undefined;
   const directFormMode = context?.directFormMode;
   const { t } = useTranslation();
   const { addNotification } = useNotification();
@@ -227,7 +228,7 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
     sessionEncounterStatus,
   });
 
-  const effectiveContext = useMemo<EncounterSessionStartContext>(
+  const effectiveContext = useMemo<ConsultationEventPayload>(
     () => ({ ...encounterSessionStartContext, activeEncounter }),
     [encounterSessionStartContext, activeEncounter],
   );
@@ -611,11 +612,7 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
       <ActionArea
         data-testid="consultation-pad-action-area"
         title={
-          hasError
-            ? ''
-            : context?.encounter
-              ? t('CONSULTATION_ACTION_CONTINUE')
-              : t('CONSULTATION_ACTION_NEW')
+          hasError ? '' : t(getPadTitleKey(context, action, activeEntries))
         }
         primaryButtonText={t('CONSULTATION_PAD_DONE_BUTTON')}
         onPrimaryButtonClick={handleSubmit}

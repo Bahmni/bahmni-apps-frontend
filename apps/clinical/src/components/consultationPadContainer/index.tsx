@@ -7,6 +7,7 @@ import {
   getVisitLocationUUID,
   getUserLoginLocation,
   useTranslation,
+  type ConsultationEventPayload,
 } from '@bahmni/services';
 import {
   CONSULTATION_PAD_PRIVILEGES,
@@ -22,7 +23,6 @@ import React, {
   useRef,
   useState,
 } from 'react';
-import type { EncounterSessionStartContext } from '../../events/startConsultation';
 import { useActionAreaExpandProps } from '../../hooks/useActionAreaExpandProps';
 import { useClinicalAppData } from '../../hooks/useClinicalAppData';
 import { useEncounterConcepts } from '../../hooks/useEncounterConcepts';
@@ -35,7 +35,7 @@ import EncounterDetails from '../forms/encounterDetails/EncounterDetails';
 import styles from './styles/ConsultationPadContainer.module.scss';
 
 interface ConsultationPadContainerProps {
-  encounterSessionStartContext: EncounterSessionStartContext;
+  encounterSessionStartContext: ConsultationEventPayload;
   onClose: () => void;
   isActionAreaExpanded?: boolean;
   onToggleActionAreaExpand?: () => void;

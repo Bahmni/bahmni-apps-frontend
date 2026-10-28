@@ -1,8 +1,8 @@
+import type { ConsultationEventPayload } from '@bahmni/services';
 import { useQuery } from '@tanstack/react-query';
 import { act, render, screen, fireEvent } from '@testing-library/react';
 import React from 'react';
 
-import type { EncounterSessionStartContext } from '../../../../events/startConsultation';
 import { useStopMedicationStore } from '../../../../stores/stopMedicationsStore';
 import StopMedicationForm from '../StopMedicationForm';
 
@@ -117,9 +117,7 @@ const defaultQueryMock = ({ queryKey }: { queryKey: readonly unknown[] }) => {
   return { data: undefined, isLoading: false, error: null };
 };
 
-const renderForm = (
-  encounterSessionStartContext?: EncounterSessionStartContext,
-) =>
+const renderForm = (encounterSessionStartContext?: ConsultationEventPayload) =>
   render(
     <StopMedicationForm
       encounterSessionStartContext={encounterSessionStartContext}

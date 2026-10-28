@@ -1,18 +1,15 @@
-import { useTranslation } from '@bahmni/services';
+import { useTranslation, dispatchConsultationStart } from '@bahmni/services';
 import { useHasPrivilege } from '@bahmni/widgets';
 import { render, screen, fireEvent } from '@testing-library/react';
-import { dispatchConsultationStart } from '../../../events/startConsultation';
 import ConsultationActionButton from '../ConsultationActionButton';
 import '@testing-library/jest-dom';
 
 jest.mock('@bahmni/services', () => ({
   ...jest.requireActual('@bahmni/services'),
   useTranslation: jest.fn(),
-}));
-
-jest.mock('../../../events/startConsultation', () => ({
   dispatchConsultationStart: jest.fn(),
 }));
+
 jest.mock('@bahmni/widgets', () => ({
   ...jest.requireActual('@bahmni/widgets'),
   useHasPrivilege: jest.fn(),

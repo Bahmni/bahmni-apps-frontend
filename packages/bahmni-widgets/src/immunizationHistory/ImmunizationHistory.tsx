@@ -9,7 +9,11 @@ import {
   Tabs,
   Tile,
 } from '@bahmni/design-system';
-import { ImmunizationStatus, useTranslation } from '@bahmni/services';
+import {
+  dispatchConsultationStart,
+  ImmunizationStatus,
+  useTranslation,
+} from '@bahmni/services';
 import React, { useState } from 'react';
 import { usePatientUUID } from '../hooks/usePatientUUID';
 import { WidgetProps } from '../registry/model';
@@ -87,14 +91,20 @@ const ImmunizationHistory: React.FC<WidgetProps> = ({ config }) => {
   );
 
   const handleAddImmunization = () => {
-    globalThis.dispatchEvent(
-      new CustomEvent('startConsultation', {
-        detail: {
-          context: { encounterType },
-          action: { type: 'create', resourceType: 'Immunization' },
-        },
-      }),
-    );
+    const targetStatus: ImmunizationStatus =
+      status ?? (selectedIndex === 0 ? 'completed' : 'not-done');
+    const draftImmunization = {
+      resourceType: 'Immunization',
+      status: targetStatus,
+    };
+    dispatchConsultationStart({
+      context: { encounterType },
+      action: {
+        type: 'create',
+        resourceType: 'Immunization',
+        resources: [draftImmunization],
+      },
+    });
   };
 
   const renderTabByStatus = (status: ImmunizationStatus) => {

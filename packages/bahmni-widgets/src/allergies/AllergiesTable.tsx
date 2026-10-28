@@ -13,6 +13,7 @@ import {
   getAllergies,
   getFormattedAllergies,
   fetchOtherNonCodedAllergenUUID,
+  dispatchConsultationStart,
   useTranslation,
   useSubscribeConsultationSaved,
 } from '@bahmni/services';
@@ -28,8 +29,6 @@ import {
   getSeverityDisplayName,
   sortAllergiesBySeverity,
 } from './utils';
-
-const CONSULTATION_START_EVENT = 'startConsultation';
 
 const EDIT_ALLERGY_LABEL = 'EDIT_ALLERGY';
 
@@ -79,13 +78,9 @@ const AllergiesTable: React.FC<WidgetProps> = ({
         const target = rawAllergies.find((fhir) => fhir.id === resourceId);
         if (!target) return;
         await fetchOtherNonCodedAllergenUUID();
-        globalThis.dispatchEvent(
-          new CustomEvent(CONSULTATION_START_EVENT, {
-            detail: {
-              action: { type: 'update', resources: [target] },
-            },
-          }),
-        );
+        dispatchConsultationStart({
+          action: { type: 'update', resources: [target] },
+        });
       } catch {
         addNotification({
           title: t('ERROR_DEFAULT_TITLE'),

@@ -1,9 +1,8 @@
 import { Button, SkeletonPlaceholder } from '@bahmni/design-system';
-import { useTranslation } from '@bahmni/services';
+import { useTranslation, dispatchConsultationStart } from '@bahmni/services';
 import { useHasPrivilege, CONSULTATION_PAD_PRIVILEGES } from '@bahmni/widgets';
 import type { Encounter } from 'fhir/r4';
 import React from 'react';
-import { dispatchConsultationStart } from '../../events/startConsultation';
 import styles from './styles/PatientHeader.module.scss';
 
 interface ConsultationActionButtonProps {
