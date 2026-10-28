@@ -154,6 +154,7 @@
   "DOCUMENTS_NOTE_PLACEHOLDER": "Add a note about this document",
   "DOCUMENTS_PRINT_ALL": "Print all",
   "DOCUMENTS_PRINT_ATTACHMENT": "Print attachment {{index}}",
+  "DOCUMENTS_DOCUMENT_ID_ALPHANUMERIC": "Document ID must be alphanumeric",
   "DOCUMENTS_SELECT_DOCUMENT_TYPE": "Select a document type",
   "DOCUMENTS_UPLOAD_A_DOCUMENT": "Please upload a document",
   "DOCUMENTS_UPLOAD_TITLE": "Upload documents",
