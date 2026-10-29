@@ -1,9 +1,11 @@
+import { AxiosInstance } from 'axios';
 import { get, post, put, patch, del } from '../api';
 import client from '../client';
 
 // Mock dependencies
 jest.mock('../constants', () => ({
   LOGIN_PATH: '/login',
+  BINARY_RESPONSE_TYPES: [],
 }));
 
 jest.mock('../../errorHandling', () => ({
@@ -16,6 +18,7 @@ jest.mock('../../errorHandling', () => ({
 jest.mock('../utils', () => ({
   decodeHtmlEntities: jest.fn((data) => data),
   isOpenMRSWebServiceApi: jest.fn(() => true),
+  isTemplateServiceApi: jest.fn(() => false),
   getResponseUrl: jest.fn(() => '/openmrs/ws/rest/v1/patient'),
 }));
 
@@ -85,6 +88,21 @@ describe('Public API Methods', () => {
           requestData,
           undefined,
         );
+        expect(result).toEqual(mockData);
+      });
+
+      it('should make POST request with options and return response data', async () => {
+        const mockData = 'template-location.xlsx';
+        const formData = new FormData();
+        mockAxiosPost.mockResolvedValue({ data: mockData });
+
+        const result = await post('/api/upload', formData, {
+          headers: { 'Content-Type': undefined },
+        });
+
+        expect(mockAxiosPost).toHaveBeenCalledWith('/api/upload', formData, {
+          headers: { 'Content-Type': undefined },
+        });
         expect(result).toEqual(mockData);
       });
 
@@ -200,12 +218,57 @@ describe('Public API Methods', () => {
 
       expect(mockAxiosPost).toHaveBeenCalledWith(
         '/api/patients',
-        {
-          name: 'Test Patient',
-        },
+        { name: 'Test Patient' },
         undefined,
       );
       expect(result).toEqual(responseData);
+    });
+  });
+
+  describe('FormData Content-Type handling (regression for the multipart upload bug)', () => {
+    const getFreshClient = (): AxiosInstance => {
+      let freshClient: AxiosInstance | undefined;
+      jest.isolateModules(() => {
+        // eslint-disable-next-line @typescript-eslint/no-require-imports
+        freshClient = require('../client').default;
+      });
+      return freshClient as AxiosInstance;
+    };
+
+    it('does not force a JSON Content-Type as a default on the real client instance', () => {
+      const freshClient = getFreshClient();
+      expect(
+        freshClient.defaults.headers.common['Content-Type'],
+      ).toBeUndefined();
+    });
+
+    it('lets axios set its own multipart boundary when uploading FormData through the real client', async () => {
+      const freshClient = getFreshClient();
+      let capturedContentType: unknown;
+      freshClient.defaults.adapter = async (config) => {
+        capturedContentType =
+          typeof config.headers?.get === 'function'
+            ? config.headers.get('Content-Type')
+            : config.headers?.['Content-Type'];
+        return {
+          data: 'template-location.xlsx',
+          status: 200,
+          statusText: 'OK',
+          headers: {},
+          config,
+        };
+      };
+
+      const formData = new FormData();
+      formData.append('file', new Blob(['test content']), 'test.xlsx');
+
+      const response = await freshClient.post(
+        '/bahmnireports/upload',
+        formData,
+      );
+
+      expect(response.data).toBe('template-location.xlsx');
+      expect(capturedContentType).not.toBe('application/json');
     });
   });
 });

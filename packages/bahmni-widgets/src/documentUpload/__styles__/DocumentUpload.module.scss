@@ -7,59 +7,32 @@
   flex-direction: column;
 }
 
-.pending {
-  display: flex;
-  flex-direction: column;
+.selectedItem {
+  border-bottom: 1px solid $border-subtle-02;
+  padding-bottom: $spacing-06;
 }
 
-.pendingDocument {
-  display: flex;
-  flex-direction: column;
+.singleEntry {
+  padding: $spacing-04 $spacing-05 $spacing-06;
+  border-bottom: 1px solid $border-subtle-02;
 }
 
-// Grid matches the saved-docs table so tile, dropdown and actions line up under the headers.
-.pendingRow {
-  display: grid;
-  grid-template-columns: 175px minmax(0, 1fr) 173px;
-  align-items: center;
-  gap: $spacing-05;
-  padding: $spacing-05;
-}
-
-.fileCell {
-  flex-shrink: 0;
-}
-
-.typeCell {
-  :global(.cds--dropdown),
-  :global(.cds--list-box) {
-    inline-size: 100%;
-    max-inline-size: 288px;
+.column {
+  margin-top: $spacing-04;
+  margin-left: 0;
+  :global(.cds--label) {
+    margin-block-end: $spacing-03;
+    line-height: 1rem;
   }
 }
 
-.actionsCell {
-  display: flex;
-  align-items: center;
-  justify-content: flex-start;
-  gap: $spacing-03;
+.requiredAsterisk {
+  color: $support-error;
+  margin-inline-start: $spacing-01;
 }
 
-.addNoteLink {
-  align-self: flex-start;
-  padding-inline: $spacing-05;
-  cursor: pointer;
-}
-
-// Inset to match the row content on both sides (margin, since .pending is a stretched flex column).
-.noteArea {
-  margin-inline: $spacing-05;
-  padding-block-end: $spacing-05;
-
-  // Neutralise the global .cds--text-area padding-right (3rem) leaked from TextAreaWClose, ours only.
-  & :global(.cds--text-area) {
-    padding-inline: $spacing-05 !important;
-  }
+.typeOnly {
+  max-inline-size: 20rem;
 }
 
 .uploader {
@@ -67,7 +40,6 @@
   flex-direction: column;
   gap: $spacing-05;
   align-items: flex-start;
-  padding: $spacing-06;
 }
 
 .uploaderTitle {
@@ -80,6 +52,23 @@
   color: $text-secondary;
 }
 
-.hiddenInput {
-  display: none;
+.fileError {
+  @include type-style("helper-text-01");
+  margin-block-start: $spacing-03;
+  color: $text-error;
+}
+
+.textArea {
+  margin-block-start: -1rem;
+  margin-inline-start: 0;
+}
+
+.addMore {
+  align-self: flex-start;
+  margin: $spacing-05;
+}
+
+.error {
+  @include type-style("body-compact-02");
+  color: $text-error;
 }

@@ -78,6 +78,14 @@
   button {
     margin-right: $spacing-02;
   }
+  // Keep an unselected day looking unselected while it is still hovered or focused after a click
+  button:global(.cds--btn--tertiary):is(:hover, :focus, :active) {
+    background: transparent;
+    color: $text-primary;
+  }
+  button:global(.cds--btn--tertiary):hover {
+    background: $layer-hover-02;
+  }
   > div[id$="-error"] {
     @include type-style("label-01");
     color: $support-error;
