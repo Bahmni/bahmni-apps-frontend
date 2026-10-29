@@ -16,7 +16,7 @@ import {
   formatUrl,
   useTranslation,
 } from '@bahmni/services';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import { useNotification } from '../../../notification';
 import { useUserPrivilege } from '../../../userPrivileges/useUserPrivilege';
 import {

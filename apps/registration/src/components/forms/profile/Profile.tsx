@@ -13,7 +13,7 @@ import {
   PatientIdentifier,
 } from '@bahmni/services';
 import { useState, useImperativeHandle, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams } from 'react-router';
 import type { BasicInfoData } from '../../../models/patient';
 import type {
   BasicInfoErrors,

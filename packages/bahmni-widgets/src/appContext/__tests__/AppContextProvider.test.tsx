@@ -13,7 +13,7 @@ jest.mock('@bahmni/services', () => ({
   validateSessionUser: jest.fn(),
 }));
 
-jest.mock('react-router-dom', () => ({
+jest.mock('react-router', () => ({
   useParams: jest.fn(),
   useNavigate: jest.fn(),
   useLocation: jest.fn(),

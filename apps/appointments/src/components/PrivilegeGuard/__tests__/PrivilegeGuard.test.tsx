@@ -1,6 +1,6 @@
 import { render, screen } from '@testing-library/react';
 import { axe, toHaveNoViolations } from 'jest-axe';
-import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom';
+import { MemoryRouter, Route, Routes, useLocation } from 'react-router';
 import { PrivilegeGuard } from '..';
 import { APPOINTMENTS_PRIVILEGE } from '../../../constants/app';
 

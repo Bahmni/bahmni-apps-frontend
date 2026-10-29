@@ -1,7 +1,7 @@
 import type { VisitType } from '@bahmni/services';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { renderHook, waitFor } from '@testing-library/react';
-import { MemoryRouter } from 'react-router-dom';
+import { MemoryRouter } from 'react-router';
 import {
   useActiveVisit,
   useCreateVisit,
@@ -45,8 +45,8 @@ jest.mock('@bahmni/widgets', () => ({
 }));
 
 const mockUseParams = jest.fn();
-jest.mock('react-router-dom', () => ({
-  ...jest.requireActual('react-router-dom'),
+jest.mock('react-router', () => ({
+  ...jest.requireActual('react-router'),
   useParams: () => mockUseParams(),
 }));
 

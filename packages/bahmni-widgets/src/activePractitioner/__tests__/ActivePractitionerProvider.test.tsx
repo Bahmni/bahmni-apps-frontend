@@ -30,8 +30,8 @@ const mockGetFormattedError = getFormattedError as jest.MockedFunction<
   typeof getFormattedError
 >;
 
-// Mock react-router-dom to prevent TextEncoder issues
-jest.mock('react-router-dom', () => ({
+// Mock react-router to prevent TextEncoder issues
+jest.mock('react-router', () => ({
   useParams: jest.fn(),
   useNavigate: jest.fn(),
   useLocation: jest.fn(),
