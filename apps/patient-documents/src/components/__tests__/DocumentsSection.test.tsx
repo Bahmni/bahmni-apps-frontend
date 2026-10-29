@@ -36,8 +36,10 @@ global.URL.revokeObjectURL = jest.fn();
 
 const mockAddNotification = jest.fn();
 const mockSave = jest.fn();
+const mockUpload = jest.fn();
 jest.mock('../../services/visitDocumentSaveService', () => ({
   saveVisitDocuments: (...args: unknown[]) => mockSave(...args),
+  uploadDocumentFiles: (...args: unknown[]) => mockUpload(...args),
 }));
 
 let mockNextDocumentId = 0;
@@ -230,6 +232,7 @@ const renderSection = (
 describe('DocumentsSection', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    mockUpload.mockResolvedValue({ uploadedUrls: {}, failures: [] });
     mockSave.mockImplementation(
       async ({ documents }: { documents: StubEntry[] }) => ({
         savedIds: documents.map((document) => document.id),
@@ -628,6 +631,102 @@ describe('DocumentsSection', () => {
     expect(screen.getByTestId('save-documents')).toBeEnabled();
   });
 
+  describe('when a file fails to upload', () => {
+    const failUploadOf = (fileIndex: number) =>
+      mockUpload.mockImplementationOnce(
+        async ({ documents }: { documents: StubEntry[] }) => {
+          const files = documents.flatMap((document) => document.files);
+          return {
+            uploadedUrls: Object.fromEntries(
+              files
+                .filter((_, index) => index !== fileIndex)
+                .map((file) => [file.id, `patient/${file.fileName}`]),
+            ),
+            failures: [
+              { fileName: files[fileIndex].fileName, message: 'Disk full' },
+            ],
+          };
+        },
+      );
+
+    const addTwoDocuments = () => {
+      renderSection();
+      fireEvent.click(screen.getAllByTestId('select-file')[0]);
+      fireEvent.click(screen.getAllByTestId('add-document')[0]);
+      fireEvent.click(screen.getAllByTestId('select-file')[1]);
+    };
+
+    it('saves nothing, not even the documents that did upload', async () => {
+      failUploadOf(1);
+      addTwoDocuments();
+
+      fireEvent.click(screen.getByTestId('save-documents'));
+
+      await waitFor(() =>
+        expect(mockAddNotification).toHaveBeenCalledWith(
+          expect.objectContaining({
+            type: 'error',
+            message: 'Documents could not be uploaded',
+          }),
+        ),
+      );
+      expect(mockSave).not.toHaveBeenCalled();
+      expect(mockRefetch).not.toHaveBeenCalled();
+      expect(
+        documentsOf(screen.getAllByTestId('document-upload')[0]),
+      ).toHaveLength(2);
+      expect(screen.getByTestId('save-documents')).toBeEnabled();
+    });
+
+    it('keeps the url of the file that uploaded, so a retry uploads only the failed one', async () => {
+      failUploadOf(1);
+      addTwoDocuments();
+
+      fireEvent.click(screen.getByTestId('save-documents'));
+
+      await waitFor(() =>
+        expect(
+          documentsOf(screen.getAllByTestId('document-upload')[0]).map(
+            (file) => file.uploadedUrl,
+          ),
+        ).toEqual([expect.stringContaining('patient/'), undefined]),
+      );
+    });
+
+    it('saves everything on the retry once all files upload', async () => {
+      failUploadOf(1);
+      addTwoDocuments();
+      fireEvent.click(screen.getByTestId('save-documents'));
+      await waitFor(() => expect(mockUpload).toHaveBeenCalledTimes(1));
+      await waitFor(() =>
+        expect(screen.getByTestId('save-documents')).toBeEnabled(),
+      );
+      mockUpload.mockImplementationOnce(
+        async ({ documents }: { documents: StubEntry[] }) => ({
+          uploadedUrls: Object.fromEntries(
+            documents
+              .flatMap((document) => document.files)
+              .map((file) => [
+                file.id,
+                file.uploadedUrl ?? `patient/${file.fileName}`,
+              ]),
+          ),
+          failures: [],
+        }),
+      );
+
+      fireEvent.click(screen.getByTestId('save-documents'));
+
+      await waitFor(() => expect(mockSave).toHaveBeenCalledTimes(1));
+      const saved = mockSave.mock.calls[0][0].documents as StubEntry[];
+      expect(
+        saved
+          .flatMap((document) => document.files)
+          .every((file) => !!file.uploadedUrl),
+      ).toBe(true);
+    });
+  });
+
   it('releases the previews of unsaved documents when the section goes away', () => {
     const { unmount } = renderSection();
     fireEvent.click(screen.getAllByTestId('select-file')[0]);
@@ -734,16 +833,22 @@ describe('DocumentsSection', () => {
       });
     });
 
-    it('shows the server reason verbatim when a single document failed', async () => {
+    it('shows a short message, not the server text, when a single document failed', async () => {
       const calls = await saveAll({
         savedCount: 0,
-        failures: [{ fileName: 'scan.png', message: 'File too large' }],
+        failures: [
+          {
+            fileName: 'scan.png',
+            message:
+              "Incorrect or incomplete data passed. [Could not save patient document => The image format 'jpg' is not supported. Supported formats are [png, jpeg, gif]]",
+          },
+        ],
       });
 
       expect(calls).toHaveLength(1);
       expect(calls[0][0]).toEqual({
         title: 'Save failed',
-        message: 'File too large',
+        message: 'Documents could not be uploaded',
         type: 'error',
         timeout: 5000,
       });

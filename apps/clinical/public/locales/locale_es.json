@@ -157,7 +157,7 @@
   "DOCUMENTS_ERROR_LOADING_DOCUMENT_TYPES": "No se pueden cargar los tipos de documento.",
   "DOCUMENTS_INPUT_CONTROL_LABEL": "Documentos",
   "DOCUMENTS_LOADING_ATTACHMENT": "Cargando adjunto…",
-  "DOCUMENTS_NOT_SAVED_MESSAGE": "No se pudieron subir algunos documentos, por lo que no se guardaron con esta consulta. Vuelva a agregarlos desde los documentos del paciente.",
+  "DOCUMENTS_NOT_SAVED_MESSAGE": "No se pudieron subir los documentos",
   "DOCUMENTS_NOT_SAVED_TITLE": "Documentos no guardados",
   "DOCUMENTS_NOTE_PLACEHOLDER": "Agregue una nota sobre este documento",
   "DOCUMENTS_PRINT_ALL": "Imprimir todo",

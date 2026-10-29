@@ -121,21 +121,65 @@ describe('documents input control registration', () => {
       expect(mockUploadDocument).toHaveBeenCalledTimes(1);
       const entries = control.createBundleEntries!(ctx);
       expect(entries).toHaveLength(1);
-      expect(control.getSubmissionWarning!()).toBeUndefined();
     });
 
-    it('leaves a document out and warns when its upload fails, without throwing', async () => {
+    it('rejects, so the consultation is not saved, when a document fails to upload', async () => {
       mockUploadDocument.mockRejectedValue(new Error('Disk full'));
       const control = loadControl();
       addEntryWithFile();
 
+      await expect(control.prepareBundleEntries!()).rejects.toThrow(
+        'DOCUMENTS_NOT_SAVED_MESSAGE',
+      );
+    });
+
+    it('rejects when only one of several files fails, and keeps the ones that uploaded', async () => {
+      mockUploadDocument
+        .mockResolvedValueOnce({ url: '100/a.png' })
+        .mockRejectedValueOnce(new Error('Disk full'));
+      const control = loadControl();
+      useDocumentsStore.getState().setEntries([
+        {
+          ...createBlankDocumentEntry('DOC-1'),
+          files: [
+            createPendingDocument('a.png'),
+            createPendingDocument('b.png'),
+          ],
+        },
+      ]);
+
+      await expect(control.prepareBundleEntries!()).rejects.toThrow(
+        'DOCUMENTS_NOT_SAVED_MESSAGE',
+      );
+
+      const [first, second] = useDocumentsStore.getState().entries[0].files;
+      expect(first.uploadedUrl).toBe('100/a.png');
+      expect(second.uploadedUrl).toBeUndefined();
+    });
+
+    it('retries only the failed file on the next attempt', async () => {
+      mockUploadDocument
+        .mockResolvedValueOnce({ url: '100/a.png' })
+        .mockRejectedValueOnce(new Error('Disk full'))
+        .mockResolvedValueOnce({ url: '100/b.png' });
+      const control = loadControl();
+      useDocumentsStore.getState().setEntries([
+        {
+          ...createBlankDocumentEntry('DOC-1'),
+          files: [
+            createPendingDocument('a.png'),
+            createPendingDocument('b.png'),
+          ],
+        },
+      ]);
+      await expect(control.prepareBundleEntries!()).rejects.toThrow(
+        'DOCUMENTS_NOT_SAVED_MESSAGE',
+      );
+
       await expect(control.prepareBundleEntries!()).resolves.toBeUndefined();
 
-      expect(control.createBundleEntries!(ctx)).toEqual([]);
-      expect(control.getSubmissionWarning!()).toEqual({
-        title: 'DOCUMENTS_NOT_SAVED_TITLE',
-        message: 'DOCUMENTS_NOT_SAVED_MESSAGE',
-      });
+      expect(mockUploadDocument).toHaveBeenCalledTimes(3);
+      expect(control.createBundleEntries!(ctx)).toHaveLength(1);
     });
   });
 

@@ -26,6 +26,7 @@
   "DOCUMENT_UPLOAD_MAX_SIZE": "Max file size is {{size}}MB.",
   "DOCUMENT_UPLOAD_REMOVE_FILE": "Remove",
   "DOCUMENT_UPLOAD_SAVE": "Save",
+  "DOCUMENT_UPLOAD_SAVE_FAILED_MESSAGE": "Documents could not be uploaded",
   "DOCUMENT_UPLOAD_SAVE_FAILED_MESSAGE_MULTIPLE": "{{count}} files could not be saved. They are still listed so you can try again.",
   "DOCUMENT_UPLOAD_SAVE_FAILED_TITLE": "Save failed",
   "DOCUMENT_UPLOAD_SAVE_PARTIAL_MESSAGE": "{{saved}} of {{total}} documents saved; {{failed}} failed. The failed documents are still listed so you can try again.",

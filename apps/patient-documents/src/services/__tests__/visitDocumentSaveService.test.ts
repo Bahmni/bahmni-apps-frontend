@@ -2,6 +2,7 @@ import {
   DocumentSaveFile,
   DocumentSaveInput,
   saveVisitDocuments,
+  uploadDocumentFiles,
 } from '../visitDocumentSaveService';
 
 jest.mock('@bahmni/services', () => ({
@@ -290,5 +291,63 @@ describe('saveVisitDocuments', () => {
         module: 'Patient Document',
       }),
     );
+  });
+});
+
+describe('uploadDocumentFiles', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  const upload = (documents: DocumentSaveInput[]) =>
+    uploadDocumentFiles({
+      patientUuid: 'patient-uuid',
+      encounterTypeName: 'Patient Document',
+      documents,
+    });
+
+  it('uploads every file of every document and reports the url of each', async () => {
+    uploadDocument.mockImplementation(async (f: File) => ({
+      url: `100/${f.name}`,
+    }));
+
+    const result = await upload([
+      document('d1', [file('a.png'), file('b.png')]),
+      document('d2', [file('c.png')]),
+    ]);
+
+    expect(result.failures).toEqual([]);
+    expect(result.uploadedUrls).toEqual({
+      'file-a.png': '100/a.png',
+      'file-b.png': '100/b.png',
+      'file-c.png': '100/c.png',
+    });
+    expect(saveDocuments).not.toHaveBeenCalled();
+  });
+
+  it('keeps going after a failure and lists the files that failed', async () => {
+    uploadDocument.mockImplementation(async (f: File) => {
+      if (f.name === 'bad.png') throw new Error('Disk full');
+      return { url: `100/${f.name}` };
+    });
+
+    const result = await upload([
+      document('d1', [file('good.png')]),
+      document('d2', [file('bad.png')]),
+    ]);
+
+    expect(result.uploadedUrls).toEqual({ 'file-good.png': '100/good.png' });
+    expect(result.failures).toEqual([
+      { fileName: 'bad.png', message: 'Disk full' },
+    ]);
+  });
+
+  it('does not upload a file again once it has a url', async () => {
+    const result = await upload([
+      document('d1', [file('a.png', { uploadedUrl: '100/a.png' })]),
+    ]);
+
+    expect(uploadDocument).not.toHaveBeenCalled();
+    expect(result.uploadedUrls).toEqual({ 'file-a.png': '100/a.png' });
   });
 });
