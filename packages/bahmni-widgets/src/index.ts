@@ -23,6 +23,11 @@ export type {
   DocumentTileData,
   PendingDocument,
 } from './documentUpload';
+export { DocumentPreview } from './documents';
+export type {
+  DocumentPreviewAttachment,
+  DocumentPreviewProps,
+} from './documents';
 export { PatientDetails } from './patientDetails';
 export { AllergiesTable } from './allergies';
 export { AppointmentsTable } from './appointments';

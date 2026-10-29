@@ -13,9 +13,9 @@ import {
 } from '@bahmni/services';
 import {
   ConfirmationModal,
+  DocumentPreview,
   DocumentUpload,
   getDefaultDocumentType,
-  renderDocumentTile,
   revokeDocumentPreview,
   useActivePractitioner,
   useNotification,
@@ -50,13 +50,17 @@ interface DocumentsSectionProps {
   searchHref?: string;
 }
 
-const renderTile = (document: DocumentViewModel) =>
-  renderDocumentTile({
-    id: document.id,
-    src: document.documentUrl,
-    title: document.documentType ?? document.documentIdentifier,
-    contentType: document.contentType,
-  });
+const renderPreview = (document: DocumentViewModel) => (
+  <DocumentPreview
+    id={document.id}
+    title={document.documentType ?? document.documentIdentifier}
+    attachments={
+      document.attachments.length > 0
+        ? [...document.attachments]
+        : [{ url: document.documentUrl, contentType: document.contentType }]
+    }
+  />
+);
 
 const saveTargetOf = (
   group: VisitDocumentGroup,
@@ -366,7 +370,7 @@ export const DocumentsSection: React.FC<DocumentsSectionProps> = ({
                     <div key={document.id} className={styles.docItem}>
                       <div className={styles.docRow}>
                         <div className={styles.fileCell}>
-                          {renderTile(document)}
+                          {renderPreview(document)}
                         </div>
                         <div className={styles.typeCell}>
                           {document.documentType}
@@ -395,6 +399,7 @@ export const DocumentsSection: React.FC<DocumentsSectionProps> = ({
                 }
                 config={documentUploadConfig}
                 isSaving={isSaving}
+                defaultOption={defaultOption}
               />
             </AccordionItem>
           );
