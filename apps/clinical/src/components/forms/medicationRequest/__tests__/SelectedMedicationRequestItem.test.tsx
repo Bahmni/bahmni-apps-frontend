@@ -615,12 +615,16 @@ describe('SelectedMedicationRequestItem', () => {
           entry={mockSelectedMedicationWithAllErrors}
           medicationConfig={mockMedicationConfig}
           inputControlType="medication"
-          attributes={mockRequiredMedicationAttributes}
+          attributes={[
+            ...mockRequiredMedicationAttributes,
+            { name: 'reason', required: true },
+          ]}
         />,
       );
     });
 
     expect(screen.getByText('Please check STAT')).toBeInTheDocument();
+    expect(screen.getByText('Please select a reason')).toBeInTheDocument();
     expect(screen.getByText('Please check PRN')).toBeInTheDocument();
     expect(screen.getByText('Please enter a dosage')).toBeInTheDocument();
     expect(screen.getByText('Please select a dosage unit')).toBeInTheDocument();

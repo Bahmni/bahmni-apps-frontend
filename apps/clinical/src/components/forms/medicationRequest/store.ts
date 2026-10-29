@@ -330,6 +330,12 @@ const FIELD_VALIDATIONS: FieldValidationConfig[] = [
     hasValue: (e) => Boolean(e.startDate),
   },
   {
+    attr: 'reason',
+    key: 'reason',
+    errorMsg: 'MEDICATION_REQUEST_INPUT_CONTROL_REASON_REQUIRED',
+    hasValue: (e) => Boolean(e.medicationReason),
+  },
+  {
     attr: 'note',
     key: 'note',
     errorMsg: 'MEDICATION_REQUEST_INPUT_CONTROL_NOTE_REQUIRED',
