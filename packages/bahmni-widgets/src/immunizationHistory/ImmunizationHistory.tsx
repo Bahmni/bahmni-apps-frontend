@@ -9,7 +9,11 @@ import {
   Tabs,
   Tile,
 } from '@bahmni/design-system';
-import { ImmunizationStatus, useTranslation } from '@bahmni/services';
+import {
+  dispatchConsultationStart,
+  ImmunizationStatus,
+  useTranslation,
+} from '@bahmni/services';
 import React, { useState } from 'react';
 import { usePatientUUID } from '../hooks/usePatientUUID';
 import { WidgetProps } from '../registry/model';
@@ -86,36 +90,21 @@ const ImmunizationHistory: React.FC<WidgetProps> = ({ config }) => {
     startEncounterPrivilege ?? ADD_IMMUNIZATIONS_PRIVILEGE,
   );
 
-  const resolveAddButtonInputControlKey = (): string | undefined => {
-    if (status === 'completed' || status === 'not-done') {
-      return widgetConfig?.inputControlKey;
-    }
-    return selectedIndex === 0
-      ? widgetConfig?.administeredInputControlKey
-      : widgetConfig?.notAdministeredInputControlKey;
-  };
-
-  const resolveAddButtonEditTitle = (): string | undefined => {
-    if (status === 'completed' || status === 'not-done') {
-      return widgetConfig?.editTitle;
-    }
-    return selectedIndex === 0
-      ? widgetConfig?.administeredEditTitle
-      : widgetConfig?.notAdministeredEditTitle;
-  };
-
   const handleAddImmunization = () => {
-    const editOnly = resolveAddButtonInputControlKey();
-    const editTitle = resolveAddButtonEditTitle();
-    globalThis.dispatchEvent(
-      new CustomEvent('startConsultation', {
-        detail: {
-          encounterType,
-          ...(editOnly ? { editOnly } : {}),
-          ...(editTitle ? { editTitle } : {}),
-        },
-      }),
-    );
+    const targetStatus: ImmunizationStatus =
+      status ?? (selectedIndex === 0 ? 'completed' : 'not-done');
+    const draftImmunization = {
+      resourceType: 'Immunization',
+      status: targetStatus,
+    };
+    dispatchConsultationStart({
+      context: { encounterType },
+      action: {
+        type: 'create',
+        resourceType: 'Immunization',
+        resources: [draftImmunization],
+      },
+    });
   };
 
   const renderTabByStatus = (status: ImmunizationStatus) => {

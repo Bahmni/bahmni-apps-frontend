@@ -1020,8 +1020,10 @@ describe('ObservationFormsContainer', () => {
 
   describe('Copyover notice', () => {
     const editCopyoverContext = {
-      editOnly: 'observationForms',
-      sourceEncounterUuid: 'source-encounter-uuid',
+      context: {
+        encounter: { resourceType: 'Encounter', id: 'source-encounter-uuid' },
+      },
+      action: { type: 'update', resourceType: 'Observation' },
       activeEncounter: { id: 'session-different-uuid' } as any,
     };
 
@@ -2184,8 +2186,10 @@ describe('Edit mode - hasFormChanges / change detection', () => {
   };
 
   const editModeContext = {
-    editOnly: 'observationForms' as const,
-    sourceEncounterUuid: 'edit-encounter-uuid',
+    context: {
+      encounter: { resourceType: 'Encounter', id: 'edit-encounter-uuid' },
+    },
+    action: { type: 'update', resourceType: 'Observation' },
   };
 
   const defaultProps = {

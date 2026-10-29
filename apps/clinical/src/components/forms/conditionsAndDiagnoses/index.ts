@@ -8,6 +8,7 @@ import ConditionsAndDiagnoses from './ConditionsAndDiagnoses';
 
 registerInputControl({
   key: 'conditionsAndDiagnoses',
+  handledResourceTypes: ['Condition'],
   component: ConditionsAndDiagnoses,
   reset: () => useConditionsAndDiagnosesStore.getState().reset(),
   validate: () => useConditionsAndDiagnosesStore.getState().validate(),

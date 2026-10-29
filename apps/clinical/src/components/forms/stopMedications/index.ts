@@ -20,7 +20,8 @@ const dispatchStopMedicationAuditEvent = (result: SubmissionResult) => {
 
 registerInputControl({
   key: 'stopMedications',
-  onActionTriggered: true,
+  handledActionTypes: ['delete'],
+  handledResourceTypes: ['MedicationRequest'],
   component: StopMedicationForm,
   reset: () => useStopMedicationStore.getState().reset(),
   validate: () => useStopMedicationStore.getState().validate(),
@@ -32,7 +33,8 @@ registerInputControl({
 
 registerInputControl({
   key: 'cancelVaccination',
-  onActionTriggered: true,
+  handledActionTypes: ['delete'],
+  handledResourceTypes: ['MedicationRequest'],
   component: StopMedicationForm,
   reset: () => useStopMedicationStore.getState().reset(),
   validate: () => useStopMedicationStore.getState().validate(),

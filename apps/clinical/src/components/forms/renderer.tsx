@@ -1,13 +1,13 @@
 import { MenuItemDivider } from '@bahmni/design-system';
+import { type ConsultationEventPayload } from '@bahmni/services';
 import { useHasPrivilege } from '@bahmni/widgets';
 import React from 'react';
-import type { EncounterSessionStartContext } from '../../events/startConsultation';
 import type { InputControl } from './models';
 
 interface InputControlRendererProps {
   entry: InputControl;
   encounterType: string;
-  encounterSessionStartContext: EncounterSessionStartContext;
+  encounterSessionStartContext: ConsultationEventPayload;
 }
 
 const InputControlRenderer: React.FC<InputControlRendererProps> = ({

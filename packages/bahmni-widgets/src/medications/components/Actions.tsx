@@ -19,14 +19,12 @@ const ACTION_ICONS: Record<string, React.ReactNode> = {
 type ActionsProps = {
   actions: MedicationAction[];
   medication: MedicationRequest;
-  startDate?: string;
   disabledActionTypes?: string[];
 };
 
 const Actions: React.FC<ActionsProps> = ({
   actions,
   medication,
-  startDate,
   disabledActionTypes = [],
 }) => {
   const { t } = useTranslation();
@@ -58,9 +56,7 @@ const Actions: React.FC<ActionsProps> = ({
           kind="ghost"
           size="sm"
           disabled={disabled}
-          onClick={() =>
-            !disabled && handleAction(action, medication, startDate)
-          }
+          onClick={() => !disabled && handleAction(action, medication)}
           testId={`medication-action-${action.type}-${medication.id}`}
         >
           {icon}
@@ -75,7 +71,7 @@ const Actions: React.FC<ActionsProps> = ({
         aria-label={t(action.label)}
         kind="ghost"
         disabled={disabled}
-        onClick={() => handleAction(action, medication, startDate)}
+        onClick={() => handleAction(action, medication)}
       >
         {t(action.label)}
       </Button>
@@ -98,7 +94,7 @@ const Actions: React.FC<ActionsProps> = ({
           itemText={t(action.label)}
           isDelete={false}
           disabled={isActionDisabled(action)}
-          onClick={() => handleAction(action, medication, startDate)}
+          onClick={() => handleAction(action, medication)}
         />
       ))}
     </OverflowMenu>

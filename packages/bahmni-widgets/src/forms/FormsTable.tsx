@@ -19,6 +19,7 @@ import {
   shouldEnableEncounterFilter,
   useSubscribeConsultationSaved,
   ConsultationSavedEventPayload,
+  dispatchConsultationStart,
 } from '@bahmni/services';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Bundle, Observation } from 'fhir/r4';
@@ -32,8 +33,6 @@ import { useHasPrivilege } from '../userPrivileges/useHasPrivilege';
 import { useUserPrivilege } from '../userPrivileges/useUserPrivilege';
 import { FormRecordViewModel, GroupedFormRecords } from './models';
 import styles from './styles/FormsTable.module.scss';
-
-const CONSULTATION_START_EVENT = 'startConsultation';
 
 interface FormsTableConfig {
   numberOfVisits?: number;
@@ -277,17 +276,14 @@ const FormsTable: React.FC<WidgetProps> = ({
   }, []);
 
   const handleRowEdit = useCallback((record: FormRecordViewModel) => {
-    globalThis.dispatchEvent(
-      new CustomEvent(CONSULTATION_START_EVENT, {
-        detail: {
-          editOnly: 'observationForms',
-          editTitle: 'EDIT_OBSERVATION_FORM_TITLE',
-          sourceEncounterUuid: record.encounterUuid,
-          formName: record.formName,
-          directFormMode: true,
-        },
-      }),
-    );
+    dispatchConsultationStart({
+      context: {
+        encounter: { resourceType: 'Encounter', id: record.encounterUuid },
+        formName: record.formName,
+        directFormMode: true,
+      },
+      action: { type: 'update', resourceType: 'Observation' },
+    });
   }, []);
 
   const renderCell = useCallback(

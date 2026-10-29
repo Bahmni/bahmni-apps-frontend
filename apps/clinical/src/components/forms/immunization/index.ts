@@ -10,13 +10,18 @@ import { ImmunizationStoreKey } from './models';
 import { getImmunizationStore } from './stores';
 import { createImmunizationBundleEntries } from './utils';
 
-const registerImmunizationControl = (key: ImmunizationStoreKey) => {
+const registerImmunizationControl = (
+  key: ImmunizationStoreKey,
+  handledResourceStatuses?: string[],
+) => {
   const store = () => getImmunizationStore(key);
   const isAdministration =
     key === IMMUNIZATION_ADMINISTRATION_INPUT_CONTROL_KEY;
   const isWaiver = key === IMMUNIZATION_WAIVER_INPUT_CONTROL_KEY;
   registerInputControl({
     key,
+    handledResourceTypes: ['Immunization'],
+    handledResourceStatuses,
     component: ImmunizationForm,
     reset: () => store().getState().reset(),
     validate: () => store().getState().validateAll(),
@@ -39,6 +44,8 @@ const registerImmunizationControl = (key: ImmunizationStoreKey) => {
 
 registerImmunizationControl(IMMUNIZATION_HISTORY_INPUT_CONTROL_KEY);
 registerImmunizationControl(IMMUNIZATION_ADMINISTRATION_INPUT_CONTROL_KEY);
-registerImmunizationControl(IMMUNIZATION_WAIVER_INPUT_CONTROL_KEY);
+registerImmunizationControl(IMMUNIZATION_WAIVER_INPUT_CONTROL_KEY, [
+  'not-done',
+]);
 
 export { default } from './ImmunizationForm';

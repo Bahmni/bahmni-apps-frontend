@@ -42,10 +42,4 @@ export interface ImmunizationHistoryWidgetConfig {
   startEncounterPrivilege?: string;
   administeredFields?: string[];
   notAdministeredFields?: string[];
-  inputControlKey?: string;
-  administeredInputControlKey?: string;
-  notAdministeredInputControlKey?: string;
-  editTitle?: string;
-  administeredEditTitle?: string;
-  notAdministeredEditTitle?: string;
 }

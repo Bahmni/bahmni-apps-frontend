@@ -154,7 +154,6 @@ describe('Actions', () => {
     expect(handleActionSpy).toHaveBeenCalledWith(
       singleActionMock[0],
       fhirMedicationRequestMock,
-      undefined,
     );
   });
 
@@ -178,7 +177,6 @@ describe('Actions', () => {
     expect(handleActionSpy).toHaveBeenCalledWith(
       multipleActionsMock[0],
       fhirMedicationRequestMock,
-      undefined,
     );
   });
 

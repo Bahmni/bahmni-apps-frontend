@@ -1,3 +1,8 @@
+import {
+  type ConsultationEventAction,
+  type ConsultationEventContext,
+} from '@bahmni/services';
+import { CANCEL_VACCINATION_INPUT_CONTROL_KEY } from '@bahmni/widgets';
 import type { Encounter } from 'fhir/r4';
 import { extractId } from '../../../../../packages/bahmni-widgets/src/utils/Observations';
 import type { ConsultationPad } from '../../providers/clinicalConfig/models';
@@ -65,25 +70,96 @@ export function loadEncounterInputControls(
 
 export function getActiveEntries(
   registry: InputControl[],
-  encounterType: string,
-  editOnlyKey?: string,
+  context: ConsultationEventContext | undefined,
+  action: ConsultationEventAction | undefined,
 ): InputControl[] {
-  return registry.filter((entry) => {
-    const matchesEncounterType =
-      !entry.encounterTypes || entry.encounterTypes.includes(encounterType);
-    if (!matchesEncounterType) return false;
+  const encounterType = context?.encounterType;
+  const byEncounterType = registry.filter(
+    (entry) =>
+      !entry.encounterTypes ||
+      !encounterType ||
+      entry.encounterTypes.includes(encounterType),
+  );
 
-    if (entry.onActionTriggered && entry.key !== editOnlyKey) return false;
+  if (!action) {
+    return byEncounterType.filter((entry) => !entry.handledActionTypes?.length);
+  }
 
-    // When editOnly is set, show only the target form + encounterDetails.
-    if (editOnlyKey) {
-      return (
-        entry.key === editOnlyKey ||
-        entry.key === ENCOUNTER_DETAILS_INPUT_CONTROL_KEY
-      );
+  const resourceType = getActionResourceType(action);
+  const resourceStatus = getActionResourceStatus(action);
+
+  const targets = byEncounterType.filter((entry) => {
+    if (entry.key === ENCOUNTER_DETAILS_INPUT_CONTROL_KEY) return true;
+
+    const handlesAction = entry.handledActionTypes?.length
+      ? entry.handledActionTypes.includes(action.type)
+      : action.type !== 'delete';
+    if (!handlesAction) return false;
+
+    if (resourceType && !entry.handledResourceTypes?.includes(resourceType)) {
+      return false;
     }
-    return true;
+
+    return (
+      !resourceStatus ||
+      !entry.handledResourceStatuses?.length ||
+      entry.handledResourceStatuses.includes(resourceStatus)
+    );
   });
+
+  const hasExplicitStatusMatch =
+    !!resourceStatus &&
+    targets.some((entry) =>
+      entry.handledResourceStatuses?.includes(resourceStatus),
+    );
+
+  return hasExplicitStatusMatch
+    ? targets.filter(
+        (entry) =>
+          entry.key === ENCOUNTER_DETAILS_INPUT_CONTROL_KEY ||
+          entry.handledResourceStatuses?.includes(resourceStatus),
+      )
+    : targets;
+}
+
+function getActionResourceType(
+  action: ConsultationEventAction,
+): string | undefined {
+  return action.resourceType ?? action.resources?.[0]?.resourceType;
+}
+
+function getActionResourceStatus(
+  action: ConsultationEventAction,
+): string | undefined {
+  return (action.resources?.[0] as { status?: string } | undefined)?.status;
+}
+
+const ACTION_TITLE_KEYS: Record<string, string> = {
+  'update:AllergyIntolerance': 'EDIT_ALLERGIES_TITLE',
+  'update:MedicationRequest': 'MEDICATIONS_EDIT_FORM_TITLE',
+  'update:Observation': 'EDIT_OBSERVATION_FORM_TITLE',
+  'delete:MedicationRequest': 'STOP_MEDICATION_FORM_TITLE',
+};
+
+export function getPadTitleKey(
+  context: ConsultationEventContext | undefined,
+  action: ConsultationEventAction | undefined,
+  activeEntries: InputControl[],
+): string {
+  if (action) {
+    if (
+      action.type === 'delete' &&
+      activeEntries.some((e) => e.key === CANCEL_VACCINATION_INPUT_CONTROL_KEY)
+    ) {
+      return 'CANCEL_VACCINATION_FORM_TITLE';
+    }
+    const titleKey =
+      ACTION_TITLE_KEYS[`${action.type}:${getActionResourceType(action)}`];
+    if (titleKey) return titleKey;
+  } else if (context?.encounter) {
+    return 'CONSULTATION_ACTION_CONTINUE';
+  }
+  return 'CONSULTATION_ACTION_NEW';
 }
 
 /**

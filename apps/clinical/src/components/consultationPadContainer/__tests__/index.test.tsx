@@ -99,7 +99,7 @@ const VISIT_TYPE_OPD = { uuid: 'vt-opd', name: 'OPD' };
 const VISIT_TYPE_IPD = { uuid: 'vt-ipd', name: 'IPD' };
 const ENCOUNTER_TYPE = { uuid: 'et-uuid', name: 'Consultation' };
 const MOCK_VISIT_LOCATION = { uuid: 'loc-uuid' };
-const ENCOUNTER_SESSION_CONTEXT = { isVisitActive: false };
+const ENCOUNTER_SESSION_CONTEXT = { context: { isVisitActive: false } };
 
 const buildConfig = (
   allowedVisitTypes: string[],
@@ -541,8 +541,10 @@ describe('ConsultationPadContainer', () => {
       .mockReturnValue(buildConfig(['OPD', 'IPD'], 'Consultation') as any);
     renderComponent({
       encounterSessionStartContext: {
-        isVisitActive: false,
-        encounterType: 'Examination',
+        context: {
+          isVisitActive: false,
+          encounterType: 'Examination',
+        },
       },
     });
     expect(mockSetRequestedEncounterType).toHaveBeenCalledWith('Examination');
