@@ -3,7 +3,7 @@ import {
   screen,
   waitForElementToBeRemoved,
 } from '@testing-library/react';
-import { MemoryRouter } from 'react-router-dom';
+import { MemoryRouter } from 'react-router';
 import App from '../App';
 
 jest.mock('@bahmni/services', () => ({

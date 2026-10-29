@@ -19,7 +19,7 @@ import {
 } from '@bahmni/widgets';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import React, { useMemo, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import {
   ADMIN_TAB_PRIVILEGE,
   APPOINTMENTS_APP_HREF,

@@ -10,7 +10,7 @@ import userEvent from '@testing-library/user-event';
 import { format } from 'date-fns';
 import i18n from 'i18next';
 import { axe, toHaveNoViolations } from 'jest-axe';
-import { MemoryRouter } from 'react-router-dom';
+import { MemoryRouter } from 'react-router';
 import { useNotification } from '../../../notification';
 import { useUserPrivilege } from '../../../userPrivileges/useUserPrivilege';
 import {
@@ -32,8 +32,8 @@ jest.mock('@bahmni/services', () => ({
 }));
 jest.mock('../../../notification');
 jest.mock('../../../userPrivileges/useUserPrivilege');
-jest.mock('react-router-dom', () => ({
-  ...jest.requireActual('react-router-dom'),
+jest.mock('react-router', () => ({
+  ...jest.requireActual('react-router'),
   useNavigate: jest.fn(() => jest.fn()),
 }));
 

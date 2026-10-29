@@ -1,8 +1,8 @@
 import { renderHook } from '@testing-library/react';
-import { useParams } from 'react-router-dom';
+import { useParams } from 'react-router';
 import { usePatientUUID } from '../usePatientUUID';
-// Mock react-router-dom's useParams hook
-jest.mock('react-router-dom', () => ({
+// Mock react-router's useParams hook
+jest.mock('react-router', () => ({
   useParams: jest.fn(),
 }));
 

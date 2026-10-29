@@ -16,7 +16,7 @@ jest.mock('@bahmni/services', () => ({
   getDiagnosticReportBundle: jest.fn(),
 }));
 
-jest.mock('react-router-dom', () => ({
+jest.mock('react-router', () => ({
   useParams: jest.fn(),
 }));
 

@@ -11,7 +11,7 @@ import {
 import { QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import React, { Suspense, useEffect, useState } from 'react';
-import { Routes } from 'react-router-dom';
+import { Routes } from 'react-router';
 import { queryClient } from './config/queryClient';
 import { CLINICAL_NAMESPACE } from './constants/app';
 import { ClinicalConfigProvider } from './providers/clinicalConfig';

@@ -13,9 +13,9 @@ import {
 } from '@bahmni/services';
 import {
   ConfirmationModal,
+  DocumentPreview,
   DocumentUpload,
   getDefaultDocumentType,
-  renderDocumentTile,
   revokeDocumentPreview,
   useActivePractitioner,
   useNotification,
@@ -33,6 +33,7 @@ import {
 import {
   DocumentSaveInput,
   saveVisitDocuments,
+  uploadDocumentFiles,
   VisitDocumentSaveResult,
 } from '../services/visitDocumentSaveService';
 import styles from './styles/DocumentsSection.module.scss';
@@ -50,13 +51,17 @@ interface DocumentsSectionProps {
   searchHref?: string;
 }
 
-const renderTile = (document: DocumentViewModel) =>
-  renderDocumentTile({
-    id: document.id,
-    src: document.documentUrl,
-    title: document.documentType ?? document.documentIdentifier,
-    contentType: document.contentType,
-  });
+const renderPreview = (document: DocumentViewModel) => (
+  <DocumentPreview
+    id={document.id}
+    title={document.documentType ?? document.documentIdentifier}
+    attachments={
+      document.attachments.length > 0
+        ? [...document.attachments]
+        : [{ url: document.documentUrl, contentType: document.contentType }]
+    }
+  />
+);
 
 const saveTargetOf = (
   group: VisitDocumentGroup,
@@ -237,7 +242,7 @@ export const DocumentsSection: React.FC<DocumentsSectionProps> = ({
       title: t('DOCUMENT_UPLOAD_SAVE_FAILED_TITLE'),
       message:
         failures.length === 1
-          ? failures[0].message
+          ? t('DOCUMENT_UPLOAD_SAVE_FAILED_MESSAGE')
           : t('DOCUMENT_UPLOAD_SAVE_FAILED_MESSAGE_MULTIPLE', {
               count: failures.length,
             }),
@@ -249,6 +254,32 @@ export const DocumentsSection: React.FC<DocumentsSectionProps> = ({
   const handleSave = async () => {
     setIsSaving(true);
     try {
+      const { uploadedUrls, failures } = await uploadDocumentFiles({
+        patientUuid,
+        encounterTypeName: documentEncounterType.name,
+        documents: visitsWithPendingDocument.flatMap((visitKey) =>
+          filledEntries(pendingByVisit[visitKey]).map(toDocumentSaveInput),
+        ),
+      });
+      visitsWithPendingDocument.forEach((visitKey) =>
+        applySaveResult(visitKey, filledEntries(pendingByVisit[visitKey]), {
+          savedIds: [],
+          uploadedUrls,
+          failures: [],
+        }),
+      );
+      if (failures.length > 0) {
+        notifySaveOutcome([{ savedIds: [], uploadedUrls, failures }]);
+        return;
+      }
+
+      const withUploadedUrls = (document: DocumentSaveInput) => ({
+        ...document,
+        files: document.files.map((file) => ({
+          ...file,
+          uploadedUrl: uploadedUrls[file.id],
+        })),
+      });
       const results = await Promise.all(
         visitsWithPendingDocument.map(async (visitKey) => {
           const group = visitGroups[visitKeys.indexOf(visitKey)];
@@ -257,7 +288,7 @@ export const DocumentsSection: React.FC<DocumentsSectionProps> = ({
             patientUuid,
             encounterTypeName: documentEncounterType.name,
             target: saveTargetOf(group, documentEncounterType),
-            documents: entries.map(toDocumentSaveInput),
+            documents: entries.map(toDocumentSaveInput).map(withUploadedUrls),
             defaultDocumentType,
             authorPractitionerUuid: practitioner?.uuid,
           });
@@ -366,7 +397,7 @@ export const DocumentsSection: React.FC<DocumentsSectionProps> = ({
                     <div key={document.id} className={styles.docItem}>
                       <div className={styles.docRow}>
                         <div className={styles.fileCell}>
-                          {renderTile(document)}
+                          {renderPreview(document)}
                         </div>
                         <div className={styles.typeCell}>
                           {document.documentType}
@@ -395,6 +426,7 @@ export const DocumentsSection: React.FC<DocumentsSectionProps> = ({
                 }
                 config={documentUploadConfig}
                 isSaving={isSaving}
+                defaultOption={defaultOption}
               />
             </AccordionItem>
           );

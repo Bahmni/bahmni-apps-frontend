@@ -13,7 +13,7 @@ import type {
   TriggerConfig,
 } from '@bahmni/widgets';
 import { useEffect, useState } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation } from 'react-router';
 import {
   BAHMNI_COMMAND_PALETTE_NAMESPACE,
   COMMAND_PALETTE_APP_CONFIG_URL,
