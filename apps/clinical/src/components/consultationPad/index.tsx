@@ -498,6 +498,17 @@ const ConsultationPad: React.FC<ConsultationPadProps> = ({
       });
 
       bundleEntries.forEach((entry) => entry.onSubmitSuccess?.(result));
+      bundleEntries.forEach((entry) => {
+        const warning = entry.getSubmissionWarning?.();
+        if (warning) {
+          addNotification({
+            title: t(warning.title),
+            message: t(warning.message),
+            type: 'warning',
+            timeout: 8000,
+          });
+        }
+      });
 
       // Capture resource state and notify before any reset below, same as
       // the original single-phase flow.

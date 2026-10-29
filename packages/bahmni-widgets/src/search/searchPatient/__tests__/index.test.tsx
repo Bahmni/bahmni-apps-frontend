@@ -8,6 +8,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { format } from 'date-fns';
+import i18n from 'i18next';
 import { axe, toHaveNoViolations } from 'jest-axe';
 import { MemoryRouter } from 'react-router';
 import { useNotification } from '../../../notification';
@@ -741,6 +742,30 @@ describe('SearchPatient', () => {
         startDate: expectedStart,
         endDate: expectedEnd,
       });
+    });
+
+    it('shows the searched date in the configured date format in the empty results message', async () => {
+      localStorage.setItem('default_dateFormat', 'dd-MMM-yyyy');
+      i18n.addResourceBundle(
+        'en',
+        'translation',
+        {
+          REGISTRATION_PATIENT_SEARCH_CUSTOM_ATTRIBUTE_EMPTY_MESSAGE:
+            'No matching search results for {{searchTerm}}.',
+        },
+        true,
+        true,
+      );
+      renderSearchPatient(appointmentConfig);
+      await selectOption(DATE_OPTION);
+
+      await userEvent.click(screen.getByTestId('advance-search-button'));
+
+      const expectedDate = format(new Date(), 'dd-MMM-yyyy');
+      const emptyMessage = await screen.findByText(
+        `No matching search results for ${expectedDate}.`,
+      );
+      expect(emptyMessage).toBeInTheDocument();
     });
   });
 });

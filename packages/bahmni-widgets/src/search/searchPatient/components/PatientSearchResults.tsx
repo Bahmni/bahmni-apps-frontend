@@ -12,6 +12,7 @@ import {
   PatientSearchField,
   PatientSearchResult,
   PatientSearchResultBundle,
+  formatDateTime,
   formatUrl,
   useTranslation,
 } from '@bahmni/services';
@@ -42,6 +43,7 @@ interface PatientSearchResultsProps {
   isLoading: boolean;
   isError: boolean;
   isAdvancedSearch: boolean;
+  isDateSearch: boolean;
   searchFields: PatientSearchField[];
   selectedFieldType: string;
   patientDetailUrl?: string;
@@ -54,6 +56,7 @@ const PatientSearchResults = ({
   isLoading,
   isError,
   isAdvancedSearch,
+  isDateSearch,
   searchFields,
   selectedFieldType,
   patientDetailUrl,
@@ -235,9 +238,13 @@ const PatientSearchResults = ({
     return String(cellValue ?? '');
   };
 
+  const displayTerm = isDateSearch
+    ? formatDateTime(searchTerm, t).formattedResult
+    : searchTerm;
+
   const emptyMessage = isAdvancedSearch
     ? t('REGISTRATION_PATIENT_SEARCH_CUSTOM_ATTRIBUTE_EMPTY_MESSAGE', {
-        searchTerm,
+        searchTerm: displayTerm,
       })
     : t('REGISTRATION_PATIENT_SEARCH_EMPTY_MESSAGE', { searchTerm });
 
