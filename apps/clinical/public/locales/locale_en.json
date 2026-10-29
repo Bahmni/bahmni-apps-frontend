@@ -148,7 +148,7 @@
   "DOCUMENTS_ERROR_LOADING_DOCUMENT_TYPES": "Unable to load the document types.",
   "DOCUMENTS_INPUT_CONTROL_LABEL": "Documents",
   "DOCUMENTS_LOADING_ATTACHMENT": "Loading attachment…",
-  "DOCUMENTS_NOT_SAVED_MESSAGE": "Some documents could not be uploaded, so they were not saved with this consultation. Add them again from the patient's documents.",
+  "DOCUMENTS_NOT_SAVED_MESSAGE": "Documents could not be uploaded",
   "DOCUMENTS_NOT_SAVED_TITLE": "Documents not saved",
   "DOCUMENTS_NOTE_PLACEHOLDER": "Add a note about this document",
   "DOCUMENTS_PRINT_ALL": "Print all",
