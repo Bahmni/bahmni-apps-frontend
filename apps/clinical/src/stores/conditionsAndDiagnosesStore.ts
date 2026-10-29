@@ -5,6 +5,15 @@ import {
 } from '@bahmni/services';
 import { Coding } from 'fhir/r4';
 import { create } from 'zustand';
+import {
+  CONDITION_DURATION_FIELD_KEYS,
+  CONDITION_DURATION_REQUIRED_ERROR,
+  type ConditionDurationField,
+} from '../constants/conditions';
+import {
+  hasConditionDuration,
+  isValidConditionDurationValue,
+} from '../utils/conditionDuration';
 
 /**
  * Interface defining the state and actions for managing conditions and diagnoses
@@ -52,15 +61,15 @@ export interface ConditionsAndDiagnosesState {
   removeCondition: (conditionId: string) => void;
 
   /**
-   * Updates the duration and its unit for a specific condition
+   * Updates one duration field (years, months or days) for a specific condition
    * @param conditionId - The ID of the condition to update
-   * @param value - The duration value
-   * @param unit - The duration unit (days, months, years)
+   * @param field - The duration field to update
+   * @param value - The non-negative integer value, or null to clear it
    */
   updateConditionDuration: (
     conditionId: string,
+    field: ConditionDurationField,
     value: number | null,
-    unit: 'days' | 'months' | 'years' | null,
   ) => void;
 
   /**
@@ -189,18 +198,11 @@ export const useConditionsAndDiagnosesStore =
         selectedConditions: state.selectedConditions.map((condition) => {
           const errors = { ...condition.errors };
 
-          if (!condition.durationValue) {
-            errors.durationValue = 'CONDITIONS_DURATION_VALUE_REQUIRED';
+          if (!hasConditionDuration(condition)) {
+            errors.duration = CONDITION_DURATION_REQUIRED_ERROR;
             conditionsValid = false;
           } else {
-            delete errors.durationValue;
-          }
-
-          if (!condition.durationUnit) {
-            errors.durationUnit = 'CONDITIONS_DURATION_UNIT_REQUIRED';
-            conditionsValid = false;
-          } else {
-            delete errors.durationUnit;
+            delete errors.duration;
           }
 
           return {
@@ -240,8 +242,9 @@ export const useConditionsAndDiagnosesStore =
         id: diagnosis.id,
         display: diagnosis.display,
         conceptSystem: diagnosis.conceptSystem,
-        durationValue: null,
-        durationUnit: null,
+        durationYears: null,
+        durationMonths: null,
+        durationDays: null,
         errors: {},
         hasBeenValidated: false,
       };
@@ -270,22 +273,15 @@ export const useConditionsAndDiagnosesStore =
 
     updateConditionDuration: (
       conditionId: string,
+      field: ConditionDurationField,
       value: number | null,
-      unit: 'days' | 'months' | 'years' | null,
     ) => {
       if (!validateDiagnosisId(conditionId)) {
         return;
       }
 
-      if (
-        value !== null &&
-        (typeof value !== 'number' || value <= 0 || !Number.isInteger(value))
-      ) {
-        return;
-      }
-
-      const validUnits = ['days', 'months', 'years'];
-      if (unit !== null && !validUnits.includes(unit)) {
+      const fieldKey = CONDITION_DURATION_FIELD_KEYS[field];
+      if (!fieldKey || !isValidConditionDurationValue(field, value)) {
         return;
       }
 
@@ -295,17 +291,16 @@ export const useConditionsAndDiagnosesStore =
 
           const updatedCondition = {
             ...condition,
-            durationValue: value,
-            durationUnit: unit,
+            [fieldKey]: value,
           };
 
           if (condition.hasBeenValidated) {
             updatedCondition.errors = { ...condition.errors };
-            if (value) {
-              delete updatedCondition.errors.durationValue;
-            }
-            if (unit) {
-              delete updatedCondition.errors.durationUnit;
+            if (hasConditionDuration(updatedCondition)) {
+              delete updatedCondition.errors.duration;
+            } else {
+              updatedCondition.errors.duration =
+                CONDITION_DURATION_REQUIRED_ERROR;
             }
           }
 

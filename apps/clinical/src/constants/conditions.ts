@@ -1,5 +1,32 @@
-export const DURATION_UNITS = [
-  { id: 'days', display: 'CONDITIONS_DURATION_DAYS' },
-  { id: 'months', display: 'CONDITIONS_DURATION_MONTHS' },
-  { id: 'years', display: 'CONDITIONS_DURATION_YEARS' },
+export type ConditionDurationField = 'years' | 'months' | 'days';
+
+export const CONDITION_DURATION_FIELDS: ConditionDurationField[] = [
+  'years',
+  'months',
+  'days',
 ];
+
+export const CONDITION_DURATION_LIMITS: Record<ConditionDurationField, number> =
+  {
+    years: 150,
+    months: 999,
+    days: 999,
+  };
+
+export const CONDITION_DURATION_LABELS: Record<ConditionDurationField, string> =
+  {
+    years: 'CONDITIONS_DURATION_YEARS',
+    months: 'CONDITIONS_DURATION_MONTHS',
+    days: 'CONDITIONS_DURATION_DAYS',
+  };
+
+export const CONDITION_DURATION_FIELD_KEYS: Record<
+  ConditionDurationField,
+  'durationYears' | 'durationMonths' | 'durationDays'
+> = {
+  years: 'durationYears',
+  months: 'durationMonths',
+  days: 'durationDays',
+};
+
+export const CONDITION_DURATION_REQUIRED_ERROR = 'CONDITIONS_DURATION_REQUIRED';
