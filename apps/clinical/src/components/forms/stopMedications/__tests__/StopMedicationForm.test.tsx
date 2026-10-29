@@ -1105,7 +1105,6 @@ describe('StopMedicationForm', () => {
     });
 
     it("initializes DatePicker ref with today's date in cancel vaccination mode to prevent placeholder on first render", async () => {
-   
       const pastDate = new Date('2025-01-01');
       mockUseStopMedicationStore.mockReturnValue(
         makeStoreMock({ stopDate: pastDate }) as any,
