@@ -20,7 +20,7 @@ import {
   useTranslation,
 } from '@bahmni/services';
 import { useQuery } from '@tanstack/react-query';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import styles from './__styles__/DocumentUpload.module.scss';
 import { MAX_NOTE_LENGTH } from './constants';
 import {
@@ -33,6 +33,7 @@ import { useFileSelection } from './useFileSelection';
 import {
   createEmptyDocumentEntry,
   formatFileTypes,
+  getDefaultDocumentType,
   revokeDocumentPreview,
 } from './utils';
 
@@ -44,6 +45,20 @@ const withoutError = (
   errors: DocumentEntryErrors,
   field: keyof DocumentEntryErrors,
 ): DocumentEntryErrors => ({ ...errors, [field]: undefined });
+
+const FieldLabel: React.FC<{ text: string; isRequired: boolean }> = ({
+  text,
+  isRequired,
+}) => (
+  <>
+    {text}
+    {isRequired && (
+      <span className={styles.requiredAsterisk} aria-hidden="true">
+        *
+      </span>
+    )}
+  </>
+);
 
 const FileThumbnail: React.FC<{ file: PendingDocument }> = ({ file }) =>
   file.contentType.startsWith('image/') ? (
@@ -141,7 +156,12 @@ const DocumentEntryCard: React.FC<DocumentEntryCardProps> = ({
         <Dropdown
           id={`document-type-${id}`}
           testId={`document-type-${id}`}
-          titleText={`${t('DOCUMENTS_DOCUMENT_TYPE_LABEL')}${isDocumentTypeRequired ? '*' : ''}`}
+          titleText={
+            <FieldLabel
+              text={t('DOCUMENTS_DOCUMENT_TYPE_LABEL')}
+              isRequired={isDocumentTypeRequired}
+            />
+          }
           label={t('DOCUMENTS_DOCUMENT_TYPE_PLACEHOLDER')}
           items={documentTypes}
           disabled={isSaving}
@@ -163,7 +183,12 @@ const DocumentEntryCard: React.FC<DocumentEntryCardProps> = ({
           <TextInput
             id={`document-id-${id}`}
             testId={`document-id-${id}`}
-            labelText={t('DOCUMENTS_DOCUMENT_ID_LABEL')}
+            labelText={
+              <FieldLabel
+                text={t('DOCUMENTS_DOCUMENT_ID_LABEL')}
+                isRequired={isDocumentIdRequired}
+              />
+            }
             value={entry.documentId}
             required={isDocumentIdRequired}
             disabled={isSaving}
@@ -251,6 +276,7 @@ export const DocumentUpload: React.FC<DocumentUploadProps> = ({
   config,
   documentsTitle,
   isSaving = false,
+  defaultOption,
 }) => {
   const { t, i18n } = useTranslation();
 
@@ -284,6 +310,17 @@ export const DocumentUpload: React.FC<DocumentUploadProps> = ({
     enabled: !!(conceptUuid ?? conceptName),
   });
   const documentTypes = loadedDocumentTypes ?? [];
+  const defaultDocumentType = useMemo(
+    () =>
+      defaultOption && loadedDocumentTypes
+        ? getDefaultDocumentType(loadedDocumentTypes, defaultOption)
+        : null,
+    [loadedDocumentTypes, defaultOption],
+  );
+  const createDocumentEntry = (): DocumentEntry => ({
+    ...createEmptyDocumentEntry(),
+    documentType: defaultDocumentType,
+  });
 
   const { accept, selectFiles } = useFileSelection({
     supportedFileTypes,
@@ -299,6 +336,18 @@ export const DocumentUpload: React.FC<DocumentUploadProps> = ({
       onDocumentsChangeRef.current([createEmptyDocumentEntry()]);
     }
   }, [documents.length]);
+  // Document types load after the first card is created, so preselect then.
+  useEffect(() => {
+    if (defaultDocumentType && documents.some((entry) => !entry.documentType)) {
+      onDocumentsChangeRef.current(
+        documents.map((entry) =>
+          entry.documentType
+            ? entry
+            : { ...entry, documentType: defaultDocumentType },
+        ),
+      );
+    }
+  }, [defaultDocumentType, documents]);
 
   const uploadHelpText = [
     maxFileSizeMb !== undefined &&
@@ -380,9 +429,7 @@ export const DocumentUpload: React.FC<DocumentUploadProps> = ({
         className={styles.addMore}
         disabled={isSaving}
         testId="document-upload-add-more"
-        onClick={() =>
-          onDocumentsChange([...documents, createEmptyDocumentEntry()])
-        }
+        onClick={() => onDocumentsChange([...documents, createDocumentEntry()])}
       >
         {t('DOCUMENTS_ADD_MORE')}
       </Button>

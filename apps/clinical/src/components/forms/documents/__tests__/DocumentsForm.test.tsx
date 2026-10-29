@@ -81,7 +81,7 @@ describe('DocumentsForm', () => {
     expect(screen.getByText('DOCUMENTS_INPUT_CONTROL_LABEL')).toBeVisible();
     expect(screen.getByTestId('document-upload')).toHaveAttribute(
       'data-title',
-      'DOCUMENTS_ADDED_DOCUMENT_TYPE',
+      'DOCUMENTS_ADD_ACTION',
     );
   });
 

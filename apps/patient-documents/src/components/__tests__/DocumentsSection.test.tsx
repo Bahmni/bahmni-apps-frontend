@@ -64,6 +64,7 @@ interface StubWidgetProps {
   documents: StubEntry[];
   onDocumentsChange: (documents: StubEntry[]) => void;
   isSaving: boolean;
+  defaultOption?: string | null;
 }
 jest.mock('@bahmni/widgets', () => ({
   ...jest.requireActual('@bahmni/widgets'),
@@ -75,12 +76,14 @@ jest.mock('@bahmni/widgets', () => ({
     documents,
     onDocumentsChange,
     isSaving,
+    defaultOption,
   }: StubWidgetProps) => {
     const shown = documents.length > 0 ? documents : [emptyEntry('new')];
     return (
       <div
         data-testid="document-upload"
         data-saving={String(isSaving)}
+        data-default-option={defaultOption ?? ''}
         data-documents={JSON.stringify(
           documents.flatMap((entry) => entry.files),
         )}
@@ -204,7 +207,10 @@ const visitGroups = [
 const SEARCH_HREF =
   '/bahmni/document-upload/?encounterType=Patient%20Document#/search';
 
-const renderSection = (topLevelConcept?: string | null) => {
+const renderSection = (
+  topLevelConcept?: string | null,
+  defaultOption?: string | null,
+) => {
   const queryClient = new QueryClient({
     defaultOptions: { queries: { retry: false } },
   });
@@ -214,6 +220,7 @@ const renderSection = (topLevelConcept?: string | null) => {
         patientUuid="patient-uuid"
         documentEncounterType={documentEncounterType}
         topLevelConcept={topLevelConcept}
+        defaultOption={defaultOption}
         searchHref={SEARCH_HREF}
       />
     </QueryClientProvider>,
@@ -301,12 +308,59 @@ describe('DocumentsSection', () => {
     expect(screen.getAllByTestId('document-upload')).toHaveLength(3);
   });
 
+  it('hands the default document type option to every upload widget', () => {
+    renderSection('Patient Document', 'Patient file');
+
+    screen
+      .getAllByTestId('document-upload')
+      .forEach((widget) =>
+        expect(widget).toHaveAttribute('data-default-option', 'Patient file'),
+      );
+  });
+
   it('renders saved documents with their type and note', () => {
     renderSection();
 
     expect(screen.getByText('Prescription')).toBeInTheDocument();
     expect(screen.getByText('Report')).toBeInTheDocument();
     expect(screen.getByDisplayValue('take twice daily')).toBeInTheDocument();
+  });
+
+  it('shows one thumbnail per document and previews all its attachments on click', () => {
+    mockUseVisitDocuments.mockReturnValue({
+      visitGroups: [
+        {
+          ...visitGroups[0],
+          documents: [
+            {
+              ...imageDoc,
+              id: 'multi',
+              attachments: [
+                { url: '100/first.png', contentType: 'image/png' },
+                { url: '100/second.png', contentType: 'image/png' },
+                { url: '100/third.pdf', contentType: 'application/pdf' },
+              ],
+            },
+          ],
+        },
+      ],
+      isLoading: false,
+      refetch: mockRefetch,
+    });
+
+    renderSection();
+
+    expect(screen.getAllByTestId('multi-test-id')).toHaveLength(1);
+    fireEvent.click(screen.getByTestId('multi-test-id'));
+    expect(
+      screen.getByTestId('multi-attachment-0-test-id'),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByTestId('multi-attachment-1-test-id'),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByTestId('multi-attachment-2-test-id'),
+    ).toBeInTheDocument();
   });
 
   it('reuses an existing encounter as the save target when one exists, otherwise creates one', async () => {

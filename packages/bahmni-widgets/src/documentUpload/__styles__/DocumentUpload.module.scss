@@ -26,6 +26,11 @@
   }
 }
 
+.requiredAsterisk {
+  color: $support-error;
+  margin-inline-start: $spacing-01;
+}
+
 .typeOnly {
   max-inline-size: 20rem;
 }
