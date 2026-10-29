@@ -11,6 +11,11 @@ export interface MedicationFilterResult {
   disabled: boolean;
 }
 
+export interface MedicationReason {
+  uuid: string;
+  display: string;
+}
+
 export interface MedicationInputEntry {
   id: string;
   medication: Medication;
@@ -29,6 +34,7 @@ export interface MedicationInputEntry {
   dispenseUnit: Concept | null;
   doseForm?: string;
   note?: string;
+  medicationReason?: MedicationReason | null;
 
   // Edit support
   fhirResourceId?: string;
@@ -48,6 +54,7 @@ export interface MedicationInputEntry {
     route?: string;
     startDate?: string;
     note?: string;
+    reason?: string;
     dispenseQuantity?: string;
     dispenseUnit?: string;
   };

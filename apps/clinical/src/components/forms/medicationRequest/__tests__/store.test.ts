@@ -35,6 +35,11 @@ const FIELD_UPDATE_CASES: FieldUpdateCase[] = [
   ['dispenseQuantity', 'updateDispenseQuantity', 10],
   ['dispenseUnit', 'updateDispenseUnit', mockDispenseUnit],
   ['note', 'updateNote', 'Some note'],
+  [
+    'medicationReason',
+    'updateMedicationReason',
+    { uuid: 'reason-uuid', display: 'Fever' },
+  ],
 ];
 
 const ERROR_CLEARING_CASES: FieldUpdateCase[] = [
@@ -793,6 +798,28 @@ describe('useMedicationRequestStore', () => {
       expect(store().hasEditChanges()).toBe(true);
 
       store().updateNote('edit-note', 'original note');
+      expect(store().hasEditChanges()).toBe(false);
+    });
+
+    it('detects medicationReason change and reverts cleanly', () => {
+      const originalReason = { uuid: 'reason-1', display: 'Fever' };
+      const entries = [
+        {
+          ...mockMedicationEntry,
+          id: 'edit-reason',
+          fhirResourceId: 'fhir-reason',
+          medicationReason: originalReason,
+        },
+      ];
+      store().loadMedicationsForEdit(entries);
+
+      store().updateMedicationReason('edit-reason', {
+        uuid: 'reason-2',
+        display: 'Malaria',
+      });
+      expect(store().hasEditChanges()).toBe(true);
+
+      store().updateMedicationReason('edit-reason', originalReason);
       expect(store().hasEditChanges()).toBe(false);
     });
 

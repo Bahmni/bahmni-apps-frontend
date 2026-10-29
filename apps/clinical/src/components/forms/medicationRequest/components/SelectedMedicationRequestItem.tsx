@@ -12,7 +12,10 @@ import {
 import { useTranslation, getTodayDate, type CDSSRule } from '@bahmni/services';
 import { dispatchCDSSCheck } from '@bahmni/services';
 import React, { useEffect, useRef, useState } from 'react';
-import { MedicationInputEntry } from '../../../../models/medication';
+import {
+  MedicationInputEntry,
+  MedicationReason,
+} from '../../../../models/medication';
 import { MedicationConfig } from '../../../../models/medicationConfig';
 import { InputControlAttributes } from '../../../../providers/clinicalConfig/models';
 import {
@@ -35,11 +38,19 @@ export interface SelectedMedicationRequestItemProps {
   inputControlType: MedicationRequestStoreKey;
   attributes: InputControlAttributes[];
   cdssRules?: CDSSRule[];
+  medicationReasons?: MedicationReason[];
 }
 
 const SelectedMedicationRequestItem: React.FC<SelectedMedicationRequestItemProps> =
   React.memo(
-    ({ entry, medicationConfig, inputControlType, attributes, cdssRules }) => {
+    ({
+      entry,
+      medicationConfig,
+      inputControlType,
+      attributes,
+      cdssRules,
+      medicationReasons,
+    }) => {
       const {
         updateDosage,
         updateDosageUnit,
@@ -54,6 +65,7 @@ const SelectedMedicationRequestItem: React.FC<SelectedMedicationRequestItemProps
         updateDispenseQuantity,
         updateDispenseUnit,
         updateNote,
+        updateMedicationReason,
       } = useMedicationRequestStore(inputControlType);
       const { t } = useTranslation();
       const isMedicationRequest =
@@ -76,6 +88,7 @@ const SelectedMedicationRequestItem: React.FC<SelectedMedicationRequestItemProps
         startDate,
         doseForm,
         note,
+        medicationReason,
         errors,
       } = entry;
 
@@ -479,6 +492,35 @@ const SelectedMedicationRequestItem: React.FC<SelectedMedicationRequestItemProps
                 </DatePicker>
               </Column>
             )}
+
+            {findAttr('reason', attributes) && (
+              <Column sm={1} md={4} lg={8} className={styles.column}>
+                <Dropdown
+                  id={`${inputControlType}-reason-dropdown-${id}`}
+                  data-testid={`${inputControlType}-reason-dropdown-${id}-test-id`}
+                  titleText={t(
+                    `${inputControlType.toUpperCase()}_REASON_INPUT_LABEL`,
+                  )}
+                  label={t(
+                    `${inputControlType.toUpperCase()}_REASON_INPUT_LABEL`,
+                  )}
+                  aria-label="Reason"
+                  items={medicationReasons ?? []}
+                  itemToString={(item: MedicationReason | null) =>
+                    item?.display ?? ''
+                  }
+                  selectedItem={medicationReason ?? null}
+                  onChange={(e) =>
+                    updateMedicationReason(id, e.selectedItem ?? null)
+                  }
+                  autoAlign
+                  invalid={!!errors.reason}
+                  invalidText={errors.reason ? t(errors.reason) : ''}
+                  disabled={findAttr('reason', attributes)?.readOnly}
+                />
+              </Column>
+            )}
+
             <Column sm={4} md={8} lg={16} className={styles.footerRow}>
               {findAttr('note', attributes) && !hasNote && !noteRequired && (
                 <Link

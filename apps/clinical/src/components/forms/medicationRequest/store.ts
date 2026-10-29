@@ -13,6 +13,7 @@ import { Concept } from '../../../models/encounterConcepts';
 import {
   DurationUnitOption,
   MedicationInputEntry,
+  MedicationReason,
 } from '../../../models/medication';
 import { InputControlAttributes } from '../../../providers/clinicalConfig/models';
 import { extractDoseForm } from '../../../utils/fhir/medicationUtilities';
@@ -42,6 +43,7 @@ export interface MedicationRequestState {
   updateDispenseQuantity: (id: string, quantity: number) => void;
   updateDispenseUnit: (id: string, unit: Concept) => void;
   updateNote: (id: string, note: string) => void;
+  updateMedicationReason: (id: string, reason: MedicationReason | null) => void;
   setPendingFhirEdits: (resources: FhirMedicationRequest[]) => void;
   loadMedicationsForEdit: (entries: MedicationInputEntry[]) => void;
   hasEditChanges: () => boolean;
@@ -171,6 +173,18 @@ function applyNoteUpdate(
   return updated;
 }
 
+function applyMedicationReasonUpdate(
+  item: MedicationInputEntry,
+  reason: MedicationReason | null,
+): MedicationInputEntry {
+  const updated = { ...item, medicationReason: reason };
+  if (item.hasBeenValidated && reason) {
+    updated.errors = { ...item.errors };
+    delete updated.errors.reason;
+  }
+  return updated;
+}
+
 function applyStartDateUpdate(
   item: MedicationInputEntry,
   date: Date,
@@ -242,6 +256,8 @@ function hasMedicationChanged(
   if (current.dispenseQuantity !== original.dispenseQuantity) return true;
   if (current.dispenseUnit?.uuid !== original.dispenseUnit?.uuid) return true;
   if ((current.note ?? '') !== (original.note ?? '')) return true;
+  if (current.medicationReason?.uuid !== original.medicationReason?.uuid)
+    return true;
   return false;
 }
 
@@ -383,6 +399,7 @@ function createMedicationRequestStore(key: MedicationRequestStoreKey) {
         dispenseUnit: null,
         doseForm,
         note: noteDefault ? String(noteDefault) : '',
+        medicationReason: null,
       };
       set((state) => ({
         selectedMedicationRequests: [
@@ -518,6 +535,15 @@ function createMedicationRequestStore(key: MedicationRequestStoreKey) {
     updateNote: (id: string, note: string) => {
       const applyUpdate = (item: MedicationInputEntry) =>
         item.id === id ? applyNoteUpdate(item, note) : item;
+      set((state) => ({
+        selectedMedicationRequests:
+          state.selectedMedicationRequests.map(applyUpdate),
+      }));
+    },
+
+    updateMedicationReason: (id: string, reason: MedicationReason | null) => {
+      const applyUpdate = (item: MedicationInputEntry) =>
+        item.id === id ? applyMedicationReasonUpdate(item, reason) : item;
       set((state) => ({
         selectedMedicationRequests:
           state.selectedMedicationRequests.map(applyUpdate),

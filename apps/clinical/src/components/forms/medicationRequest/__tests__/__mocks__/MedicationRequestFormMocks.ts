@@ -309,6 +309,7 @@ export const makeMockStore = (overrides = {}) => ({
   updateDispenseQuantity: jest.fn(),
   updateDispenseUnit: jest.fn(),
   updateNote: jest.fn(),
+  updateMedicationReason: jest.fn(),
   setPendingFhirEdits: jest.fn(),
   loadMedicationsForEdit: jest.fn(),
   hasEditChanges: jest.fn().mockReturnValue(false),
