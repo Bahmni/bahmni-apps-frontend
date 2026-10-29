@@ -25,17 +25,42 @@ describe('TimePickerInput', () => {
     ['123', '12:3'],
     ['1200', '12:00'],
     ['0930', '09:30'],
-    ['1300', '12:00'],
-    ['1500', '12:00'],
+    ['9', '9'],
+    ['90', '9:0'],
+    ['900', '9:00'],
+    ['130', '1:30'],
+    ['1300', '1:30'],
+    ['1500', '1:50'],
     ['1260', '12:59'],
     ['0961', '09:59'],
-    ['1399', '12:59'],
+    ['1399', '1:39'],
   ])('formats "%s" to "%s" on change', (input, expected) => {
     render(<TimePickerInput {...defaultProps} />);
     fireEvent.change(screen.getByTestId('time-picker-test'), {
       target: { value: input },
     });
     expect(defaultProps.onChange).toHaveBeenCalledWith(expected, 'AM');
+  });
+
+  it.each([
+    ['9', '09:00'],
+    ['7', '07:00'],
+    ['9:3', '09:03'],
+    ['9:', '09:00'],
+  ])('completes partial time "%s" to "%s" on blur', (value, expected) => {
+    render(<TimePickerInput {...defaultProps} value={value} meridiem="PM" />);
+    fireEvent.blur(screen.getByTestId('time-picker-test'));
+    expect(defaultProps.onChange).toHaveBeenCalledWith(expected, 'PM');
+  });
+
+  it('does not call onChange on blur when the time is already complete or empty', () => {
+    const { rerender } = render(
+      <TimePickerInput {...defaultProps} value="09:30" />,
+    );
+    fireEvent.blur(screen.getByTestId('time-picker-test'));
+    rerender(<TimePickerInput {...defaultProps} value="" />);
+    fireEvent.blur(screen.getByTestId('time-picker-test'));
+    expect(defaultProps.onChange).not.toHaveBeenCalled();
   });
 
   it('calls onChange with updated meridiem when AM/PM changes', () => {

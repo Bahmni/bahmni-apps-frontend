@@ -68,6 +68,7 @@ export const ReportList: React.FC = () => {
     [appConfig],
   );
   const defaultPaperSize = appConfig?.config?.paperSize;
+  const enableReportQueue = appConfig?.config?.enableReportQueue ?? false;
 
   const { dateRangeReports, noDateRangeReports } = useMemo(
     () => groupReportsByDateRequirement(visibleReports),
@@ -148,6 +149,7 @@ export const ReportList: React.FC = () => {
             appliedFilters={appliedFilters}
             availableFormats={supportedFormats}
             defaultPaperSize={defaultPaperSize}
+            enableReportQueue={enableReportQueue}
           />
         </AccordionItem>
         <AccordionItem
@@ -160,6 +162,7 @@ export const ReportList: React.FC = () => {
             appliedFilters={appliedFilters}
             availableFormats={supportedFormats}
             defaultPaperSize={defaultPaperSize}
+            enableReportQueue={enableReportQueue}
           />
         </AccordionItem>
       </Accordion>
