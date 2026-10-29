@@ -2,6 +2,7 @@ import { get, searchConceptByName } from '@bahmni/services';
 import {
   fetchAdmissionStatus,
   fetchDispositionTypes,
+  fetchHasActiveOrderForConcept,
   filterDispositionTypesByAdmissionStatus,
 } from '../dispositionService';
 
@@ -154,6 +155,118 @@ describe('dispositionService', () => {
       expect(
         filterDispositionTypesByAdmissionStatus(types, 'Discharged'),
       ).toEqual([{ value: 'UNDO_DISCHARGE', label: 'Undo Discharge' }]);
+    });
+  });
+
+  describe('fetchHasActiveOrderForConcept', () => {
+    const DISCHARGE_CONCEPT = 'discharge-concept-uuid';
+    const UNDO_DISCHARGE_CONCEPT = 'undo-discharge-concept-uuid';
+    const ALL_CONCEPTS = [
+      'admit-concept-uuid',
+      DISCHARGE_CONCEPT,
+      'transfer-concept-uuid',
+      UNDO_DISCHARGE_CONCEPT,
+    ];
+
+    const serviceRequestEntry = (
+      conceptUuid: string,
+      authoredOn: string,
+      status = 'active',
+    ) => ({
+      resource: {
+        status,
+        authoredOn,
+        code: { coding: [{ code: conceptUuid }] },
+      },
+    });
+
+    it('returns true when the target concept has the single most recent order', async () => {
+      mockGet.mockResolvedValue({
+        entry: [
+          serviceRequestEntry(DISCHARGE_CONCEPT, '2026-10-27T10:00:00.000Z'),
+        ],
+      } as any);
+
+      const result = await fetchHasActiveOrderForConcept(
+        'patient-uuid',
+        DISCHARGE_CONCEPT,
+        ALL_CONCEPTS,
+        '2026-10-27T00:00:00.000Z',
+      );
+
+      expect(result).toBe(true);
+    });
+
+    it('returns false when a later order of a different disposition concept supersedes it (e.g. Undo Discharge after Discharge)', async () => {
+      mockGet.mockResolvedValue({
+        entry: [
+          serviceRequestEntry(DISCHARGE_CONCEPT, '2026-10-27T10:00:00.000Z'),
+          serviceRequestEntry(
+            UNDO_DISCHARGE_CONCEPT,
+            '2026-10-27T10:05:00.000Z',
+          ),
+        ],
+      } as any);
+
+      const result = await fetchHasActiveOrderForConcept(
+        'patient-uuid',
+        DISCHARGE_CONCEPT,
+        ALL_CONCEPTS,
+        '2026-10-27T00:00:00.000Z',
+      );
+
+      expect(result).toBe(false);
+    });
+
+    it('ignores a voided (entered-in-error) order even if authored after the visit start', async () => {
+      mockGet.mockResolvedValue({
+        entry: [
+          serviceRequestEntry(
+            DISCHARGE_CONCEPT,
+            '2026-10-27T10:00:00.000Z',
+            'entered-in-error',
+          ),
+        ],
+      } as any);
+
+      const result = await fetchHasActiveOrderForConcept(
+        'patient-uuid',
+        DISCHARGE_CONCEPT,
+        ALL_CONCEPTS,
+        '2026-10-27T00:00:00.000Z',
+      );
+
+      expect(result).toBe(false);
+    });
+
+    it('ignores an order authored before the visit start', async () => {
+      mockGet.mockResolvedValue({
+        entry: [
+          serviceRequestEntry(DISCHARGE_CONCEPT, '2026-10-25T10:00:00.000Z'),
+        ],
+      } as any);
+
+      const result = await fetchHasActiveOrderForConcept(
+        'patient-uuid',
+        DISCHARGE_CONCEPT,
+        ALL_CONCEPTS,
+        '2026-10-27T00:00:00.000Z',
+      );
+
+      expect(result).toBe(false);
+    });
+
+    it('returns false when there are no matching service requests', async () => {
+      mockGet.mockResolvedValue({ entry: [] } as any);
+
+      const result = await fetchHasActiveOrderForConcept(
+        'patient-uuid',
+        DISCHARGE_CONCEPT,
+        ALL_CONCEPTS,
+        '2026-10-27T00:00:00.000Z',
+      );
+
+      expect(result).toBe(false);
     });
   });
 });

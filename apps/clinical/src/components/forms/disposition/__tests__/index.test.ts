@@ -74,6 +74,8 @@ describe('disposition input control', () => {
       conceptUuid: 'admit-concept-uuid',
     });
     useDispositionStore.getState().setNotes('Admitting for observation');
+    const date = new Date('2026-10-08');
+    useDispositionStore.getState().setDate(date);
 
     const entries = getDispositionControl()!.createBundleEntries!(mockContext);
 
@@ -83,6 +85,7 @@ describe('disposition input control', () => {
     expect(resource.resourceType).toBe('ServiceRequest');
     expect(resource.code?.coding?.[0]?.code).toBe('admit-concept-uuid');
     expect(resource.note?.[0]?.text).toBe('Admitting for observation');
+    expect(resource.occurrenceDateTime).toBe(date.toISOString());
   });
 
   it('createBundleEntries() falls back to the disposition value when no conceptUuid is configured', () => {

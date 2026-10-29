@@ -3,11 +3,15 @@ import { useDispositionStore } from '../dispositionStore';
 
 const admitType = { value: 'ADMIT', label: 'Admit' };
 const transferType = { value: 'TRANSFER', label: 'Transfer' };
+const dischargeType = { value: 'DISCHARGE', label: 'Discharge' };
 
 describe('useDispositionStore', () => {
   beforeEach(() => {
     act(() => {
       useDispositionStore.getState().setTypeRequired(true);
+      useDispositionStore.getState().setHasActiveOrder('ADMIT', false);
+      useDispositionStore.getState().setHasActiveOrder('DISCHARGE', false);
+      useDispositionStore.getState().setHasActiveOrder('TRANSFER', false);
       useDispositionStore.getState().reset();
     });
   });
@@ -20,6 +24,11 @@ describe('useDispositionStore', () => {
     expect(result.current.notes).toBe('');
     expect(result.current.errors).toEqual({});
     expect(result.current.isTypeRequired).toBe(true);
+    expect(result.current.activeOrderByType).toEqual({
+      ADMIT: false,
+      DISCHARGE: false,
+      TRANSFER: false,
+    });
   });
 
   it('reset preserves the config-driven isTypeRequired flag', () => {
@@ -115,6 +124,78 @@ describe('useDispositionStore', () => {
       const { result } = renderHook(() => useDispositionStore());
 
       act(() => {
+        result.current.setSelectedType(transferType);
+      });
+
+      let isValid = false;
+      act(() => {
+        isValid = result.current.validate();
+      });
+
+      expect(isValid).toBe(true);
+      expect(result.current.errors.type).toBeUndefined();
+    });
+
+    it('fails with a duplicate-order error when ADMIT is selected and an active Admit order already exists', () => {
+      const { result } = renderHook(() => useDispositionStore());
+
+      act(() => {
+        result.current.setHasActiveOrder('ADMIT', true);
+        result.current.setSelectedType(admitType);
+      });
+
+      let isValid = true;
+      act(() => {
+        isValid = result.current.validate();
+      });
+
+      expect(isValid).toBe(false);
+      expect(result.current.errors.type).toBe(
+        'DISPOSITION_ACTIVE_ADMIT_ORDER_EXISTS',
+      );
+    });
+
+    it('passes for ADMIT when there is no active Admit order', () => {
+      const { result } = renderHook(() => useDispositionStore());
+
+      act(() => {
+        result.current.setHasActiveOrder('ADMIT', false);
+        result.current.setSelectedType(admitType);
+      });
+
+      let isValid = false;
+      act(() => {
+        isValid = result.current.validate();
+      });
+
+      expect(isValid).toBe(true);
+      expect(result.current.errors.type).toBeUndefined();
+    });
+
+    it('fails with a duplicate-order error when DISCHARGE is selected and an active Discharge order already exists', () => {
+      const { result } = renderHook(() => useDispositionStore());
+
+      act(() => {
+        result.current.setHasActiveOrder('DISCHARGE', true);
+        result.current.setSelectedType(dischargeType);
+      });
+
+      let isValid = true;
+      act(() => {
+        isValid = result.current.validate();
+      });
+
+      expect(isValid).toBe(false);
+      expect(result.current.errors.type).toBe(
+        'DISPOSITION_ACTIVE_DISCHARGE_ORDER_EXISTS',
+      );
+    });
+
+    it('passes when TRANSFER is selected even if an active Transfer order already exists', () => {
+      const { result } = renderHook(() => useDispositionStore());
+
+      act(() => {
+        result.current.setHasActiveOrder('TRANSFER', true);
         result.current.setSelectedType(transferType);
       });
 

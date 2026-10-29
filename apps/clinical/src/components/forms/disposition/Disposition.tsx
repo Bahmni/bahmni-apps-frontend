@@ -10,12 +10,13 @@ import {
 import { useTranslation } from '@bahmni/services';
 import { usePatientUUID } from '@bahmni/widgets';
 import { useQuery } from '@tanstack/react-query';
-import React, { useEffect } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { usePatientVisit } from '../../../hooks/usePatientVisit';
 import type { InputControl as ClinicalInputControlConfig } from '../../../providers/clinicalConfig/models';
 import {
   fetchAdmissionStatus,
   fetchDispositionTypes,
+  fetchHasActiveOrderForConcept,
   filterDispositionTypesByAdmissionStatus,
 } from '../../../services/dispositionService';
 import {
@@ -42,6 +43,7 @@ const Disposition: React.FC<DispositionProps> = React.memo(
       setDate,
       setNotes,
       setTypeRequired,
+      setHasActiveOrder,
     } = useDispositionStore();
 
     const isTypeRequired =
@@ -70,19 +72,99 @@ const Disposition: React.FC<DispositionProps> = React.memo(
       enabled: !!activeVisit?.id,
     });
 
-    const availableDispositionTypes =
-      fetchedDispositionTypes && fetchedDispositionTypes.length > 0
-        ? fetchedDispositionTypes
-        : (configuredDispositionTypes ?? []);
+    const availableDispositionTypes = useMemo(
+      () =>
+        fetchedDispositionTypes && fetchedDispositionTypes.length > 0
+          ? fetchedDispositionTypes
+          : (configuredDispositionTypes ?? []),
+      [fetchedDispositionTypes, configuredDispositionTypes],
+    );
+
+    const conceptUuidFor = (value: string) =>
+      availableDispositionTypes.find((type) => type.value === value)
+        ?.conceptUuid;
+
+    const admitConceptUuid = conceptUuidFor('ADMIT');
+    const dischargeConceptUuid = conceptUuidFor('DISCHARGE');
+
+    const allDispositionConceptUuids = useMemo(
+      () =>
+        availableDispositionTypes
+          .map((type) => type.conceptUuid)
+          .filter((conceptUuid): conceptUuid is string => !!conceptUuid),
+      [availableDispositionTypes],
+    );
+
+    const commonQueryParams = {
+      patientUUID,
+      visitStart: activeVisit?.period?.start,
+    };
+
+    const { data: hasActiveAdmitOrder } = useQuery({
+      queryKey: [
+        'dispositionHasActiveOrder',
+        'ADMIT',
+        commonQueryParams,
+        admitConceptUuid,
+      ],
+      queryFn: () =>
+        fetchHasActiveOrderForConcept(
+          patientUUID!,
+          admitConceptUuid!,
+          allDispositionConceptUuids,
+          activeVisit!.period!.start,
+        ),
+      enabled:
+        !admissionStatus &&
+        !!patientUUID &&
+        !!activeVisit?.period?.start &&
+        !!admitConceptUuid,
+    });
+
+    const { data: hasActiveDischargeOrder } = useQuery({
+      queryKey: [
+        'dispositionHasActiveOrder',
+        'DISCHARGE',
+        commonQueryParams,
+        dischargeConceptUuid,
+      ],
+      queryFn: () =>
+        fetchHasActiveOrderForConcept(
+          patientUUID!,
+          dischargeConceptUuid!,
+          allDispositionConceptUuids,
+          activeVisit!.period!.start,
+        ),
+      enabled:
+        admissionStatus === 'Admitted' &&
+        !!patientUUID &&
+        !!activeVisit?.period?.start &&
+        !!dischargeConceptUuid,
+    });
+
+    useEffect(() => {
+      setHasActiveOrder('ADMIT', !!hasActiveAdmitOrder);
+    }, [hasActiveAdmitOrder, setHasActiveOrder]);
+
+    useEffect(() => {
+      setHasActiveOrder('DISCHARGE', !!hasActiveDischargeOrder);
+    }, [hasActiveDischargeOrder, setHasActiveOrder]);
 
     const dispositionTypes = filterDispositionTypesByAdmissionStatus(
       availableDispositionTypes,
       admissionStatus ?? null,
     );
 
+    const [defaultDate] = useState(() => date ?? new Date());
+    const minDate = useMemo(() => {
+      const startOfToday = new Date();
+      startOfToday.setHours(0, 0, 0, 0);
+      return startOfToday;
+    }, []);
+
     useEffect(() => {
       if (!date) {
-        setDate(new Date());
+        setDate(defaultDate);
       }
       // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
@@ -130,7 +212,8 @@ const Disposition: React.FC<DispositionProps> = React.memo(
                 datePickerType="single"
                 className={styles.datePicker}
                 data-testid="disposition-date-picker"
-                value={date ?? undefined}
+                value={date ?? defaultDate}
+                minDate={minDate}
                 onChange={(dates: Date[]) => {
                   if (dates.length > 0) {
                     setDate(dates[0]);

@@ -337,6 +337,7 @@ export function createServiceRequestBundleEntries({
         createPractitionerReference(practitionerUUID),
         serviceRequest.selectedPriority!,
         serviceRequest.note,
+        serviceRequest.occurrenceDate,
       );
       const serviceRequestEntry = createBundleEntry(
         resourceURL,

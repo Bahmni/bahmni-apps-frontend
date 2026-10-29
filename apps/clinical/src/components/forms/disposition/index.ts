@@ -1,3 +1,4 @@
+import { queryClient } from '../../../config/queryClient';
 import { createServiceRequestBundleEntries } from '../../../services/encounterBundleService';
 import { useDispositionStore } from '../../../stores/dispositionStore';
 import { registerInputControl } from '../registry';
@@ -10,8 +11,12 @@ registerInputControl({
   validate: () => useDispositionStore.getState().validate(),
   hasData: () => useDispositionStore.getState().hasData(),
   subscribe: (cb) => useDispositionStore.subscribe(cb),
+  onSubmitSuccess: () => {
+    queryClient.invalidateQueries({ queryKey: ['dispositionAdmissionStatus'] });
+    queryClient.invalidateQueries({ queryKey: ['dispositionHasActiveOrder'] });
+  },
   createBundleEntries: (ctx) => {
-    const { selectedType, notes } = useDispositionStore.getState();
+    const { selectedType, notes, date } = useDispositionStore.getState();
     if (!selectedType) {
       return [];
     }
@@ -27,6 +32,7 @@ registerInputControl({
               display: selectedType.label,
               selectedPriority: 'routine',
               note: notes || undefined,
+              occurrenceDate: date ?? undefined,
             },
           ],
         ],

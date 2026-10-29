@@ -1,4 +1,9 @@
-import { get, OPENMRS_REST_V1, searchConceptByName } from '@bahmni/services';
+import {
+  get,
+  OPENMRS_FHIR_R4,
+  OPENMRS_REST_V1,
+  searchConceptByName,
+} from '@bahmni/services';
 import type { DispositionType } from '../stores/dispositionStore';
 
 const DISPOSITION_CONCEPT_NAME = 'Disposition';
@@ -43,6 +48,7 @@ interface DispositionAnswerConcept {
 }
 
 interface DispositionConceptData {
+  uuid?: string;
   answers?: DispositionAnswerConcept[];
 }
 
@@ -117,4 +123,67 @@ export const filterDispositionTypesByAdmissionStatus = (
         : [DISPOSITION_VALUE.ADMIT];
 
   return dispositionTypes.filter((type) => allowedValues.includes(type.value));
+};
+
+interface ServiceRequestBundle {
+  entry?: {
+    resource?: {
+      authoredOn?: string;
+      status?: string;
+      code?: { coding?: { code?: string }[] };
+    };
+  }[];
+}
+
+const VOIDED_SERVICE_REQUEST_STATUS = 'entered-in-error';
+
+/**
+ * Mirrors the backend's "superseded" rule (ServiceRequestValidatorImpl): a disposition
+ * order is still active only if no other disposition order (of any kind) was placed
+ * after it in the same visit. The new ServiceRequest-only flow never creates the
+ * ADMISSION/DISCHARGE/TRANSFER encounter-type flip that used to signal "fulfilled", so
+ * the order timeline itself is the only reliable signal - e.g. Discharge -> Undo
+ * Discharge -> Discharge again must be allowed, since the Undo Discharge order moved
+ * past the first Discharge.
+ */
+export const fetchHasActiveOrderForConcept = async (
+  patientUuid: string,
+  targetConceptUuid: string,
+  allDispositionConceptUuids: string[],
+  visitStartDate: string,
+): Promise<boolean> => {
+  const url = `${OPENMRS_FHIR_R4}/ServiceRequest?patient=${patientUuid}`;
+  const bundle = await get<ServiceRequestBundle>(url);
+
+  const visitStart = new Date(visitStartDate).getTime();
+  const conceptUuidSet = new Set(allDispositionConceptUuids);
+
+  const relevantOrders = (bundle.entry ?? [])
+    .map((entry) => ({
+      authoredOn: entry.resource?.authoredOn,
+      status: entry.resource?.status,
+      conceptUuid: entry.resource?.code?.coding?.[0]?.code,
+    }))
+    .filter(
+      (order) =>
+        !!order.authoredOn &&
+        order.status !== VOIDED_SERVICE_REQUEST_STATUS &&
+        !!order.conceptUuid &&
+        conceptUuidSet.has(order.conceptUuid) &&
+        new Date(order.authoredOn).getTime() >= visitStart,
+    );
+
+  if (relevantOrders.length === 0) {
+    return false;
+  }
+
+  const latestAuthoredOn = Math.max(
+    ...relevantOrders.map((order) => new Date(order.authoredOn!).getTime()),
+  );
+
+  return relevantOrders.some(
+    (order) =>
+      order.conceptUuid === targetConceptUuid &&
+      new Date(order.authoredOn!).getTime() === latestAuthoredOn,
+  );
 };

@@ -10,6 +10,7 @@ import { createCodeableConcept, createCoding } from './codeableConceptCreator';
  * @param requesterReference - Reference to the practitioner requesting the service
  * @param priority - Priority of the request (routine, urgent, asap, stat)
  * @param note
+ * @param occurrenceDate - When the request should take effect (ServiceRequest.occurrenceDateTime)
  * @returns FHIR ServiceRequest resource
  */
 export const createServiceRequestResource = (
@@ -19,6 +20,7 @@ export const createServiceRequestResource = (
   requesterReference: Reference,
   priority: SupportedServiceRequestPriority,
   note?: string,
+  occurrenceDate?: Date,
 ): ServiceRequest => {
   const resource: ServiceRequest = {
     resourceType: 'ServiceRequest',
@@ -33,6 +35,10 @@ export const createServiceRequestResource = (
 
   if (note && note.trim() !== '') {
     resource.note = [{ text: note }] as Annotation[];
+  }
+
+  if (occurrenceDate) {
+    resource.occurrenceDateTime = occurrenceDate.toISOString();
   }
 
   return resource;

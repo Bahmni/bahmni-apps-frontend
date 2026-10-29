@@ -40,7 +40,7 @@ describe('getFormattedError', () => {
       });
     });
 
-    it('should handle FHIR OperationOutcome without duplicate medication error', () => {
+    it('surfaces the raw diagnostics message for any other FHIR OperationOutcome error', () => {
       const fhirError = {
         response: {
           status: 400,
@@ -53,6 +53,51 @@ describe('getFormattedError', () => {
                 diagnostics: 'Some other validation error',
               },
             ],
+          },
+        },
+      } as AxiosError;
+
+      const result = getFormattedError(fhirError);
+
+      expect(result).toEqual({
+        title: 'Bad Request',
+        message: 'Some other validation error',
+      });
+    });
+
+    it('strips the HAPI bundle-entry-processing boilerplate from the diagnostics message', () => {
+      const fhirError = {
+        response: {
+          status: 400,
+          data: {
+            resourceType: 'OperationOutcome',
+            issue: [
+              {
+                severity: 'error',
+                code: 'processing',
+                diagnostics:
+                  'Error occurred while processing bundle entry [urn:uuid:abc-123]. An active Admit order already exists for this visit',
+              },
+            ],
+          },
+        },
+      } as AxiosError;
+
+      const result = getFormattedError(fhirError);
+
+      expect(result).toEqual({
+        title: 'Bad Request',
+        message: 'An active Admit order already exists for this visit',
+      });
+    });
+
+    it('falls back to the generic message when the OperationOutcome has no diagnostics at all', () => {
+      const fhirError = {
+        response: {
+          status: 400,
+          data: {
+            resourceType: 'OperationOutcome',
+            issue: [{ severity: 'error', code: 'invalid' }],
           },
         },
       } as AxiosError;
