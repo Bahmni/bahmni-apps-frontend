@@ -1103,5 +1103,43 @@ describe('StopMedicationForm', () => {
         screen.getByTestId('stop-medication-add-note-link'),
       ).toHaveTextContent('CANCEL_VACCINATION_ADD_NOTE');
     });
+
+    it("initializes DatePicker ref with today's date in cancel vaccination mode to prevent placeholder on first render", async () => {
+   
+      const pastDate = new Date('2025-01-01');
+      mockUseStopMedicationStore.mockReturnValue(
+        makeStoreMock({ stopDate: pastDate }) as any,
+      );
+
+      await act(async () => {
+        renderCancelForm();
+      });
+
+      const dateInput = screen.getByTestId('stop-medication-date-input');
+      expect(dateInput).toBeInTheDocument();
+      expect(dateInput).toBeDisabled();
+
+      expect(
+        screen.getByTestId('stop-medication-form-tile'),
+      ).toBeInTheDocument();
+    });
+
+    it("initializes DatePicker ref with store's stopDate in stop-medication mode", async () => {
+      const customDate = new Date('2025-06-15');
+      const setStopDate = jest.fn();
+      mockUseStopMedicationStore.mockReturnValue(
+        makeStoreMock({ stopDate: customDate, setStopDate }) as any,
+      );
+
+      await act(async () => {
+        renderForm({ stopMedication: mockMedicationRequest });
+      });
+
+      const dateInput = screen.getByTestId('stop-medication-date-input');
+      expect(dateInput).toBeInTheDocument();
+      expect(dateInput).not.toBeDisabled();
+
+      expect(setStopDate).not.toHaveBeenCalled();
+    });
   });
 });
