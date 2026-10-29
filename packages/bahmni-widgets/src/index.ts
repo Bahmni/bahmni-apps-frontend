@@ -8,14 +8,20 @@ export {
 // Widget Components
 export { DocumentPrintButton } from './documentPrintButton';
 export type { PrintOption } from './documentPrintButton';
-export { DocumentUpload, renderDocumentTile } from './documentUpload';
+export {
+  DocumentUpload,
+  createEmptyDocumentEntry,
+  getDefaultDocumentType,
+  isDocumentEntryEmpty,
+  renderDocumentTile,
+  revokeDocumentPreview,
+} from './documentUpload';
 export type {
+  DocumentEntry,
+  DocumentEntryErrors,
   DocumentUploadProps,
-  DocumentUploadRef,
-  DocumentSaveSummary,
-  DocumentSaveFailure,
-  DocumentSaveTarget,
   DocumentTileData,
+  PendingDocument,
 } from './documentUpload';
 export { PatientDetails } from './patientDetails';
 export { AllergiesTable } from './allergies';
@@ -37,6 +43,7 @@ export { TaskList } from './tasks';
 export { PatientProgramsTable } from './patientPrograms';
 export { ImmunizationHistory } from './immunizationHistory';
 export { ProgramDetails } from './programDetails';
+export { VisitsTable } from './visits';
 export { extractFormName } from './observations';
 
 export {

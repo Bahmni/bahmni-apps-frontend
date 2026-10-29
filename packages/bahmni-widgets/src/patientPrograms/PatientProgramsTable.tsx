@@ -168,7 +168,7 @@ const PatientProgramsTable: React.FC<WidgetProps> = ({ config }) => {
         new Map(entries.filter((e): e is [string, string] => e !== null)),
       );
     };
-    resolve();
+    void resolve();
     return () => {
       cancelled = true;
     };

@@ -7,12 +7,15 @@ import {
   CONCEPT_SEARCH_URL,
   CONCEPT_NAME_TYPE_SHORT,
   CONCEPT_NAME_TYPE_FULLY_SPECIFIED,
+  CONCEPT_QUERY_URL,
   FHIR_VALUESET_FILTER_EXPAND_URL,
   FHIR_VALUESET_URL,
 } from './constants';
 import {
   ConceptData,
   ConceptSearch,
+  type ConceptQueryResponse,
+  type ConceptQueryResult,
   type ConceptSearchByNameResponse,
 } from './models';
 
@@ -36,6 +39,13 @@ export const searchConcepts = async (
   return get<ConceptSearch[]>(url);
 };
 
+export const searchConceptsByQuery = async (
+  term: string,
+): Promise<ConceptQueryResult[]> => {
+  const response = await get<ConceptQueryResponse>(CONCEPT_QUERY_URL(term));
+  return response.results ?? [];
+};
+
 /**
  * Fetches a FHIR ValueSet by UUID
  * @param uuid - The UUID of the ValueSet to fetch
@@ -53,8 +63,11 @@ export const searchFHIRConceptsByName = async (
   return get<ValueSet>(url);
 };
 
-export async function getConceptById(uuid: string): Promise<ConceptData> {
-  return await get<ConceptData>(CONCEPT_GET_URL(uuid));
+export async function getConceptById(
+  uuid: string,
+  customView?: string,
+): Promise<ConceptData> {
+  return await get<ConceptData>(CONCEPT_GET_URL(uuid, customView));
 }
 
 /**

@@ -4,14 +4,21 @@ import {
   BAHMNI_USER_COOKIE_NAME,
   BAHMNI_USER_LOCATION_COOKIE,
 } from '../constants/app';
-import { getCookieByName, decodeCookieValue } from '../utils';
+import {
+  getCookieByName,
+  decodeCookieValue,
+  encodeValue,
+  decodeValue,
+} from '../utils';
 import {
   USER_RESOURCE_URL,
   APP_SETTINGS_URL,
   DEFAULT_DATE_FORMAT_PROPERTY,
   AVAILABLE_LOCATIONS_URL,
   SAVE_USER_LOCATION_URL,
+  USER_PROPERTIES_URL,
   UPDATE_SESSION_LOCATION_URL,
+  RECENT_COMMON_SEARCH_CRITERIA_KEY,
 } from './constants';
 import {
   UserResponse,
@@ -19,6 +26,7 @@ import {
   UserLocation,
   AppSettingsResponse,
   LocationsResponse,
+  RecentSearchCriteria,
 } from './models';
 
 export async function getCurrentUser(): Promise<User | null> {
@@ -84,6 +92,19 @@ export const getAvailableLocations = async (): Promise<UserLocation[]> => {
   return response.results ?? [];
 };
 
+// OpenMRS may replace the whole userProperties map on update, so merge first
+const saveUserProperties = async (
+  userUuid: string,
+  properties: Record<string, string>,
+): Promise<void> => {
+  const current = await get<Pick<User, 'userProperties'>>(
+    USER_PROPERTIES_URL(userUuid),
+  );
+  await post(SAVE_USER_LOCATION_URL(userUuid), {
+    userProperties: { ...current?.userProperties, ...properties },
+  });
+};
+
 /**
  * Saves the user's location preference to the server
  * @param userUuid - The UUID of the user
@@ -94,9 +115,7 @@ export const saveUserLocation = async (
   userUuid: string,
   location: UserLocation,
 ): Promise<void> => {
-  await post(SAVE_USER_LOCATION_URL(userUuid), {
-    userProperties: { loginLocation: location.uuid },
-  });
+  await saveUserProperties(userUuid, { loginLocation: location.uuid });
 };
 
 /**
@@ -110,3 +129,54 @@ export const updateSessionLocation = async (
 ): Promise<void> => {
   await post(UPDATE_SESSION_LOCATION_URL, { sessionLocation: locationUuid });
 };
+
+export const encodeSearchCriteria = <T>(
+  criteria: RecentSearchCriteria<T>,
+): string => encodeValue(JSON.stringify(criteria));
+
+export const decodeSearchCriteria = <T = unknown>(
+  value: string | undefined,
+): RecentSearchCriteria<T> | null => {
+  if (!value) return null;
+  try {
+    const parsed = JSON.parse(decodeValue(value));
+    if (
+      parsed?.version !== 1 ||
+      typeof parsed.payload?.entity !== 'string' ||
+      !parsed.payload.criteria
+    ) {
+      return null;
+    }
+    return parsed as RecentSearchCriteria<T>;
+  } catch {
+    return null;
+  }
+};
+
+export const saveRecentSearchCriteria = async <T>(
+  userUuid: string,
+  payload: RecentSearchCriteria<T>['payload'],
+): Promise<void> => {
+  await saveUserProperties(userUuid, {
+    [RECENT_COMMON_SEARCH_CRITERIA_KEY]: encodeSearchCriteria({
+      version: 1,
+      savedAt: new Date().toISOString(),
+      payload,
+    }),
+  });
+};
+
+export const clearRecentSearchCriteria = async (
+  userUuid: string,
+): Promise<void> => {
+  await saveUserProperties(userUuid, {
+    [RECENT_COMMON_SEARCH_CRITERIA_KEY]: '',
+  });
+};
+
+export const getRecentSearchCriteria = <T = unknown>(
+  user: User,
+): RecentSearchCriteria<T> | null =>
+  decodeSearchCriteria<T>(
+    user.userProperties?.[RECENT_COMMON_SEARCH_CRITERIA_KEY],
+  );

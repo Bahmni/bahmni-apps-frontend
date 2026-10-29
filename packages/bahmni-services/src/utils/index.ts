@@ -14,10 +14,13 @@ export {
   parseQueryParams,
   formatUrl,
   blobToDataUrl,
+  downloadBlob,
   getValueType,
   camelToScreamingSnakeCase,
   convertToSentenceCase,
   resolveComboBoxItems,
   formatGender,
   formatCountry,
+  encodeValue,
+  decodeValue,
 } from './utils';

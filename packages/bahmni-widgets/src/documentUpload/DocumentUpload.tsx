@@ -1,410 +1,393 @@
-import { Button, Dropdown, IconButton, Link } from '@bahmni/design-system';
 import {
-  AUDIT_LOG_EVENT_DETAILS,
-  AuditEventType,
-  dispatchAuditEvent,
+  BoxWHeader,
+  Button,
+  Column,
+  DocumentView,
+  Dropdown,
+  FileUploaderButton,
+  FileUploaderItem,
+  Grid,
+  Link,
+  SelectedItem,
+  TextAreaWClose,
+  TextInput,
+} from '@bahmni/design-system';
+import {
   DocumentType,
+  getDocumentTypes,
+  getDocumentTypesByConceptUuid,
   getDocumentUploadMaxSizeMb,
-  DocumentPayload,
-  saveDocuments,
-  uploadDocument,
+  useTranslation,
 } from '@bahmni/services';
-import { Close } from '@carbon/icons-react';
-import { InlineLoading, TextArea } from '@carbon/react';
 import { useQuery } from '@tanstack/react-query';
-import React, {
-  forwardRef,
-  useEffect,
-  useImperativeHandle,
-  useRef,
-  useState,
-} from 'react';
-import { useTranslation } from 'react-i18next';
-import { useActivePractitioner } from '../activePractitioner';
-import { useNotification } from '../notification';
+import React, { useEffect, useRef, useState } from 'react';
 import styles from './__styles__/DocumentUpload.module.scss';
-import { FILE_INPUT_ACCEPT, MAX_NOTE_LENGTH } from './constants';
+import { MAX_NOTE_LENGTH } from './constants';
 import {
-  DocumentSaveFailure,
-  DocumentSaveSummary,
-  DocumentUploadRef,
+  DocumentEntry,
+  DocumentEntryErrors,
   DocumentUploadProps,
   PendingDocument,
 } from './models';
-import { renderDocumentTile } from './renderDocumentTile';
-import { isAcceptedFileType } from './utils';
+import { useFileSelection } from './useFileSelection';
+import {
+  createEmptyDocumentEntry,
+  formatFileTypes,
+  revokeDocumentPreview,
+} from './utils';
 
-interface UploadedDocument {
-  document: PendingDocument;
-  url: string;
+const DOCUMENT_TYPE_REQUIRED_ERROR = 'DOCUMENTS_SELECT_DOCUMENT_TYPE';
+
+let nextPendingId = 0;
+
+const withoutError = (
+  errors: DocumentEntryErrors,
+  field: keyof DocumentEntryErrors,
+): DocumentEntryErrors => ({ ...errors, [field]: undefined });
+
+const FileThumbnail: React.FC<{ file: PendingDocument }> = ({ file }) =>
+  file.contentType.startsWith('image/') ? (
+    <img src={file.url} alt="" />
+  ) : (
+    <DocumentView size={24} aria-hidden="true" />
+  );
+
+const toPendingDocuments = (files: File[]): PendingDocument[] =>
+  files.map((file) => ({
+    id: `pending-${nextPendingId++}`,
+    file,
+    url: URL.createObjectURL(file),
+    fileName: file.name,
+    contentType: file.type,
+  }));
+
+interface DocumentEntryCardProps extends Pick<DocumentUploadProps, 'isSaving'> {
+  documentTypes: DocumentType[];
+  isDocumentTypeRequired: boolean;
+  showDocumentId: boolean;
+  isDocumentIdRequired: boolean;
+  entry: DocumentEntry;
+  accept: string[];
+  uploadHelpText: string;
+  selectFiles: (files: File[]) => File[];
+  onChange: (patch: Partial<DocumentEntry>) => void;
 }
 
-const messageOf = (error: unknown): string =>
-  error instanceof Error ? error.message : String(error);
-
-export const DocumentUpload = forwardRef<
-  DocumentUploadRef,
-  DocumentUploadProps
->(function DocumentUpload(
-  {
-    patientUuid,
-    encounterTypeName,
-    saveTarget,
-    documentTypes = [],
-    defaultOption,
-    onSaved,
-    onPendingChange,
-  },
-  ref,
-) {
+const DocumentEntryCard: React.FC<DocumentEntryCardProps> = ({
+  entry,
+  documentTypes,
+  isDocumentTypeRequired = false,
+  showDocumentId = false,
+  isDocumentIdRequired = false,
+  isSaving = false,
+  accept,
+  uploadHelpText,
+  selectFiles,
+  onChange,
+}) => {
   const { t } = useTranslation();
-  const { addNotification } = useNotification();
-  const { practitioner } = useActivePractitioner();
-  const fileInputRef = useRef<HTMLInputElement>(null);
-
-  // Max size comes solely from the bahmni.documentUpload.maxFileSizeInMB setting; when it is not
-  // set there is no client-side size limit (the backend remains the authority).
-  const { data: maxFileSizeMb } = useQuery({
-    queryKey: ['documentUploadMaxSizeMb'],
-    queryFn: getDocumentUploadMaxSizeMb,
-  });
-
-  const [pendingDocuments, setPendingDocuments] = useState<PendingDocument[]>(
-    [],
-  );
-  const [isSaving, setIsSaving] = useState(false);
-  const nextPendingId = useRef(0);
-
-  const defaultDocumentType =
-    documentTypes.find(
-      (type) =>
-        type.label?.toLowerCase().trim() ===
-        defaultOption?.toLowerCase().trim(),
-    ) ??
-    documentTypes[0] ??
-    null;
-
-  // Resolved on use, so a file chosen before the type list arrived still gets the default.
-  const typeOf = (document: PendingDocument): DocumentType | null =>
-    document.documentType ?? defaultDocumentType;
-
-  const updatePending = (id: string, patch: Partial<PendingDocument>) =>
-    setPendingDocuments((current) =>
-      current.map((document) =>
-        document.id === id ? { ...document, ...patch } : document,
-      ),
-    );
-
-  const revokePreview = (document: PendingDocument) => {
-    if (document.url.startsWith('blob:')) {
-      URL.revokeObjectURL(document.url);
-    }
-  };
-
-  const discardPending = (id: string) => {
-    setPendingDocuments((current) => {
-      current
-        .filter((pending) => pending.id === id)
-        .forEach((pending) => revokePreview(pending));
-      return current.filter((pending) => pending.id !== id);
-    });
-  };
-
-  const hasPendingDocuments = pendingDocuments.length > 0;
-  const onPendingChangeRef = useRef(onPendingChange);
-  useEffect(() => {
-    onPendingChangeRef.current = onPendingChange;
-  });
-  useEffect(() => {
-    onPendingChangeRef.current?.(hasPendingDocuments);
-  }, [hasPendingDocuments]);
-
-  const pendingDocumentsRef = useRef(pendingDocuments);
-  useEffect(() => {
-    pendingDocumentsRef.current = pendingDocuments;
-  });
-  useEffect(
-    () => () => pendingDocumentsRef.current.forEach(revokePreview),
-
-    [],
-  );
+  const [isNoteOpened, setIsNoteOpened] = useState(false);
+  const { id, errors } = entry;
+  const documentType = entry.documentType;
+  const isNoteVisible = isNoteOpened || entry.note !== '';
 
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(event.target.files ?? []);
     // Cleared so picking the same file again still raises a change event.
     event.target.value = '';
-    if (files.length === 0) {
-      return;
-    }
-
-    const accepted: PendingDocument[] = [];
-    const unsupported: string[] = [];
-    const tooLarge: string[] = [];
-
-    files.forEach((file) => {
-      if (!isAcceptedFileType(file.type)) {
-        unsupported.push(file.name);
-        return;
-      }
-      if (
-        maxFileSizeMb !== undefined &&
-        file.size > maxFileSizeMb * 1000 * 1000
-      ) {
-        tooLarge.push(file.name);
-        return;
-      }
-      accepted.push({
-        id: `pending-${nextPendingId.current++}`,
-        file,
-        url: URL.createObjectURL(file),
-        fileName: file.name,
-        contentType: file.type,
-        documentType: null,
-        note: '',
-        isNoteVisible: false,
-      });
-    });
-
-    if (unsupported.length > 0) {
-      addNotification({
-        title: t('DOCUMENT_UPLOAD_INVALID_TYPE_TITLE'),
-        message: t('DOCUMENT_UPLOAD_INVALID_TYPE_MESSAGE'),
-        type: 'error',
-      });
-    }
-    if (tooLarge.length > 0) {
-      addNotification({
-        title: t('DOCUMENT_UPLOAD_SIZE_EXCEEDED_TITLE'),
-        message: t('DOCUMENT_UPLOAD_SIZE_EXCEEDED_MESSAGE', {
-          size: maxFileSizeMb,
-        }),
-        type: 'error',
-      });
-    }
-
+    const accepted = toPendingDocuments(selectFiles(files));
     if (accepted.length > 0) {
-      setPendingDocuments((current) => [...current, ...accepted]);
-    }
-  };
-
-  const toDocumentPayload = ({ document, url }: UploadedDocument) => {
-    const type = typeOf(document);
-    return {
-      url,
-      contentType: document.contentType,
-      title: document.fileName,
-      typeCode: type?.id,
-      typeDisplay: type?.label,
-      description: document.note.trim() || undefined,
-      authorPractitionerUuid: practitioner?.uuid,
-    } satisfies DocumentPayload;
-  };
-
-  const saveUploaded = async (
-    uploaded: UploadedDocument[],
-  ): Promise<Array<{ uploaded: UploadedDocument; error?: unknown }>> => {
-    try {
-      await saveDocuments({
-        patientUuid,
-        target: saveTarget,
-        documents: uploaded.map(toDocumentPayload),
+      onChange({
+        files: [...entry.files, ...accepted],
+        errors: withoutError(errors, 'files'),
       });
-      return uploaded.map((entry) => ({ uploaded: entry }));
-    } catch (error) {
-      return uploaded.map((entry) => ({ uploaded: entry, error }));
     }
   };
 
-  const handleSave = async (): Promise<DocumentSaveSummary> => {
-    const documents = pendingDocuments;
-    if (documents.length === 0 || isSaving) {
-      return { savedCount: 0, failures: [] };
-    }
-
-    setIsSaving(true);
-    try {
-      const failures: DocumentSaveFailure[] = [];
-
-      const uploads = await Promise.allSettled(
-        documents.map((document) =>
-          document.uploadedUrl
-            ? Promise.resolve({ url: document.uploadedUrl })
-            : uploadDocument(document.file, encounterTypeName, patientUuid),
-        ),
-      );
-      const uploaded: UploadedDocument[] = [];
-      documents.forEach((document, index) => {
-        const upload = uploads[index];
-        if (upload.status === 'fulfilled') {
-          uploaded.push({ document, url: upload.value.url });
-        } else {
-          failures.push({
-            fileName: document.fileName,
-            message: messageOf(upload.reason),
-          });
-        }
+  const discardFile = (fileId: string) => {
+    entry.files
+      .filter((file) => file.id === fileId)
+      .forEach((file) => revokeDocumentPreview(file));
+    onChange({ files: entry.files.filter((file) => file.id !== fileId) });
+  };
+  const handleClickCapture = (event: React.MouseEvent) => {
+    const target = event.target as HTMLElement;
+    if (
+      target instanceof HTMLInputElement &&
+      target.type === 'file' &&
+      isDocumentTypeRequired &&
+      !documentType
+    ) {
+      event.preventDefault();
+      onChange({
+        errors: { ...errors, documentType: DOCUMENT_TYPE_REQUIRED_ERROR },
       });
-      const uploadedUrlById = new Map(
-        uploaded.map(({ document, url }) => [document.id, url]),
-      );
-      setPendingDocuments((current) =>
-        current.map((document) => {
-          const url = uploadedUrlById.get(document.id);
-          return url ? { ...document, uploadedUrl: url } : document;
-        }),
-      );
-
-      const outcomes = uploaded.length > 0 ? await saveUploaded(uploaded) : [];
-      const savedIds = new Set<string>();
-      outcomes.forEach(({ uploaded: entry, error }) => {
-        if (error) {
-          failures.push({
-            fileName: entry.document.fileName,
-            message: messageOf(error),
-          });
-          return;
-        }
-        savedIds.add(entry.document.id);
-        dispatchAuditEvent({
-          eventType: AUDIT_LOG_EVENT_DETAILS.UPLOAD_PATIENT_DOCUMENT
-            .eventType as AuditEventType,
-          patientUuid,
-          messageParams: { encounterType: encounterTypeName },
-          module: encounterTypeName,
-        });
-      });
-
-      if (savedIds.size > 0) {
-        setPendingDocuments((current) => {
-          current
-            .filter((document) => savedIds.has(document.id))
-            .forEach(revokePreview);
-          return current.filter((document) => !savedIds.has(document.id));
-        });
-        onSaved?.();
-      }
-
-      return { savedCount: savedIds.size, failures };
-    } finally {
-      setIsSaving(false);
     }
   };
 
-  useImperativeHandle(ref, () => ({ save: handleSave }));
+  const closeNote = () => {
+    setIsNoteOpened(false);
+    onChange({ note: '' });
+  };
+
+  return (
+    <Grid data-testid={`document-entry-${id}`}>
+      <Column
+        sm={4}
+        md={4}
+        lg={showDocumentId ? 8 : 16}
+        className={`${styles.column} ${showDocumentId ? '' : styles.typeOnly}`}
+      >
+        <Dropdown
+          id={`document-type-${id}`}
+          testId={`document-type-${id}`}
+          titleText={`${t('DOCUMENTS_DOCUMENT_TYPE_LABEL')}${isDocumentTypeRequired ? '*' : ''}`}
+          label={t('DOCUMENTS_DOCUMENT_TYPE_PLACEHOLDER')}
+          items={documentTypes}
+          disabled={isSaving}
+          itemToString={(item: DocumentType | null) => item?.label ?? ''}
+          selectedItem={documentType}
+          onChange={({ selectedItem }: { selectedItem: DocumentType | null }) =>
+            onChange({
+              documentType: selectedItem,
+              errors: withoutError(errors, 'documentType'),
+            })
+          }
+          autoAlign
+          invalid={!!errors.documentType}
+          invalidText={errors.documentType ? t(errors.documentType) : ''}
+        />
+      </Column>
+      {showDocumentId && (
+        <Column sm={4} md={4} lg={8} className={styles.column}>
+          <TextInput
+            id={`document-id-${id}`}
+            testId={`document-id-${id}`}
+            labelText={t('DOCUMENTS_DOCUMENT_ID_LABEL')}
+            value={entry.documentId}
+            required={isDocumentIdRequired}
+            disabled={isSaving}
+            onChange={(event) =>
+              onChange({
+                documentId: event.target.value,
+                errors: withoutError(errors, 'documentId'),
+              })
+            }
+            invalid={!!errors.documentId}
+            invalidText={errors.documentId ? t(errors.documentId) : ''}
+          />
+        </Column>
+      )}
+      <Column sm={4} md={8} lg={16} className={styles.column}>
+        <div className={styles.uploader} onClickCapture={handleClickCapture}>
+          <p className={styles.uploaderTitle}>{t('DOCUMENT_UPLOAD_TITLE')}</p>
+          {uploadHelpText && (
+            <p className={styles.uploaderHelp}>{uploadHelpText}</p>
+          )}
+          <FileUploaderButton
+            labelText={t('DOCUMENT_UPLOAD_BUTTON')}
+            buttonKind="primary"
+            accept={accept}
+            multiple
+            disabled={isSaving}
+            disableLabelChanges
+            onChange={handleFileSelect}
+          />
+          {entry.files.map((file) => (
+            <FileUploaderItem
+              key={file.id}
+              uuid={file.id}
+              name={file.fileName}
+              thumbnail={<FileThumbnail file={file} />}
+              status={file.status === 'uploading' ? 'uploading' : 'edit'}
+              iconDescription={t('DOCUMENT_UPLOAD_REMOVE_FILE')}
+              invalid={file.status === 'error'}
+              errorSubject={t('DOCUMENT_UPLOAD_FAILED_TITLE')}
+              errorBody={file.error}
+              onDelete={() => discardFile(file.id)}
+            />
+          ))}
+        </div>
+        {errors.files && (
+          <p role="alert" className={styles.fileError}>
+            {t(errors.files)}
+          </p>
+        )}
+      </Column>
+      <Column sm={4} md={8} lg={16} className={styles.column}>
+        {isNoteVisible ? (
+          <TextAreaWClose
+            id={`document-note-${id}`}
+            data-testid={`document-note-${id}`}
+            labelText={t('NOTE_LABEL')}
+            placeholder={t('DOCUMENTS_NOTE_PLACEHOLDER')}
+            value={entry.note}
+            onChange={(event) => onChange({ note: event.target.value })}
+            onClose={closeNote}
+            enableCounter
+            maxCount={MAX_NOTE_LENGTH}
+            className={styles.textArea}
+          />
+        ) : (
+          <Link
+            href="#"
+            data-testid={`document-add-note-${id}`}
+            onClick={(event) => {
+              event.preventDefault();
+              setIsNoteOpened(true);
+            }}
+          >
+            {t('DOCUMENTS_ADD_NOTE')}
+          </Link>
+        )}
+      </Column>
+    </Grid>
+  );
+};
+
+export const DocumentUpload: React.FC<DocumentUploadProps> = ({
+  documents,
+  onDocumentsChange,
+  config,
+  documentsTitle,
+  isSaving = false,
+}) => {
+  const { t, i18n } = useTranslation();
+
+  const { data: maxFileSizeMb } = useQuery({
+    queryKey: ['documentUploadMaxSizeMb'],
+    queryFn: getDocumentUploadMaxSizeMb,
+  });
+
+  const attributes = config?.attributes;
+  const attribute = (name: string) => attributes?.find((a) => a.name === name);
+  const isDocumentTypeRequired =
+    attribute('documentType')?.required ?? !!config;
+  const showDocumentId = !!attribute('documentId');
+  const isDocumentIdRequired = attribute('documentId')?.required ?? false;
+  const conceptUuid = config?.metadata?.documentTypeConceptSetUuid as
+    | string
+    | undefined;
+  const conceptName = config?.metadata?.documentTypeConceptName as
+    | string
+    | undefined;
+  const supportedFileTypes = config?.metadata?.supportedFileTypes as
+    | string[]
+    | undefined;
+
+  const { data: loadedDocumentTypes, isError } = useQuery({
+    queryKey: ['documentTypes', conceptUuid ?? conceptName],
+    queryFn: () =>
+      conceptUuid
+        ? getDocumentTypesByConceptUuid(conceptUuid)
+        : getDocumentTypes(conceptName!),
+    enabled: !!(conceptUuid ?? conceptName),
+  });
+  const documentTypes = loadedDocumentTypes ?? [];
+
+  const { accept, selectFiles } = useFileSelection({
+    supportedFileTypes,
+    maxFileSizeMb,
+  });
+
+  const onDocumentsChangeRef = useRef(onDocumentsChange);
+  useEffect(() => {
+    onDocumentsChangeRef.current = onDocumentsChange;
+  });
+  useEffect(() => {
+    if (documents.length === 0) {
+      onDocumentsChangeRef.current([createEmptyDocumentEntry()]);
+    }
+  }, [documents.length]);
+
+  const uploadHelpText = [
+    maxFileSizeMb !== undefined &&
+      t('DOCUMENT_UPLOAD_MAX_SIZE', { size: maxFileSizeMb }),
+    supportedFileTypes?.length &&
+      t('DOCUMENT_UPLOAD_SUPPORTED_TYPES_LIST', {
+        types: formatFileTypes(accept, i18n.language),
+      }),
+  ]
+    .filter(Boolean)
+    .join(' ');
+
+  const updateEntry = (id: string, patch: Partial<DocumentEntry>) =>
+    onDocumentsChange(
+      documents.map((entry) =>
+        entry.id === id ? { ...entry, ...patch } : entry,
+      ),
+    );
+
+  const removeEntry = (entry: DocumentEntry) => {
+    entry.files.forEach((file) => revokeDocumentPreview(file));
+    onDocumentsChange(documents.filter(({ id }) => id !== entry.id));
+  };
+
+  const cards = documents.map((entry) => {
+    const card = (
+      <DocumentEntryCard
+        entry={entry}
+        documentTypes={documentTypes}
+        isDocumentTypeRequired={isDocumentTypeRequired}
+        showDocumentId={showDocumentId}
+        isDocumentIdRequired={isDocumentIdRequired}
+        isSaving={isSaving}
+        accept={accept}
+        uploadHelpText={uploadHelpText}
+        selectFiles={selectFiles}
+        onChange={(patch) => updateEntry(entry.id, patch)}
+      />
+    );
+    return documents.length > 1 ? (
+      <SelectedItem
+        key={entry.id}
+        className={styles.selectedItem}
+        onClose={() => removeEntry(entry)}
+      >
+        {card}
+      </SelectedItem>
+    ) : (
+      <div key={entry.id} className={styles.singleEntry}>
+        {card}
+      </div>
+    );
+  });
+
+  const errorKey = !config
+    ? undefined
+    : !conceptUuid && !conceptName
+      ? 'DOCUMENTS_ERROR_INVALID_CONFIGURATION'
+      : isError
+        ? 'DOCUMENTS_ERROR_LOADING_DOCUMENT_TYPES'
+        : undefined;
+  if (errorKey) {
+    return (
+      <div role="alert" className={styles.error}>
+        {t(errorKey)}
+      </div>
+    );
+  }
 
   return (
     <div className={styles.container}>
-      {pendingDocuments.length > 0 && (
-        <div className={styles.pending}>
-          {pendingDocuments.map((document) => (
-            <div
-              key={document.id}
-              className={styles.pendingDocument}
-              data-testid="pending-document-row"
-            >
-              <div className={styles.pendingRow}>
-                <div className={styles.fileCell}>
-                  {renderDocumentTile({
-                    id: document.id,
-                    src: document.url,
-                    title: document.fileName,
-                    contentType: document.contentType,
-                  })}
-                </div>
-                <div className={styles.typeCell}>
-                  <Dropdown
-                    id={`document-type-${document.id}`}
-                    testId="document-type-dropdown"
-                    titleText=""
-                    aria-label={t('DOCUMENT_UPLOAD_CHOOSE_TYPE')}
-                    label={t('DOCUMENT_UPLOAD_CHOOSE_TYPE')}
-                    items={documentTypes}
-                    disabled={isSaving}
-                    selectedItem={typeOf(document)}
-                    itemToString={(item: DocumentType | null) =>
-                      item?.label ?? ''
-                    }
-                    onChange={({
-                      selectedItem,
-                    }: {
-                      selectedItem: DocumentType | null;
-                    }) =>
-                      updatePending(document.id, { documentType: selectedItem })
-                    }
-                  />
-                </div>
-                <div className={styles.actionsCell}>
-                  {isSaving && (
-                    <InlineLoading description={t('DOCUMENT_UPLOAD_SAVING')} />
-                  )}
-                  <IconButton
-                    label={t('DOCUMENT_UPLOAD_DISCARD')}
-                    kind="ghost"
-                    size="md"
-                    disabled={isSaving}
-                    onClick={() => discardPending(document.id)}
-                  >
-                    <Close />
-                  </IconButton>
-                </div>
-              </div>
-              <Link
-                className={styles.addNoteLink}
-                onClick={() =>
-                  updatePending(document.id, {
-                    isNoteVisible: !document.isNoteVisible,
-                  })
-                }
-              >
-                {t('DOCUMENT_UPLOAD_ADD_NOTE')}
-              </Link>
-              {document.isNoteVisible && (
-                <TextArea
-                  id={`document-note-${document.id}`}
-                  data-testid="document-note"
-                  className={styles.noteArea}
-                  labelText=""
-                  aria-label={t('DOCUMENT_UPLOAD_ADD_NOTE')}
-                  rows={2}
-                  disabled={isSaving}
-                  value={document.note}
-                  maxLength={MAX_NOTE_LENGTH}
-                  placeholder={t('DOCUMENT_UPLOAD_NOTE_PLACEHOLDER')}
-                  onChange={(e) =>
-                    updatePending(document.id, { note: e.target.value })
-                  }
-                />
-              )}
-            </div>
-          ))}
-        </div>
+      {documentsTitle ? (
+        <BoxWHeader title={documentsTitle}>{cards}</BoxWHeader>
+      ) : (
+        cards
       )}
-
-      <div className={styles.uploader}>
-        <p className={styles.uploaderTitle}>{t('DOCUMENT_UPLOAD_TITLE')}</p>
-        <p className={styles.uploaderHelp}>
-          {maxFileSizeMb !== undefined
-            ? t('DOCUMENT_UPLOAD_HELP', { size: maxFileSizeMb })
-            : t('DOCUMENT_UPLOAD_SUPPORTED_TYPES')}
-        </p>
-        <input
-          ref={fileInputRef}
-          type="file"
-          multiple
-          accept={FILE_INPUT_ACCEPT}
-          className={styles.hiddenInput}
-          data-testid="document-file-input"
-          onChange={handleFileSelect}
-        />
-        <Button
-          disabled={isSaving}
-          onClick={() => fileInputRef.current?.click()}
-        >
-          {t('DOCUMENT_UPLOAD_BUTTON')}
-        </Button>
-      </div>
+      <Button
+        kind="tertiary"
+        className={styles.addMore}
+        disabled={isSaving}
+        testId="document-upload-add-more"
+        onClick={() =>
+          onDocumentsChange([...documents, createEmptyDocumentEntry()])
+        }
+      >
+        {t('DOCUMENTS_ADD_MORE')}
+      </Button>
     </div>
   );
-});
+};
 
 export default DocumentUpload;

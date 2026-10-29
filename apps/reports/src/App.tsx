@@ -35,7 +35,7 @@ export function App() {
       }
     };
 
-    initializeApp();
+    void initializeApp();
   }, []);
 
   if (!isInitialized) {

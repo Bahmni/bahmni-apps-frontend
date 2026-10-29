@@ -24,6 +24,9 @@ export interface InputControl {
   hasData: () => boolean;
   subscribe: (cb: () => void) => () => void;
   createBundleEntries?: (ctx: EncounterContext) => BundleEntry[];
+  prepareBundleEntries?: () => Promise<void>;
+  getSubmissionWarning?: () => { title: string; message: string } | undefined;
+  hasBundleData?: () => boolean | Promise<boolean>;
   updateItemCDSCards?: (itemId: string, cards: CDSCard[]) => void;
   hasCriticalCDSCards?: () => boolean;
   onDirectSubmit?: () => Promise<void>;

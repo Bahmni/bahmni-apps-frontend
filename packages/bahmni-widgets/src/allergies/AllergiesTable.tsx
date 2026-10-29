@@ -12,6 +12,7 @@ import {
   FormattedAllergy,
   getAllergies,
   getFormattedAllergies,
+  fetchOtherNonCodedAllergenUUID,
   mapAllergyToInputEntry,
   useTranslation,
   useSubscribeConsultationSaved,
@@ -78,6 +79,7 @@ const AllergiesTable: React.FC<WidgetProps> = ({
         const rawAllergies = await getAllergies(patientUUID);
         const target = rawAllergies.find((fhir) => fhir.id === resourceId);
         if (!target) return;
+        await fetchOtherNonCodedAllergenUUID();
         globalThis.dispatchEvent(
           new CustomEvent(CONSULTATION_START_EVENT, {
             detail: {

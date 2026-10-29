@@ -64,9 +64,15 @@ export async function submitConsultation(
     statDurationInMilliseconds: deps.statDurationInMilliseconds,
   };
 
-  const formEntries = deps.activeEntries
-    .filter((entry) => entry.hasData() && entry.createBundleEntries)
-    .flatMap((entry) => entry.createBundleEntries!(ctx));
+  const contributingEntries = deps.activeEntries.filter(
+    (entry) => entry.hasData() && entry.createBundleEntries,
+  );
+  await Promise.all(
+    contributingEntries.map((entry) => entry.prepareBundleEntries?.()),
+  );
+  const formEntries = contributingEntries.flatMap((entry) =>
+    entry.createBundleEntries!(ctx),
+  );
 
   const encounterBundle = createEncounterBundle([
     encounterBundleEntry,

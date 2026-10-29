@@ -74,3 +74,12 @@ export interface ConceptAttribute {
 export interface ConceptSearchByNameResponse {
   results: ConceptData[];
 }
+
+export interface ConceptQueryResult {
+  uuid: string;
+  name: { name: string } | null;
+}
+
+export interface ConceptQueryResponse {
+  results: ConceptQueryResult[];
+}

@@ -1,31 +1,4 @@
-import type { DocumentSaveTarget, DocumentType } from '@bahmni/services';
-
-// Re-export so consumers/tests of this widget can reference the shared type.
-export type { DocumentSaveTarget } from '@bahmni/services';
-
-export interface DocumentSaveFailure {
-  fileName: string;
-  message: string;
-}
-
-export interface DocumentSaveSummary {
-  savedCount: number;
-  failures: DocumentSaveFailure[];
-}
-
-export interface DocumentUploadRef {
-  save: () => Promise<DocumentSaveSummary>;
-}
-
-export interface DocumentUploadProps {
-  patientUuid: string;
-  encounterTypeName: string;
-  saveTarget: DocumentSaveTarget;
-  documentTypes?: DocumentType[];
-  defaultOption?: string | null;
-  onSaved?: () => void;
-  onPendingChange?: (hasPendingDocument: boolean) => void;
-}
+import type { DocumentType } from '@bahmni/services';
 
 export interface PendingDocument {
   id: string;
@@ -33,8 +6,34 @@ export interface PendingDocument {
   url: string;
   fileName: string;
   contentType: string;
-  documentType: DocumentType | null;
-  note: string;
-  isNoteVisible: boolean;
   uploadedUrl?: string;
+  status?: 'uploading' | 'uploaded' | 'error';
+  error?: string;
+}
+
+export interface DocumentEntryErrors {
+  documentType?: string;
+  documentId?: string;
+  files?: string;
+}
+export interface DocumentEntry {
+  id: string;
+  documentType: DocumentType | null;
+  documentId: string;
+  note: string;
+  files: PendingDocument[];
+  errors: DocumentEntryErrors;
+}
+
+export interface DocumentUploadConfig {
+  attributes?: Array<{ name: string; required?: boolean }>;
+  metadata?: Record<string, unknown>;
+}
+
+export interface DocumentUploadProps {
+  documents: DocumentEntry[];
+  onDocumentsChange: (documents: DocumentEntry[]) => void;
+  config?: DocumentUploadConfig;
+  documentsTitle?: string;
+  isSaving?: boolean;
 }

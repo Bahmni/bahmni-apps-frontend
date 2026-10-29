@@ -3,10 +3,6 @@ import { Suspense } from 'react';
 import { MemoryRouter, Routes } from 'react-router-dom';
 import { renderRoutes, routes } from '../index';
 
-jest.mock('../../components/PrivilegeGuard', () => ({
-  PrivilegeGuard: ({ children }: { children: React.ReactNode }) => children,
-}));
-
 jest.mock('../../components/AdminLayout', () => ({
   AdminLayout: ({ children }: { children: React.ReactNode }) => (
     <div data-testid="admin-layout-test-id">{children}</div>
@@ -23,6 +19,28 @@ jest.mock('../../pages/AdminDashboard', () => ({
 
 jest.mock('../../pages/CsvUpload', () => ({
   CsvUpload: () => <div data-testid="admin-csv-upload-page-test-id" />,
+}));
+
+jest.mock('../../pages/CsvExport', () => ({
+  CsvExport: () => <div data-testid="admin-csv-export-page-test-id" />,
+}));
+
+// Routing only needs to know the right page resolved; the AuditLog page's own
+// data fetching/filtering behaviour is covered by its own tests.
+jest.mock('../../hooks/useAuditLogs', () => ({
+  useAuditLogs: () => ({
+    filters: { startDate: null, startTime: '', username: '', patientId: '' },
+    setFilters: jest.fn(),
+    logs: [],
+    isLoading: false,
+    isError: false,
+    emptyMessageKey: null,
+    firstIndex: 0,
+    lastIndex: 0,
+    next: jest.fn(),
+    prev: jest.fn(),
+    runReport: jest.fn(),
+  }),
 }));
 
 const renderAt = (path: string) =>
@@ -48,6 +66,22 @@ describe('routes', () => {
 
     expect(
       await screen.findByTestId('admin-csv-upload-page-test-id'),
+    ).toBeInTheDocument();
+  });
+
+  it('resolves /csvExport to the CSV export page', async () => {
+    renderAt('/csvExport');
+
+    expect(
+      await screen.findByTestId('admin-csv-export-page-test-id'),
+    ).toBeInTheDocument();
+  });
+
+  it('resolves /auditlog to the audit log page without a 404', async () => {
+    renderAt('/auditlog');
+
+    expect(
+      await screen.findByTestId('admin-audit-log-page-test-id'),
     ).toBeInTheDocument();
   });
 

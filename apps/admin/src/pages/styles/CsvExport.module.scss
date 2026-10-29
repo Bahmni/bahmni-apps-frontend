@@ -1,0 +1,25 @@
+@use "@carbon/react/scss/spacing" as *;
+@use "@carbon/react/scss/theme" as *;
+@use "@carbon/react/scss/type" as *;
+
+.tile {
+  background-color: $layer-02;
+  box-shadow: 0 $spacing-01 $spacing-03 rgba(0, 0, 0, 0.2);
+  padding: $spacing-06;
+}
+
+.title {
+  @include type-style("body-01");
+
+  margin-block-end: $spacing-03;
+}
+
+.form {
+  display: flex;
+  align-items: flex-end;
+  gap: $spacing-05;
+}
+
+.search {
+  inline-size: 16rem;
+}

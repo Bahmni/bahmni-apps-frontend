@@ -1,9 +1,12 @@
 import {
+  clearRecentSearchCriteria,
   dispatchAuditEvent,
+  encodeSearchCriteria,
   getConfig,
   getCurrentUserPrivileges,
   getUserLoginLocation,
   post,
+  saveRecentSearchCriteria,
 } from '@bahmni/services';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import {
@@ -33,6 +36,14 @@ const mockPost = post as jest.Mock;
 const mockDispatchAuditEvent = dispatchAuditEvent as jest.Mock;
 
 const mockAddNotification = jest.fn();
+let mockActivePractitioner: {
+  user: { uuid: string; username: string; display: string } | null;
+  loading: boolean;
+};
+jest.mock('../../../activePractitioner', () => ({
+  useActivePractitioner: () => mockActivePractitioner,
+}));
+
 jest.mock('../../../notification', () => ({
   useNotification: () => ({ addNotification: mockAddNotification }),
 }));
@@ -42,6 +53,8 @@ jest.mock('@bahmni/services', () => ({
   getConfig: jest.fn(),
   getCurrentUserPrivileges: jest.fn(),
   getUserLoginLocation: jest.fn(),
+  saveRecentSearchCriteria: jest.fn(),
+  clearRecentSearchCriteria: jest.fn(),
   post: jest.fn(),
   dispatchAuditEvent: jest.fn(),
 }));
@@ -50,12 +63,18 @@ let capturedOnSearch:
   | ((rows: CriterionRow[], context: SearchContextConfig) => CriterionRow[])
   | null = null;
 let capturedConfig: SearchContextConfig[] | null = null;
+let capturedSavedRows: CriterionRow[] | undefined;
+let capturedSavedContextKey: string | undefined;
+let capturedOnReset: (() => void) | undefined;
 
 jest.mock('../components/SearchForm', () => ({
   __esModule: true,
-  default: ({ onSearch, config }: any) => {
+  default: ({ onSearch, config, savedRows, savedContextKey, onReset }: any) => {
     capturedOnSearch = onSearch;
     capturedConfig = config;
+    capturedSavedRows = savedRows;
+    capturedSavedContextKey = savedContextKey;
+    capturedOnReset = onReset;
     return <div data-testid="search-form" />;
   },
 }));
@@ -93,6 +112,15 @@ describe('CommonSearchWidget', () => {
     jest.clearAllMocks();
     capturedOnSearch = null;
     capturedConfig = null;
+    capturedSavedRows = undefined;
+    capturedSavedContextKey = undefined;
+    capturedOnReset = undefined;
+    mockActivePractitioner = {
+      user: { uuid: 'user-1', username: 'u', display: 'U' },
+      loading: false,
+    };
+    (saveRecentSearchCriteria as jest.Mock).mockResolvedValue(undefined);
+    (clearRecentSearchCriteria as jest.Mock).mockResolvedValue(undefined);
     mockPost.mockResolvedValue({ results: [] });
     (getUserLoginLocation as jest.Mock).mockReturnValue(mockWidgetLocation);
     (getCurrentUserPrivileges as jest.Mock).mockResolvedValue(
@@ -707,6 +735,126 @@ describe('CommonSearchWidget', () => {
         type: 'error',
         timeout: 5000,
       });
+    });
+  });
+
+  describe('recent search criteria', () => {
+    const renderWidget = async () => {
+      (getConfig as jest.Mock).mockResolvedValueOnce(
+        mockCommonSearchWidgetConfig,
+      );
+      render(
+        <CommonSearchWidget extensionParams={{ configUrl: '/api/config' }} />,
+        { wrapper },
+      );
+      await waitFor(() =>
+        expect(screen.getByTestId('search-form')).toBeInTheDocument(),
+      );
+    };
+
+    const savedUser = (overrides: Record<string, string> = {}) => ({
+      uuid: 'user-1',
+      username: 'u',
+      display: 'U',
+      userProperties: {
+        recentCommonSearchCriteria: encodeSearchCriteria({
+          version: 1,
+          savedAt: '2026-10-01T00:00:00.000Z',
+          payload: {
+            entity: 'patient',
+            criteria: {
+              operator: 'AND',
+              conditions: [
+                { field: 'patient.name.given', comparator: 'eq', value: 'Ann' },
+              ],
+            },
+          },
+        }),
+        ...overrides,
+      },
+    });
+
+    it('prefills the form from the saved criteria', async () => {
+      mockActivePractitioner.user = savedUser();
+      await renderWidget();
+
+      expect(capturedSavedContextKey).toBe('patient');
+      expect(capturedSavedRows).toHaveLength(1);
+      expect(capturedSavedRows![0]).toMatchObject({
+        criterionKey: 'patient.name.given',
+        value: { value: 'Ann' },
+      });
+    });
+
+    it('falls back to defaults when the saved value is malformed', async () => {
+      mockActivePractitioner.user = savedUser({
+        recentCommonSearchCriteria: 'garbage',
+      });
+      await renderWidget();
+
+      expect(capturedSavedRows).toBeUndefined();
+    });
+
+    it('still renders when the user could not be loaded', async () => {
+      mockActivePractitioner = { user: null, loading: false };
+      await renderWidget();
+
+      expect(capturedSavedRows).toBeUndefined();
+      expect(capturedOnReset).toBeUndefined();
+    });
+
+    it('waits for the user before rendering the form', async () => {
+      mockActivePractitioner = { user: null, loading: true };
+      (getConfig as jest.Mock).mockResolvedValueOnce(
+        mockCommonSearchWidgetConfig,
+      );
+      render(
+        <CommonSearchWidget extensionParams={{ configUrl: '/api/config' }} />,
+        { wrapper },
+      );
+
+      await waitFor(() => expect(getConfig).toHaveBeenCalled());
+      expect(screen.queryByTestId('search-form')).not.toBeInTheDocument();
+    });
+
+    it('saves criteria without location or meta when a search runs', async () => {
+      await renderWidget();
+      await act(async () => {
+        capturedOnSearch!(
+          [mockRowWithValidValue],
+          mockCommonSearchWidgetConfig[0],
+        );
+      });
+
+      expect(saveRecentSearchCriteria).toHaveBeenCalledTimes(1);
+      const [uuid, payload] = (saveRecentSearchCriteria as jest.Mock).mock
+        .calls[0];
+      expect(uuid).toBe('user-1');
+      expect(payload.entity).toBe('patient');
+      expect(JSON.stringify(payload)).not.toContain('location.uuid');
+      expect(payload).not.toHaveProperty('meta');
+    });
+
+    it('does not save when validation fails', async () => {
+      await renderWidget();
+      await act(async () => {
+        capturedOnSearch!(
+          [mockRowWithEmptyValue],
+          mockCommonSearchWidgetConfig[0],
+        );
+      });
+
+      expect(saveRecentSearchCriteria).not.toHaveBeenCalled();
+    });
+
+    it('clears the saved criteria on reset', async () => {
+      mockActivePractitioner.user = savedUser();
+      await renderWidget();
+      await act(async () => {
+        capturedOnReset!();
+      });
+
+      expect(clearRecentSearchCriteria).toHaveBeenCalledWith('user-1');
     });
   });
 });

@@ -95,7 +95,7 @@ const PatientHeader: React.FC<PatientHeaderProps> = ({
   useSubscribeConsultationSaved(
     (payload) => {
       if (payload.patientUUID === patientUUID) {
-        refetch();
+        void refetch();
       }
     },
     [patientUUID],

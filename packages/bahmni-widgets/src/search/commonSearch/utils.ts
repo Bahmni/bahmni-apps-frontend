@@ -27,9 +27,12 @@ import {
   FieldConfig,
   InputConfig,
   LookupOption,
+  RangeValue,
   ResolvedRow,
   ScalarValue,
   SearchCondition,
+  SearchConditionGroup,
+  SearchConditionLeaf,
   SearchPage,
   SearchPaginationMeta,
   SearchPayload,
@@ -98,6 +101,9 @@ export const toSearchAuditEventType = (
 
 const isRangeInput = (input: InputConfig): boolean =>
   (input.kind === 'date' || input.kind === 'numeric') && !!input.rangeAllowed;
+
+const isSingleCondition = (c: SearchCondition): c is SearchConditionLeaf =>
+  'field' in c;
 
 const isScalarValue = (v: CriterionValue): v is ScalarValue => 'value' in v;
 
@@ -536,4 +542,105 @@ export const validateConfigForCriteria = (
     }
   }
   return null;
+};
+
+const findConditionByField = (
+  group: SearchConditionGroup,
+  field: string,
+  comparator?: SearchConditionLeaf['comparator'],
+): SearchConditionLeaf | undefined =>
+  group.conditions
+    .filter(isSingleCondition)
+    .find(
+      (c) => c.field === field && (!comparator || c.comparator === comparator),
+    );
+
+const conditionToRow = (
+  condition: SearchCondition,
+  criteria: CriterionConfig[],
+): { criterionKey: string; value: CriterionValue } | null => {
+  if (isSingleCondition(condition)) {
+    if (condition.field === LOCATION_UUID_FIELD) return null;
+    const criterion = criteria.find(
+      (c) =>
+        c.field.key === condition.field &&
+        !c.field.keyType &&
+        !isRangeInput(c.input),
+    );
+    return criterion
+      ? { criterionKey: criterion.id!, value: { value: condition.value } }
+      : null;
+  }
+
+  const keyType = condition.conditions
+    .filter(isSingleCondition)
+    .find((c) => c.field.endsWith(KEY_TYPE_KIND_SUFFIX));
+  if (keyType) {
+    const key = keyType.field.slice(0, -KEY_TYPE_KIND_SUFFIX.length);
+    const keyValue = findConditionByField(
+      condition,
+      `${key}${KEY_TYPE_VALUE_SUFFIX}`,
+    );
+    const criterion = criteria.find(
+      (c) => c.field.key === key && c.field.keyType === keyType.value,
+    );
+    return criterion && keyValue
+      ? {
+          criterionKey: criterion.id!,
+          value: { value: keyValue.value },
+        }
+      : null;
+  }
+
+  const conditionRangeFrom = condition.conditions
+    .filter(isSingleCondition)
+    .find((c) => c.comparator === 'ge');
+  const conditionRangeTo =
+    conditionRangeFrom &&
+    findConditionByField(condition, conditionRangeFrom.field, 'le');
+  const criterion =
+    conditionRangeFrom &&
+    criteria.find(
+      (c) =>
+        c.field.key === conditionRangeFrom.field &&
+        !c.field.keyType &&
+        isRangeInput(c.input),
+    );
+  return criterion && conditionRangeFrom && conditionRangeTo
+    ? {
+        criterionKey: criterion.id!,
+        value: {
+          from: { value: conditionRangeFrom.value, comparator: null },
+          to: { value: conditionRangeTo.value, comparator: null },
+        } satisfies RangeValue,
+      }
+    : null;
+};
+
+export const conditionsToRows = (
+  group: SearchConditionGroup,
+  criteria: CriterionConfig[],
+): CriterionRow[] => {
+  const usedKeys = new Set<string>();
+  return group.conditions.flatMap((condition) => {
+    const row = conditionToRow(condition, criteria);
+    if (!row || usedKeys.has(row.criterionKey)) return [];
+    usedKeys.add(row.criterionKey);
+    return [{ ...makeRow(row.criterionKey), value: row.value }];
+  });
+};
+
+export const hydrateRecentSearch = (
+  recent: {
+    payload: { entity: string; criteria: SearchConditionGroup };
+  } | null,
+  contexts: SearchContextConfig[],
+): {
+  rows: CriterionRow[];
+  contextKey: SearchContextConfig['context'];
+} | null => {
+  const context = contexts.find((c) => c.context === recent?.payload.entity);
+  if (!recent || !context) return null;
+  const rows = conditionsToRows(recent.payload.criteria, context.criteria);
+  return rows.length > 0 ? { rows, contextKey: context.context } : null;
 };

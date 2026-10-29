@@ -24,6 +24,7 @@ import {
   convertImmutableToPlainObject,
   extractNotesFromFormData,
   formatDateForControl,
+  findConceptDatatype,
   DATETIME_REGEX_PATTERN,
   type AgeDetails,
   computeAgeDetails,
@@ -49,10 +50,7 @@ import { usePinnedObservationForms } from '../../../hooks/usePinnedObservationFo
 import {
   extractVersionFromFormFieldPath,
   findBasedOnFromObservations,
-  injectMissingDeleteObs,
-  markUnchangedObservations,
-  mergeObsExistingData,
-  restoreComplexValues,
+  reconcileObservations,
 } from '../../../utils/fhir/observationReconciliation';
 import EncounterDetails from '../encounterDetails/EncounterDetails';
 import styles from './styles/ObservationFormsContainer.module.scss';
@@ -275,9 +273,20 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
     };
 
     const convertDateTime = (obs: Form2Observation): Form2Observation => {
+      // Date-only concepts must match the date-only value form calculations write,
+      // otherwise CarbonContainer flags the form as updated on load. Take the calendar
+      // date from the string as-is: converting through Date shifts it by a day when the
+      // browser is behind the server's timezone (e.g. 00:00 UTC is the previous day in UTC-3).
       const converted =
         typeof obs.value === 'string' && DATETIME_REGEX_PATTERN.test(obs.value)
-          ? { ...obs, value: formatDateForControl(new Date(obs.value)) }
+          ? {
+              ...obs,
+              value:
+                formMetadata &&
+                findConceptDatatype(formMetadata, obs.concept.uuid) === 'Date'
+                  ? obs.value.slice(0, 10)
+                  : formatDateForControl(new Date(obs.value)),
+            }
           : obs;
       if (converted.groupMembers) {
         return {
@@ -317,7 +326,7 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
       .map(convertComplex)
       .map(convertDateTime)
       .map(normalizeInterpretation);
-  }, [existingObservations]);
+  }, [existingObservations, formMetadata]);
 
   const handlePinToggle = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -379,19 +388,7 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
               )
             : [];
 
-        mergeObsExistingData(
-          transformedObservations,
-          initialObservationsRef.current,
-        );
-        restoreComplexValues(
-          transformedObservations,
-          initialObservationsRef.current,
-        );
-        injectMissingDeleteObs(
-          transformedObservations,
-          initialObservationsRef.current,
-        );
-        markUnchangedObservations(
+        reconcileObservations(
           transformedObservations,
           initialObservationsRef.current,
         );
@@ -456,19 +453,7 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
       setValidationErrorMessage(null);
 
       try {
-        mergeObsExistingData(
-          transformedObservations,
-          initialObservationsRef.current,
-        );
-        restoreComplexValues(
-          transformedObservations,
-          initialObservationsRef.current,
-        );
-        injectMissingDeleteObs(
-          transformedObservations,
-          initialObservationsRef.current,
-        );
-        markUnchangedObservations(
+        reconcileObservations(
           transformedObservations,
           initialObservationsRef.current,
         );
@@ -524,27 +509,15 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
             )
           : [];
 
+      reconcileObservations(
+        transformedObservations,
+        initialObservationsRef.current,
+      );
+
       // Extract and append notes-only observations
       extractAndAppendNotesFromFormData(
         formContainerRef,
         transformedObservations,
-      );
-
-      mergeObsExistingData(
-        transformedObservations,
-        initialObservationsRef.current,
-      );
-      restoreComplexValues(
-        transformedObservations,
-        initialObservationsRef.current,
-      );
-      injectMissingDeleteObs(
-        transformedObservations,
-        initialObservationsRef.current,
-      );
-      markUnchangedObservations(
-        transformedObservations,
-        initialObservationsRef.current,
       );
 
       handleSaveForm(transformedObservations, validationErrorType);

@@ -195,6 +195,29 @@ describe('Header', () => {
       expect(screen.queryByTestId('breadcrumb')).not.toBeInTheDocument();
     });
 
+    it('calls the breadcrumb onClick handler and lets it cancel navigation', () => {
+      const onClick = jest.fn((event: React.MouseEvent<HTMLElement>) =>
+        event.preventDefault(),
+      );
+      render(
+        <Header
+          breadcrumbItems={[
+            { id: 'home', label: 'Home', href: '/home', onClick },
+            { id: 'current', label: 'Current Page', isCurrentPage: true },
+          ]}
+        />,
+      );
+
+      const clickEvent = new MouseEvent('click', {
+        bubbles: true,
+        cancelable: true,
+      });
+      screen.getByRole('link', { name: 'Home' }).dispatchEvent(clickEvent);
+
+      expect(onClick).toHaveBeenCalledTimes(1);
+      expect(clickEvent.defaultPrevented).toBe(true);
+    });
+
     it('does not render breadcrumbs when not provided', () => {
       const propsWithoutBreadcrumbs = { ...defaultProps };
       delete propsWithoutBreadcrumbs.breadcrumbItems;

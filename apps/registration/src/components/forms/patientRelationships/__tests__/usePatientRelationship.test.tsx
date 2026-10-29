@@ -465,6 +465,40 @@ describe('usePatientRelationship', () => {
       ]);
     });
 
+    it('does not exclude patients from expired rows', () => {
+      const yesterday = new Date();
+      yesterday.setDate(yesterday.getDate() - 1);
+      const yesterdayStr = yesterday.toISOString().split('T')[0];
+
+      const initialData = [
+        {
+          id: 'rel-1',
+          relationshipType: 'type-1',
+          patientId: 'PAT001',
+          patientUuid: 'p1',
+          tillDate: yesterdayStr,
+          isExisting: true,
+        },
+        {
+          id: 'rel-2',
+          relationshipType: 'type-1',
+          patientId: '',
+          tillDate: '',
+        },
+      ];
+
+      const { result } = renderHook(() =>
+        usePatientRelationship({ initialData }),
+      );
+
+      // p1 should be available because rel-1 has a past end date (expired)
+      expect(ids(result.current.getPatientSuggestions('rel-2'))).toEqual([
+        'p1',
+        'p2',
+        'p3',
+      ]);
+    });
+
     it('does not exclude patients from deleted rows', () => {
       const initialData = [
         {

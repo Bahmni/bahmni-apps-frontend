@@ -17,3 +17,4 @@ export const SESSION_URL = OPENMRS_REST_V1 + '/session';
 export const VISIT_LOCATION_UUID =
   OPENMRS_REST_V1 + '/bahmnicore/visitLocation/';
 export const BAHMNI_SQL_URL = OPENMRS_REST_V1 + '/bahmnicore/sql';
+export const BAHMNI_REPORTS_URL = '/bahmnireports';

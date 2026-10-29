@@ -286,6 +286,7 @@ describe('encounterBundleService', () => {
   describe('createAllergiesBundleEntries', () => {
     const mockValidAllergy: AllergyInputEntry = {
       id: '162536AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
+      entryId: '162536AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
       display: 'Penicillin',
       type: 'medication',
       selectedSeverity: {
@@ -305,6 +306,41 @@ describe('encounterBundleService', () => {
       errors: {},
       hasBeenValidated: true,
     };
+
+    describe('Other, Non-Coded allergen', () => {
+      const mockNonCodedAllergy: AllergyInputEntry = {
+        ...mockValidAllergy,
+        id: '5622AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
+        display: 'Other non-coded',
+        nonCodedAllergen: 'Ibuprofen gel',
+      };
+
+      it('excludes it from the encounter bundle', () => {
+        // fhir2 never reads code.text, so bundling it fails server-side with
+        // allergyapi.allergen.nonCodedAllergen.required.
+        const result = createAllergiesBundleEntries({
+          selectedAllergies: [mockNonCodedAllergy],
+          encounterSubject: mockEncounterSubject,
+          encounterReference: mockEncounterReference,
+          practitionerUUID: mockPractitionerUUID,
+        });
+
+        expect(result).toHaveLength(0);
+      });
+
+      it('still bundles coded allergies recorded alongside it', () => {
+        const result = createAllergiesBundleEntries({
+          selectedAllergies: [mockNonCodedAllergy, mockValidAllergy],
+          encounterSubject: mockEncounterSubject,
+          encounterReference: mockEncounterReference,
+          practitionerUUID: mockPractitionerUUID,
+        });
+
+        expect(result).toHaveLength(1);
+        const resource = result[0].resource as AllergyIntolerance;
+        expect(resource.code?.coding?.[0]?.code).toBe(mockValidAllergy.id);
+      });
+    });
 
     describe('Happy Paths', () => {
       it('should create bundle entries for valid allergies with all required fields', () => {
@@ -830,6 +866,30 @@ describe('encounterBundleService', () => {
         expect((result[0].request as { method: string }).method).toBe('POST');
         expect(result[0].fullUrl).toMatch(/^urn:uuid:/);
       });
+
+      // Regression: a coded allergy that was just POSTed in a successful
+      // bundle has no resourceId yet (the response isn't parsed back into
+      // the store). If a later direct-submit step then fails and the user
+      // retries, this allergy must not be POSTed again — see
+      // markCodedAllergiesAsSaved in allergyStore and its onSubmitSuccess
+      // wiring in the allergies control.
+      it('should skip a brand-new allergy once marked saved (isModified: false), even without a resourceId yet', () => {
+        const newlyBundledAllergy: AllergyInputEntry = {
+          ...mockValidAllergy,
+          resourceId: undefined,
+          rawFhirResource: undefined,
+          isModified: false,
+        };
+
+        const result = createAllergiesBundleEntries({
+          selectedAllergies: [newlyBundledAllergy],
+          encounterSubject: mockEncounterSubject,
+          encounterReference: mockEncounterReference,
+          practitionerUUID: mockPractitionerUUID,
+        });
+
+        expect(result).toHaveLength(0);
+      });
     });
 
     describe('Cross-session allergy (DELETE + POST) paths', () => {
@@ -870,6 +930,7 @@ describe('encounterBundleService', () => {
 
       const mockCrossSessionAllergy: AllergyInputEntry = {
         id: '162536AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
+        entryId: 'allergy-uuid-old',
         display: 'Penicillin',
         type: 'medication',
         selectedSeverity: { code: 'mild', display: 'Mild' },
@@ -1099,6 +1160,7 @@ describe('encounterBundleService', () => {
 
       const mockSameSessionAllergyWithReactionRemoved: AllergyInputEntry = {
         id: '162536AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
+        entryId: 'allergy-same-session',
         display: 'Penicillin',
         type: 'medication',
         selectedSeverity: { code: 'mild', display: 'Mild' },

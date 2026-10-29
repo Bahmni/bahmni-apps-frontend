@@ -51,6 +51,20 @@ describe('AdminLayout', () => {
     expect(main).toContainElement(children);
   });
 
+  it('links Admin and appends the current page when one is provided', () => {
+    render(
+      <AdminLayout breadcrumbLabel="CSV Export">
+        <div />
+      </AdminLayout>,
+    );
+
+    expect(screen.getByRole('link', { name: 'Admin' })).toHaveAttribute(
+      'href',
+      '/bahmni-v2/admin',
+    );
+    expect(screen.getByText('CSV Export')).toBeInTheDocument();
+  });
+
   describe('Accessibility', () => {
     it('has no accessibility violations', async () => {
       const { container } = renderLayout();

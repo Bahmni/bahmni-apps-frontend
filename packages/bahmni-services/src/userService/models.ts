@@ -5,6 +5,13 @@ export interface User {
   display: string;
   username: string;
   uuid: string;
+  userProperties?: Record<string, string>;
+}
+
+export interface RecentSearchCriteria<TCriteria = unknown> {
+  version: 1;
+  savedAt: string;
+  payload: { entity: string; criteria: TCriteria };
 }
 
 export interface UserLocation {

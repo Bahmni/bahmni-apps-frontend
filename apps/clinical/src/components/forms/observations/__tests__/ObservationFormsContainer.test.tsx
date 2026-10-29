@@ -1,6 +1,12 @@
-import { ObservationForm } from '@bahmni/services';
+import { Form2Observation, ObservationForm } from '@bahmni/services';
 import { useQuery } from '@tanstack/react-query';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import {
+  act,
+  render,
+  screen,
+  fireEvent,
+  waitFor,
+} from '@testing-library/react';
 import { useTranslation } from 'react-i18next';
 import { useClinicalAppData } from '../../../../hooks/useClinicalAppData';
 import ObservationFormsContainer from '../ObservationFormsContainer';
@@ -52,6 +58,10 @@ const mockContainerState = { data: {} };
 
 // Captures the patient prop passed to CarbonContainer most recently
 let lastCarbonContainerPatient: unknown = undefined;
+let lastCarbonContainerObservations: any = undefined;
+let lastCarbonContainerSetIsFormUpdated:
+  | ((updated: boolean) => void)
+  | undefined;
 
 jest.mock('@bahmni/form2-controls', () => {
   // eslint-disable-next-line @typescript-eslint/no-require-imports
@@ -65,6 +75,8 @@ jest.mock('@bahmni/form2-controls', () => {
 
       // Capture patient prop for assertions
       lastCarbonContainerPatient = props.patient;
+      lastCarbonContainerObservations = props.observations;
+      lastCarbonContainerSetIsFormUpdated = props.setIsFormUpdated;
 
       return (
         <div data-testid="form2-container">
@@ -232,6 +244,7 @@ describe('ObservationFormsContainer', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     lastCarbonContainerPatient = undefined;
+    lastCarbonContainerObservations = undefined;
 
     // Default mock for useQuery — minimal patient data so form renders
     (useQuery as jest.Mock).mockReturnValue({
@@ -529,6 +542,187 @@ describe('ObservationFormsContainer', () => {
       const savedObservations = mockOnFormObservationsChange.mock.calls[0][1];
       expect(savedObservations).toHaveLength(1);
       expect(savedObservations[0].interpretation).toBeUndefined();
+    });
+
+    describe('date-only normalisation of existing observations', () => {
+      // OpenMRS returns Date concepts as midnight in the server timezone
+      const OPENMRS_DATE_VALUE = '2026-10-02T00:00:00+00:00';
+      // Local construction keeps the expected Datetime output timezone-independent
+      const LOCAL_DATETIME_ISO = new Date(
+        2027,
+        4,
+        17,
+        13,
+        45,
+        30,
+      ).toISOString();
+
+      // Jest ignores process.env.TZ changes at runtime, so simulate a browser timezone by
+      // making Date's local getters read the UTC clock shifted by the given offset.
+      const localGetters = [
+        ['getFullYear', 'getUTCFullYear'],
+        ['getMonth', 'getUTCMonth'],
+        ['getDate', 'getUTCDate'],
+        ['getDay', 'getUTCDay'],
+        ['getHours', 'getUTCHours'],
+        ['getMinutes', 'getUTCMinutes'],
+        ['getSeconds', 'getUTCSeconds'],
+      ] as const;
+      let timezoneSpies: jest.SpyInstance[] = [];
+
+      const simulateBrowserUtcOffset = (offsetHours: number) => {
+        timezoneSpies = localGetters.map(([local, utc]) =>
+          jest.spyOn(Date.prototype, local).mockImplementation(function (
+            this: Date,
+          ) {
+            return new Date(this.getTime() + offsetHours * 3_600_000)[utc]();
+          }),
+        );
+      };
+
+      afterEach(() => {
+        timezoneSpies.forEach((spy) => spy.mockRestore());
+        timezoneSpies = [];
+      });
+
+      const renderWithSchema = (
+        controls: unknown[],
+        existingObservations: Form2Observation[],
+      ) => {
+        mockUseObservationFormData.mockReturnValue({
+          observations: [],
+          handleFormDataChange: jest.fn(),
+          resetForm: jest.fn(),
+          formMetadata: { schema: { name: 'Pregnancy', controls } },
+          isLoadingMetadata: false,
+          metadataError: null,
+        });
+
+        render(
+          <ObservationFormsContainer
+            {...defaultProps}
+            viewingForm={mockForm}
+            existingObservations={existingObservations}
+          />,
+        );
+      };
+
+      const renderWithDateObservations = () =>
+        renderWithSchema(
+          [
+            { concept: { uuid: 'date-concept', datatype: 'Date' } },
+            { concept: { uuid: 'datetime-concept', datatype: 'Datetime' } },
+          ],
+          [
+            {
+              concept: { uuid: 'date-concept' },
+              uuid: 'obs-date',
+              value: OPENMRS_DATE_VALUE,
+              status: 'final',
+            },
+            {
+              concept: { uuid: 'datetime-concept' },
+              uuid: 'obs-datetime',
+              value: LOCAL_DATETIME_ISO,
+              status: 'final',
+            },
+          ],
+        );
+
+      it('should pass a YYYY-MM-DD value without time for Date concepts', () => {
+        renderWithDateObservations();
+
+        const dateObs = lastCarbonContainerObservations.find(
+          (o: any) => o.uuid === 'obs-date',
+        );
+        expect(dateObs.value).toBe('2026-10-02');
+      });
+
+      it.each([
+        ['America/Los_Angeles (UTC-7)', -7, 1],
+        ['America/Sao_Paulo (UTC-3)', -3, 1],
+        ['UTC', 0, 2],
+        ['Europe/Berlin (UTC+2)', 2, 2],
+        ['Asia/Kolkata (UTC+5:30)', 5.5, 2],
+      ])(
+        'should keep the stored calendar date for Date concepts when the browser is in %s',
+        (_timeZone, offsetHours, localDayOfStoredValue) => {
+          simulateBrowserUtcOffset(offsetHours);
+          // Guard: the simulation is active, so a Date-based conversion would shift west of UTC
+          expect(new Date(OPENMRS_DATE_VALUE).getDate()).toBe(
+            localDayOfStoredValue,
+          );
+
+          renderWithDateObservations();
+
+          const dateObs = lastCarbonContainerObservations.find(
+            (o: any) => o.uuid === 'obs-date',
+          );
+          expect(dateObs.value).toBe('2026-10-02');
+        },
+      );
+
+      it('should keep YYYY-MM-DD HH:mm:ss format for Datetime concepts', () => {
+        renderWithDateObservations();
+
+        const datetimeObs = lastCarbonContainerObservations.find(
+          (o: any) => o.uuid === 'obs-datetime',
+        );
+        expect(datetimeObs.value).toBe('2027-05-17 13:45:30');
+      });
+
+      it('should keep the stored calendar date for a Date concept nested in an obsGroup', () => {
+        renderWithSchema(
+          [
+            {
+              type: 'obsGroupControl',
+              concept: { uuid: 'group-concept', datatype: 'N/A' },
+              controls: [
+                { concept: { uuid: 'nested-date-concept', datatype: 'Date' } },
+              ],
+            },
+          ],
+          [
+            {
+              concept: { uuid: 'group-concept' },
+              uuid: 'obs-group',
+              value: null,
+              groupMembers: [
+                {
+                  concept: { uuid: 'nested-date-concept' },
+                  uuid: 'obs-nested-date',
+                  value: OPENMRS_DATE_VALUE,
+                  status: 'final',
+                },
+              ],
+            },
+          ],
+        );
+
+        const groupObs = lastCarbonContainerObservations.find(
+          (o: any) => o.uuid === 'obs-group',
+        );
+        expect(groupObs.groupMembers[0].value).toBe('2026-10-02');
+      });
+
+      it('should keep YYYY-MM-DD HH:mm:ss format when the concept is not in the form schema', () => {
+        renderWithSchema(
+          [{ concept: { uuid: 'date-concept', datatype: 'Date' } }],
+          [
+            {
+              concept: { uuid: 'unknown-concept' },
+              uuid: 'obs-unknown',
+              value: LOCAL_DATETIME_ISO,
+              status: 'final',
+            },
+          ],
+        );
+
+        const unknownObs = lastCarbonContainerObservations.find(
+          (o: any) => o.uuid === 'obs-unknown',
+        );
+        expect(unknownObs.value).toBe('2027-05-17 13:45:30');
+      });
     });
 
     it('should PUT with interpretation omitted when interpretation is cleared on an obsGroup member', () => {
@@ -1519,6 +1713,81 @@ describe('ObservationFormsContainer', () => {
       });
     });
 
+    it('should preserve an untouched note-only existing observation on Continue Anyway', async () => {
+      // Regression guard: injectMissingDeleteObs injects a voided placeholder for the untouched
+      // note; the dedup guard in extractNotesFromFormData must still allow the note content to
+      // be re-appended (as a new POST), otherwise the comment is silently dropped.
+      const mockOnFormObservationsChange = jest.fn();
+
+      mockUseObservationFormData.mockReturnValue({
+        observations: [],
+        handleFormDataChange: jest.fn(),
+        resetForm: jest.fn(),
+        formMetadata: mockMetadata,
+        isLoadingMetadata: false,
+        metadataError: null,
+      });
+
+      mockGetValue.mockReturnValue({ observations: [], errors: [] });
+
+      mockContainerState.data = {
+        children: [
+          {
+            conceptUuid: 'note-concept',
+            value: { value: null, comment: 'Patient prefers morning visits' },
+            id: 'noteField',
+            control: { concept: { uuid: 'note-concept' } },
+          },
+        ],
+      };
+
+      render(
+        <ObservationFormsContainer
+          {...defaultProps}
+          viewingForm={mockForm}
+          existingObservations={[
+            {
+              concept: { uuid: 'note-concept' },
+              uuid: 'existing-note-uuid',
+              value: null,
+              comment: 'Patient prefers morning visits',
+              status: 'final',
+            },
+          ]}
+          onFormObservationsChange={mockOnFormObservationsChange}
+        />,
+      );
+
+      const saveButton = screen.getByTestId('primary-button');
+      fireEvent.click(saveButton); // triggers 'empty' validation
+      await waitFor(() => {
+        expect(screen.getByTestId('inline-notification')).toBeInTheDocument();
+      });
+      fireEvent.click(saveButton); // Continue Anyway
+
+      await waitFor(() => {
+        expect(mockOnFormObservationsChange).toHaveBeenCalled();
+      });
+      const saved = mockOnFormObservationsChange.mock.calls.at(-1)![1];
+      // Voided placeholder for the existing uuid (DELETE lineage)
+      expect(
+        saved.some(
+          (o: Form2Observation) =>
+            o.uuid === 'existing-note-uuid' && o.voided === true,
+        ),
+      ).toBe(true);
+      // Re-appended live note carrying the comment (POST, no uuid)
+      expect(
+        saved.some(
+          (o: Form2Observation) =>
+            !o.uuid &&
+            !o.voided &&
+            o.concept.uuid === 'note-concept' &&
+            o.comment === 'Patient prefers morning visits',
+        ),
+      ).toBe(true);
+    });
+
     it('should extract notes from nested children in form data structure', async () => {
       const mockOnFormObservationsChange = jest.fn();
 
@@ -1986,6 +2255,69 @@ describe('Edit mode - hasFormChanges / change detection', () => {
 
     const primaryButton = screen.getByTestId('primary-button');
     expect(primaryButton).toBeDisabled();
+  });
+
+  it('should enable the primary button and save the edited Date obs after a real change', () => {
+    const mockOnFormObservationsChange = jest.fn();
+    mockExecuteOnFormSaveEvent.mockImplementation(
+      (_metadata, observations) => observations,
+    );
+    mockUseObservationFormData.mockReturnValue({
+      observations: [],
+      handleFormDataChange: jest.fn(),
+      resetForm: jest.fn(),
+      formMetadata: {
+        schema: {
+          name: 'Edit Form',
+          controls: [{ concept: { uuid: 'date-concept', datatype: 'Date' } }],
+        },
+      },
+      isLoadingMetadata: false,
+      metadataError: null,
+    });
+
+    render(
+      <ObservationFormsContainer
+        {...defaultProps}
+        encounterSessionStartContext={editModeContext}
+        onFormObservationsChange={mockOnFormObservationsChange}
+        existingObservations={[
+          {
+            concept: { uuid: 'date-concept' },
+            uuid: 'obs-date',
+            value: '2026-10-02T00:00:00+00:00',
+            status: 'final',
+          },
+        ]}
+      />,
+    );
+
+    const primaryButton = screen.getByTestId('primary-button');
+    expect(primaryButton).toBeDisabled();
+
+    // CarbonContainer reports a real difference from the loaded observations
+    act(() => lastCarbonContainerSetIsFormUpdated?.(true));
+    expect(primaryButton).not.toBeDisabled();
+
+    mockGetValue.mockReturnValue({
+      errors: [],
+      observations: [
+        {
+          concept: { uuid: 'date-concept' },
+          uuid: 'obs-date',
+          value: '2026-10-05',
+          formFieldPath: 'Edit Form.1/1-0',
+        },
+      ],
+    });
+    fireEvent.click(primaryButton);
+
+    const savedObservations = mockOnFormObservationsChange.mock.calls[0][1];
+    const savedDateObs = savedObservations.find(
+      (o: Form2Observation) => o.uuid === 'obs-date',
+    );
+    expect(savedDateObs.value).toBe('2026-10-05');
+    expect(savedDateObs.unchanged).toBeFalsy();
   });
 
   it('should enable the primary button in non-edit mode regardless of observations', () => {

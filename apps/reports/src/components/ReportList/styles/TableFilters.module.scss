@@ -1,0 +1,43 @@
+.filtersContainer {
+  // `--cds-background` is now set explicitly in applyTheme.ts (Bahmni's
+  // design tokens never apply a Carbon theme class, so Carbon's own default
+  // never activates). No `!important` needed — nothing else targets this
+  // element's background.
+  background-color: var(--cds-background);
+  padding: 1.75rem;
+  margin-bottom: 2rem;
+}
+
+.filtersTitle {
+  margin: 0 0 1.5rem 0;
+  font-size: 1rem;
+  font-weight: 400;
+  color: var(--cds-text-primary);
+}
+
+.filtersRow {
+  display: grid;
+  grid-template-columns: 1.29fr 1fr 1fr auto 1.16fr;
+  gap: 2.25rem;
+  align-items: end;
+}
+
+.divider {
+  width: 1px;
+  align-self: stretch;
+  margin: 0 1.25rem;
+  background: var(--cds-border-subtle);
+}
+
+.buttonsRow {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  margin-top: 2rem;
+
+  button {
+    min-width: 8rem;
+    justify-content: center;
+    padding-inline-end: 1rem;
+  }
+}

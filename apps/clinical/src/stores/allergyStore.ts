@@ -1,3 +1,4 @@
+import { isNonCodedAllergen } from '@bahmni/services';
 import { Coding } from 'fhir/r4';
 import { create } from 'zustand';
 import { AllergyInputEntry, AllergenConcept } from '../models/allergy';
@@ -5,12 +6,22 @@ import { AllergyInputEntry, AllergenConcept } from '../models/allergy';
 export interface AllergyState {
   selectedAllergies: AllergyInputEntry[];
 
-  addAllergy: (allergy: AllergenConcept) => void;
+  addAllergy: (allergy: AllergenConcept, isNonCoded?: boolean) => void;
   preloadAllergies: (entries: AllergyInputEntry[]) => void;
-  removeAllergy: (allergyId: string) => void;
-  updateSeverity: (allergyId: string, severity: Coding | null) => void;
-  updateReactions: (allergyId: string, reactions: Coding[]) => void;
-  updateNote: (allergyId: string, note: string) => void;
+  /** All keyed by entryId (unique per record) — never by the allergen concept id. */
+  removeAllergy: (entryId: string) => void;
+  updateSeverity: (entryId: string, severity: Coding | null) => void;
+  updateReactions: (entryId: string, reactions: Coding[]) => void;
+  updateNote: (entryId: string, note: string) => void;
+  updateNonCodedAllergen: (entryId: string, name: string) => void;
+  /** Records the backend-assigned resource UUID after a successful REST save, so a retry updates instead of re-creating. */
+  setResourceId: (entryId: string, resourceId: string) => void;
+  /**
+   * Marks every coded (non-"Other") allergy as unmodified once the encounter
+   * bundle that persisted them has succeeded, so a retry after a later
+   * direct-submit failure does not resubmit them through the bundle again.
+   */
+  markCodedAllergiesAsSaved: () => void;
   validateAllAllergies: () => boolean;
   reset: () => void;
 
@@ -26,9 +37,11 @@ export const useAllergyStore = create<AllergyState>((set, get) => ({
     });
   },
 
-  addAllergy: (allergy: AllergenConcept) => {
+  addAllergy: (allergy: AllergenConcept, isNonCoded?: boolean) => {
     const newAllergy: AllergyInputEntry = {
       id: allergy.uuid,
+      isNonCoded,
+      entryId: crypto.randomUUID(),
       display: allergy.display,
       type: allergy.type ?? '',
       selectedSeverity: null,
@@ -42,18 +55,18 @@ export const useAllergyStore = create<AllergyState>((set, get) => ({
     }));
   },
 
-  removeAllergy: (allergyId: string) => {
+  removeAllergy: (entryId: string) => {
     set((state) => ({
       selectedAllergies: state.selectedAllergies.filter(
-        (allergy) => allergy.id !== allergyId,
+        (allergy) => allergy.entryId !== entryId,
       ),
     }));
   },
 
-  updateSeverity: (allergyId: string, severity: Coding | null) => {
+  updateSeverity: (entryId: string, severity: Coding | null) => {
     set((state) => ({
       selectedAllergies: state.selectedAllergies.map((allergy) => {
-        if (allergy.id !== allergyId) return allergy;
+        if (allergy.entryId !== entryId) return allergy;
 
         const updatedAllergy = {
           ...allergy,
@@ -71,10 +84,10 @@ export const useAllergyStore = create<AllergyState>((set, get) => ({
     }));
   },
 
-  updateReactions: (allergyId: string, reactions: Coding[]) => {
+  updateReactions: (entryId: string, reactions: Coding[]) => {
     set((state) => ({
       selectedAllergies: state.selectedAllergies.map((allergy) => {
-        if (allergy.id !== allergyId) return allergy;
+        if (allergy.entryId !== entryId) return allergy;
 
         const updatedAllergy = {
           ...allergy,
@@ -92,10 +105,10 @@ export const useAllergyStore = create<AllergyState>((set, get) => ({
     }));
   },
 
-  updateNote: (allergyId: string, note: string) => {
+  updateNote: (entryId: string, note: string) => {
     set((state) => ({
       selectedAllergies: state.selectedAllergies.map((allergy) => {
-        if (allergy.id !== allergyId) return allergy;
+        if (allergy.entryId !== entryId) return allergy;
         const updatedAllergy = {
           ...allergy,
           note,
@@ -103,6 +116,45 @@ export const useAllergyStore = create<AllergyState>((set, get) => ({
         };
         return updatedAllergy;
       }),
+    }));
+  },
+
+  updateNonCodedAllergen: (entryId: string, name: string) => {
+    set((state) => ({
+      selectedAllergies: state.selectedAllergies.map((allergy) => {
+        if (allergy.entryId !== entryId) return allergy;
+
+        const updatedAllergy = {
+          ...allergy,
+          nonCodedAllergen: name,
+          isModified: true,
+        };
+
+        if (allergy.hasBeenValidated && name.trim()) {
+          updatedAllergy.errors = { ...allergy.errors };
+          delete updatedAllergy.errors.nonCodedAllergen;
+        }
+
+        return updatedAllergy;
+      }),
+    }));
+  },
+
+  setResourceId: (entryId: string, resourceId: string) => {
+    set((state) => ({
+      selectedAllergies: state.selectedAllergies.map((allergy) =>
+        allergy.entryId === entryId ? { ...allergy, resourceId } : allergy,
+      ),
+    }));
+  },
+
+  markCodedAllergiesAsSaved: () => {
+    set((state) => ({
+      selectedAllergies: state.selectedAllergies.map((allergy) =>
+        isNonCodedAllergen(allergy.id)
+          ? allergy
+          : { ...allergy, isModified: false },
+      ),
     }));
   },
 
@@ -125,6 +177,19 @@ export const useAllergyStore = create<AllergyState>((set, get) => ({
           isValid = false;
         } else {
           delete errors.reactions;
+        }
+
+        // OpenMRS rejects a non-coded allergy with no free-text allergen name
+        // (allergyapi.allergen.nonCodedAllergen.required), so block it here
+        // rather than letting the save fail server-side.
+        if (
+          isNonCodedAllergen(allergy.id) &&
+          !allergy.nonCodedAllergen?.trim()
+        ) {
+          errors.nonCodedAllergen = 'INPUT_VALUE_REQUIRED';
+          isValid = false;
+        } else {
+          delete errors.nonCodedAllergen;
         }
 
         return {

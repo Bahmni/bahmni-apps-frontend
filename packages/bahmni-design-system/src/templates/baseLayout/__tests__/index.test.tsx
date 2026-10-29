@@ -9,6 +9,7 @@ describe('BaseLayout', () => {
   const MockMain = () => (
     <div data-testid="mock-main-display">Mock Main Display</div>
   );
+  const MockFooter = () => <div data-testid="mock-footer">Mock Footer</div>;
 
   const defaultProps = {
     header: <MockHeader />,
@@ -16,26 +17,51 @@ describe('BaseLayout', () => {
   };
 
   describe('Rendering And Structure', () => {
-    test('renders all sections when all props are provided', () => {
-      render(<BaseLayout {...defaultProps} />);
-      expect(screen.getByTestId('mock-header')).toBeInTheDocument();
-      expect(screen.getByTestId('mock-main-display')).toBeInTheDocument();
+    it.each([
+      {
+        description: 'renders all sections when all props are provided',
+        props: { header: <MockHeader />, main: <MockMain /> },
+        testIds: ['mock-header', 'mock-main-display'],
+      },
+      {
+        description: 'renders with empty content in sections',
+        props: {
+          header: <div data-testid="empty-header" />,
+          main: <div data-testid="empty-main-display" />,
+        },
+        testIds: ['empty-header', 'empty-main-display'],
+      },
+    ])('$description', ({ props, testIds }) => {
+      render(<BaseLayout {...props} />);
+      testIds.forEach((id) =>
+        expect(screen.getByTestId(id)).toBeInTheDocument(),
+      );
     });
-    test('renders with empty content in sections', () => {
-      const emptyProps = {
-        header: <div data-testid="empty-header" />,
-        main: <div data-testid="empty-main-display" />,
-      };
 
-      render(<BaseLayout {...emptyProps} />);
-      expect(screen.getByTestId('empty-header')).toBeInTheDocument();
-      expect(screen.getByTestId('empty-main-display')).toBeInTheDocument();
+    test('renders footer when footer prop is provided', () => {
+      render(<BaseLayout {...defaultProps} footer={<MockFooter />} />);
+      expect(screen.getByTestId('mock-footer')).toBeInTheDocument();
+      expect(
+        screen.getByTestId('footer-display-area-test-id'),
+      ).toBeInTheDocument();
+    });
+    test('does not render footer when footer prop is not provided', () => {
+      render(<BaseLayout {...defaultProps} />);
+      expect(
+        screen.queryByTestId('footer-display-area-test-id'),
+      ).not.toBeInTheDocument();
     });
   });
 
   describe('Accessibility', () => {
-    test('has no accessibility violations', async () => {
-      const { container } = render(<BaseLayout {...defaultProps} />);
+    it.each([
+      { description: 'without footer', props: defaultProps },
+      {
+        description: 'with footer',
+        props: { ...defaultProps, footer: <MockFooter /> },
+      },
+    ])('has no accessibility violations $description', async ({ props }) => {
+      const { container } = render(<BaseLayout {...props} />);
 
       const results = await axe(container);
       expect(results).toHaveNoViolations();

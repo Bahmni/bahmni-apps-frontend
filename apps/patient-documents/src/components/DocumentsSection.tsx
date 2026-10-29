@@ -5,6 +5,7 @@ import {
   SkeletonPlaceholder,
 } from '@bahmni/design-system';
 import {
+  DocumentSaveTarget,
   DocumentViewModel,
   formatDateTime,
   getDocumentTypes,
@@ -12,18 +13,28 @@ import {
 } from '@bahmni/services';
 import {
   ConfirmationModal,
-  DocumentSaveSummary,
   DocumentUpload,
-  DocumentUploadRef,
+  getDefaultDocumentType,
   renderDocumentTile,
+  revokeDocumentPreview,
+  useActivePractitioner,
   useNotification,
 } from '@bahmni/widgets';
+import type { DocumentEntry } from '@bahmni/widgets';
 import { InlineLoading, TextArea } from '@carbon/react';
 import { useQuery } from '@tanstack/react-query';
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { BAHMNI_PATIENT_DOCUMENTS_NAMESPACE } from '../constants/app';
-import { useVisitDocuments } from '../hooks/useVisitDocuments';
+import {
+  useVisitDocuments,
+  VisitDocumentGroup,
+} from '../hooks/useVisitDocuments';
+import {
+  DocumentSaveInput,
+  saveVisitDocuments,
+  VisitDocumentSaveResult,
+} from '../services/visitDocumentSaveService';
 import styles from './styles/DocumentsSection.module.scss';
 
 interface DocumentEncounterType {
@@ -47,6 +58,40 @@ const renderTile = (document: DocumentViewModel) =>
     contentType: document.contentType,
   });
 
+const saveTargetOf = (
+  group: VisitDocumentGroup,
+  documentEncounterType: DocumentEncounterType,
+): DocumentSaveTarget =>
+  group.documentEncounter?.id
+    ? {
+        encounterUuid: group.documentEncounter.id,
+        existingEncounter: group.documentEncounter,
+      }
+    : {
+        createEncounterInVisit: {
+          visitUuid: group.visit.id ?? '',
+          encounterTypeUuid: documentEncounterType.uuid,
+          encounterTypeDisplay: documentEncounterType.name,
+          visitPeriod: group.visit.period,
+        },
+      };
+
+const toDocumentSaveInput = (entry: DocumentEntry): DocumentSaveInput => ({
+  id: entry.id,
+  files: entry.files.map((file) => ({
+    id: file.id,
+    file: file.file,
+    fileName: file.fileName,
+    contentType: file.contentType,
+    uploadedUrl: file.uploadedUrl,
+  })),
+  documentType: entry.documentType,
+  note: entry.note,
+});
+
+const filledEntries = (entries: DocumentEntry[] = []) =>
+  entries.filter((entry) => entry.files.length > 0);
+
 export const DocumentsSection: React.FC<DocumentsSectionProps> = ({
   patientUuid,
   documentEncounterType,
@@ -61,36 +106,34 @@ export const DocumentsSection: React.FC<DocumentsSectionProps> = ({
     [documentEncounterType.uuid],
   );
 
-  const uploadHandles = useRef(new Map<string, DocumentUploadRef>());
-  // Cached per visit so the ref prop keeps a stable identity. An inline callback would make React
-  // detach and reattach every rendered handle on each re-render of this section, which also opens
-  // a window where uploadHandles has no entry for a visit that is on screen.
-  const uploadHandleRefs = useRef(
-    new Map<string, (handle: DocumentUploadRef | null) => void>(),
-  );
-  const uploadHandleRef = useCallback((visitKey: string) => {
-    const cached = uploadHandleRefs.current.get(visitKey);
-    if (cached) {
-      return cached;
-    }
-    const setHandle = (handle: DocumentUploadRef | null) => {
-      if (handle) {
-        uploadHandles.current.set(visitKey, handle);
-      } else {
-        uploadHandles.current.delete(visitKey);
-      }
-    };
-    uploadHandleRefs.current.set(visitKey, setHandle);
-    return setHandle;
-  }, []);
-  const [visitsWithPendingDocument, setVisitsWithPendingDocument] = useState<
-    string[]
-  >([]);
+  const { practitioner } = useActivePractitioner();
+  const [pendingByVisit, setPendingByVisit] = useState<
+    Record<string, DocumentEntry[]>
+  >({});
   const [isSaving, setIsSaving] = useState(false);
   const [isLeaveConfirmationOpen, setIsLeaveConfirmationOpen] = useState(false);
   const isLeavingIntentionally = useRef(false);
 
+  const visitKeys = visitGroups.map(
+    (group, index) => group.visit.id ?? `visit-${index}`,
+  );
+  const visitsWithPendingDocument = visitKeys.filter(
+    (visitKey) => filledEntries(pendingByVisit[visitKey]).length > 0,
+  );
   const hasUnsavedDocuments = visitsWithPendingDocument.length > 0;
+
+  const pendingByVisitRef = useRef(pendingByVisit);
+  useEffect(() => {
+    pendingByVisitRef.current = pendingByVisit;
+  });
+  useEffect(
+    () => () =>
+      Object.values(pendingByVisitRef.current)
+        .flat()
+        .flatMap((entry) => entry.files)
+        .forEach((file) => revokeDocumentPreview(file)),
+    [],
+  );
 
   useEffect(() => {
     if (!hasUnsavedDocuments) {
@@ -118,46 +161,45 @@ export const DocumentsSection: React.FC<DocumentsSectionProps> = ({
   const leaveToSearch = () => {
     setIsLeaveConfirmationOpen(false);
     if (searchHref) {
-      // Only disarm the unload guard when we are actually navigating away. Setting it
-      // unconditionally would leave the user on the page with unsaved documents and no warning.
       isLeavingIntentionally.current = true;
       window.location.href = searchHref;
     }
   };
 
-  const handlePendingChange = useCallback(
-    (visitKey: string, hasPendingDocument: boolean) => {
-      setVisitsWithPendingDocument((previous) => {
-        if (previous.includes(visitKey) === hasPendingDocument) {
-          return previous;
-        }
-        return hasPendingDocument
-          ? [...previous, visitKey]
-          : previous.filter((key) => key !== visitKey);
-      });
-    },
-    [],
-  );
+  const setVisitDocuments = (visitKey: string, entries: DocumentEntry[]) =>
+    setPendingByVisit((previous) => ({ ...previous, [visitKey]: entries }));
 
-  const visitKeys = visitGroups.map(
-    (group, index) => group.visit.id ?? `visit-${index}`,
-  );
+  const applySaveResult = (
+    visitKey: string,
+    entries: DocumentEntry[],
+    { savedIds, uploadedUrls }: VisitDocumentSaveResult,
+  ) => {
+    const saved = new Set(savedIds);
+    entries
+      .filter((entry) => saved.has(entry.id))
+      .flatMap((entry) => entry.files)
+      .forEach((file) => revokeDocumentPreview(file));
+    setPendingByVisit((previous) => ({
+      ...previous,
+      [visitKey]: (previous[visitKey] ?? [])
+        .filter((entry) => !saved.has(entry.id))
+        .map((entry) => ({
+          ...entry,
+          files: entry.files.map((file) =>
+            uploadedUrls[file.id]
+              ? { ...file, uploadedUrl: uploadedUrls[file.id] }
+              : file,
+          ),
+        })),
+    }));
+  };
 
-  const renderedVisitKeys = visitKeys.join('|');
-  useEffect(() => {
-    const stillRendered = new Set(renderedVisitKeys.split('|'));
-    setVisitsWithPendingDocument((previous) => {
-      const next = previous.filter((visitKey) => stillRendered.has(visitKey));
-      return next.length === previous.length ? previous : next;
-    });
-  }, [renderedVisitKeys]);
-
-  const notifySaveOutcome = (summaries: DocumentSaveSummary[]) => {
-    const savedCount = summaries.reduce(
-      (total, summary) => total + summary.savedCount,
+  const notifySaveOutcome = (results: VisitDocumentSaveResult[]) => {
+    const savedCount = results.reduce(
+      (total, result) => total + result.savedIds.length,
       0,
     );
-    const failures = summaries.flatMap((summary) => summary.failures);
+    const failures = results.flatMap((result) => result.failures);
     if (savedCount === 0 && failures.length === 0) {
       return;
     }
@@ -172,6 +214,7 @@ export const DocumentsSection: React.FC<DocumentsSectionProps> = ({
                 count: savedCount,
               }),
         type: 'success',
+        timeout: 5000,
       });
       return;
     }
@@ -185,6 +228,7 @@ export const DocumentsSection: React.FC<DocumentsSectionProps> = ({
           failed: failures.length,
         }),
         type: 'warning',
+        timeout: 5000,
       });
       return;
     }
@@ -198,22 +242,30 @@ export const DocumentsSection: React.FC<DocumentsSectionProps> = ({
               count: failures.length,
             }),
       type: 'error',
+      timeout: 5000,
     });
   };
 
   const handleSave = async () => {
     setIsSaving(true);
     try {
-      const summaries = await Promise.all(
-        visitsWithPendingDocument.map((visitKey) =>
-          uploadHandles.current.get(visitKey)?.save(),
-        ),
+      const results = await Promise.all(
+        visitsWithPendingDocument.map(async (visitKey) => {
+          const group = visitGroups[visitKeys.indexOf(visitKey)];
+          const entries = filledEntries(pendingByVisit[visitKey]);
+          const result = await saveVisitDocuments({
+            patientUuid,
+            encounterTypeName: documentEncounterType.name,
+            target: saveTargetOf(group, documentEncounterType),
+            documents: entries.map(toDocumentSaveInput),
+            defaultDocumentType,
+            authorPractitionerUuid: practitioner?.uuid,
+          });
+          applySaveResult(visitKey, entries, result);
+          return result;
+        }),
       );
-      notifySaveOutcome(
-        summaries.filter(
-          (summary): summary is DocumentSaveSummary => !!summary,
-        ),
-      );
+      notifySaveOutcome(results);
       await refetch();
     } finally {
       setIsSaving(false);
@@ -225,9 +277,21 @@ export const DocumentsSection: React.FC<DocumentsSectionProps> = ({
     queryFn: () => getDocumentTypes(topLevelConcept!),
     enabled: !!topLevelConcept,
   });
+  const documentUploadConfig = useMemo(
+    () =>
+      topLevelConcept
+        ? {
+            attributes: [{ name: 'documentType', required: false }],
+            metadata: { documentTypeConceptName: topLevelConcept },
+          }
+        : undefined,
+    [topLevelConcept],
+  );
+  const defaultDocumentType = useMemo(
+    () => getDefaultDocumentType(documentTypes ?? [], defaultOption),
+    [documentTypes, defaultOption],
+  );
 
-  // Document types populate an optional dropdown, so a failure must not block upload — but the
-  // user should still be told the list could not be loaded rather than seeing an empty dropdown.
   useEffect(() => {
     if (documentTypesError) {
       const { title, message } = getFormattedError(documentTypesError);
@@ -253,7 +317,6 @@ export const DocumentsSection: React.FC<DocumentsSectionProps> = ({
     );
   }
 
-  // Documents are attached to visits; with no visits there is nothing to show or upload into.
   if (visitGroups.length === 0) {
     return null;
   }
@@ -272,9 +335,6 @@ export const DocumentsSection: React.FC<DocumentsSectionProps> = ({
             : '';
           let visitLabel = t('DOCUMENTS_VISIT');
           if (startDate && endDate) {
-            // A visit that begins and ends on the same day reads better as "Visit on <date>" than
-            // as a range repeating one date twice. Compared on the formatted values rather than the
-            // raw timestamps, so the label can never disagree with the dates it would have shown.
             visitLabel =
               startDate === endDate
                 ? t('DOCUMENTS_VISIT_ON', { date: startDate })
@@ -285,20 +345,6 @@ export const DocumentsSection: React.FC<DocumentsSectionProps> = ({
           } else if (startDate) {
             visitLabel = t('DOCUMENTS_VISIT_ON', { date: startDate });
           }
-          const saveTarget = group.documentEncounter?.id
-            ? {
-                encounterUuid: group.documentEncounter.id,
-                existingEncounter: group.documentEncounter,
-              }
-            : {
-                createEncounterInVisit: {
-                  visitUuid: group.visit.id ?? '',
-                  encounterTypeUuid: documentEncounterType.uuid,
-                  encounterTypeDisplay: documentEncounterType.name,
-                  visitPeriod: period,
-                },
-              };
-
           const visitKey = visitKeys[index];
 
           return (
@@ -343,15 +389,12 @@ export const DocumentsSection: React.FC<DocumentsSectionProps> = ({
                 </div>
               )}
               <DocumentUpload
-                patientUuid={patientUuid}
-                encounterTypeName={documentEncounterType.name}
-                saveTarget={saveTarget}
-                documentTypes={documentTypes}
-                defaultOption={defaultOption}
-                onPendingChange={(hasPendingDocument) =>
-                  handlePendingChange(visitKey, hasPendingDocument)
+                documents={pendingByVisit[visitKey] ?? []}
+                onDocumentsChange={(entries) =>
+                  setVisitDocuments(visitKey, entries)
                 }
-                ref={uploadHandleRef(visitKey)}
+                config={documentUploadConfig}
+                isSaving={isSaving}
               />
             </AccordionItem>
           );

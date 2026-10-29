@@ -63,6 +63,7 @@ export interface CursorPaginationConfig<T> {
   startPage?: number;
   hasNext: boolean;
   hasPrevious: boolean;
+  disabled?: boolean;
   onSetChange: (
     direction: DataTableSetDirection,
     table: DataTableInstance<T>,

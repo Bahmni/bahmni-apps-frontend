@@ -1,7 +1,7 @@
 import { ComboBox } from '@bahmni/design-system';
 import { useTranslation } from '@bahmni/services';
 import { useQuery } from '@tanstack/react-query';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
   LookupInput as LookupInputConfig,
   LookupOption,
@@ -52,6 +52,18 @@ const LookupCriterionInput = ({
       empty: t('COMMON_SEARCH_LOOKUP_EMPTY'),
     });
   }, [loader, inputValue, options, isLoading, isError]);
+
+  // A restored value may not exist for the current location; drop it so a
+  // hidden option is never searched on
+  useEffect(() => {
+    if (
+      data &&
+      value?.value &&
+      !data.some((option) => option.uuid === value.value)
+    ) {
+      onChange(null);
+    }
+  }, [data, value?.value]);
 
   const selectedItem =
     options.find((option) => option.uuid === value?.value) ?? null;

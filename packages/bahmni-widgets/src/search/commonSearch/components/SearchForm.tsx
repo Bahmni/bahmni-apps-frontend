@@ -1,4 +1,4 @@
-import { Button, Dropdown } from '@bahmni/design-system';
+import { Button, Dropdown, Link } from '@bahmni/design-system';
 import { useTranslation, UserLocation } from '@bahmni/services';
 import { useState } from 'react';
 import { CriterionRow, CriterionValue, SearchContextConfig } from '../models';
@@ -22,6 +22,7 @@ interface SearchFormProps {
   ) => CriterionRow[];
   savedRows?: CriterionRow[];
   savedContextKey?: SearchContextConfig['context'];
+  onReset?: () => void;
 }
 
 const SearchForm = ({
@@ -30,6 +31,7 @@ const SearchForm = ({
   onSearch,
   savedRows,
   savedContextKey,
+  onReset,
 }: SearchFormProps) => {
   const { t } = useTranslation();
   const [activeContextKey, setActiveContextKey] = useState<string>(
@@ -47,6 +49,11 @@ const SearchForm = ({
   }) => {
     setActiveContextKey(selectedItem!.context);
     setRows(initialRows(selectedItem!));
+  };
+
+  const handleReset = () => {
+    setRows(initialRows(activeContext));
+    onReset?.();
   };
 
   const reconcile = (nextRows: CriterionRow[]) =>
@@ -163,32 +170,44 @@ const SearchForm = ({
           data-testid="common-search-footer-test-id"
           className={styles.footer}
         >
-          {canAddMore ? (
+          <div className={styles.footerActions}>
+            {canAddMore ? (
+              <Button
+                kind="tertiary"
+                id="common-search-add-criterion-button"
+                data-testid="common-search-add-criterion-button-test-id"
+                onClick={handleAdd}
+              >
+                {t('COMMON_SEARCH_ADD_CRITERIA_BUTTON')}
+              </Button>
+            ) : null}
+          </div>
+          <div className={styles.footerActions}>
+            {onReset && (
+              <Link
+                id="common-search-reset-button"
+                data-testid="common-search-reset-button-test-id"
+                onClick={handleReset}
+              >
+                {t('COMMON_SEARCH_RESET_BUTTON')}
+              </Link>
+            )}
             <Button
-              kind="tertiary"
-              id="common-search-add-criterion-button"
-              data-testid="common-search-add-criterion-button-test-id"
-              onClick={handleAdd}
+              kind="primary"
+              id="common-search-search-button"
+              data-testid="common-search-search-button-test-id"
+              onClick={() => setRows(onSearch(rows, activeContext))}
+              disabled={
+                rows.length === 0 ||
+                rows.some(
+                  (r) =>
+                    r.validationError !== null || r.rangeOrderError !== null,
+                )
+              }
             >
-              {t('COMMON_SEARCH_ADD_CRITERIA_BUTTON')}
+              {t('COMMON_SEARCH_SEARCH_BUTTON')}
             </Button>
-          ) : (
-            <div />
-          )}
-          <Button
-            kind="primary"
-            id="common-search-search-button"
-            data-testid="common-search-search-button-test-id"
-            onClick={() => setRows(onSearch(rows, activeContext))}
-            disabled={
-              rows.length === 0 ||
-              rows.some(
-                (r) => r.validationError !== null || r.rangeOrderError !== null,
-              )
-            }
-          >
-            {t('COMMON_SEARCH_SEARCH_BUTTON')}
-          </Button>
+          </div>
         </div>
       </div>
     </div>
