@@ -229,6 +229,7 @@
   "DISPOSITION_DATE_REQUIRED": "La fecha es obligatoria",
   "DISPOSITION_FORM_TITLE": "Disposición",
   "DISPOSITION_NOTES_LABEL": "Notas",
+  "DISPOSITION_NOTES_REQUIRED": "Las notas son obligatorias",
   "DISPOSITION_NOTES_PLACEHOLDER": "Ingrese notas",
   "DISPOSITION_TYPE_LABEL": "Tipo",
   "DISPOSITION_TYPE_PLACEHOLDER": "Elija una opción",

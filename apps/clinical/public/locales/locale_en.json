@@ -223,6 +223,7 @@
   "DISPOSITION_DATE_REQUIRED": "Date is required",
   "DISPOSITION_FORM_TITLE": "Disposition",
   "DISPOSITION_NOTES_LABEL": "Notes",
+  "DISPOSITION_NOTES_REQUIRED": "Notes are required",
   "DISPOSITION_NOTES_PLACEHOLDER": "Enter notes",
   "DISPOSITION_TYPE_LABEL": "Type",
   "DISPOSITION_TYPE_PLACEHOLDER": "Choose an option",

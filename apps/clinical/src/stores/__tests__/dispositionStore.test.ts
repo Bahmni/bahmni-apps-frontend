@@ -10,6 +10,7 @@ describe('useDispositionStore', () => {
     act(() => {
       useDispositionStore.getState().setTypeRequired(true);
       useDispositionStore.getState().setDateRequired(false);
+      useDispositionStore.getState().setNotesRequired(false);
       useDispositionStore.getState().setHasActiveOrder('ADMIT', false);
       useDispositionStore.getState().setHasActiveOrder('DISCHARGE', false);
       useDispositionStore.getState().setHasActiveOrder('TRANSFER', false);
@@ -290,6 +291,54 @@ describe('useDispositionStore', () => {
       });
 
       expect(result.current.errors.date).toBeUndefined();
+    });
+  });
+
+  describe('notes required', () => {
+    it('fails with a notes error when required and empty', () => {
+      const { result } = renderHook(() => useDispositionStore());
+      act(() => {
+        result.current.setNotesRequired(true);
+        result.current.setSelectedType(admitType);
+      });
+      let isValid = true;
+      act(() => {
+        isValid = result.current.validate();
+      });
+      expect(isValid).toBe(false);
+      expect(result.current.errors.notes).toBe('DISPOSITION_NOTES_REQUIRED');
+    });
+
+    it('passes when required and notes entered, and setNotes clears the error', () => {
+      const { result } = renderHook(() => useDispositionStore());
+      act(() => {
+        result.current.setNotesRequired(true);
+        result.current.setSelectedType(admitType);
+      });
+      act(() => {
+        result.current.validate();
+      });
+      act(() => {
+        result.current.setNotes('hello');
+      });
+      expect(result.current.errors.notes).toBeUndefined();
+      let isValid = false;
+      act(() => {
+        isValid = result.current.validate();
+      });
+      expect(isValid).toBe(true);
+    });
+
+    it('passes with empty notes when not required', () => {
+      const { result } = renderHook(() => useDispositionStore());
+      act(() => {
+        result.current.setSelectedType(admitType);
+      });
+      let isValid = false;
+      act(() => {
+        isValid = result.current.validate();
+      });
+      expect(isValid).toBe(true);
     });
   });
 

@@ -13,6 +13,7 @@ export interface DispositionState {
   errors: Record<string, string>;
   isTypeRequired: boolean;
   isDateRequired: boolean;
+  isNotesRequired: boolean;
   activeOrderByType: Record<string, boolean>;
 
   setSelectedType: (type: DispositionType | null) => void;
@@ -26,6 +27,7 @@ export interface DispositionState {
    */
   setTypeRequired: (required: boolean) => void;
   setDateRequired: (required: boolean) => void;
+  setNotesRequired: (required: boolean) => void;
 
   /**
    * Validates the current selection. Whether Type is mandatory comes from
@@ -50,6 +52,7 @@ export const useDispositionStore = create<DispositionState>((set, get) => ({
   errors: {},
   isTypeRequired: true,
   isDateRequired: false,
+  isNotesRequired: false,
   activeOrderByType: {},
 
   setSelectedType: (type: DispositionType | null) => {
@@ -75,7 +78,11 @@ export const useDispositionStore = create<DispositionState>((set, get) => ({
   },
 
   setNotes: (notes: string) => {
-    set({ notes });
+    set((state) => {
+      const errors = { ...state.errors };
+      if (notes.trim()) delete errors.notes;
+      return { notes, errors };
+    });
   },
 
   setTypeRequired: (required: boolean) => {
@@ -84,6 +91,10 @@ export const useDispositionStore = create<DispositionState>((set, get) => ({
 
   setDateRequired: (required: boolean) => {
     set({ isDateRequired: required });
+  },
+
+  setNotesRequired: (required: boolean) => {
+    set({ isNotesRequired: required });
   },
 
   validate: () => {
@@ -117,6 +128,13 @@ export const useDispositionStore = create<DispositionState>((set, get) => ({
       delete errors.date;
     }
 
+    if (state.isNotesRequired && !state.notes.trim()) {
+      errors.notes = 'DISPOSITION_NOTES_REQUIRED';
+      isValid = false;
+    } else {
+      delete errors.notes;
+    }
+
     set({ errors });
     return isValid;
   },
@@ -134,6 +152,7 @@ export const useDispositionStore = create<DispositionState>((set, get) => ({
       errors: {},
       isTypeRequired: state.isTypeRequired,
       isDateRequired: state.isDateRequired,
+      isNotesRequired: state.isNotesRequired,
     }));
   },
 }));

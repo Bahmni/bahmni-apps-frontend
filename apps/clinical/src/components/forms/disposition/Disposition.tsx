@@ -44,6 +44,7 @@ const Disposition: React.FC<DispositionProps> = React.memo(
       setNotes,
       setTypeRequired,
       setDateRequired,
+      setNotesRequired,
       setHasActiveOrder,
     } = useDispositionStore();
 
@@ -64,6 +65,15 @@ const Disposition: React.FC<DispositionProps> = React.memo(
     useEffect(() => {
       setDateRequired(isDateRequired);
     }, [isDateRequired, setDateRequired]);
+
+    const isNotesRequired =
+      inputControlConfig?.attributes?.find(
+        (attribute) => attribute.name === 'notes',
+      )?.required ?? false;
+
+    useEffect(() => {
+      setNotesRequired(isNotesRequired);
+    }, [isNotesRequired, setNotesRequired]);
 
     const configuredDispositionTypes = inputControlConfig?.metadata
       ?.dispositionTypes as DispositionType[] | undefined;
@@ -258,6 +268,8 @@ const Disposition: React.FC<DispositionProps> = React.memo(
               onClose={() => setNotes('')}
               enableCounter
               maxCount={notesMaxLength}
+              invalid={!!errors.notes}
+              invalidText={t(errors.notes ?? '')}
             />
           </Column>
         </Grid>
