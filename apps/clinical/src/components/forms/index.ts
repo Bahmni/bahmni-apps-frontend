@@ -7,6 +7,7 @@ import './immunization';
 import './documents';
 import './observations';
 import './stopMedications';
+import './disposition';
 
 export type {
   InputControl,

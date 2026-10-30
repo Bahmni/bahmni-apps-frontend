@@ -23,6 +23,7 @@ const EXPECTED_KEYS = [
   'vaccination',
   'immunizationHistory',
   'observationForms',
+  'disposition',
 ] as const;
 
 const makeStub = (key: string, withBundleEntries = true) => ({
@@ -46,6 +47,7 @@ const mockStubs = [
   makeStub('vaccination'),
   makeStub('immunizationHistory'),
   makeStub('observationForms'),
+  makeStub('disposition'),
 ];
 
 jest.mock('../../../stores');
@@ -366,6 +368,16 @@ describe('captureUpdatedResources', () => {
     expect(result[resultKey as keyof typeof result]).toBe(true);
   });
 
+  it('returns true for disposition when disposition hasData', () => {
+    const entries = [
+      makeMockEntry('disposition', {
+        hasData: jest.fn().mockReturnValue(true),
+      }),
+    ];
+
+    expect(captureUpdatedResources(entries).disposition).toBe(true);
+  });
+
   it('returns true for medications when medications hasData', () => {
     const entries = [
       makeMockEntry('medication', {
@@ -411,6 +423,7 @@ describe('captureUpdatedResources', () => {
       immunizationHistory: false,
       observationFormsWithBasedOn: undefined,
       serviceRequests: {},
+      disposition: false,
     });
   });
 
@@ -452,6 +465,7 @@ describe('captureUpdatedResources', () => {
       immunizationHistory: false,
       observationFormsWithBasedOn: undefined,
       serviceRequests: {},
+      disposition: false,
     });
   });
 });

@@ -217,7 +217,8 @@
                 "privileges": {
                   "type": "array",
                   "items": { "type": "string" }
-                }
+                },
+                "category": { "type": "string" }
               }
             }
           }

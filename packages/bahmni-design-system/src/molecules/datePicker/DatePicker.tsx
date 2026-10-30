@@ -39,12 +39,10 @@ export type DatePickerInputProps = CarbonDatePickerInputProps & {
   'data-testid'?: string;
 };
 
-export const DatePickerInput: React.FC<DatePickerInputProps> = ({
-  testId,
-  'data-testid': dataTestId,
-  placeholder,
-  ...carbonProps
-}) => {
+export const DatePickerInput = React.forwardRef<
+  HTMLInputElement,
+  DatePickerInputProps
+>(({ testId, 'data-testid': dataTestId, placeholder, ...carbonProps }, ref) => {
   const formats = useMemo(() => getDateFormats(), []);
 
   //TODO translations will be taken care later for placeholder
@@ -53,8 +51,11 @@ export const DatePickerInput: React.FC<DatePickerInputProps> = ({
   return (
     <CarbonDatePickerInput
       {...carbonProps}
+      ref={ref}
       placeholder={finalPlaceholder}
       data-testid={testId ?? dataTestId}
     />
   );
-};
+});
+
+DatePickerInput.displayName = 'DatePickerInput';

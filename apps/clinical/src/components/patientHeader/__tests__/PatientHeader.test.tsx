@@ -184,7 +184,7 @@ describe('PatientHeader Component', () => {
   describe('Button functionality', () => {
     test('renders button with "New Consultation" text and dispatches event on click', () => {
       renderComponent({ isActionAreaVisible: false });
-      const button = screen.getByRole('button');
+      const button = screen.getByTestId('consultation-action-button');
       fireEvent.click(button);
 
       expect(mockDispatchConsultationStart).toHaveBeenCalled();
@@ -193,14 +193,14 @@ describe('PatientHeader Component', () => {
 
     test('renders disabled button with "in progress" text when action area is visible', () => {
       renderComponent({ isActionAreaVisible: true });
-      const button = screen.getByRole('button');
+      const button = screen.getByTestId('consultation-action-button');
       expect(button).toHaveAttribute('disabled');
       expect(button).toHaveTextContent('Consultation in progress');
     });
 
     test('does not dispatch event when button is disabled', () => {
       renderComponent({ isActionAreaVisible: true });
-      const button = screen.getByRole('button');
+      const button = screen.getByTestId('consultation-action-button');
 
       fireEvent.click(button);
 

@@ -150,5 +150,6 @@ export function captureUpdatedResources(entries: InputControl[]) {
     documents: hasData('documents'),
     serviceRequests,
     observationFormsWithBasedOn: extractId(observationFormsBasedOn?.basedOn),
+    disposition: hasData('disposition'),
   };
 }

@@ -23,6 +23,11 @@ const isFHIROperationOutcome = (
   );
 };
 
+// HAPI wraps the real validation message in boilerplate, e.g.
+// "Error occurred while processing bundle entry [urn:uuid:...]. <actual message>"
+const HAPI_BUNDLE_ENTRY_ERROR_PREFIX =
+  /^Error occurred while processing bundle entry \[[^\]]*\]\.\s*/;
+
 /**
  * Extracts error message from FHIR OperationOutcome
  */
@@ -31,14 +36,24 @@ const parseFHIRError = (outcome: FHIROperationOutcome): string | null => {
     return null;
   }
 
-  // Check for duplicate medication error
   for (const issue of outcome.issue) {
     if (issue.diagnostics?.includes('Order.cannot.have.more.than.one')) {
       return 'ERROR_DUPLICATE_ACTIVE_MEDICATION';
     }
   }
 
-  return null;
+  // Fall back to surfacing the backend's own diagnostics message, stripped of
+  // HAPI's bundle-processing boilerplate, instead of a generic client message.
+  const diagnostics = outcome.issue.find(
+    (issue) => !!issue.diagnostics,
+  )?.diagnostics;
+  if (!diagnostics) {
+    return null;
+  }
+  const message = diagnostics.replace(HAPI_BUNDLE_ENTRY_ERROR_PREFIX, '');
+  return message.length > MAX_MESSAGE_LENGTH
+    ? message.substring(0, MAX_MESSAGE_LENGTH) + '...'
+    : message;
 };
 
 const MAX_MESSAGE_LENGTH = 200;
