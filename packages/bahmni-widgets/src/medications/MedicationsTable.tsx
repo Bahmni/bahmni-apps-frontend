@@ -92,6 +92,16 @@ const BASE_SORTABLE = [
   { key: 'status', sortable: true },
 ];
 
+const getAdditionalFieldValue = (
+  row: FormattedMedicationRequest,
+  key: string,
+): string => {
+  const value = (row as unknown as Record<string, unknown>)[key];
+  return typeof value === 'string' || typeof value === 'number'
+    ? String(value)
+    : '';
+};
+
 const MedicationsTable: React.FC<WidgetProps> = ({
   config,
   episodeOfCareUuids,
@@ -401,12 +411,8 @@ const MedicationsTable: React.FC<WidgetProps> = ({
             ]}
           />
         );
-      default: {
-        const value = (row as unknown as Record<string, unknown>)[key];
-        return typeof value === 'string' || typeof value === 'number'
-          ? String(value)
-          : '';
-      }
+      default:
+        return getAdditionalFieldValue(row, key);
     }
   };
 
