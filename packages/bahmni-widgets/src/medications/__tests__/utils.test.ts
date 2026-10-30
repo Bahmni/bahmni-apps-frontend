@@ -53,6 +53,7 @@ describe('formatMedicationRequest', () => {
       priority: 'stat',
       asNeeded: true,
       isImmediate: false,
+      reason: 'Fever',
       fhirResource: fhirMedicationRequestMock,
     };
 
@@ -74,6 +75,7 @@ describe('formatMedicationRequest', () => {
       isImmediate: false,
       note: undefined,
       doseForm: undefined,
+      reason: 'Fever',
       fhirResource: fhirMedicationRequestMock,
     });
   });
@@ -112,6 +114,7 @@ describe('formatMedicationRequest', () => {
       isImmediate: false,
       note: undefined,
       doseForm: undefined,
+      reason: undefined,
       fhirResource: fhirMedicationRequestMock,
     });
   });
@@ -150,6 +153,7 @@ describe('formatMedicationRequest', () => {
       isImmediate: false,
       note: undefined,
       doseForm: undefined,
+      reason: undefined,
       fhirResource: fhirMedicationRequestMock,
     });
   });

@@ -262,6 +262,7 @@ export const mockSelectedMedicationWithAllErrors: MedicationInputEntry = {
     route: 'MEDICATION_REQUEST_INPUT_CONTROL_ROUTE_REQUIRED',
     startDate: 'MEDICATION_REQUEST_INPUT_CONTROL_START_DATE_REQUIRED',
     note: 'MEDICATION_REQUEST_INPUT_CONTROL_NOTE_REQUIRED',
+    reason: 'MEDICATION_REQUEST_INPUT_CONTROL_REASON_REQUIRED',
   },
   hasBeenValidated: true,
 };
@@ -309,6 +310,7 @@ export const makeMockStore = (overrides = {}) => ({
   updateDispenseQuantity: jest.fn(),
   updateDispenseUnit: jest.fn(),
   updateNote: jest.fn(),
+  updateMedicationReason: jest.fn(),
   setPendingFhirEdits: jest.fn(),
   loadMedicationsForEdit: jest.fn(),
   hasEditChanges: jest.fn().mockReturnValue(false),

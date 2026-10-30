@@ -121,6 +121,7 @@ describe('MedicationsTable', () => {
         asNeeded: med.asNeeded,
         isImmediate: med.isImmediate,
         doseForm: med.doseForm,
+        reason: med.reason,
       }),
     );
 
@@ -171,6 +172,217 @@ describe('MedicationsTable', () => {
     expect(screen.getByText('30 tablets')).toBeInTheDocument();
     expect(screen.getByText('Dr. Smith')).toBeInTheDocument();
     expect(screen.getByText('MEDICATIONS_STATUS_ACTIVE')).toBeInTheDocument();
+  });
+
+  describe('Additional fields from config', () => {
+    const editAction = {
+      label: 'Edit',
+      type: 'edit',
+      encounterType: 'Consultation',
+      requiredPrivilege: ['Edit Orders'],
+    };
+
+    const mockMedicationsWithReason = () =>
+      mockUseQuery.mockReturnValue({
+        data: [{ ...mockMedications[0], reason: 'Fever' }],
+        isLoading: false,
+        isError: false,
+        error: null,
+        refetch: jest.fn(),
+      } as any);
+
+    const getHeaderLabels = () =>
+      screen
+        .getAllByRole('columnheader')
+        .map((header) => header.textContent ?? '');
+
+    it('does not render a Reason column when additionalFields is not configured', () => {
+      mockMedicationsWithReason();
+
+      render(<MedicationsTable />);
+
+      expect(
+        screen.queryByRole('columnheader', { name: /MEDICATIONS_REASON/ }),
+      ).not.toBeInTheDocument();
+      expect(screen.queryByText('Fever')).not.toBeInTheDocument();
+    });
+
+    it('renders the configured Reason column with the reason of each medication', () => {
+      mockMedicationsWithReason();
+
+      render(<MedicationsTable config={{ additionalFields: ['reason'] }} />);
+
+      expect(
+        screen.getByRole('columnheader', { name: /MEDICATIONS_REASON/ }),
+      ).toBeInTheDocument();
+      expect(screen.getByText('Fever')).toBeInTheDocument();
+    });
+
+    it('renders an empty Reason cell for medications without a reason', () => {
+      mockUseQuery.mockReturnValue({
+        data: [{ ...mockMedications[0], reason: undefined }],
+        isLoading: false,
+        isError: false,
+        error: null,
+        refetch: jest.fn(),
+      } as any);
+
+      render(<MedicationsTable config={{ additionalFields: ['reason'] }} />);
+
+      expect(
+        screen.getByRole('columnheader', { name: /MEDICATIONS_REASON/ }),
+      ).toBeInTheDocument();
+      expect(screen.queryByText('Fever')).not.toBeInTheDocument();
+    });
+
+    it('keeps the actions column last, after the additional columns', () => {
+      mockUseUserPrivilege.mockReturnValue({
+        userPrivileges: [{ name: 'Edit Orders' }],
+      } as any);
+      mockFormatMedicationRequest.mockImplementation(
+        (med: MedicationRequest) =>
+          ({
+            id: med.id,
+            name: med.name,
+            dosage: '',
+            quantity: '',
+            instruction: med.instructions,
+            startDate: med.startDate,
+            orderDate: med.orderDate,
+            orderedBy: med.orderedBy,
+            status: med.status,
+            priority: med.priority,
+            asNeeded: med.asNeeded,
+            isImmediate: med.isImmediate,
+            reason: med.reason,
+            fhirResource: fhirMedicationRequestMock,
+          }) as any,
+      );
+      mockMedicationsWithReason();
+
+      render(
+        <MedicationsTable
+          config={{ additionalFields: ['reason'], actions: [editAction] }}
+        />,
+      );
+
+      const labels = getHeaderLabels();
+      expect(labels.at(-1)).toContain('MEDICATIONS_WIDGET_COL_ACTIONS');
+      expect(labels.at(-2)).toContain('MEDICATIONS_REASON');
+      expect(labels.at(-3)).toContain('MEDICATIONS_STATUS');
+    });
+
+    it('renders duplicate fields once and ignores blank and non-string entries', () => {
+      mockMedicationsWithReason();
+
+      render(
+        <MedicationsTable
+          config={{
+            additionalFields: ['reason', 'reason', ' reason ', '', '  ', 5, {}],
+          }}
+        />,
+      );
+
+      const labels = getHeaderLabels();
+      expect(labels).toHaveLength(8);
+      expect(
+        labels.filter((label) => label.includes('MEDICATIONS_REASON')),
+      ).toHaveLength(1);
+    });
+
+    it('renders an empty column with a derived header for a field the row does not have', () => {
+      mockMedicationsWithReason();
+
+      render(
+        <MedicationsTable config={{ additionalFields: ['unknownField'] }} />,
+      );
+
+      expect(getHeaderLabels()).toHaveLength(8);
+      expect(
+        screen.getByRole('columnheader', { name: /MEDICATIONS_UNKNOWN_FIELD/ }),
+      ).toBeInTheDocument();
+    });
+
+    it('derives the header key from the camelCase field name and reads the value by that name', () => {
+      mockFormatMedicationRequest.mockImplementation(
+        (med: MedicationRequest) =>
+          ({
+            id: med.id,
+            name: med.name,
+            dosage: '',
+            quantity: '',
+            instruction: '',
+            startDate: '',
+            orderDate: '',
+            orderedBy: '',
+            status: med.status,
+            priority: med.priority,
+            asNeeded: false,
+            isImmediate: false,
+            orderReason: 'Malaria',
+            count: 3,
+            nested: { a: 1 },
+          }) as any,
+      );
+      mockMedicationsWithReason();
+
+      render(
+        <MedicationsTable
+          config={{
+            additionalFields: ['orderReason', 'count', 'nested', 'constructor'],
+          }}
+        />,
+      );
+
+      expect(
+        screen.getByRole('columnheader', { name: /MEDICATIONS_ORDER_REASON/ }),
+      ).toBeInTheDocument();
+      expect(screen.getByText('Malaria')).toBeInTheDocument();
+      expect(screen.getByText('3')).toBeInTheDocument();
+      expect(screen.queryByText(/\[object|function/)).not.toBeInTheDocument();
+    });
+
+    it('does not make the additional columns sortable', () => {
+      mockMedicationsWithReason();
+
+      render(<MedicationsTable config={{ additionalFields: ['reason'] }} />);
+
+      expect(screen.getByTestId('table-header-status').tagName).toBe('BUTTON');
+      expect(screen.getByTestId('table-header-reason').tagName).not.toBe(
+        'BUTTON',
+      );
+    });
+
+    it('ignores additionalFields when it is not an array', () => {
+      mockMedicationsWithReason();
+
+      render(<MedicationsTable config={{ additionalFields: 'reason' }} />);
+
+      expect(getHeaderLabels()).toHaveLength(7);
+    });
+
+    it('also shows the additional column in the All tab', async () => {
+      mockMedicationsWithReason();
+      mockGroupByDate.mockReturnValue([
+        {
+          date: '15/01/2024',
+          items: [
+            formatMedicationRequest({ ...mockMedications[0], reason: 'Fever' }),
+          ],
+        },
+      ] as any);
+
+      render(<MedicationsTable config={{ additionalFields: ['reason'] }} />);
+      await userEvent.click(
+        screen.getByRole('tab', { name: 'MEDICATIONS_TAB_ALL' }),
+      );
+
+      expect(
+        await screen.findByRole('columnheader', {
+          name: /MEDICATIONS_REASON/,
+        }),
+      ).toBeInTheDocument();
+    });
   });
 
   it('displays PRN tag for as-needed medications', () => {

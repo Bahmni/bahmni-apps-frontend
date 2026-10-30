@@ -28,7 +28,7 @@ exports[`MedicationRequestForm Snapshots matches snapshot for medications form w
           <input
             aria-activedescendant=""
             aria-autocomplete="list"
-            aria-controls="downshift-_r_25_-menu"
+            aria-controls="downshift-_r_2o_-menu"
             aria-expanded="false"
             aria-haspopup="listbox"
             aria-label="medication-search-combobox-aria-label"
@@ -44,11 +44,11 @@ exports[`MedicationRequestForm Snapshots matches snapshot for medications form w
             value=""
           />
           <button
-            aria-controls="downshift-_r_25_-menu"
+            aria-controls="downshift-_r_2o_-menu"
             aria-expanded="false"
             aria-label="Open"
             class="cds--list-box__menu-icon"
-            id="downshift-_r_25_-toggle-button"
+            id="downshift-_r_2o_-toggle-button"
             tabindex="-1"
             title="Open"
             type="button"
@@ -70,9 +70,9 @@ exports[`MedicationRequestForm Snapshots matches snapshot for medications form w
           </button>
         </div>
         <ul
-          aria-labelledby="downshift-_r_25_-label"
+          aria-labelledby="downshift-_r_2o_-label"
           class="cds--list-box__menu"
-          id="downshift-_r_25_-menu"
+          id="downshift-_r_2o_-menu"
           role="listbox"
           style="position: fixed; left: 0px; top: 0px; visibility: visible; transform: translate(0px, 0px);"
         />
@@ -110,7 +110,7 @@ exports[`MedicationRequestForm Snapshots matches snapshot for medications form w
           <input
             aria-activedescendant=""
             aria-autocomplete="list"
-            aria-controls="downshift-_r_28_-menu"
+            aria-controls="downshift-_r_2r_-menu"
             aria-expanded="false"
             aria-haspopup="listbox"
             aria-label="medication-search-combobox-aria-label"
@@ -126,11 +126,11 @@ exports[`MedicationRequestForm Snapshots matches snapshot for medications form w
             value=""
           />
           <button
-            aria-controls="downshift-_r_28_-menu"
+            aria-controls="downshift-_r_2r_-menu"
             aria-expanded="false"
             aria-label="Open"
             class="cds--list-box__menu-icon"
-            id="downshift-_r_28_-toggle-button"
+            id="downshift-_r_2r_-toggle-button"
             tabindex="-1"
             title="Open"
             type="button"
@@ -152,9 +152,9 @@ exports[`MedicationRequestForm Snapshots matches snapshot for medications form w
           </button>
         </div>
         <ul
-          aria-labelledby="downshift-_r_28_-label"
+          aria-labelledby="downshift-_r_2r_-label"
           class="cds--list-box__menu"
-          id="downshift-_r_28_-menu"
+          id="downshift-_r_2r_-menu"
           role="listbox"
           style="position: fixed; left: 0px; top: 0px; visibility: visible; transform: translate(0px, 0px);"
         />
@@ -247,7 +247,7 @@ exports[`MedicationRequestForm Snapshots matches snapshot for medications form w
                 >
                   <button
                     aria-label="Close Selected Item"
-                    aria-labelledby="tooltip-_r_2a_"
+                    aria-labelledby="tooltip-_r_2t_"
                     class="cds--btn cds--btn--lg cds--layout--size-lg cds--btn--primary cds--btn--icon-only"
                     data-testid="selected-item-close-button"
                     id="close-selected-item"
@@ -272,7 +272,7 @@ exports[`MedicationRequestForm Snapshots matches snapshot for medications form w
                 <span
                   aria-hidden="true"
                   class="cds--popover"
-                  id="tooltip-_r_2a_"
+                  id="tooltip-_r_2t_"
                   role="tooltip"
                 >
                   <span
@@ -322,7 +322,7 @@ exports[`MedicationRequestForm Snapshots matches snapshot for vaccinations form 
           <input
             aria-activedescendant=""
             aria-autocomplete="list"
-            aria-controls="downshift-_r_2f_-menu"
+            aria-controls="downshift-_r_32_-menu"
             aria-expanded="false"
             aria-haspopup="listbox"
             aria-label="vaccination-search-combobox-aria-label"
@@ -338,11 +338,11 @@ exports[`MedicationRequestForm Snapshots matches snapshot for vaccinations form 
             value=""
           />
           <button
-            aria-controls="downshift-_r_2f_-menu"
+            aria-controls="downshift-_r_32_-menu"
             aria-expanded="false"
             aria-label="Open"
             class="cds--list-box__menu-icon"
-            id="downshift-_r_2f_-toggle-button"
+            id="downshift-_r_32_-toggle-button"
             tabindex="-1"
             title="Open"
             type="button"
@@ -364,9 +364,9 @@ exports[`MedicationRequestForm Snapshots matches snapshot for vaccinations form 
           </button>
         </div>
         <ul
-          aria-labelledby="downshift-_r_2f_-label"
+          aria-labelledby="downshift-_r_32_-label"
           class="cds--list-box__menu"
-          id="downshift-_r_2f_-menu"
+          id="downshift-_r_32_-menu"
           role="listbox"
           style="position: fixed; left: 0px; top: 0px; visibility: visible; transform: translate(0px, 0px);"
         />
@@ -404,7 +404,7 @@ exports[`MedicationRequestForm Snapshots matches snapshot for vaccinations form 
           <input
             aria-activedescendant=""
             aria-autocomplete="list"
-            aria-controls="downshift-_r_2i_-menu"
+            aria-controls="downshift-_r_35_-menu"
             aria-expanded="false"
             aria-haspopup="listbox"
             aria-label="vaccination-search-combobox-aria-label"
@@ -420,11 +420,11 @@ exports[`MedicationRequestForm Snapshots matches snapshot for vaccinations form 
             value=""
           />
           <button
-            aria-controls="downshift-_r_2i_-menu"
+            aria-controls="downshift-_r_35_-menu"
             aria-expanded="false"
             aria-label="Open"
             class="cds--list-box__menu-icon"
-            id="downshift-_r_2i_-toggle-button"
+            id="downshift-_r_35_-toggle-button"
             tabindex="-1"
             title="Open"
             type="button"
@@ -446,9 +446,9 @@ exports[`MedicationRequestForm Snapshots matches snapshot for vaccinations form 
           </button>
         </div>
         <ul
-          aria-labelledby="downshift-_r_2i_-label"
+          aria-labelledby="downshift-_r_35_-label"
           class="cds--list-box__menu"
-          id="downshift-_r_2i_-menu"
+          id="downshift-_r_35_-menu"
           role="listbox"
           style="position: fixed; left: 0px; top: 0px; visibility: visible; transform: translate(0px, 0px);"
         />
@@ -525,7 +525,7 @@ exports[`MedicationRequestForm Snapshots matches snapshot for vaccinations form 
                 >
                   <button
                     aria-label="Close Selected Item"
-                    aria-labelledby="tooltip-_r_2k_"
+                    aria-labelledby="tooltip-_r_37_"
                     class="cds--btn cds--btn--lg cds--layout--size-lg cds--btn--primary cds--btn--icon-only"
                     data-testid="selected-item-close-button"
                     id="close-selected-item"
@@ -550,7 +550,7 @@ exports[`MedicationRequestForm Snapshots matches snapshot for vaccinations form 
                 <span
                   aria-hidden="true"
                   class="cds--popover"
-                  id="tooltip-_r_2k_"
+                  id="tooltip-_r_37_"
                   role="tooltip"
                 >
                   <span

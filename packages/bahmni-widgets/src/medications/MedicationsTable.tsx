@@ -21,6 +21,7 @@ import {
   useSubscribeConsultationSaved,
   ConsultationSavedEventPayload,
   getPatientMedications,
+  camelToScreamingSnakeCase,
 } from '@bahmni/services';
 import { useQuery } from '@tanstack/react-query';
 import classNames from 'classnames';
@@ -91,6 +92,16 @@ const BASE_SORTABLE = [
   { key: 'status', sortable: true },
 ];
 
+const getAdditionalFieldValue = (
+  row: FormattedMedicationRequest,
+  key: string,
+): string => {
+  const value = (row as unknown as Record<string, unknown>)[key];
+  return typeof value === 'string' || typeof value === 'number'
+    ? String(value)
+    : '';
+};
+
 const MedicationsTable: React.FC<WidgetProps> = ({
   config,
   episodeOfCareUuids,
@@ -112,6 +123,15 @@ const MedicationsTable: React.FC<WidgetProps> = ({
       ),
     [actions, userPrivileges],
   );
+  const additionalFieldsConfig = config?.additionalFields;
+  const additionalFields = useMemo(() => {
+    if (!Array.isArray(additionalFieldsConfig)) return [];
+    const fields = additionalFieldsConfig
+      .filter((field): field is string => typeof field === 'string')
+      .map((field) => field.trim())
+      .filter((field) => field !== '');
+    return [...new Set(fields)];
+  }, [additionalFieldsConfig]);
   const hasActions = permittedActions.length > 0;
   const editAction = permittedActions.find((a) => a.type === 'edit');
   const canEdit = !!editAction;
@@ -206,6 +226,10 @@ const MedicationsTable: React.FC<WidgetProps> = ({
       { key: 'orderedBy', header: t('MEDICATIONS_ORDERED_BY') },
       { key: 'orderDate', header: t('MEDICATIONS_ORDERED_ON') },
       { key: 'status', header: t('MEDICATIONS_STATUS') },
+      ...additionalFields.map((field) => ({
+        key: field,
+        header: t(`MEDICATIONS_${camelToScreamingSnakeCase(field)}`),
+      })),
     ];
     return {
       baseHeaders: base,
@@ -219,7 +243,7 @@ const MedicationsTable: React.FC<WidgetProps> = ({
         ? [...BASE_SORTABLE, { key: 'actions', sortable: false }]
         : BASE_SORTABLE,
     };
-  }, [hasActions]);
+  }, [hasActions, additionalFields]);
 
   const formattedMedications = useMemo(() => {
     if (!medications) return [];
@@ -388,7 +412,7 @@ const MedicationsTable: React.FC<WidgetProps> = ({
           />
         );
       default:
-        return null;
+        return getAdditionalFieldValue(row, key);
     }
   };
 

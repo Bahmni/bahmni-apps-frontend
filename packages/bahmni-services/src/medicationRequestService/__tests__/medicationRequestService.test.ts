@@ -440,6 +440,36 @@ describe('medicationRequestService', () => {
         expect(result[0].additionalInstructions).toBe('Monitor liver function');
       });
 
+      it.each([
+        [
+          'reasonCode text',
+          [{ text: 'Fever', coding: [{ code: 'c-1', display: 'Pyrexia' }] }],
+          'Fever',
+        ],
+        [
+          'reasonCode coding display when text is missing',
+          [{ coding: [{ code: 'c-1', display: 'Pyrexia' }] }],
+          'Pyrexia',
+        ],
+        ['undefined when reasonCode is missing', undefined, undefined],
+        ['undefined when reasonCode has no text or display', [{}], undefined],
+      ])(
+        'should map the reason from %s',
+        async (_, reasonCode, expectedReason) => {
+          const mockMedication = createMockMedicationRequest({
+            id: 'reason-test',
+            reasonCode,
+          });
+          (get as jest.Mock).mockResolvedValueOnce(
+            createMockBundle([mockMedication]),
+          );
+
+          const result = await getPatientMedications(patientUUID);
+
+          expect(result[0].reason).toBe(expectedReason);
+        },
+      );
+
       it('should extract quantity from dispenseRequest correctly', async () => {
         const mockMedication = createMockMedicationRequest({
           id: 'quantity-test',

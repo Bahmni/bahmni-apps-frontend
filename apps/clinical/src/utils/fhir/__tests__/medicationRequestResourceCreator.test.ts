@@ -395,6 +395,45 @@ describe('medicationRequestResourceCreator', () => {
       expect(result.note).toBeUndefined();
     });
 
+    it('should include reasonCode with the concept uuid and display when an medication reason is selected', () => {
+      const entryWithReason = {
+        ...mockMedicationEntry,
+        medicationReason: { uuid: 'reason-uuid', display: 'Fever' },
+      };
+
+      const result = createMedicationRequestResource(
+        entryWithReason,
+        mockSubjectReference,
+        mockEncounterReference,
+        mockRequesterReference,
+      );
+
+      expect(codeableConceptCreator.createCoding).toHaveBeenCalledWith(
+        'reason-uuid',
+      );
+      expect(codeableConceptCreator.createCodeableConcept).toHaveBeenCalledWith(
+        [{ code: 'reason-uuid' }],
+        'Fever',
+      );
+      expect(result.reasonCode).toEqual([
+        { coding: [{ code: 'reason-uuid' }] },
+      ]);
+    });
+
+    it.each([[null], [undefined]])(
+      'should not include reasonCode when the medication reason is %s',
+      (medicationReason) => {
+        const result = createMedicationRequestResource(
+          { ...mockMedicationEntry, medicationReason },
+          mockSubjectReference,
+          mockEncounterReference,
+          mockRequesterReference,
+        );
+
+        expect(result.reasonCode).toBeUndefined();
+      },
+    );
+
     it('should set boundsPeriod in timing.repeat for STAT orders and not set event or duration', () => {
       const fixedNow = new Date('2024-06-01T08:00:00.000Z');
       jest.useFakeTimers({ now: fixedNow });

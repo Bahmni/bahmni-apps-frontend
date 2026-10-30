@@ -181,6 +181,109 @@ describe('SelectedMedicationRequestItem', () => {
     expect(
       screen.queryByTestId(`${inputControlType}-add-note-link-${id}-test-id`),
     ).not.toBeInTheDocument();
+    expect(
+      screen.queryByTestId(`${inputControlType}-reason-dropdown-${id}-test-id`),
+    ).not.toBeInTheDocument();
+  });
+
+  it('renders the Reason dropdown only when the reason attribute is configured', async () => {
+    const { id } = mockSelectedMedication;
+    const inputControlType = 'medication';
+
+    await act(async () => {
+      render(
+        <SelectedMedicationRequestItem
+          entry={mockSelectedMedication}
+          medicationConfig={mockMedicationConfig}
+          inputControlType={inputControlType}
+          attributes={[{ name: 'reason' }]}
+        />,
+      );
+    });
+
+    expect(
+      screen.getByTestId(`${inputControlType}-reason-dropdown-${id}-test-id`),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole('combobox', { name: 'Reason' }),
+    ).toBeInTheDocument();
+  });
+
+  it('lists the provided medication reasons as options in the Reason dropdown', async () => {
+    const user = userEvent.setup();
+
+    await act(async () => {
+      render(
+        <SelectedMedicationRequestItem
+          entry={mockSelectedMedication}
+          medicationConfig={mockMedicationConfig}
+          inputControlType="medication"
+          attributes={[{ name: 'reason' }]}
+          medicationReasons={[
+            { uuid: 'reason-1-uuid', display: 'Fever' },
+            { uuid: 'reason-2-uuid', display: 'Malaria' },
+          ]}
+        />,
+      );
+    });
+    await user.click(screen.getByRole('combobox', { name: 'Reason' }));
+
+    expect(screen.getByRole('option', { name: 'Fever' })).toBeInTheDocument();
+    expect(screen.getByRole('option', { name: 'Malaria' })).toBeInTheDocument();
+  });
+
+  it('calls updateMedicationReason with the selected reason', async () => {
+    const user = userEvent.setup();
+    const updateMedicationReason = jest.fn();
+    mockUseMedicationRequestStore.mockReturnValue(
+      makeMockStore({ updateMedicationReason }),
+    );
+
+    await act(async () => {
+      render(
+        <SelectedMedicationRequestItem
+          entry={mockSelectedMedication}
+          medicationConfig={mockMedicationConfig}
+          inputControlType="medication"
+          attributes={[{ name: 'reason' }]}
+          medicationReasons={[
+            { uuid: 'reason-1-uuid', display: 'Fever' },
+            { uuid: 'reason-2-uuid', display: 'Malaria' },
+          ]}
+        />,
+      );
+    });
+    await user.click(screen.getByRole('combobox', { name: 'Reason' }));
+    await user.click(screen.getByRole('option', { name: 'Malaria' }));
+
+    expect(updateMedicationReason).toHaveBeenCalledWith(
+      mockSelectedMedication.id,
+      {
+        uuid: 'reason-2-uuid',
+        display: 'Malaria',
+      },
+    );
+  });
+
+  it('shows the selected medication reason in the Reason dropdown', async () => {
+    await act(async () => {
+      render(
+        <SelectedMedicationRequestItem
+          entry={{
+            ...mockSelectedMedication,
+            medicationReason: { uuid: 'reason-1-uuid', display: 'Fever' },
+          }}
+          medicationConfig={mockMedicationConfig}
+          inputControlType="medication"
+          attributes={[{ name: 'reason' }]}
+          medicationReasons={[{ uuid: 'reason-1-uuid', display: 'Fever' }]}
+        />,
+      );
+    });
+
+    expect(screen.getByRole('combobox', { name: 'Reason' })).toHaveTextContent(
+      'Fever',
+    );
   });
 
   it('renders prn checkboxes only for medication requests', async () => {
@@ -512,12 +615,16 @@ describe('SelectedMedicationRequestItem', () => {
           entry={mockSelectedMedicationWithAllErrors}
           medicationConfig={mockMedicationConfig}
           inputControlType="medication"
-          attributes={mockRequiredMedicationAttributes}
+          attributes={[
+            ...mockRequiredMedicationAttributes,
+            { name: 'reason', required: true },
+          ]}
         />,
       );
     });
 
     expect(screen.getByText('Please check STAT')).toBeInTheDocument();
+    expect(screen.getByText('Please select a reason')).toBeInTheDocument();
     expect(screen.getByText('Please check PRN')).toBeInTheDocument();
     expect(screen.getByText('Please enter a dosage')).toBeInTheDocument();
     expect(screen.getByText('Please select a dosage unit')).toBeInTheDocument();

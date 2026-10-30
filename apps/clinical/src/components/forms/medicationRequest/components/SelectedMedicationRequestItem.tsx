@@ -12,7 +12,10 @@ import {
 import { useTranslation, getTodayDate, type CDSSRule } from '@bahmni/services';
 import { dispatchCDSSCheck } from '@bahmni/services';
 import React, { useEffect, useRef, useState } from 'react';
-import { MedicationInputEntry } from '../../../../models/medication';
+import {
+  MedicationInputEntry,
+  MedicationReason,
+} from '../../../../models/medication';
 import { MedicationConfig } from '../../../../models/medicationConfig';
 import { InputControlAttributes } from '../../../../providers/clinicalConfig/models';
 import {
@@ -26,6 +29,7 @@ import {
   applyMountDefaults,
   calculateTotalQuantity,
   findAttr,
+  getInvalidProps,
   isImmediateFrequency,
 } from '../utils';
 
@@ -35,11 +39,19 @@ export interface SelectedMedicationRequestItemProps {
   inputControlType: MedicationRequestStoreKey;
   attributes: InputControlAttributes[];
   cdssRules?: CDSSRule[];
+  medicationReasons?: MedicationReason[];
 }
 
 const SelectedMedicationRequestItem: React.FC<SelectedMedicationRequestItemProps> =
   React.memo(
-    ({ entry, medicationConfig, inputControlType, attributes, cdssRules }) => {
+    ({
+      entry,
+      medicationConfig,
+      inputControlType,
+      attributes,
+      cdssRules,
+      medicationReasons,
+    }) => {
       const {
         updateDosage,
         updateDosageUnit,
@@ -54,6 +66,7 @@ const SelectedMedicationRequestItem: React.FC<SelectedMedicationRequestItemProps
         updateDispenseQuantity,
         updateDispenseUnit,
         updateNote,
+        updateMedicationReason,
       } = useMedicationRequestStore(inputControlType);
       const { t } = useTranslation();
       const isMedicationRequest =
@@ -76,6 +89,7 @@ const SelectedMedicationRequestItem: React.FC<SelectedMedicationRequestItemProps
         startDate,
         doseForm,
         note,
+        medicationReason,
         errors,
       } = entry;
 
@@ -227,8 +241,7 @@ const SelectedMedicationRequestItem: React.FC<SelectedMedicationRequestItemProps
                   checked={isSTAT}
                   onChange={(e) => updateIsSTAT(id, e.target.checked)}
                   className={styles.statControl}
-                  invalid={!!errors.stat}
-                  invalidText={errors.stat ? t(errors.stat) : ''}
+                  {...getInvalidProps(errors.stat, t)}
                   disabled={findAttr('stat', attributes)?.readOnly}
                 />
               )}
@@ -240,8 +253,7 @@ const SelectedMedicationRequestItem: React.FC<SelectedMedicationRequestItemProps
                   aria-label="PRN"
                   checked={isPRN}
                   onChange={(e) => updateIsPRN(id, e.target.checked)}
-                  invalid={!!errors.prn}
-                  invalidText={errors.prn ? t(errors.prn) : ''}
+                  {...getInvalidProps(errors.prn, t)}
                   disabled={findAttr('prn', attributes)?.readOnly}
                 />
               )}
@@ -271,8 +283,7 @@ const SelectedMedicationRequestItem: React.FC<SelectedMedicationRequestItemProps
                           : Number.parseFloat(String(value)),
                       );
                     }}
-                    invalid={!!errors.dosage}
-                    invalidText={errors.dosage ? t(errors.dosage) : ''}
+                    {...getInvalidProps(errors.dosage, t)}
                     disabled={findAttr('dosage', attributes)?.readOnly}
                   />
                 )}
@@ -298,8 +309,7 @@ const SelectedMedicationRequestItem: React.FC<SelectedMedicationRequestItemProps
                       }
                     }}
                     autoAlign
-                    invalid={!!errors.dosageUnit}
-                    invalidText={errors.dosageUnit ? t(errors.dosageUnit) : ''}
+                    {...getInvalidProps(errors.dosageUnit, t)}
                     disabled={findAttr('dosageUnit', attributes)?.readOnly}
                   />
                 )}
@@ -325,8 +335,7 @@ const SelectedMedicationRequestItem: React.FC<SelectedMedicationRequestItemProps
                     updateFrequency(id, e.selectedItem);
                   }}
                   autoAlign
-                  invalid={!!errors.frequency}
-                  invalidText={errors.frequency ? t(errors.frequency) : ''}
+                  {...getInvalidProps(errors.frequency, t)}
                   disabled={
                     (isMedicationRequest ? isSTAT && !isPRN : isSTAT) ||
                     !!findAttr('frequency', attributes)?.readOnly
@@ -358,8 +367,7 @@ const SelectedMedicationRequestItem: React.FC<SelectedMedicationRequestItemProps
                           : Number.parseFloat(String(value)),
                       );
                     }}
-                    invalid={!!errors.duration}
-                    invalidText={errors.duration ? t(errors.duration) : ''}
+                    {...getInvalidProps(errors.duration, t)}
                     disabled={
                       (isMedicationRequest ? isSTAT && !isPRN : isSTAT) ||
                       !!findAttr('duration', attributes)?.readOnly
@@ -387,10 +395,7 @@ const SelectedMedicationRequestItem: React.FC<SelectedMedicationRequestItemProps
                       updateDurationUnit(id, e.selectedItem);
                     }}
                     autoAlign
-                    invalid={!!errors.durationUnit}
-                    invalidText={
-                      errors.durationUnit ? t(errors.durationUnit) : ''
-                    }
+                    {...getInvalidProps(errors.durationUnit, t)}
                     disabled={
                       (isMedicationRequest ? isSTAT && !isPRN : isSTAT) ||
                       !!findAttr('durationUnit', attributes)?.readOnly
@@ -418,8 +423,7 @@ const SelectedMedicationRequestItem: React.FC<SelectedMedicationRequestItemProps
                     if (e.selectedItem) updateInstruction(id, e.selectedItem);
                   }}
                   autoAlign
-                  invalid={!!errors.instruction}
-                  invalidText={errors.instruction ? t(errors.instruction) : ''}
+                  {...getInvalidProps(errors.instruction, t)}
                   disabled={findAttr('instruction', attributes)?.readOnly}
                 />
               </Column>
@@ -444,8 +448,7 @@ const SelectedMedicationRequestItem: React.FC<SelectedMedicationRequestItemProps
                     if (e.selectedItem) updateRoute(id, e.selectedItem);
                   }}
                   autoAlign
-                  invalid={!!errors.route}
-                  invalidText={errors.route ? t(errors.route) : ''}
+                  {...getInvalidProps(errors.route, t)}
                   disabled={findAttr('route', attributes)?.readOnly}
                 />
               </Column>
@@ -470,8 +473,7 @@ const SelectedMedicationRequestItem: React.FC<SelectedMedicationRequestItemProps
                       `${inputControlType.toUpperCase()}_START_DATE_INPUT_LABEL`,
                     )}
                     aria-label="Start Date"
-                    invalid={!!errors.startDate}
-                    invalidText={errors.startDate ? t(errors.startDate) : ''}
+                    {...getInvalidProps(errors.startDate, t)}
                     disabled={
                       isSTAT || findAttr('startDate', attributes)?.readOnly
                     }
@@ -479,6 +481,34 @@ const SelectedMedicationRequestItem: React.FC<SelectedMedicationRequestItemProps
                 </DatePicker>
               </Column>
             )}
+
+            {findAttr('reason', attributes) && (
+              <Column sm={1} md={4} lg={8} className={styles.column}>
+                <Dropdown
+                  id={`${inputControlType}-reason-dropdown-${id}`}
+                  data-testid={`${inputControlType}-reason-dropdown-${id}-test-id`}
+                  titleText={t(
+                    `${inputControlType.toUpperCase()}_REASON_INPUT_LABEL`,
+                  )}
+                  label={t(
+                    `${inputControlType.toUpperCase()}_REASON_INPUT_LABEL`,
+                  )}
+                  aria-label="Reason"
+                  items={medicationReasons ?? []}
+                  itemToString={(item: MedicationReason | null) =>
+                    item?.display ?? ''
+                  }
+                  selectedItem={medicationReason ?? null}
+                  onChange={(e) =>
+                    updateMedicationReason(id, e.selectedItem ?? null)
+                  }
+                  autoAlign
+                  {...getInvalidProps(errors.reason, t)}
+                  disabled={findAttr('reason', attributes)?.readOnly}
+                />
+              </Column>
+            )}
+
             <Column sm={4} md={8} lg={16} className={styles.footerRow}>
               {findAttr('note', attributes) && !hasNote && !noteRequired && (
                 <Link
@@ -524,8 +554,7 @@ const SelectedMedicationRequestItem: React.FC<SelectedMedicationRequestItemProps
               }}
               enableCounter
               maxCount={1024}
-              invalid={!!errors.note}
-              invalidText={errors.note ? t(errors.note) : ''}
+              {...getInvalidProps(errors.note, t)}
               disabled={findAttr('note', attributes)?.readOnly}
             />
           )}

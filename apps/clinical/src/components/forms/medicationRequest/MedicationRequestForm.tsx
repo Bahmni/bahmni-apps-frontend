@@ -12,11 +12,15 @@ import {
   getVaccinations,
   filterCdsCardsForItems,
   useCDSSResultsListener,
+  searchFHIRConcepts,
 } from '@bahmni/services';
 import { useQuery } from '@tanstack/react-query';
 import React, { useState, useMemo, useEffect } from 'react';
 import { useMedicationSearch } from '../../../hooks/useMedicationSearch';
-import { MedicationFilterResult } from '../../../models/medication';
+import {
+  MedicationFilterResult,
+  MedicationReason,
+} from '../../../models/medication';
 import { MedicationJSONConfig } from '../../../models/medicationConfig';
 import type { InputControl as ClinicalInputControlConfig } from '../../../providers/clinicalConfig/models';
 import {
@@ -35,6 +39,7 @@ import medicationConfigSchema from './schema.json';
 import { getMedicationRequestStore, useMedicationRequestStore } from './store';
 import styles from './styles/MedicationRequestForm.module.scss';
 import {
+  findAttr,
   getMedicationRequestComboBoxItems,
   getVaccinationComboBoxItems,
 } from './utils';
@@ -49,7 +54,11 @@ const MedicationRequestForm: React.FC<{
     label = 'MEDICATIONS_INPUT_CONTROL_TITLE',
     attributes = [],
     cdss: cdssRules = [],
+    metadata,
   } = inputControlConfig ?? {};
+
+  const medicationReasonConceptSetUuid =
+    metadata?.medicationReasonConceptSetUuid as string | undefined;
 
   const isMedicationRequest =
     inputControlType === MEDICATIONS_INPUT_CONTROL_KEY;
@@ -89,6 +98,20 @@ const MedicationRequestForm: React.FC<{
     queryFn: getVaccinations,
     enabled: !isMedicationRequest,
   });
+
+  const { data: medicationReasonConceptSet } = useQuery({
+    queryKey: ['medicationReasonConceptSet', medicationReasonConceptSetUuid],
+    queryFn: () => searchFHIRConcepts(medicationReasonConceptSetUuid!),
+    enabled:
+      !!medicationReasonConceptSetUuid && !!findAttr('reason', attributes),
+  });
+  const medicationReasons = useMemo<MedicationReason[]>(
+    () =>
+      (medicationReasonConceptSet?.expansion?.contains ?? []).map(
+        ({ code = '', display = '' }) => ({ uuid: code, display }),
+      ),
+    [medicationReasonConceptSet],
+  );
 
   const vaccinationResults = useMemo(
     () =>
@@ -265,6 +288,7 @@ const MedicationRequestForm: React.FC<{
                     }
                     attributes={attributes}
                     cdssRules={cdssRules}
+                    medicationReasons={medicationReasons}
                   />
                 </SelectedItem>
               </div>
