@@ -104,7 +104,6 @@ const MedicationRequestForm: React.FC<{
     queryFn: () => searchFHIRConcepts(medicationReasonConceptSetUuid!),
     enabled:
       !!medicationReasonConceptSetUuid && !!findAttr('reason', attributes),
-    staleTime: Infinity,
   });
   const medicationReasons = useMemo<MedicationReason[]>(
     () =>
