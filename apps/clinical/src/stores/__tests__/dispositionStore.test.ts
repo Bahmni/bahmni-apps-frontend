@@ -9,6 +9,7 @@ describe('useDispositionStore', () => {
   beforeEach(() => {
     act(() => {
       useDispositionStore.getState().setTypeRequired(true);
+      useDispositionStore.getState().setDateRequired(false);
       useDispositionStore.getState().setHasActiveOrder('ADMIT', false);
       useDispositionStore.getState().setHasActiveOrder('DISCHARGE', false);
       useDispositionStore.getState().setHasActiveOrder('TRANSFER', false);
@@ -222,6 +223,73 @@ describe('useDispositionStore', () => {
 
       expect(isValid).toBe(true);
       expect(result.current.errors.type).toBeUndefined();
+    });
+
+    it('fails with a date error when config marks date as required and no date is set', () => {
+      const { result } = renderHook(() => useDispositionStore());
+
+      act(() => {
+        result.current.setDateRequired(true);
+        result.current.setSelectedType(admitType);
+      });
+
+      let isValid = true;
+      act(() => {
+        isValid = result.current.validate();
+      });
+
+      expect(isValid).toBe(false);
+      expect(result.current.errors.date).toBe('DISPOSITION_DATE_REQUIRED');
+    });
+
+    it('passes when date is required and a date is set', () => {
+      const { result } = renderHook(() => useDispositionStore());
+
+      act(() => {
+        result.current.setDateRequired(true);
+        result.current.setSelectedType(admitType);
+        result.current.setDate(new Date());
+      });
+
+      let isValid = false;
+      act(() => {
+        isValid = result.current.validate();
+      });
+
+      expect(isValid).toBe(true);
+      expect(result.current.errors.date).toBeUndefined();
+    });
+
+    it('passes without a date when config marks date as not required', () => {
+      const { result } = renderHook(() => useDispositionStore());
+
+      act(() => {
+        result.current.setSelectedType(admitType);
+      });
+
+      let isValid = false;
+      act(() => {
+        isValid = result.current.validate();
+      });
+
+      expect(isValid).toBe(true);
+    });
+
+    it('setDate clears the date error', () => {
+      const { result } = renderHook(() => useDispositionStore());
+
+      act(() => {
+        result.current.setDateRequired(true);
+        result.current.setSelectedType(admitType);
+      });
+      act(() => {
+        result.current.validate();
+      });
+      act(() => {
+        result.current.setDate(new Date());
+      });
+
+      expect(result.current.errors.date).toBeUndefined();
     });
   });
 

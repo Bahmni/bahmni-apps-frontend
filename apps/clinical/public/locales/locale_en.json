@@ -220,6 +220,7 @@
   "DISPOSITION_ACTIVE_DISCHARGE_ORDER_EXISTS": "A Discharge order already exists for this visit",
   "DISPOSITION_ACTIVE_TRANSFER_ORDER_EXISTS": "A Transfer order already exists for this visit",
   "DISPOSITION_DATE_LABEL": "Date",
+  "DISPOSITION_DATE_REQUIRED": "Date is required",
   "DISPOSITION_FORM_TITLE": "Disposition",
   "DISPOSITION_NOTES_LABEL": "Notes",
   "DISPOSITION_NOTES_PLACEHOLDER": "Enter notes",

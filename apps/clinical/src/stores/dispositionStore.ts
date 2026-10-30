@@ -12,6 +12,7 @@ export interface DispositionState {
   notes: string;
   errors: Record<string, string>;
   isTypeRequired: boolean;
+  isDateRequired: boolean;
   activeOrderByType: Record<string, boolean>;
 
   setSelectedType: (type: DispositionType | null) => void;
@@ -24,6 +25,7 @@ export interface DispositionState {
    * entry for the disposition input control, not hardcoded here.
    */
   setTypeRequired: (required: boolean) => void;
+  setDateRequired: (required: boolean) => void;
 
   /**
    * Validates the current selection. Whether Type is mandatory comes from
@@ -47,6 +49,7 @@ export const useDispositionStore = create<DispositionState>((set, get) => ({
   notes: '',
   errors: {},
   isTypeRequired: true,
+  isDateRequired: false,
   activeOrderByType: {},
 
   setSelectedType: (type: DispositionType | null) => {
@@ -64,7 +67,11 @@ export const useDispositionStore = create<DispositionState>((set, get) => ({
   },
 
   setDate: (date: Date | null) => {
-    set({ date });
+    set((state) => {
+      const errors = { ...state.errors };
+      if (date) delete errors.date;
+      return { date, errors };
+    });
   },
 
   setNotes: (notes: string) => {
@@ -73,6 +80,10 @@ export const useDispositionStore = create<DispositionState>((set, get) => ({
 
   setTypeRequired: (required: boolean) => {
     set({ isTypeRequired: required });
+  },
+
+  setDateRequired: (required: boolean) => {
+    set({ isDateRequired: required });
   },
 
   validate: () => {
@@ -99,6 +110,13 @@ export const useDispositionStore = create<DispositionState>((set, get) => ({
       delete errors.type;
     }
 
+    if (state.isDateRequired && !state.date) {
+      errors.date = 'DISPOSITION_DATE_REQUIRED';
+      isValid = false;
+    } else {
+      delete errors.date;
+    }
+
     set({ errors });
     return isValid;
   },
@@ -115,6 +133,7 @@ export const useDispositionStore = create<DispositionState>((set, get) => ({
       notes: '',
       errors: {},
       isTypeRequired: state.isTypeRequired,
+      isDateRequired: state.isDateRequired,
     }));
   },
 }));

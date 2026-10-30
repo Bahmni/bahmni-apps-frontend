@@ -43,6 +43,7 @@ const Disposition: React.FC<DispositionProps> = React.memo(
       setDate,
       setNotes,
       setTypeRequired,
+      setDateRequired,
       setHasActiveOrder,
     } = useDispositionStore();
 
@@ -51,9 +52,18 @@ const Disposition: React.FC<DispositionProps> = React.memo(
         (attribute) => attribute.name === 'type',
       )?.required ?? true;
 
+    const isDateRequired =
+      inputControlConfig?.attributes?.find(
+        (attribute) => attribute.name === 'date',
+      )?.required ?? false;
+
     useEffect(() => {
       setTypeRequired(isTypeRequired);
     }, [isTypeRequired, setTypeRequired]);
+
+    useEffect(() => {
+      setDateRequired(isDateRequired);
+    }, [isDateRequired, setDateRequired]);
 
     const configuredDispositionTypes = inputControlConfig?.metadata
       ?.dispositionTypes as DispositionType[] | undefined;
@@ -226,6 +236,8 @@ const Disposition: React.FC<DispositionProps> = React.memo(
                   labelText={t('DISPOSITION_DATE_LABEL')}
                   placeholder="dd/mm/yyyy"
                   size="sm"
+                  invalid={!!errors.date}
+                  invalidText={t(errors.date ?? '')}
                 />
               </DatePicker>
             </Column>
