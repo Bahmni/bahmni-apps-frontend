@@ -68,7 +68,9 @@ export async function submitConsultation(
     (entry) => entry.hasData() && entry.createBundleEntries,
   );
   await Promise.all(
-    contributingEntries.map((entry) => entry.prepareBundleEntries?.()),
+    contributingEntries.map(
+      (entry) => entry.prepareBundleEntries?.() ?? Promise.resolve(),
+    ),
   );
   const formEntries = contributingEntries.flatMap((entry) =>
     entry.createBundleEntries!(ctx),
