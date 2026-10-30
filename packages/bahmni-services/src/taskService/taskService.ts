@@ -20,10 +20,6 @@ export async function getTasks(
   );
 }
 
-interface FhirBundle {
-  entry?: Array<{ resource: { id: string } & CreateTaskPayload }>;
-}
-
 function buildTaskPayload(
   orderUuid: string,
   fhirStatus: string,
@@ -63,20 +59,17 @@ function buildTaskPayload(
  */
 async function getExistingTaskForOrder(
   orderUuid: string,
-): Promise<{ id: string } | null> {
-  try {
-    const response = await get<FhirBundle>(
-      `${FHIR_TASK_URL}?based-on=ServiceRequest/${orderUuid}&_sort=-_lastUpdated&_count=1`,
-    );
+): Promise<Task | null> {
+  const response = await get<Bundle<Task>>(
+    `${FHIR_TASK_URL}?based-on=ServiceRequest/${orderUuid}&_sort=-_lastUpdated&_count=1`,
+  );
 
-    if (response?.entry && response.entry.length > 0) {
-      const task = response.entry[0].resource;
-      return task.id ? { id: task.id } : null;
-    }
-    return null;
-  } catch {
-    return null;
+  if (response?.entry && response.entry.length > 0) {
+    const task = response.entry[0].resource;
+    return task?.id ? task : null;
   }
+
+  return null;
 }
 
 /**
@@ -84,29 +77,50 @@ async function getExistingTaskForOrder(
  * Only includes fields that may have changed to avoid creating duplicate references.
  */
 async function updateTask(
-  taskId: string,
+  existingTask: Task,
   orderUuid: string,
   fhirStatus: string,
   options: CreateTaskOptions = {},
 ): Promise<void> {
-  const payload: CreateTaskPayload = {
-    resourceType: 'Task',
-    intent: 'order',
-    status: fhirStatus,
-    basedOn: [{ reference: `ServiceRequest/${orderUuid}` }],
+  const taskId = existingTask.id;
+
+  if (!taskId) {
+    throw new Error('Cannot update Task without an id');
+  }
+
+  const payload: Task = {
+    ...existingTask,
     id: taskId,
+    resourceType: 'Task',
+    intent: existingTask.intent ?? 'order',
+    status: fhirStatus as Task['status'],
+    basedOn: existingTask.basedOn?.length
+      ? existingTask.basedOn
+      : [{ reference: `ServiceRequest/${orderUuid}` }],
   };
 
-  if (options.notes) {
+  if (options.patientUuid && !payload.for) {
+    payload.for = { reference: `Patient/${options.patientUuid}` };
+  }
+
+  if (options.notes !== undefined) {
     payload.note = [{ text: options.notes }];
   }
 
-  if (options.ownerUuid) {
-    payload.owner = { reference: `Practitioner/${options.ownerUuid}` };
+  if (options.ownerUuid !== undefined) {
+    if (options.ownerUuid) {
+      payload.owner = { reference: `Practitioner/${options.ownerUuid}` };
+    } else {
+      delete payload.owner;
+    }
   }
 
-  if (options.encounterUuid) {
-    payload.encounter = { reference: `Encounter/${options.encounterUuid}` };
+  if (options.encounterUuid !== undefined) {
+    if (options.encounterUuid) {
+      payload.encounter = { reference: `Encounter/${options.encounterUuid}` };
+    } else {
+      delete payload.encounter;
+    }
   }
 
   await put(`${FHIR_TASK_URL}/${taskId}`, payload);
@@ -144,7 +158,7 @@ export async function createOrUpdateTask(
   const existingTask = await getExistingTaskForOrder(orderUuid);
 
   if (existingTask) {
-    await updateTask(existingTask.id, orderUuid, fhirStatus, options);
+    await updateTask(existingTask, orderUuid, fhirStatus, options);
   } else {
     await createTask(orderUuid, fhirStatus, options);
   }

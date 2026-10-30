@@ -230,7 +230,7 @@ describe('OrderFulfillmentSlider', () => {
       <OrderFulfillmentSlider order={mockOrder} onClose={mockOnClose} isOpen />,
     );
 
-    const closeButton = screen.getByRole('button', { name: /close sidebar/i });
+    const closeButton = screen.getByRole('button', { name: 'CLOSE_SIDEBAR' });
     fireEvent.click(closeButton);
 
     expect(mockOnClose).toHaveBeenCalledTimes(1);
@@ -1032,9 +1032,9 @@ describe('OrderFulfillmentSlider', () => {
       );
 
       const closeButton = screen.getByRole('button', {
-        name: /close sidebar/i,
+        name: 'CLOSE_SIDEBAR',
       });
-      expect(closeButton).toHaveAttribute('aria-label', 'Close sidebar');
+      expect(closeButton).toHaveAttribute('aria-label', 'CLOSE_SIDEBAR');
     });
 
     it('has proper test ids for form elements', () => {

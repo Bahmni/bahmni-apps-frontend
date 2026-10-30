@@ -12,7 +12,7 @@ import {
   ServiceRequest,
   Task,
 } from 'fhir/r4';
-import moment from 'moment';
+import { format, parseISO } from 'date-fns';
 import { FHIR_TASK_STATUS_TO_UI_STATUS } from '../constants/orderStatusMappings';
 import {
   FhirAnnotation,
@@ -75,6 +75,9 @@ export const SEARCH_HANDLER_TO_FHIR_CONFIG: Record<string, FhirWorklistConfig> =
 const referenceIdFrom = (reference?: string): string =>
   reference ? reference.split('/').pop()! : '';
 
+const formatFhirDate = (date: string, dateFormat: string): string =>
+  format(parseISO(date), dateFormat);
+
 /**
  * FHIR priority (asap/stat/routine/urgent/...) mapped to ORDER_PRIORITY, falling back to
  * ROUTINE for any value outside our known set instead of passing an unvalidated cast through.
@@ -110,7 +113,7 @@ function indexByResourceType<T extends Resource>(
 
 function calculatePatientDetails(patient?: Patient) {
   const age = patient?.birthDate
-    ? calculateAge(moment(patient.birthDate).format('YYYY-MM-DD'))
+    ? calculateAge(patient.birthDate)
     : undefined;
   const { years, months, days } = age ?? { years: 0, months: 0, days: 0 };
   const name = patient?.name?.[0];
@@ -121,7 +124,7 @@ function calculatePatientDetails(patient?: Patient) {
       : '',
     identifier: patient?.identifier?.[0]?.value ?? '',
     dateOfBirth: patient?.birthDate
-      ? moment(patient.birthDate).format('DD MMM YYYY')
+      ? formatFhirDate(patient.birthDate, 'dd MMM yyyy')
       : undefined,
     gender: patient?.gender,
     age: age ? `${years} years ${months} months ${days} days` : undefined,
@@ -147,7 +150,7 @@ function serviceRequestToOrder(
     priority: toOrderPriority(serviceRequest.priority),
     provider: toFhirReference(serviceRequest.requester),
     dateTime: serviceRequest.authoredOn
-      ? moment(serviceRequest.authoredOn).format('DD MMM YY hh:mm A')
+      ? formatFhirDate(serviceRequest.authoredOn, 'dd MMM yy hh:mm a')
       : '',
     providerComments: serviceRequest.note?.[0]?.text ?? '',
     status: taskStatus
@@ -179,7 +182,7 @@ function medicationRequestToOrder(
     priority: ORDER_PRIORITY.ROUTINE,
     provider: toFhirReference(medicationRequest.requester),
     dateTime: medicationRequest.authoredOn
-      ? moment(medicationRequest.authoredOn).format('DD MMM YY hh:mm A')
+      ? formatFhirDate(medicationRequest.authoredOn, 'dd MMM yy hh:mm a')
       : '',
     providerComments: medicationRequest.note?.[0]?.text ?? '',
     status: 'New',

@@ -1,8 +1,8 @@
+import { Button } from '@bahmni/design-system';
 import { useTranslation } from '@bahmni/services';
 import { Checkbox } from '@carbon/react';
 import React, { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
-import { Button } from '../../../../../packages/bahmni-design-system/src/atoms/button';
 import { OrderStatusConfig } from '../../models/orderFulfillment';
 import styles from './styles/StatusFilter.module.scss';
 
@@ -28,6 +28,7 @@ export const StatusFilter: React.FC<StatusFilterProps> = ({
     useState<OrderStatusConfig[]>(selectedStatuses);
   const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0 });
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const firstCheckboxRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     setTempSelection(selectedStatuses);
@@ -72,6 +73,24 @@ export const StatusFilter: React.FC<StatusFilterProps> = ({
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [isOpen, onToggle, anchorRef]);
 
+  useEffect(() => {
+    if (!isOpen) {
+      return;
+    }
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        event.stopPropagation();
+        onToggle();
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    window.setTimeout(() => firstCheckboxRef.current?.focus(), 0);
+
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, onToggle]);
+
   const handleCheckboxChange = (
     statusConfig: OrderStatusConfig,
     checked: boolean,
@@ -96,6 +115,8 @@ export const StatusFilter: React.FC<StatusFilterProps> = ({
     <div
       ref={dropdownRef}
       className={styles.filterDropdown}
+      role="dialog"
+      aria-label={t('STATUS_FILTER')}
       // eslint-disable-next-line react/forbid-dom-props -- Dynamic positioning requires inline styles
       style={
         {
@@ -110,6 +131,11 @@ export const StatusFilter: React.FC<StatusFilterProps> = ({
             <Checkbox
               key={statusConfig.value}
               id={`status-${statusConfig.value}`}
+              ref={
+                statusConfig.value === availableStatuses[0]?.value
+                  ? firstCheckboxRef
+                  : undefined
+              }
               labelText={t(statusConfig.translationKey)}
               checked={tempSelection.some(
                 (s) => s.value === statusConfig.value,

@@ -15,4 +15,5 @@ export interface CreateTaskOptions {
   ownerUuid?: string;
   encounterUuid?: string;
   patientUuid?: string;
+  conceptUuid?: string;
 }

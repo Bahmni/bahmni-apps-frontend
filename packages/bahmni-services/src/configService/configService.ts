@@ -54,32 +54,21 @@ export const getOrdersConfig = async (): Promise<OrdersConfig | null> => {
  */
 export const getOrdersTableConfig =
   async (): Promise<OrdersTableConfig | null> => {
-    try {
-      // Fetch the full app.json
-      const appConfig = await fetchConfig<{
-        config: OrdersTableConfig;
-      }>(ORDERS_TABLE_CONFIG_URL);
+    const appConfig = await fetchConfig<{
+      config: OrdersTableConfig;
+    }>(ORDERS_TABLE_CONFIG_URL);
 
-      if (!appConfig?.config) {
-        return null;
-      }
-
-      // Extract the table config from the nested config property
-      const tableConfig = appConfig.config;
-
-      // Validate the extracted config
-      const isValid = await validateConfig(
-        tableConfig,
-        ordersTableConfigSchema,
-      );
-      if (!isValid) {
-        return null;
-      }
-
-      return tableConfig;
-    } catch {
-      return null;
+    if (!appConfig?.config) {
+      throw new Error(ERROR_MESSAGES.CONFIG_NOT_FOUND);
     }
+
+    const tableConfig = appConfig.config;
+    const isValid = await validateConfig(tableConfig, ordersTableConfigSchema);
+    if (!isValid) {
+      throw new Error(ERROR_MESSAGES.VALIDATION_FAILED);
+    }
+
+    return tableConfig;
   };
 
 const fetchConfig = async <T>(configPath: string): Promise<T | null> => {

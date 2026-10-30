@@ -1,6 +1,7 @@
 import { render, screen, fireEvent } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import { Order } from '../../../models/orderFulfillment';
+import { ORDER_PRIORITY } from '../../../models/ordersConfig';
 import { ExpandedOrderRow } from '../ExpandedOrderRow';
 
 jest.mock('@bahmni/services', () => ({
@@ -13,7 +14,7 @@ const mockAssignedOrder: Order = {
   id: 'order-1',
   patientUuid: 'patient-1',
   orderName: 'New Cast - Plaster',
-  priority: 'Urgent',
+  priority: ORDER_PRIORITY.STAT,
   status: 'New',
   provider: { reference: 'Practitioner/provider-1', display: 'Mike Ronoh' },
   dateTime: '12 Nov 25 04:24 PM',
@@ -25,7 +26,7 @@ const mockUnassignedOrder: Order = {
   id: 'order-2',
   patientUuid: 'patient-2',
   orderName: 'Rehab Therapy - Limb',
-  priority: 'Routine',
+  priority: ORDER_PRIORITY.ROUTINE,
   status: 'In Progress',
   provider: { reference: 'Practitioner/provider-2', display: 'Sarah Kimani' },
   dateTime: '11 Nov 25 10:00 AM',
@@ -44,11 +45,11 @@ describe('ExpandedOrderRow', () => {
     expect(screen.getByText('Ted Okatch')).toBeInTheDocument();
   });
 
-  it('renders order name as a link', () => {
+  it('renders order name as a button', () => {
     render(<ExpandedOrderRow order={mockAssignedOrder} />);
 
-    const link = screen.getByRole('link', { name: 'New Cast - Plaster' });
-    expect(link).toBeInTheDocument();
+    const button = screen.getByRole('button', { name: 'New Cast - Plaster' });
+    expect(button).toBeInTheDocument();
   });
 
   it('calls onOrderClick when order link is clicked', () => {
@@ -60,8 +61,8 @@ describe('ExpandedOrderRow', () => {
       />,
     );
 
-    const link = screen.getByRole('link', { name: 'New Cast - Plaster' });
-    fireEvent.click(link);
+    const button = screen.getByRole('button', { name: 'New Cast - Plaster' });
+    fireEvent.click(button);
 
     expect(onOrderClick).toHaveBeenCalledWith('order-1');
   });
@@ -144,8 +145,8 @@ describe('ExpandedOrderRow', () => {
         />,
       );
 
-      const link = screen.getByRole('link', { name: 'New Cast - Plaster' });
-      fireEvent.click(link);
+      const button = screen.getByRole('button', { name: 'New Cast - Plaster' });
+      fireEvent.click(button);
 
       expect(onOrderClick).toHaveBeenCalledWith('order-1');
     });

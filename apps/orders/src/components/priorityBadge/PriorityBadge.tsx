@@ -1,10 +1,10 @@
 import { useTranslation } from '@bahmni/services';
 import React from 'react';
-import { OrderPriority } from '../../models/orderFulfillment';
+import { ORDER_PRIORITY } from '../../models/ordersConfig';
 import styles from './styles/PriorityBadge.module.scss';
 
 interface PriorityBadgeProps {
-  priority: OrderPriority;
+  priority: ORDER_PRIORITY;
   count?: number;
 }
 
@@ -14,7 +14,7 @@ export const PriorityBadge: React.FC<PriorityBadgeProps> = ({
 }) => {
   const { t } = useTranslation();
 
-  if (priority !== 'Urgent' && priority !== 'STAT') {
+  if (priority !== ORDER_PRIORITY.STAT) {
     return null;
   }
 

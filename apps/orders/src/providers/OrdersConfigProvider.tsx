@@ -14,6 +14,15 @@ import useOrdersStore from '../stores/ordersStore';
 interface OrdersConfigProviderProps {
   children: ReactNode;
 }
+
+const HAS_BEEN_ADMITTED_COLUMN = {
+  key: 'hasBeenAdmitted',
+  header: '',
+  translationKey: '',
+  visible: true,
+  sortable: false,
+};
+
 export const OrdersConfigProvider: React.FC<OrdersConfigProviderProps> = ({
   children,
 }) => {
@@ -51,18 +60,11 @@ export const OrdersConfigProvider: React.FC<OrdersConfigProviderProps> = ({
     () => transformExtensionConfigToTabs(ordersConfig),
     [ordersConfig],
   );
-  const hasBeenAdmittedConfig = {
-    key: 'hasBeenAdmitted',
-    header: '',
-    translationKey: '',
-    visible: true,
-    sortable: false,
-  };
   const ordersTableColumnHeadersGeneric = useMemo(() => {
     if (ordersTableConfig?.ordersTableColumnHeadersGeneric) {
       return [
         ...ordersTableConfig.ordersTableColumnHeadersGeneric,
-        hasBeenAdmittedConfig,
+        HAS_BEEN_ADMITTED_COLUMN,
       ];
     }
     return [];
@@ -71,7 +73,7 @@ export const OrdersConfigProvider: React.FC<OrdersConfigProviderProps> = ({
     if (ordersTableConfig?.ordersTableColumnHeadersCustom) {
       return [
         ...ordersTableConfig.ordersTableColumnHeadersCustom,
-        hasBeenAdmittedConfig,
+        HAS_BEEN_ADMITTED_COLUMN,
       ];
     }
     return [];

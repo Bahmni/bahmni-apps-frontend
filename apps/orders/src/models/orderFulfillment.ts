@@ -53,7 +53,7 @@ export interface PatientOrderRow {
   urgentCount: number;
   orders: Order[];
   isExpandable: boolean;
-  hasBeenAdmitted: boolean;
+  hasBeenAdmitted?: boolean;
 }
 
 export interface OrderColumnConfig {

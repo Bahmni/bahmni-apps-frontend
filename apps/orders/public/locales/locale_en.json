@@ -41,6 +41,8 @@
   "DOB": "Date of Birth",
   "DAYS_SINCE_LMP": "Days since LMP",
   "APPLY": "Apply",
+  "STATUS_FILTER": "Filter status",
+  "CLOSE_SIDEBAR": "Close sidebar",
   "CANCEL": "Cancel",
   "SAVE": "Save",
   "CHOOSE_AN_OPTION": "Choose an option",

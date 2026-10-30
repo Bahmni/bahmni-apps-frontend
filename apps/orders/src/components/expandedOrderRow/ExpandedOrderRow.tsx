@@ -1,7 +1,7 @@
-import { Link } from '@bahmni/design-system';
 import { useTranslation } from '@bahmni/services';
 import { TableRow, TableCell } from '@carbon/react';
 import React from 'react';
+import { UI_STATUS_TO_TRANSLATION_KEY } from '../../constants/orderStatusMappings';
 import { Order } from '../../models/orderFulfillment';
 import { PriorityBadge } from '../priorityBadge';
 import styles from './styles/ExpandedOrderRow.module.scss';
@@ -36,21 +36,20 @@ export const ExpandedOrderRow: React.FC<ExpandedOrderRowProps> = ({
       <TableCell />
       <TableCell />
       <TableCell className={styles.orderNameCell}>
-        <Link
-          href="#"
-          onClick={(e: React.MouseEvent) => {
-            e.preventDefault();
-            handleOrderClick();
-          }}
+        <button
+          type="button"
+          onClick={handleOrderClick}
           className={styles.orderLink}
         >
           {order.orderName}
-        </Link>
+        </button>
       </TableCell>
       <TableCell className={styles.priority}>
         <PriorityBadge priority={order.priority} />
       </TableCell>
-      <TableCell className={styles.statusCell}>{order.status}</TableCell>
+      <TableCell className={styles.statusCell}>
+        {t(UI_STATUS_TO_TRANSLATION_KEY[order.status] ?? order.status)}
+      </TableCell>
       <TableCell className={styles.providerCell}>
         {order.provider?.display ?? '-'}
       </TableCell>

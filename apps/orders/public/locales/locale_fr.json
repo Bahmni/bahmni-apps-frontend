@@ -39,6 +39,8 @@
   "GENDER": "Genre",
   "DOB": "Date de Naissance",
   "APPLY": "Appliquer",
+  "STATUS_FILTER": "Filtrer le statut",
+  "CLOSE_SIDEBAR": "Fermer le panneau lateral",
   "CANCEL": "Annuler",
   "SAVE": "Sauvegarder",
   "CHOOSE_AN_OPTION": "Choisir une option",

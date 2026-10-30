@@ -76,6 +76,14 @@
       "additionalProperties": {
         "type": "string"
       }
+    },
+    "orderFulfillmentConceptUuid": {
+      "type": "string",
+      "description": "Concept UUID used when creating order fulfillment observations"
+    },
+    "fulfillmentEncounterTypeUuid": {
+      "type": "string",
+      "description": "Encounter type UUID used when creating order fulfillment encounters"
     }
   }
 }

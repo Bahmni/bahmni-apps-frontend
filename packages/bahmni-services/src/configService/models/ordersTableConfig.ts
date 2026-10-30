@@ -49,6 +49,7 @@ export interface OrdersTableConfig {
   orderStatusesAvailable?: OrderStatusOption[];
   orderStatusesPreSelected?: OrderStatusOption[];
   fulfillmentEncounterTypeUuid?: string;
+  orderFulfillmentConceptUuid?: string;
   lmpConfig?: LmpConfig;
   tabPractitionerTypeMap?: Record<string, string>;
 }

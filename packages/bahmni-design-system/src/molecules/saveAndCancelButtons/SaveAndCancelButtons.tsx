@@ -1,5 +1,4 @@
 import React from 'react';
-import { FormattedMessage } from 'react-intl';
 import { Button } from '../../atoms/button';
 import styles from './styles/SaveAndCancelButtons.module.scss';
 
@@ -7,16 +6,16 @@ export interface SaveAndCancelButtonsProps {
   onSave: () => void;
   onClose: () => void;
   isSaveDisabled?: boolean;
-  primaryButtonText?: React.ReactNode;
-  cancelButtonText?: React.ReactNode;
+  primaryButtonText: React.ReactNode;
+  cancelButtonText: React.ReactNode;
 }
 
 export const SaveAndCancelButtons: React.FC<SaveAndCancelButtonsProps> = ({
   onSave,
   onClose,
   isSaveDisabled = false,
-  primaryButtonText = <FormattedMessage id="SAVE" defaultMessage="Save" />,
-  cancelButtonText = <FormattedMessage id="CANCEL" defaultMessage="Cancel" />,
+  primaryButtonText,
+  cancelButtonText,
 }) => {
   return (
     <div className={styles.footer}>

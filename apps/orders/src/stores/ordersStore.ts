@@ -3,7 +3,7 @@ import {
   getCurrentUser,
   User,
   fetchProvidersByTab,
-  Provider,
+  OrderProvider,
 } from '@bahmni/services';
 import { create } from 'zustand';
 import { ORDERS_SELECTED_TAB_STORAGE_KEY } from '../constants/app';
@@ -12,6 +12,8 @@ import { OrderTab } from '../models/ordersConfig';
 import { fetchOrdersViaFhir } from '../services/fhirOrdersService';
 
 const USER_LOCATION_COOKIE = 'bahmni.user.location';
+let pendingOrderRequests = 0;
+let latestTabOrdersRequestId = 0;
 
 export interface OrdersStoreState {
   selectedIndex: number;
@@ -30,7 +32,7 @@ export interface OrdersStoreState {
   isLoading: boolean;
   setIsLoading: (value: boolean) => void;
   ordersData: PatientOrderRow[];
-  providers: Record<string, Provider[]>;
+  providers: Record<string, OrderProvider[]>;
 }
 
 export const useOrdersStore = create<OrdersStoreState>((set, get) => ({
@@ -82,25 +84,35 @@ export const useOrdersStore = create<OrdersStoreState>((set, get) => ({
   fetchOrdersForTab: async (tabIndex: number) => {
     const { tabs, currentLocation, currentUser, setIsLoading } = get();
     if (currentUser?.uuid && tabs[tabIndex] && currentLocation?.uuid) {
-      setIsLoading(true);
-      const ordersData = await fetchOrdersViaFhir(
-        tabs[tabIndex].searchHandler,
-        currentLocation.uuid,
-      );
-      set((state) => ({
-        ...state,
-        ordersData,
-        isLoading: false,
-        tabCounts: {
-          ...state.tabCounts,
-          [tabs[tabIndex].label]: ordersData.length,
-        },
-      }));
+      const requestId = ++latestTabOrdersRequestId;
+      pendingOrderRequests += 1;
+      setIsLoading(pendingOrderRequests > 0);
+      try {
+        const ordersData = await fetchOrdersViaFhir(
+          tabs[tabIndex].searchHandler,
+          currentLocation.uuid,
+        );
+        if (requestId !== latestTabOrdersRequestId) {
+          return;
+        }
+        set((state) => ({
+          ...state,
+          ordersData,
+          tabCounts: {
+            ...state.tabCounts,
+            [tabs[tabIndex].label]: ordersData.length,
+          },
+        }));
+      } finally {
+        pendingOrderRequests = Math.max(0, pendingOrderRequests - 1);
+        setIsLoading(pendingOrderRequests > 0);
+      }
     }
   },
   fetchAllPendingOrders: async (tabs) => {
     const { currentLocation, currentUser, setIsLoading } = get();
-    setIsLoading(true);
+    pendingOrderRequests += 1;
+    setIsLoading(pendingOrderRequests > 0);
     try {
       const { uuid: locationUuid } = currentLocation ?? {};
       const { uuid: providerUuid } = currentUser ?? {};
@@ -124,10 +136,6 @@ export const useOrdersStore = create<OrdersStoreState>((set, get) => ({
         },
         { tabCounts: {} },
       );
-      let res: PatientOrderRow[] = [];
-      if (responses[0].status === 'fulfilled') {
-        res = responses[0].value;
-      }
       const existingSelectedTabs = JSON.parse(
         localStorage.getItem(ORDERS_SELECTED_TAB_STORAGE_KEY) ?? '{}',
       );
@@ -138,13 +146,13 @@ export const useOrdersStore = create<OrdersStoreState>((set, get) => ({
 
       set((state) => ({
         ...state,
-        ordersData: res,
         tabs,
         tabCounts,
         selectedIndex: savedIndex >= 0 ? savedIndex : state.selectedIndex,
       }));
     } finally {
-      setIsLoading(false);
+      pendingOrderRequests = Math.max(0, pendingOrderRequests - 1);
+      setIsLoading(pendingOrderRequests > 0);
     }
   },
   fetchProviders: async (tabLabel: string) => {

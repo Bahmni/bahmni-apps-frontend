@@ -27,8 +27,18 @@ export const FHIR_TASK_STATUS_TO_UI_STATUS: Record<string, OrderStatus> = {
   completed: 'Completed',
   rejected: 'New',
   ready: 'Ready for Pickup',
-  onhold: 'On Hold',
+  'on-hold': 'On Hold',
   cancelled: 'Cancelled',
+};
+
+export const UI_STATUS_TO_TRANSLATION_KEY: Record<OrderStatus, string> = {
+  New: 'STATUS_NEW',
+  Acknowledged: 'STATUS_ACKNOWLEDGED',
+  'In Progress': 'STATUS_IN_PROGRESS',
+  Completed: 'STATUS_COMPLETED',
+  'Ready for Pickup': 'STATUS_READY_FOR_PICKUP',
+  'On Hold': 'STATUS_ON_HOLD',
+  Cancelled: 'STATUS_CANCELLED',
 };
 
 /**

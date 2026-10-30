@@ -1,10 +1,11 @@
 import { SaveAndCancelButtons } from '@bahmni/design-system';
 import {
   useTranslation,
-  Provider,
+  OrderProvider,
   createOrUpdateTask,
   getCurrentProvider,
   getObservationByConceptName,
+  getFormattedError,
   ObservationData,
   TabStatus,
   type CreateTaskOptions,
@@ -25,7 +26,7 @@ import {
   OrderStatusConfig,
 } from '../../models/orderFulfillment';
 import useOrdersStore from '../../stores/ordersStore';
-import { parseAgeYears } from '../../utils/patientUtils';
+import { isEligibleForLmp } from '../../utils/patientUtils';
 import styles from './styles/OrderFulfillmentSlider.module.scss';
 
 const referenceIdFrom = (reference: string): string =>
@@ -59,19 +60,21 @@ export const OrderFulfillmentSlider: React.FC<OrderFulfillmentSliderProps> = ({
   const [status, setStatus] = useState<OrderStatus | ''>('');
   const [owner, setOwner] = useState('');
   const [isSaving, setIsSaving] = useState(false);
-  const [currentProviders, setCurrentProviders] = useState<Provider[]>([]);
+  const [currentProviders, setCurrentProviders] = useState<OrderProvider[]>([]);
   const [lmpData, setLmpData] = useState<ObservationData | null>(null);
   const { lmpConfig } = ordersTableConfig ?? {};
   const lmpThreshold = lmpConfig?.threshold ?? 0;
   const lmpDateConcept = lmpConfig?.lmpDateConcept;
   const lmpTabLabels = lmpConfig?.tabLabels;
 
-  const isLmpEligible = !!(
-    lmpConfig &&
-    order?.patient?.gender === 'F' &&
-    parseAgeYears(order?.patient?.age) >= 10 &&
-    (!lmpTabLabels?.length || lmpTabLabels.includes(tabLabel))
-  );
+  const isLmpEligible =
+    !!lmpConfig &&
+    isEligibleForLmp({
+      gender: order?.patient?.gender,
+      age: order?.patient?.age,
+      tabLabel,
+      eligibleTabLabels: lmpTabLabels,
+    });
 
   const getLmpDisplayInfo = () => {
     if (!isLmpEligible) {
@@ -213,7 +216,7 @@ export const OrderFulfillmentSlider: React.FC<OrderFulfillmentSliderProps> = ({
     }
 
     if (changes.encounterChanged) {
-      options.encounterUuid = encounterUuid;
+      options.encounterUuid = encounterUuid ?? undefined;
     }
 
     return options;
@@ -255,7 +258,12 @@ export const OrderFulfillmentSlider: React.FC<OrderFulfillmentSliderProps> = ({
     try {
       setIsSaving(true);
 
-      const encounterUuid = await getEncounterUuid();
+      let encounterUuid: string | null = null;
+      try {
+        encounterUuid = await getEncounterUuid();
+      } catch {
+        encounterUuid = null;
+      }
       const updateOptions = buildUpdateOptions(encounterUuid);
 
       await createOrUpdateTask(order.id, fhirStatus, updateOptions);
@@ -267,10 +275,11 @@ export const OrderFulfillmentSlider: React.FC<OrderFulfillmentSliderProps> = ({
         timeout: 5000,
       });
       onSaveSuccess?.();
-    } catch {
+    } catch (error) {
+      const { message } = getFormattedError(error);
       addNotification({
         title: t('ORDER_SAVE_ERROR'),
-        message: '',
+        message,
         type: 'error',
         timeout: 5000,
       });
@@ -294,7 +303,7 @@ export const OrderFulfillmentSlider: React.FC<OrderFulfillmentSliderProps> = ({
           <button
             className={styles.closeButton}
             onClick={onClose}
-            aria-label="Close sidebar"
+            aria-label={t('CLOSE_SIDEBAR')}
             type="button"
           >
             <Close size={20} />
@@ -387,18 +396,6 @@ export const OrderFulfillmentSlider: React.FC<OrderFulfillmentSliderProps> = ({
               onChange={({ selectedItem }) =>
                 setStatus(selectedItem ? selectedItem.value : '')
               }
-              onKeyDown={(e: React.KeyboardEvent) => {
-                const allowedKeys = [
-                  'ArrowDown',
-                  'ArrowUp',
-                  'Enter',
-                  'Escape',
-                  'Tab',
-                ];
-                if (!allowedKeys.includes(e.key) && e.key.length === 1) {
-                  e.preventDefault();
-                }
-              }}
               className={styles.statusComboBox}
             />
           </div>

@@ -4,16 +4,6 @@ import { SaveAndCancelButtons } from '../SaveAndCancelButtons';
 
 expect.extend(toHaveNoViolations);
 
-jest.mock('react-intl', () => ({
-  FormattedMessage: ({
-    id,
-    defaultMessage,
-  }: {
-    id: string;
-    defaultMessage: string;
-  }) => <span>{defaultMessage || id}</span>,
-}));
-
 jest.mock('../styles/SaveAndCancelButtons.module.scss', () => ({
   footer: 'footer-class',
   cancelButton: 'cancelButton-class',
@@ -26,6 +16,8 @@ describe('SaveAndCancelButtons', () => {
   const defaultProps = {
     onSave: mockOnSave,
     onClose: mockOnClose,
+    primaryButtonText: 'Save',
+    cancelButtonText: 'Cancel',
   };
 
   beforeEach(() => {
@@ -62,7 +54,7 @@ describe('SaveAndCancelButtons', () => {
       expect(mockOnSave).not.toHaveBeenCalled();
     });
 
-    it('should render with default button text', () => {
+    it('should render with supplied button text', () => {
       render(<SaveAndCancelButtons {...defaultProps} />);
 
       expect(screen.getByText('Save')).toBeInTheDocument();

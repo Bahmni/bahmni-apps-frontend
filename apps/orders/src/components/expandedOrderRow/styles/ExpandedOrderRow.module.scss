@@ -65,6 +65,9 @@ $row-height: 48px;
 
 .orderLink {
   @include type-style("body-compact-01");
+  border: 0;
+  padding: 0;
+  background: transparent;
   color: $link-primary;
   text-decoration: none;
   cursor: pointer;

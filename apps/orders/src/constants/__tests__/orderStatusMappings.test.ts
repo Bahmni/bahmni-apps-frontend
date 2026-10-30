@@ -13,6 +13,7 @@ describe('orderStatusMappings', () => {
       expect(UI_STATUS_TO_FHIR_TASK_STATUS['Acknowledged']).toBe('requested');
       expect(UI_STATUS_TO_FHIR_TASK_STATUS['In Progress']).toBe('accepted');
       expect(UI_STATUS_TO_FHIR_TASK_STATUS['Completed']).toBe('completed');
+      expect(UI_STATUS_TO_FHIR_TASK_STATUS['On Hold']).toBe('on-hold');
     });
 
     it('maps Cancelled to FHIR cancelled status', () => {
@@ -29,6 +30,7 @@ describe('orderStatusMappings', () => {
       expect(FHIR_TASK_STATUS_TO_UI_STATUS['requested']).toBe('Acknowledged');
       expect(FHIR_TASK_STATUS_TO_UI_STATUS['accepted']).toBe('In Progress');
       expect(FHIR_TASK_STATUS_TO_UI_STATUS['completed']).toBe('Completed');
+      expect(FHIR_TASK_STATUS_TO_UI_STATUS['on-hold']).toBe('On Hold');
       expect(FHIR_TASK_STATUS_TO_UI_STATUS['rejected']).toBe('New');
     });
 

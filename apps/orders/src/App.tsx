@@ -5,17 +5,13 @@ import {
   NotificationServiceComponent,
   UserPrivilegeProvider,
 } from '@bahmni/widgets';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import React, { useEffect, useState } from 'react';
 import { Route, Routes } from 'react-router-dom';
-import { queryClientConfig } from './config/tanstackQuery';
 import { ORDERS_NAMESPACE } from './constants/app';
 import { OrdersPage } from './pages/OrdersPage';
 import { OrdersConfigProvider } from './providers/OrdersConfigProvider';
 import useOrdersStore from './stores/ordersStore';
 
-const queryClient = new QueryClient(queryClientConfig);
 const OrdersApp: React.FC = () => {
   const [isInitialized, setIsInitialized] = useState(false);
   const { fetchCurrentUser, setCurrentLocation } = useOrdersStore();
@@ -44,16 +40,13 @@ const OrdersApp: React.FC = () => {
     <Content>
       <NotificationProvider>
         <NotificationServiceComponent />
-        <QueryClientProvider client={queryClient}>
-          <OrdersConfigProvider>
-            <UserPrivilegeProvider>
-              <Routes>
-                <Route path="/search" element={<OrdersPage />} />
-              </Routes>
-              <ReactQueryDevtools initialIsOpen={false} />
-            </UserPrivilegeProvider>
-          </OrdersConfigProvider>
-        </QueryClientProvider>
+        <OrdersConfigProvider>
+          <UserPrivilegeProvider>
+            <Routes>
+              <Route path="/search" element={<OrdersPage />} />
+            </Routes>
+          </UserPrivilegeProvider>
+        </OrdersConfigProvider>
       </NotificationProvider>
     </Content>
   );

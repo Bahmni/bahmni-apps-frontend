@@ -32,7 +32,7 @@ interface OrdersTabContentProps {
   ) => void;
   onPatientExpand: (
     patientUuid: string,
-    observations: Record<string, ObservationData | string | null>,
+    lmpData: ObservationData | null,
   ) => void;
 }
 

@@ -1,4 +1,4 @@
-import { ExpandableSortableDataTable } from '@bahmni/design-system';
+import { ExpandableSortableDataTable, IconButton } from '@bahmni/design-system';
 import {
   useTranslation,
   getObservationByConceptName,
@@ -6,6 +6,7 @@ import {
   TabStatus,
 } from '@bahmni/services';
 import { DataTableHeader } from '@carbon/react';
+import { ChevronDown } from '@carbon/icons-react';
 import { faBed } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import React, {
@@ -23,7 +24,7 @@ import {
 } from '../../models/orderFulfillment';
 import { ORDER_PRIORITY } from '../../models/ordersConfig';
 import useOrdersStore from '../../stores/ordersStore';
-import { parseAgeYears } from '../../utils/patientUtils';
+import { isEligibleForLmp } from '../../utils/patientUtils';
 import { ExpandedOrderRow } from '../expandedOrderRow';
 import LinkButton from '../linkButton/LinkButton';
 import { NewBadge } from '../newBadge';
@@ -48,6 +49,72 @@ interface OrdersFulfillmentTableProps {
   ) => void;
 }
 
+interface ExpandedOrdersContentProps {
+  row: PatientOrderRow;
+  selectedOrderId: string | null;
+  shouldFetchLmp: boolean;
+  patientUuid?: string;
+  lmpDateConcept?: string;
+  onPatientExpand?: (
+    patientUuid: string,
+    lmpData: ObservationData | null,
+  ) => void;
+  onOrderClick?: (orderId: string) => void;
+  captureSelectedOrderRowPosition: (orderId: string) => void;
+  setSelectedOrderId: (orderId: string) => void;
+}
+
+const ExpandedOrdersContent: React.FC<ExpandedOrdersContentProps> = ({
+  row,
+  selectedOrderId,
+  shouldFetchLmp,
+  patientUuid,
+  lmpDateConcept,
+  onPatientExpand,
+  onOrderClick,
+  captureSelectedOrderRowPosition,
+  setSelectedOrderId,
+}) => {
+  useEffect(() => {
+    if (!shouldFetchLmp || !patientUuid || !lmpDateConcept) {
+      return;
+    }
+
+    let isCancelled = false;
+
+    getObservationByConceptName(patientUuid, lmpDateConcept)
+      .then((result) => {
+        if (!isCancelled) {
+          onPatientExpand?.(patientUuid, result as ObservationData | null);
+        }
+      })
+      .catch(() => {
+        // Keep failures out of the prefetch cache so the slider can retry.
+      });
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [lmpDateConcept, onPatientExpand, patientUuid, shouldFetchLmp]);
+
+  return (
+    <Fragment>
+      {row.orders.map((order) => (
+        <ExpandedOrderRow
+          key={order.id}
+          order={order}
+          isSelected={selectedOrderId === order.id}
+          onOrderClick={(orderId) => {
+            captureSelectedOrderRowPosition(orderId);
+            setSelectedOrderId(orderId);
+            onOrderClick?.(orderId);
+          }}
+        />
+      ))}
+    </Fragment>
+  );
+};
+
 export const OrdersFulfillmentTable: React.FC<OrdersFulfillmentTableProps> = ({
   rows,
   headers,
@@ -67,7 +134,6 @@ export const OrdersFulfillmentTable: React.FC<OrdersFulfillmentTableProps> = ({
     orderId: string;
     rowTop: number;
   } | null>(null);
-  const fetchedPatientUuids = useRef<Set<string>>(new Set());
   const [isStatusFilterOpen, setIsStatusFilterOpen] = useState(false);
   const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
   const { selectedIndex } = useOrdersStore();
@@ -89,11 +155,6 @@ export const OrdersFulfillmentTable: React.FC<OrdersFulfillmentTableProps> = ({
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isSearchActive]);
-
-  // Clear LMP fetch cache when orders refresh or tab changes
-  useEffect(() => {
-    fetchedPatientUuids.current = new Set();
-  }, [rows, selectedIndex]);
 
   const handleStatusFilterApply = (statuses: OrderStatusConfig[]) => {
     setSelectedStatuses(statuses);
@@ -245,24 +306,18 @@ export const OrdersFulfillmentTable: React.FC<OrdersFulfillmentTableProps> = ({
           header: (
             <span ref={statusHeaderRef} className={styles.statusHeader}>
               {h.header}
-              <svg
-                width="16"
-                height="16"
-                viewBox="0 0 16 16"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
+              <IconButton
+                kind="ghost"
+                size="sm"
+                label={t('STATUS_FILTER')}
+                align="bottom"
                 className={styles.statusCaret}
-                aria-hidden="true"
+                aria-expanded={isStatusFilterOpen}
+                aria-haspopup="dialog"
                 onClick={toggleStatusFilter}
               >
-                <path
-                  d="M4 6L8 10L12 6"
-                  stroke="currentColor"
-                  strokeWidth="1.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
+                <ChevronDown size={16} />
+              </IconButton>
               <StatusFilter
                 availableStatuses={availableStatuses}
                 selectedStatuses={selectedStatuses}
@@ -336,7 +391,10 @@ export const OrdersFulfillmentTable: React.FC<OrdersFulfillmentTableProps> = ({
         return (
           <div className={styles.priorityCell}>
             {row.urgentCount > 0 ? (
-              <PriorityBadge priority="Urgent" count={row.urgentCount} />
+              <PriorityBadge
+                priority={ORDER_PRIORITY.STAT}
+                count={row.urgentCount}
+              />
             ) : null}
           </div>
         );
@@ -359,44 +417,28 @@ export const OrdersFulfillmentTable: React.FC<OrdersFulfillmentTableProps> = ({
     const patient = row.orders[0]?.patient;
     const currentTabLabel = tabs?.[selectedIndex]?.label;
 
-    const shouldFetchLmp = !!(
-      lmpConfig &&
-      patient?.gender === 'F' &&
-      parseAgeYears(patient?.age) >= 10 &&
-      (!lmpTabLabels?.length || lmpTabLabels.includes(currentTabLabel)) &&
-      patientUuid
-    );
-
-    if (shouldFetchLmp) {
-      if (!fetchedPatientUuids.current.has(patientUuid!)) {
-        fetchedPatientUuids.current.add(patientUuid!);
-        setTimeout(() => {
-          getObservationByConceptName(patientUuid!, lmpDateConcept!)
-            .then((result) => {
-              onPatientExpand?.(patientUuid!, result as ObservationData | null);
-            })
-            .catch(() => {
-              onPatientExpand?.(patientUuid!, null);
-            });
-        }, 0);
-      }
-    }
+    const shouldFetchLmp =
+      !!lmpConfig &&
+      !!patientUuid &&
+      isEligibleForLmp({
+        gender: patient?.gender,
+        age: patient?.age,
+        tabLabel: currentTabLabel,
+        eligibleTabLabels: lmpTabLabels,
+      });
 
     return (
-      <Fragment>
-        {row.orders.map((order) => (
-          <ExpandedOrderRow
-            key={order.id}
-            order={order}
-            isSelected={selectedOrderId === order.id}
-            onOrderClick={(orderId) => {
-              captureSelectedOrderRowPosition(orderId);
-              setSelectedOrderId(orderId);
-              onOrderClick?.(orderId);
-            }}
-          />
-        ))}
-      </Fragment>
+      <ExpandedOrdersContent
+        row={row}
+        selectedOrderId={selectedOrderId}
+        shouldFetchLmp={shouldFetchLmp}
+        patientUuid={patientUuid}
+        lmpDateConcept={lmpDateConcept}
+        onPatientExpand={onPatientExpand}
+        onOrderClick={onOrderClick}
+        captureSelectedOrderRowPosition={captureSelectedOrderRowPosition}
+        setSelectedOrderId={setSelectedOrderId}
+      />
     );
   };
 

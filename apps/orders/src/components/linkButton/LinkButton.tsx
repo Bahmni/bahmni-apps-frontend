@@ -28,19 +28,18 @@ const LinkButton: React.FC<LinkButtonProps> = ({
     url =
       window.location.origin + formatUrl(forwardUrl, { patientUuid: id }, true);
   }
-  const handleClick = (e: React.MouseEvent) => {
-    e.preventDefault();
-    const target = newTab ? '_blank' : (targetedTab ?? '_self');
-    window.open(url, target);
+  const target = newTab ? '_blank' : targetedTab;
+  const handleClick = () => {
     onClick?.();
   };
 
   return (
     <Link
+      href={url}
+      target={target}
+      rel={target === '_blank' ? 'noopener noreferrer' : undefined}
       onClick={handleClick}
       className={className}
-      style={{ cursor: 'pointer' }}
-      role={'link'}
     >
       {children}
     </Link>

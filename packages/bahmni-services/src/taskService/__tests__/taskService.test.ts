@@ -1,6 +1,6 @@
-import { get, post } from '../../api';
+import { get, post, put } from '../../api';
 import { FHIR_TASK_URL, TASKS_URL } from '../constants';
-import { createTask, getTasks } from '../taskService';
+import { createOrUpdateTask, createTask, getTasks } from '../taskService';
 import { emptyTaskBundle, mockTaskBundle } from './__mocks__/taskServiceMocks';
 
 jest.mock('../../api');
@@ -193,6 +193,59 @@ describe('taskService', () => {
       await expect(createTask('order-uuid', 'requested')).rejects.toThrow(
         'API Error',
       );
+    });
+  });
+
+  describe('createOrUpdateTask', () => {
+    it('updates the existing task by merging changed fields into the full resource', async () => {
+      mockedGet.mockResolvedValueOnce({
+        resourceType: 'Bundle',
+        type: 'searchset',
+        entry: [
+          {
+            resource: {
+              resourceType: 'Task',
+              id: 'task-uuid',
+              intent: 'order',
+              status: 'requested',
+              basedOn: [{ reference: 'ServiceRequest/order-uuid' }],
+              for: { reference: 'Patient/patient-uuid' },
+              owner: { reference: 'Practitioner/original-provider' },
+              note: [{ text: 'Original note' }],
+              encounter: { reference: 'Encounter/original-encounter' },
+            },
+          },
+        ],
+      });
+      (put as jest.Mock).mockResolvedValueOnce({});
+
+      await createOrUpdateTask('order-uuid', 'completed', {
+        notes: 'Updated note',
+      });
+
+      expect(put).toHaveBeenCalledWith(`${FHIR_TASK_URL}/task-uuid`, {
+        resourceType: 'Task',
+        id: 'task-uuid',
+        intent: 'order',
+        status: 'completed',
+        basedOn: [{ reference: 'ServiceRequest/order-uuid' }],
+        for: { reference: 'Patient/patient-uuid' },
+        owner: { reference: 'Practitioner/original-provider' },
+        note: [{ text: 'Updated note' }],
+        encounter: { reference: 'Encounter/original-encounter' },
+      });
+      expect(post).not.toHaveBeenCalled();
+    });
+
+    it('propagates lookup failures instead of creating duplicate tasks', async () => {
+      mockedGet.mockRejectedValueOnce(new Error('Task lookup failed'));
+
+      await expect(
+        createOrUpdateTask('order-uuid', 'completed'),
+      ).rejects.toThrow('Task lookup failed');
+
+      expect(post).not.toHaveBeenCalled();
+      expect(put).not.toHaveBeenCalled();
     });
   });
 });
