@@ -200,3 +200,16 @@ export {
   OverflowMenuItem,
   type OverflowMenuItemProps,
 } from './atoms/overflowMenuItem';
+
+export {
+  LineChart,
+  type LineChartProps,
+  AreaChart,
+  type AreaChartProps,
+  BarChart,
+  type BarChartProps,
+  ScatterChart,
+  type ScatterChartProps,
+  ChartSkeleton,
+  type ChartSkeletonProps,
+} from './molecules/chart';

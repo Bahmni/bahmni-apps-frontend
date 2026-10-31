@@ -1,0 +1,24 @@
+@use "@carbon/react/scss/breakpoint" as *;
+@use "@carbon/react/scss/spacing" as *;
+
+.chart {
+  width: 100%;
+  padding-left: $spacing-05;
+  padding-right: $spacing-06;
+  padding-top: $spacing-03;
+  padding-bottom: $spacing-06;
+  @include breakpoint-down(lg) {
+    padding-left: $spacing-04;
+    padding-right: $spacing-05;
+    padding-top: $spacing-02;
+    padding-bottom: $spacing-05;
+  }
+
+  :global(.zoom-bar) {
+    height: $spacing-08 !important;
+  }
+}
+
+.loading {
+  max-inline-size: 100% !important;
+}
