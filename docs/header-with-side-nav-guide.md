@@ -355,7 +355,7 @@ const CompleteHeader: React.FC = () => {
 import React from "react";
 import { HeaderWSideNav } from "@components/common/headerWSideNav/HeaderWSideNav";
 import { Search, Notification, User } from "@carbon/icons-react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router";
 
 interface PatientHeaderProps {
   patientId: string;
@@ -529,7 +529,7 @@ import {
   Route,
   useNavigate,
   useLocation,
-} from "react-router-dom";
+} from "react-router";
 import { HeaderWSideNav } from "@components/common/headerWSideNav/HeaderWSideNav";
 
 const App: React.FC = () => {
@@ -603,7 +603,7 @@ const AppContent: React.FC = () => {
 
 ```tsx
 import React, { useMemo } from "react";
-import { useLocation, useParams } from "react-router-dom";
+import { useLocation, useParams } from "react-router";
 import { HeaderBreadcrumbItem } from "@types/headerSideNav";
 
 const useDynamicBreadcrumbs = () => {

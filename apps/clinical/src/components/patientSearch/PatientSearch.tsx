@@ -2,7 +2,7 @@ import { ComboBox } from '@bahmni/design-system';
 import { type PatientSearchResult, useTranslation } from '@bahmni/services';
 import { useNotification } from '@bahmni/widgets';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import usePatientSearch from '../../hooks/usePatientSearch';
 import { useClinicalConfig } from '../../providers/clinicalConfig';
 import type { PatientSearchDisplayField } from '../../providers/clinicalConfig/models';

@@ -16,7 +16,7 @@ import {
 import i18n from 'i18next';
 import { axe, toHaveNoViolations } from 'jest-axe';
 import React, { ReactNode } from 'react';
-import { MemoryRouter } from 'react-router-dom';
+import { MemoryRouter } from 'react-router';
 import { dispatchConsultationStart } from '../../events/startConsultation';
 import { useClinicalConfig } from '../../providers/clinicalConfig';
 import ConsultationPage from '../ConsultationPage';

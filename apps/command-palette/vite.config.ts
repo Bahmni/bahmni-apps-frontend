@@ -39,7 +39,7 @@ export default defineConfig(() => ({
         'react',
         'react-dom',
         'react/jsx-runtime',
-        'react-router-dom',
+        'react-router',
         /^@carbon\/styles/,
         '@bahmni/widgets',
         '@bahmni/services',

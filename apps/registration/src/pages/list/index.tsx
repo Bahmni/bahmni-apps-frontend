@@ -13,7 +13,7 @@ import {
 } from '@bahmni/services';
 import { useUserPrivilege, UserGlobalAction } from '@bahmni/widgets';
 import { Suspense, useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import { useRegistrationConfig } from '../../providers/registrationConfig';
 import { EXTENSION_HANDLERS } from './constants';
 import styles from './styles/index.module.scss';
