@@ -59,7 +59,7 @@ jest.mock('../../hooks/usePatientUUID', () => ({
   usePatientUUID: jest.fn(),
 }));
 
-jest.mock('react-router-dom', () => ({
+jest.mock('react-router', () => ({
   useParams: jest.fn(),
 }));
 

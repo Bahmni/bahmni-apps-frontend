@@ -1,0 +1,39 @@
+@use "@carbon/react/scss/colors" as *;
+@use "@carbon/react/scss/spacing" as *;
+
+.itemWithThumbnail {
+  display: flex;
+  align-items: stretch;
+  gap: $spacing-03;
+  inline-size: 100%;
+  max-inline-size: 28rem;
+}
+
+.thumbnail {
+  position: relative;
+  display: flex;
+  flex: 0 0 $spacing-09;
+  align-items: center;
+  justify-content: center;
+  inline-size: $spacing-09;
+  overflow: hidden;
+  background-color: $blue-10;
+
+  img {
+    position: absolute;
+    inset: 0;
+    inline-size: 100%;
+    block-size: 100%;
+    object-fit: cover;
+  }
+}
+
+.item {
+  flex: 1;
+  min-inline-size: 0;
+
+  .selectedFile {
+    inline-size: 100%;
+    max-inline-size: none;
+  }
+}

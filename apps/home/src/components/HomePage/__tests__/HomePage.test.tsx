@@ -1,7 +1,7 @@
 import { NotificationProvider } from '@bahmni/widgets';
 import { render, screen } from '@testing-library/react';
 import { axe, toHaveNoViolations } from 'jest-axe';
-import { MemoryRouter, useLocation } from 'react-router-dom';
+import { MemoryRouter, useLocation } from 'react-router';
 import { HomePage } from '../HomePage';
 
 expect.extend(toHaveNoViolations);

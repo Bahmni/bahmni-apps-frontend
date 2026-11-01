@@ -93,9 +93,9 @@ function getPackageJsonTemplate(appNameKebab) {
         './locales/*': './dist/locales/*',
       },
       peerDependencies: {
-        react: '^19.0.0',
-        'react-dom': '^19.0.0',
-        'react-router-dom': '^7.5.3',
+        react: '^19.2.7',
+        'react-dom': '^19.2.7',
+        'react-router': '^8.3.0',
       },
       "author": "Thoughtworks Inc.",
       "license": "MPLv2",
@@ -139,12 +139,14 @@ export default [
 }
 
 function getJestConfigTemplate(appNameKebab) {
-  return `export default {
+  return `import { esmTransformIgnorePattern } from '../../jest.esm-packages';
+
+export default {
   displayName: '@bahmni/${appNameKebab}',
   preset: '../../jest.preset.js',
   setupFilesAfterEnv: ['<rootDir>/setupTests.ts'],
   transformIgnorePatterns: [
-    'node_modules/(?!(@bahmni/design-system|@bahmni/services)/)',
+    esmTransformIgnorePattern(['@bahmni/design-system', '@bahmni/services']),
   ],
   moduleNameMapper: {
     '^i18next$': '<rootDir>/../../node_modules/i18next',
@@ -307,7 +309,7 @@ export default defineConfig(() => ({
         'react',
         'react-dom',
         'react/jsx-runtime',
-        'react-router-dom',
+        'react-router',
         /^@carbon\/styles/
       ],
     },
@@ -400,7 +402,7 @@ import {
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { Suspense, useEffect, useState } from "react";
-import { Routes } from "react-router-dom";
+import { Routes } from "react-router";
 import { queryClientConfig } from "./config/tanstackQuery";
 import { ${appConstantName} } from "./constants/app";
 import { routes, renderRoutes } from "./routes";
@@ -484,7 +486,7 @@ export type Routes = RouteConfig[];
 
 function getRoutesIndexTemplate() {
   return `import { lazy } from "react";
-import { Navigate, Route } from "react-router-dom";
+import { Navigate, Route } from "react-router";
 import { Routes, RouteConfig } from "./model";
 
 const IndexPage = lazy(() =>

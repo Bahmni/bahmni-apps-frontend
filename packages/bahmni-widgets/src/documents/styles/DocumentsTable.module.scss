@@ -29,12 +29,16 @@
   gap: $spacing-05;
 }
 
+.printContainer {
+  position: absolute;
+}
+
 .attachmentItem {
   width: 100%;
 }
 
 .attachmentCounter {
-  @include type-style('label-01');
+  @include type-style('body-compact-01');
   color: $text-secondary;
   margin-bottom: $spacing-02;
 }
@@ -50,7 +54,63 @@
   border: none;
 }
 
+.attachmentContent {
+  position: relative;
+  min-height: $spacing-09;
+}
+
+.attachmentLoading {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.hiddenWhileLoading {
+  visibility: hidden;
+}
+
 .documentImage {
   max-width: 100%;
   object-fit: contain;
+}
+
+.header {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  justify-content: space-between;
+  align-items: center;
+  min-block-size: fit-content;
+  padding: 0;
+  background: $background;
+  border-top: 1px solid $border-subtle;
+  border-bottom: 1px solid $border-subtle-02;
+
+  p {
+    @include type-style('heading-compact-02');
+    color: $text-primary;
+    padding: $spacing-05;
+  }
+
+  button {
+    margin-inline-end: $spacing-01;
+  }
+}
+
+.documentTypeCell {
+  display: flex;
+  align-items: center;
+  gap: $spacing-02;
+}
+
+.printAllButton {
+  align-self: flex-end;
+}
+
+.attachmentHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }

@@ -15,6 +15,7 @@ import { useUserPrivilege } from '@bahmni/widgets';
 import { Suspense, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { RegistrationUserMenu } from '../../components/common/RegistrationUserMenu';
+import { useNavigate } from 'react-router';
 import { useRegistrationConfig } from '../../providers/registrationConfig';
 import { EXTENSION_HANDLERS } from './constants';
 import styles from './styles/index.module.scss';

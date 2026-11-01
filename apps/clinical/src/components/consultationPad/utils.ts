@@ -147,6 +147,7 @@ export function captureUpdatedResources(entries: InputControl[]) {
       hasData('immunizationHistory') ||
       hasData('immunizationAdministration') ||
       hasData('immunizationWaiver'),
+    documents: hasData('documents'),
     serviceRequests,
     observationFormsWithBasedOn: extractId(observationFormsBasedOn?.basedOn),
   };

@@ -405,6 +405,7 @@ describe('captureUpdatedResources', () => {
 
     expect(captureUpdatedResources(entries)).toEqual({
       conditions: false,
+      documents: false,
       allergies: false,
       medications: true,
       immunizationHistory: false,
@@ -445,6 +446,7 @@ describe('captureUpdatedResources', () => {
 
     expect(result).toEqual({
       conditions: false,
+      documents: false,
       allergies: false,
       medications: false,
       immunizationHistory: false,

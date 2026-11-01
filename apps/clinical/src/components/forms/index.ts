@@ -4,6 +4,7 @@ import './investigations';
 import './conditionsAndDiagnoses';
 import './medicationRequest';
 import './immunization';
+import './documents';
 import './observations';
 import './stopMedications';
 

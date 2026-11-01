@@ -12,7 +12,7 @@ import {
   useUserPrivilege,
 } from '@bahmni/widgets';
 import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import {
   MANAGE_APPOINTMENT_SERVICES_PRIVILEGE,
   PATHS,

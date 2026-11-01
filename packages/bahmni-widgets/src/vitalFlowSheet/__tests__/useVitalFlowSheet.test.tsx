@@ -18,7 +18,7 @@ jest.mock('@bahmni/services', () => ({
 jest.mock('../../hooks/usePatientUUID');
 jest.mock('../../notification');
 
-jest.mock('react-router-dom', () => ({
+jest.mock('react-router', () => ({
   useParams: jest.fn(),
 }));
 

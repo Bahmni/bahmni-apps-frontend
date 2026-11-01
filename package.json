@@ -2,6 +2,9 @@
   "name": "@bahmni/source",
   "version": "0.1.0",
   "license": "MPLv2",
+  "engines": {
+    "node": ">=22.22.0"
+  },
   "scripts": {
     "create:app": "node ./scripts/create-app.js",
     "dev": "nx serve distro",
@@ -26,9 +29,9 @@
     "@types/fhir": "^0.0.41",
     "browser-image-compression": "^2.0.2",
     "cmdk": "^1.1.1",
-    "react": "^19.0.0",
-    "react-dom": "^19.0.0",
-    "react-router-dom": "^7.15.0",
+    "react": "^19.2.7",
+    "react-dom": "^19.2.7",
+    "react-router": "^8.3.0",
     "zustand": "^5.0.7"
   },
   "devDependencies": {
