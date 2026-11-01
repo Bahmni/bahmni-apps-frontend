@@ -1,5 +1,6 @@
 import type { Bundle, Encounter, Observation } from 'fhir/r4';
 import * as api from '../../api';
+import { OPENMRS_FHIR_R4 } from '../../constants/app';
 import {
   mockObservationBundle,
   mockEmptyObservationBundle,
@@ -102,6 +103,34 @@ describe('observationService', () => {
       await expect(
         getPatientObservationsBundle('patient-123', ['concept-1']),
       ).rejects.toThrow(mockError);
+    });
+
+    it('should follow next links and merge entries from all pages', async () => {
+      const nextPath = `${OPENMRS_FHIR_R4}/Observation?_getpagesoffset=100&_count=100`;
+      const page1 = {
+        resourceType: 'Bundle',
+        entry: [{ resource: { id: 'a' } }],
+        link: [
+          {
+            relation: 'next',
+            url: `http://internal-host${nextPath}`,
+          },
+        ],
+      };
+      const page2 = {
+        resourceType: 'Bundle',
+        entry: [{ resource: { id: 'b' } }],
+        link: [{ relation: 'self', url: 'x' }],
+      };
+      (api.get as jest.Mock)
+        .mockResolvedValueOnce(page1)
+        .mockResolvedValueOnce(page2);
+
+      const result = await getPatientObservationsBundle('patient-uuid-123');
+
+      expect(api.get).toHaveBeenCalledTimes(2);
+      expect(api.get).toHaveBeenLastCalledWith(nextPath);
+      expect(result.entry?.map((e) => e.resource?.id)).toEqual(['a', 'b']);
     });
   });
 

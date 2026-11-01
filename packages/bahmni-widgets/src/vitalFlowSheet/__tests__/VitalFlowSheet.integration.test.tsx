@@ -6,7 +6,7 @@ import {
   DEFAULT_DATE_FORMAT_STORAGE_KEY,
 } from '@bahmni/services';
 import { render, screen, waitFor } from '@testing-library/react';
-import { MemoryRouter, Route, Routes } from 'react-router-dom';
+import { MemoryRouter, Route, Routes } from 'react-router';
 import VitalFlowSheet from '../VitalFlowSheet';
 
 // Mock the service directly for integration testing

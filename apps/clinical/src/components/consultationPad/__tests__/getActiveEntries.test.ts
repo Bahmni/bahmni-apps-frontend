@@ -8,6 +8,7 @@ import { getActiveEntries, getPadTitleKey } from '../utils';
 
 import '../../forms/allergies';
 import '../../forms/conditionsAndDiagnoses';
+import '../../forms/documents';
 import '../../forms/encounterDetails';
 import '../../forms/immunization';
 import '../../forms/investigations';
@@ -20,6 +21,7 @@ jest.mock(
   '../../forms/conditionsAndDiagnoses/ConditionsAndDiagnoses',
   () => 'ConditionsAndDiagnoses',
 );
+jest.mock('../../forms/documents/DocumentsForm', () => 'DocumentsForm');
 jest.mock(
   '../../forms/encounterDetails/EncounterDetails',
   () => 'EncounterDetails',
@@ -52,6 +54,7 @@ const DEPLOYED_ENCOUNTER_TYPES: Record<string, string[] | undefined> = {
   allergies: ['Consultation'],
   conditionsAndDiagnoses: ['Consultation'],
   investigations: ['Consultation'],
+  documents: ['Consultation'],
   medication: ['Consultation'],
   vaccination: ['Consultation'],
   stopMedications: ['Consultation'],
@@ -168,6 +171,11 @@ describe('getActiveEntries (real control registrations)', () => {
         resources: [{ resourceType: 'Observation', id: 'o-1' }],
       },
       withEncounterDetails('observationForms'),
+    ],
+    [
+      'Add document opens only the documents control',
+      { type: 'create', resourceType: 'DocumentReference' },
+      withEncounterDetails('documents'),
     ],
     [
       'Open a task form opens only the observation forms control',
@@ -322,6 +330,11 @@ describe('getPadTitleKey', () => {
       'stop medication',
       { type: 'delete', resources: [{ resourceType: 'MedicationRequest' }] },
       'STOP_MEDICATION_FORM_TITLE',
+    ],
+    [
+      'add document',
+      { type: 'create', resourceType: 'DocumentReference' },
+      'DOCUMENTS_UPLOAD_TITLE',
     ],
     [
       'add immunization',

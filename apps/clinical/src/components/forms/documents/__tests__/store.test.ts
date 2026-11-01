@@ -289,7 +289,7 @@ describe('useDocumentsStore', () => {
       expect(state().validateAll()).toBe(false);
       expect(entryOf(id).errors.documentId).toBe('INPUT_VALUE_REQUIRED');
 
-      updateDocumentId(id, 'DOC-9');
+      updateDocumentId(id, 'DOC9');
 
       expect(state().validateAll()).toBe(true);
     });

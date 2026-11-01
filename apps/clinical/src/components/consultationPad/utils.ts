@@ -139,6 +139,7 @@ const ACTION_TITLE_KEYS: Record<string, string> = {
   'update:MedicationRequest': 'MEDICATIONS_EDIT_FORM_TITLE',
   'update:Observation': 'EDIT_OBSERVATION_FORM_TITLE',
   'delete:MedicationRequest': 'STOP_MEDICATION_FORM_TITLE',
+  'create:DocumentReference': 'DOCUMENTS_UPLOAD_TITLE',
 };
 
 export function getPadTitleKey(

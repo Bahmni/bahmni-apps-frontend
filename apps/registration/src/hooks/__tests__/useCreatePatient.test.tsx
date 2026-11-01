@@ -42,7 +42,7 @@ jest.mock('@bahmni/widgets', () => ({
   useNotification: jest.fn(),
 }));
 
-jest.mock('react-router-dom', () => ({
+jest.mock('react-router', () => ({
   useNavigate: () => jest.fn(),
 }));
 

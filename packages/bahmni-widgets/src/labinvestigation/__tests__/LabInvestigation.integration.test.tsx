@@ -6,7 +6,7 @@ import {
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, screen, waitFor } from '@testing-library/react';
 import { Bundle, ServiceRequest } from 'fhir/r4';
-import { MemoryRouter, Route, Routes } from 'react-router-dom';
+import { MemoryRouter, Route, Routes } from 'react-router';
 
 import { useNotification } from '../../notification';
 import LabInvestigation from '../LabInvestigation';

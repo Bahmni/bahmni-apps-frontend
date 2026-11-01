@@ -15,3 +15,6 @@ export const ADMIN_CONFIG_APP = 'admin';
 
 /** Number of audit log events per page; a full page means more may follow. */
 export const AUDIT_LOG_PAGE_SIZE = 50;
+
+/** CSV uploads larger than this (50 MB) show a progress bar; smaller ones finish almost instantly. */
+export const PROGRESS_INDICATOR_MIN_FILE_SIZE_BYTES = 50 * 1024 * 1024;
