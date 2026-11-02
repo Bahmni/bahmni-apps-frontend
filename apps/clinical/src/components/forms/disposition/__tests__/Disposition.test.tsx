@@ -7,7 +7,9 @@ import {
   waitFor,
 } from '@testing-library/react';
 import React from 'react';
+import { usePatientVisit } from '../../../../hooks/usePatientVisit';
 import {
+  fetchAdmissionStatus,
   fetchDispositionTypes,
   filterDispositionTypesByAdmissionStatus,
 } from '../../../../services/dispositionService';
@@ -22,6 +24,13 @@ jest.mock('../../../../services/dispositionService', () => ({
   fetchDispositionTypes: jest.fn(),
   fetchAdmissionStatus: jest.fn(),
   filterDispositionTypesByAdmissionStatus: jest.fn((types) => types),
+}));
+
+jest.mock('../../../../hooks/usePatientVisit', () => ({
+  usePatientVisit: jest.fn(() => ({
+    activeVisit: { id: 'visit-1' },
+    loading: false,
+  })),
 }));
 
 jest.mock('@bahmni/widgets', () => ({
@@ -98,6 +107,7 @@ describe('Disposition', () => {
     capturedDropdownProps = null;
     capturedDatePickerOnChange = null;
     mockedFetchDispositionTypes.mockResolvedValue(FETCHED_DISPOSITION_TYPES);
+    (fetchAdmissionStatus as jest.Mock).mockResolvedValue(null);
     mockedFilterDispositionTypesByAdmissionStatus.mockClear();
     mockedFilterDispositionTypesByAdmissionStatus.mockImplementation(
       (types) => types,
@@ -291,5 +301,50 @@ describe('Disposition', () => {
     expect(
       screen.queryByTestId('disposition-date-picker'),
     ).not.toBeInTheDocument();
+  });
+
+  it('asks for confirmation before clearing notes when the type changes', async () => {
+    renderWithQueryClient(<Disposition />);
+    await screen.findByText('Admit');
+    act(() => {
+      useDispositionStore
+        .getState()
+        .setSelectedType({ value: 'ADMIT', label: 'Admit' });
+      useDispositionStore.getState().setNotes('some notes');
+    });
+
+    fireEvent.click(screen.getByText('Transfer'));
+
+    expect(useDispositionStore.getState().selectedType?.value).toBe('ADMIT');
+    expect(useDispositionStore.getState().notes).toBe('some notes');
+
+    fireEvent.click(screen.getByText('DISPOSITION_CHANGE_TYPE_CONFIRM'));
+
+    await waitFor(() =>
+      expect(useDispositionStore.getState().selectedType?.value).toBe(
+        'TRANSFER',
+      ),
+    );
+    expect(useDispositionStore.getState().notes).toBe('');
+  });
+
+  it('changes the type without confirmation when there are no notes', async () => {
+    renderWithQueryClient(<Disposition />);
+    await screen.findByText('Admit');
+
+    fireEvent.click(screen.getByText('Transfer'));
+
+    expect(useDispositionStore.getState().selectedType?.value).toBe('TRANSFER');
+  });
+
+  it('shows an empty, disabled dropdown when there is no active visit', async () => {
+    (usePatientVisit as jest.Mock).mockReturnValue({
+      activeVisit: null,
+      loading: false,
+    });
+    renderWithQueryClient(<Disposition />);
+
+    await waitFor(() => expect(capturedDropdownProps.disabled).toBe(true));
+    expect(capturedDropdownProps.items).toEqual([]);
   });
 });

@@ -1,14 +1,14 @@
 import {
   get,
-  OPENMRS_FHIR_R4,
   OPENMRS_REST_V1,
+  getUserPreferredLocale,
   searchConceptByName,
 } from '@bahmni/services';
 import type { DispositionType } from '../stores/dispositionStore';
 
 const DISPOSITION_CONCEPT_NAME = 'Disposition';
 const DISPOSITION_CUSTOM_VIEW =
-  'custom:(uuid,name,answers:(uuid,name,mappings))';
+  'custom:(uuid,name,answers:(uuid,name,names:(name,locale,conceptNameType),mappings))';
 const EMRAPI_MAPPING_SOURCE = 'org.openmrs.module.emrapi';
 
 const ADMISSION_STATUS_ATTRIBUTE_TYPE = 'Admission Status';
@@ -44,6 +44,7 @@ interface DispositionConceptMapping {
 interface DispositionAnswerConcept {
   uuid: string;
   name?: { name: string };
+  names?: Array<{ name: string; locale?: string; conceptNameType?: string }>;
   mappings?: DispositionConceptMapping[];
 }
 
@@ -63,6 +64,18 @@ const getMappingCode = (concept: DispositionAnswerConcept): string => {
   return '';
 };
 
+const getLocalizedName = (
+  concept: DispositionAnswerConcept,
+  locale: string,
+): string => {
+  const names = concept.names ?? [];
+  const inLocale = names.filter((n) => n.locale === locale);
+  const localized =
+    inLocale.find((n) => n.conceptNameType === 'FULLY_SPECIFIED') ??
+    inLocale[0];
+  return localized?.name ?? concept.name?.name ?? '';
+};
+
 export const fetchDispositionTypes = async (): Promise<DispositionType[]> => {
   const concept = (await searchConceptByName(
     DISPOSITION_CONCEPT_NAME,
@@ -71,11 +84,13 @@ export const fetchDispositionTypes = async (): Promise<DispositionType[]> => {
 
   const answers = concept?.answers ?? [];
 
+  const locale = getUserPreferredLocale();
+
   return answers.map((answer) => {
     const code = getMappingCode(answer);
     return {
       value: code || answer.uuid,
-      label: answer.name?.name ?? '',
+      label: getLocalizedName(answer, locale),
       conceptUuid: answer.uuid,
     };
   });
@@ -123,67 +138,4 @@ export const filterDispositionTypesByAdmissionStatus = (
         : [DISPOSITION_VALUE.ADMIT];
 
   return dispositionTypes.filter((type) => allowedValues.includes(type.value));
-};
-
-interface ServiceRequestBundle {
-  entry?: {
-    resource?: {
-      authoredOn?: string;
-      status?: string;
-      code?: { coding?: { code?: string }[] };
-    };
-  }[];
-}
-
-const VOIDED_SERVICE_REQUEST_STATUS = 'entered-in-error';
-
-/**
- * Mirrors the backend's "superseded" rule (ServiceRequestValidatorImpl): a disposition
- * order is still active only if no other disposition order (of any kind) was placed
- * after it in the same visit. The new ServiceRequest-only flow never creates the
- * ADMISSION/DISCHARGE/TRANSFER encounter-type flip that used to signal "fulfilled", so
- * the order timeline itself is the only reliable signal - e.g. Discharge -> Undo
- * Discharge -> Discharge again must be allowed, since the Undo Discharge order moved
- * past the first Discharge.
- */
-export const fetchHasActiveOrderForConcept = async (
-  patientUuid: string,
-  targetConceptUuid: string,
-  allDispositionConceptUuids: string[],
-  visitStartDate: string,
-): Promise<boolean> => {
-  const url = `${OPENMRS_FHIR_R4}/ServiceRequest?patient=${patientUuid}`;
-  const bundle = await get<ServiceRequestBundle>(url);
-
-  const visitStart = new Date(visitStartDate).getTime();
-  const conceptUuidSet = new Set(allDispositionConceptUuids);
-
-  const relevantOrders = (bundle.entry ?? [])
-    .map((entry) => ({
-      authoredOn: entry.resource?.authoredOn,
-      status: entry.resource?.status,
-      conceptUuid: entry.resource?.code?.coding?.[0]?.code,
-    }))
-    .filter(
-      (order) =>
-        !!order.authoredOn &&
-        order.status !== VOIDED_SERVICE_REQUEST_STATUS &&
-        !!order.conceptUuid &&
-        conceptUuidSet.has(order.conceptUuid) &&
-        new Date(order.authoredOn).getTime() >= visitStart,
-    );
-
-  if (relevantOrders.length === 0) {
-    return false;
-  }
-
-  const latestAuthoredOn = Math.max(
-    ...relevantOrders.map((order) => new Date(order.authoredOn!).getTime()),
-  );
-
-  return relevantOrders.some(
-    (order) =>
-      order.conceptUuid === targetConceptUuid &&
-      new Date(order.authoredOn!).getTime() === latestAuthoredOn,
-  );
 };

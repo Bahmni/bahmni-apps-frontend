@@ -14,12 +14,10 @@ export interface DispositionState {
   isTypeRequired: boolean;
   isDateRequired: boolean;
   isNotesRequired: boolean;
-  activeOrderByType: Record<string, boolean>;
 
   setSelectedType: (type: DispositionType | null) => void;
   setDate: (date: Date | null) => void;
   setNotes: (notes: string) => void;
-  setHasActiveOrder: (type: string, hasActiveOrder: boolean) => void;
 
   /**
    * Driven by standard-config's `attributes: [{ name: "type", required }]`
@@ -53,7 +51,6 @@ export const useDispositionStore = create<DispositionState>((set, get) => ({
   isTypeRequired: true,
   isDateRequired: false,
   isNotesRequired: false,
-  activeOrderByType: {},
 
   setSelectedType: (type: DispositionType | null) => {
     set((state) => {
@@ -61,12 +58,6 @@ export const useDispositionStore = create<DispositionState>((set, get) => ({
       if (type) delete errors.type;
       return { selectedType: type, notes: '', errors };
     });
-  },
-
-  setHasActiveOrder: (type: string, hasActiveOrder: boolean) => {
-    set((state) => ({
-      activeOrderByType: { ...state.activeOrderByType, [type]: hasActiveOrder },
-    }));
   },
 
   setDate: (date: Date | null) => {
@@ -102,20 +93,8 @@ export const useDispositionStore = create<DispositionState>((set, get) => ({
     const errors = { ...state.errors };
     let isValid = true;
 
-    const activeOrderErrorKeyByType: Record<string, string> = {
-      ADMIT: 'DISPOSITION_ACTIVE_ADMIT_ORDER_EXISTS',
-      DISCHARGE: 'DISPOSITION_ACTIVE_DISCHARGE_ORDER_EXISTS',
-    };
-
     if (state.isTypeRequired && !state.selectedType) {
       errors.type = 'DROPDOWN_VALUE_REQUIRED';
-      isValid = false;
-    } else if (
-      state.selectedType &&
-      activeOrderErrorKeyByType[state.selectedType.value] &&
-      state.activeOrderByType[state.selectedType.value]
-    ) {
-      errors.type = activeOrderErrorKeyByType[state.selectedType.value];
       isValid = false;
     } else {
       delete errors.type;

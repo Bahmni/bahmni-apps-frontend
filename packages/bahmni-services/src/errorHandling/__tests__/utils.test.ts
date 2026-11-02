@@ -40,32 +40,7 @@ describe('getFormattedError', () => {
       });
     });
 
-    it('surfaces the raw diagnostics message for any other FHIR OperationOutcome error', () => {
-      const fhirError = {
-        response: {
-          status: 400,
-          data: {
-            resourceType: 'OperationOutcome',
-            issue: [
-              {
-                severity: 'error',
-                code: 'invalid',
-                diagnostics: 'Some other validation error',
-              },
-            ],
-          },
-        },
-      } as AxiosError;
-
-      const result = getFormattedError(fhirError);
-
-      expect(result).toEqual({
-        title: 'Bad Request',
-        message: 'Some other validation error',
-      });
-    });
-
-    it('strips the HAPI bundle-entry-processing boilerplate from the diagnostics message', () => {
+    it('maps the duplicate Admit order message to its translation key', () => {
       const fhirError = {
         response: {
           status: 400,
@@ -87,7 +62,59 @@ describe('getFormattedError', () => {
 
       expect(result).toEqual({
         title: 'Bad Request',
-        message: 'An active Admit order already exists for this visit',
+        message: 'DISPOSITION_ACTIVE_ADMIT_ORDER_EXISTS',
+      });
+    });
+
+    it('maps the duplicate Discharge order message to its translation key', () => {
+      const fhirError = {
+        response: {
+          status: 400,
+          data: {
+            resourceType: 'OperationOutcome',
+            issue: [
+              {
+                severity: 'error',
+                code: 'processing',
+                diagnostics:
+                  'An active Discharge order already exists for this visit',
+              },
+            ],
+          },
+        },
+      } as AxiosError;
+
+      const result = getFormattedError(fhirError);
+
+      expect(result).toEqual({
+        title: 'Bad Request',
+        message: 'DISPOSITION_ACTIVE_DISCHARGE_ORDER_EXISTS',
+      });
+    });
+
+    it('does not surface raw diagnostics for unrecognised FHIR OperationOutcome errors', () => {
+      const fhirError = {
+        response: {
+          status: 400,
+          data: {
+            resourceType: 'OperationOutcome',
+            issue: [
+              {
+                severity: 'error',
+                code: 'processing',
+                diagnostics: 'Some other validation error',
+              },
+            ],
+          },
+        },
+      } as AxiosError;
+
+      const result = getFormattedError(fhirError);
+
+      expect(result).toEqual({
+        title: 'Bad Request',
+        message:
+          'Invalid input parameters. Please check your request and try again.',
       });
     });
 

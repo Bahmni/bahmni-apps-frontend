@@ -13,7 +13,6 @@ registerInputControl({
   subscribe: (cb) => useDispositionStore.subscribe(cb),
   onSubmitSuccess: () => {
     queryClient.invalidateQueries({ queryKey: ['dispositionAdmissionStatus'] });
-    queryClient.invalidateQueries({ queryKey: ['dispositionHasActiveOrder'] });
   },
   createBundleEntries: (ctx) => {
     const { selectedType, notes, date } = useDispositionStore.getState();

@@ -4,6 +4,7 @@ import {
   DatePickerInput,
   Dropdown,
   Grid,
+  Modal,
   TextAreaWClose,
   Tile,
 } from '@bahmni/design-system';
@@ -16,7 +17,6 @@ import type { InputControl as ClinicalInputControlConfig } from '../../../provid
 import {
   fetchAdmissionStatus,
   fetchDispositionTypes,
-  fetchHasActiveOrderForConcept,
   filterDispositionTypesByAdmissionStatus,
 } from '../../../services/dispositionService';
 import {
@@ -45,7 +45,6 @@ const Disposition: React.FC<DispositionProps> = React.memo(
       setTypeRequired,
       setDateRequired,
       setNotesRequired,
-      setHasActiveOrder,
     } = useDispositionStore();
 
     const isTypeRequired =
@@ -84,7 +83,9 @@ const Disposition: React.FC<DispositionProps> = React.memo(
     });
 
     const patientUUID = usePatientUUID();
-    const { activeVisit } = usePatientVisit(patientUUID);
+    const { activeVisit, loading: isVisitLoading } =
+      usePatientVisit(patientUUID);
+    const isVisitClosed = !isVisitLoading && !activeVisit;
 
     const { data: admissionStatus } = useQuery({
       queryKey: ['dispositionAdmissionStatus', activeVisit?.id],
@@ -100,80 +101,30 @@ const Disposition: React.FC<DispositionProps> = React.memo(
       [fetchedDispositionTypes, configuredDispositionTypes],
     );
 
-    const conceptUuidFor = (value: string) =>
-      availableDispositionTypes.find((type) => type.value === value)
-        ?.conceptUuid;
+    const dispositionTypes = isVisitClosed
+      ? []
+      : filterDispositionTypesByAdmissionStatus(
+          availableDispositionTypes,
+          admissionStatus ?? null,
+        );
 
-    const admitConceptUuid = conceptUuidFor('ADMIT');
-    const dischargeConceptUuid = conceptUuidFor('DISCHARGE');
+    const [pendingType, setPendingType] = useState<
+      { item: DispositionType | null } | undefined
+    >();
 
-    const allDispositionConceptUuids = useMemo(
-      () =>
-        availableDispositionTypes
-          .map((type) => type.conceptUuid)
-          .filter((conceptUuid): conceptUuid is string => !!conceptUuid),
-      [availableDispositionTypes],
-    );
-
-    const commonQueryParams = {
-      patientUUID,
-      visitStart: activeVisit?.period?.start,
+    const handleTypeChange = (item: DispositionType | null) => {
+      const hasTypeChanged = item?.value !== selectedType?.value;
+      if (selectedType && notes.trim() && hasTypeChanged) {
+        setPendingType({ item });
+        return;
+      }
+      setSelectedType(item);
     };
 
-    const { data: hasActiveAdmitOrder } = useQuery({
-      queryKey: [
-        'dispositionHasActiveOrder',
-        'ADMIT',
-        commonQueryParams,
-        admitConceptUuid,
-      ],
-      queryFn: () =>
-        fetchHasActiveOrderForConcept(
-          patientUUID!,
-          admitConceptUuid!,
-          allDispositionConceptUuids,
-          activeVisit!.period!.start,
-        ),
-      enabled:
-        !admissionStatus &&
-        !!patientUUID &&
-        !!activeVisit?.period?.start &&
-        !!admitConceptUuid,
-    });
-
-    const { data: hasActiveDischargeOrder } = useQuery({
-      queryKey: [
-        'dispositionHasActiveOrder',
-        'DISCHARGE',
-        commonQueryParams,
-        dischargeConceptUuid,
-      ],
-      queryFn: () =>
-        fetchHasActiveOrderForConcept(
-          patientUUID!,
-          dischargeConceptUuid!,
-          allDispositionConceptUuids,
-          activeVisit!.period!.start,
-        ),
-      enabled:
-        admissionStatus === 'Admitted' &&
-        !!patientUUID &&
-        !!activeVisit?.period?.start &&
-        !!dischargeConceptUuid,
-    });
-
-    useEffect(() => {
-      setHasActiveOrder('ADMIT', !!hasActiveAdmitOrder);
-    }, [hasActiveAdmitOrder, setHasActiveOrder]);
-
-    useEffect(() => {
-      setHasActiveOrder('DISCHARGE', !!hasActiveDischargeOrder);
-    }, [hasActiveDischargeOrder, setHasActiveOrder]);
-
-    const dispositionTypes = filterDispositionTypesByAdmissionStatus(
-      availableDispositionTypes,
-      admissionStatus ?? null,
-    );
+    const confirmTypeChange = () => {
+      if (pendingType) setSelectedType(pendingType.item);
+      setPendingType(undefined);
+    };
 
     const [defaultDate] = useState(() => date ?? new Date());
     const minDate = useMemo(() => {
@@ -219,7 +170,8 @@ const Disposition: React.FC<DispositionProps> = React.memo(
                 selectedItem,
               }: {
                 selectedItem: DispositionType | null;
-              }) => setSelectedType(selectedItem ?? null)}
+              }) => handleTypeChange(selectedItem ?? null)}
+              disabled={isVisitClosed}
               size="sm"
               invalid={!!errors.type}
               invalidText={t(errors.type ?? '')}
@@ -234,6 +186,7 @@ const Disposition: React.FC<DispositionProps> = React.memo(
                 data-testid="disposition-date-picker"
                 value={date ?? defaultDate}
                 minDate={minDate}
+                disabled={isVisitClosed}
                 onChange={(dates: Date[]) => {
                   if (dates.length > 0) {
                     setDate(dates[0]);
@@ -266,6 +219,7 @@ const Disposition: React.FC<DispositionProps> = React.memo(
                 }
               }}
               onClose={() => setNotes('')}
+              disabled={isVisitClosed}
               enableCounter
               maxCount={notesMaxLength}
               invalid={!!errors.notes}
@@ -273,6 +227,20 @@ const Disposition: React.FC<DispositionProps> = React.memo(
             />
           </Column>
         </Grid>
+
+        <Modal
+          open={!!pendingType}
+          size="xs"
+          testId="disposition-change-type-modal"
+          modalHeading={t('DISPOSITION_CHANGE_TYPE_TITLE')}
+          primaryButtonText={t('DISPOSITION_CHANGE_TYPE_CONFIRM')}
+          secondaryButtonText={t('DISPOSITION_CHANGE_TYPE_CANCEL')}
+          onRequestSubmit={confirmTypeChange}
+          onRequestClose={() => setPendingType(undefined)}
+          onSecondarySubmit={() => setPendingType(undefined)}
+        >
+          {t('DISPOSITION_CHANGE_TYPE_MESSAGE')}
+        </Modal>
       </Tile>
     );
   },
