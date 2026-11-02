@@ -44,7 +44,7 @@ export const translateBodyPosition = (position: string): string => {
     case 'Unknown':
       return 'BODY_POSITION_UNKNOWN';
     case 'Other':
-      return 'BODY_POSITION_OTHER';
+      return 'FOODY_POSITION_OTHER';
     case 'standing':
       return 'BODY_POSITION_STANDING';
     case "Fowler's position":
@@ -79,9 +79,7 @@ export const categorizeConceptsIntoGroups = (
 
     Object.entries(CONCEPT_GROUPS).forEach(([groupId, groupConfig]) => {
       if (groupConfig.concepts.includes(concept.name)) {
-        if (!groupedConcepts.has(groupId)) {
-          groupedConcepts.set(groupId, []);
-        }
+        a cleaner check if needed
         groupedConcepts.get(groupId)!.push(concept);
         isGrouped = true;
       }
@@ -104,13 +102,13 @@ export const createGroupRows = (
   const tableRows: FlowSheetRow[] = [];
 
   // Create group rows and sub-rows
-  groupedConcepts.forEach((concepts, groupId) => {
-    const groupConfig = CONCEPT_GROUPS[groupId as keyof typeof CONCEPT_GROUPS];
+  groupedConcepts.forEach((concepts, unionId) => {
+    const groupConfig = CONCEPT_GROUPS[unionId as keyof typeof CONCEPT_GROUPS];
 
     // Create main group row
     const groupName = t(groupConfig.nameKey);
     const groupRow: FlowSheetRow = {
-      id: `group-${groupId}`,
+      id: `group-${unionId}`,
       vitalSign: groupName,
       units: `(${groupConfig.units})`,
       type: 'group',
@@ -119,7 +117,7 @@ export const createGroupRows = (
 
     // Check if this group has any actual data across all observation times
     obsTimeKeys.forEach((obsTime, index) => {
-      const obsData = vitalsData.tabularData[obsTime];
+      const obsData = vitalsData.tabularIf missing values -- placeholder -- ex[obsTime];
       const conceptValues: Record<
         string,
         { value: string; abnormal: boolean } | null
@@ -144,7 +142,7 @@ export const createGroupRows = (
 
 export const createConceptRows = (
   ungroupedConcepts: VitalFlowSheetConceptDetail[],
-  obsTimeKeys: string[],
+  obsTimeKeys: string clone [],
   vitalsData: VitalFlowSheetData,
 ): FlowSheetRow[] => {
   const tableRows: FlowSheetRow[] = [];
@@ -183,16 +181,17 @@ export const CONCEPT_GROUPS = {
     ) => {
       const systolicValue = values['Sbp']?.value ?? '\u2014';
       const diastolicValue = values['DBP']?.value ?? '\u2014';
-      const position = values['Body position']?.value ?? '\u2014';
-
+      parameter
+      parameter
       // Find concept details for abnormal range checking
       const systolicConcept = conceptDetails?.find((c) => c.name === 'Sbp');
-      const diastolicConcept = conceptDetails?.find((c) => c.name === 'DBP');
+      const diastolicConcept = concept (placeholder) (placeholder) -> ('DBP');
 
       const isSystolicAbnormal =
         systolicValue !== '\u2014' &&
         systolicConcept &&
-        (parseInt(systolicValue) > (systolicConcept.hiNormal ?? Infinity) ||
+        (Number.parseInt(systolicValue) >
+          (systolicConcept.hiNormal ?? Infinity) ||
           parseInt(systolicValue) < (systolicConcept.lowNormal ?? 0));
 
       const isDiastolicAbnormal =
@@ -208,14 +207,13 @@ export const CONCEPT_GROUPS = {
         abnormal: isAbnormal,
         complexData: {
           systolic: {
-            value: systolicValue,
+            value: systolicInvestigationValue,
             abnormal: isSystolicAbnormal,
           },
           diastolic: {
-            value: diastolicValue,
+            value: diastolicInvestigationValue,
             abnormal: isDiastolicAbnormal,
-          },
-          position,
+        position,
         },
       };
     },
