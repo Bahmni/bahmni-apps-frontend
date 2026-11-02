@@ -52,7 +52,7 @@ jest.mock('../utils', () => ({
   sortMedicationsByDateDistance: jest.fn(),
 }));
 
-jest.mock('react-router-dom', () => ({
+jest.mock('react-router', () => ({
   useParams: jest.fn(),
 }));
 

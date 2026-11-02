@@ -1,4 +1,5 @@
 export interface BahmniThemeConfig {
+  background?: string;
   'background-brand'?: string;
   'text-inverse'?: string;
   'icon-inverse'?: string;
@@ -20,6 +21,12 @@ export interface BahmniThemeConfig {
 }
 
 export const BAHMNI_DEFAULT_THEME: Required<BahmniThemeConfig> = {
+  // Carbon only defines --cds-background under a .cds--white/.cds--g10
+  // theme class, which this app never applies to any element — so without
+  // this entry var(--cds-background) resolves to nothing (transparent)
+  // instead of Carbon's white default. Set explicitly rather than relying
+  // on an unused theme class.
+  background: '#ffffff',
   'background-brand': '#007d79',
   'text-inverse': '#ffffff',
   'icon-inverse': '#ffffff',

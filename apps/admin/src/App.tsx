@@ -10,7 +10,7 @@ import {
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { Suspense, useEffect, useState } from 'react';
-import { Routes } from 'react-router-dom';
+import { Routes } from 'react-router';
 import styles from './App.module.scss';
 import { PrivilegeGuard } from './components/PrivilegeGuard';
 import { queryClientConfig } from './config/tanstackQuery';

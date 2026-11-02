@@ -31,7 +31,7 @@ import React, {
   useMemo,
   useState,
 } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams } from 'react-router';
 import ConsultationPadContainer from '../components/consultationPadContainer';
 import DashboardContainer from '../components/dashboardContainer/DashboardContainer';
 import PatientHeader from '../components/patientHeader/PatientHeader';

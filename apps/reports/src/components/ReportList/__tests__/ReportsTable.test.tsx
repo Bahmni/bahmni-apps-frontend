@@ -7,14 +7,6 @@ import ReportsTable from '../ReportsTable';
 
 expect.extend(toHaveNoViolations);
 
-jest.mock('@bahmni/services', () => ({
-  ...jest.requireActual('@bahmni/services'),
-  useTranslation: () => ({
-    t: (key: string, options?: Record<string, unknown>) =>
-      typeof options?.defaultValue === 'string' ? options.defaultValue : key,
-  }),
-}));
-
 jest.mock('@bahmni/widgets', () => ({
   ...jest.requireActual('@bahmni/widgets'),
   useNotification: jest.fn(),
@@ -25,6 +17,21 @@ jest.mock('../styles/ReportsTable.module.scss', () => ({}), { virtual: true });
 const mockRunReport = jest.fn();
 jest.mock('../../../hooks/useRunReport', () => ({
   useRunReport: () => ({ runReport: mockRunReport }),
+}));
+
+const mockQueueReport = jest.fn();
+jest.mock('../../../hooks/useQueueReport', () => ({
+  useQueueReport: () => ({ queueReport: mockQueueReport }),
+}));
+
+const mockUploadReportTemplate = jest.fn();
+jest.mock('@bahmni/services', () => ({
+  ...jest.requireActual('@bahmni/services'),
+  useTranslation: () => ({
+    t: (key: string, options?: Record<string, unknown>) =>
+      typeof options?.defaultValue === 'string' ? options.defaultValue : key,
+  }),
+  uploadReportTemplate: (file: File) => mockUploadReportTemplate(file),
 }));
 
 // Mirrors the real Dropdown/DatePicker contract closely enough to drive
@@ -119,6 +126,31 @@ jest.mock('@bahmni/design-system', () => {
         {invalid && <span data-testid={`error-${id}`}>{invalidText}</span>}
       </div>
     ),
+    FileUploader: ({
+      testId,
+      labelTitle,
+      buttonLabel,
+      filenameStatus,
+      onChange,
+    }: {
+      testId?: string;
+      labelTitle?: string;
+      buttonLabel?: string;
+      filenameStatus?: string;
+      onChange: (event: { target: { files: File[] } }) => void;
+    }) => (
+      <div data-testid={testId}>
+        <span>{labelTitle}</span>
+        <span data-testid={`${testId}-status`}>{filenameStatus}</span>
+        <input
+          type="file"
+          aria-label={buttonLabel}
+          onChange={(e) =>
+            onChange({ target: { files: Array.from(e.target.files ?? []) } })
+          }
+        />
+      </div>
+    ),
   };
 });
 
@@ -156,6 +188,26 @@ const reportConcatenated: ReportDefinition & { id: string } = {
   config: { dateRangeRequired: true },
 };
 
+const reportCustomExcel: ReportDefinition & { id: string } = {
+  id: 'r-custom-excel',
+  name: 'Custom Excel Report',
+  type: 'sql',
+  config: { dateRangeRequired: false },
+};
+
+const reportCustomExcelPreconfigured: ReportDefinition & { id: string } = {
+  id: 'r-custom-excel-preconfigured',
+  name: 'Preconfigured Custom Excel Report',
+  type: 'sql',
+  config: { dateRangeRequired: false, macroTemplatePath: 'preconfigured.xlsx' },
+};
+
+const availableFormatsWithCustomExcel: FormatKey[] = [
+  'PDF',
+  'CSV',
+  'CUSTOM EXCEL',
+];
+
 const setRowDate = async (
   user: ReturnType<typeof userEvent.setup>,
   id: string,
@@ -185,6 +237,8 @@ describe('ReportsTable', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockRunReport.mockReturnValue(true);
+    mockQueueReport.mockResolvedValue(true);
+    mockUploadReportTemplate.mockResolvedValue('uploaded-template.xlsx');
     mockUseNotification.mockReturnValue({
       notifications: [],
       addNotification,
@@ -377,6 +431,7 @@ describe('ReportsTable', () => {
       new Date('2024-03-10'),
       new Date('2024-03-10'),
       undefined,
+      null,
     );
     expect(
       screen.queryByTestId(`error-row-format-${reportWithDates.id}`),
@@ -569,6 +624,7 @@ describe('ReportsTable', () => {
       new Date('2024-03-10'),
       new Date('2024-03-10'),
       undefined,
+      null,
     );
     expect(addNotification).not.toHaveBeenCalled();
     expect(
@@ -615,6 +671,7 @@ describe('ReportsTable', () => {
       new Date('2024-03-10'),
       new Date('2024-03-10'),
       'A3',
+      null,
     );
   });
 
@@ -659,5 +716,202 @@ describe('ReportsTable', () => {
       />,
     );
     expect(await axe(container)).toHaveNoViolations();
+  });
+
+  describe('Queue', () => {
+    it('shows only Run Report when enableReportQueue is falsy', async () => {
+      const user = userEvent.setup();
+      render(
+        <ReportsTable
+          reports={[reportNoDates]}
+          appliedFilters={NO_FILTERS}
+          availableFormats={availableFormats}
+        />,
+      );
+      await user.click(screen.getByRole('button', { name: 'Options' }));
+      expect(screen.getByText('REPORTS_RUN_BUTTON_LABEL')).toBeInTheDocument();
+      expect(
+        screen.queryByText('REPORTS_QUEUE_BUTTON_LABEL'),
+      ).not.toBeInTheDocument();
+    });
+
+    it('shows Run Now and Queue when enableReportQueue is true', async () => {
+      const user = userEvent.setup();
+      render(
+        <ReportsTable
+          reports={[reportNoDates]}
+          appliedFilters={NO_FILTERS}
+          availableFormats={availableFormats}
+          enableReportQueue
+        />,
+      );
+      await user.click(screen.getByRole('button', { name: 'Options' }));
+      expect(
+        screen.getByText('REPORTS_RUN_NOW_BUTTON_LABEL'),
+      ).toBeInTheDocument();
+      expect(
+        screen.getByText('REPORTS_QUEUE_BUTTON_LABEL'),
+      ).toBeInTheDocument();
+    });
+
+    it('queues the report and shows a success notification', async () => {
+      const user = userEvent.setup();
+      render(
+        <ReportsTable
+          reports={[reportNoDates]}
+          appliedFilters={{ ...NO_FILTERS, format: 'PDF' }}
+          availableFormats={availableFormats}
+          enableReportQueue
+        />,
+      );
+      await user.click(screen.getByRole('button', { name: 'Options' }));
+      await user.click(screen.getByText('REPORTS_QUEUE_BUTTON_LABEL'));
+
+      expect(mockQueueReport).toHaveBeenCalledWith(
+        reportNoDates,
+        'PDF',
+        null,
+        null,
+        undefined,
+        null,
+      );
+      expect(addNotification).toHaveBeenCalledWith({
+        title: 'REPORTS_QUEUE_SUCCESS_TITLE',
+        message: 'REPORTS_QUEUE_SUCCESS_MESSAGE',
+        type: 'success',
+      });
+    });
+
+    it('shows an error notification when queueing fails', async () => {
+      mockQueueReport.mockResolvedValue(false);
+      const user = userEvent.setup();
+      render(
+        <ReportsTable
+          reports={[reportNoDates]}
+          appliedFilters={{ ...NO_FILTERS, format: 'PDF' }}
+          availableFormats={availableFormats}
+          enableReportQueue
+        />,
+      );
+      await user.click(screen.getByRole('button', { name: 'Options' }));
+      await user.click(screen.getByText('REPORTS_QUEUE_BUTTON_LABEL'));
+
+      expect(addNotification).toHaveBeenCalledWith({
+        title: 'REPORTS_ERROR_TITLE',
+        message: 'REPORTS_QUEUE_ERROR_MESSAGE',
+        type: 'error',
+      });
+    });
+  });
+
+  describe('Custom Excel template', () => {
+    it('shows a FileUploader when CUSTOM EXCEL is selected and no template is pre-configured', async () => {
+      const user = userEvent.setup();
+      render(
+        <ReportsTable
+          reports={[reportCustomExcel]}
+          appliedFilters={NO_FILTERS}
+          availableFormats={availableFormatsWithCustomExcel}
+        />,
+      );
+      await setRowFormat(
+        user,
+        `row-format-${reportCustomExcel.id}`,
+        'CUSTOM EXCEL',
+      );
+
+      expect(
+        screen.getByTestId(`template-uploader-${reportCustomExcel.id}`),
+      ).toBeInTheDocument();
+    });
+
+    it('shows a pre-configured indicator instead of a FileUploader when macroTemplatePath is set', async () => {
+      const user = userEvent.setup();
+      render(
+        <ReportsTable
+          reports={[reportCustomExcelPreconfigured]}
+          appliedFilters={NO_FILTERS}
+          availableFormats={availableFormatsWithCustomExcel}
+        />,
+      );
+      await setRowFormat(
+        user,
+        `row-format-${reportCustomExcelPreconfigured.id}`,
+        'CUSTOM EXCEL',
+      );
+
+      expect(
+        screen.getByTestId(
+          `preconfigured-template-${reportCustomExcelPreconfigured.id}`,
+        ),
+      ).toHaveTextContent('REPORTS_PRECONFIGURED_TEMPLATE_LABEL');
+      expect(
+        screen.queryByTestId(
+          `template-uploader-${reportCustomExcelPreconfigured.id}`,
+        ),
+      ).not.toBeInTheDocument();
+    });
+
+    it('uploads the selected file and runs the report with the resolved template location', async () => {
+      const user = userEvent.setup();
+      render(
+        <ReportsTable
+          reports={[reportCustomExcel]}
+          appliedFilters={NO_FILTERS}
+          availableFormats={availableFormatsWithCustomExcel}
+        />,
+      );
+      await setRowFormat(
+        user,
+        `row-format-${reportCustomExcel.id}`,
+        'CUSTOM EXCEL',
+      );
+
+      const file = new File(['content'], 'template.xlsx');
+      const input = screen.getByLabelText(
+        'REPORTS_UPLOAD_TEMPLATE_BUTTON_LABEL',
+      );
+      await user.upload(input, file);
+
+      expect(mockUploadReportTemplate).toHaveBeenCalledWith(file);
+
+      const row = screen.getByText('Custom Excel Report').closest('tr')!;
+      await runRow(user, row);
+
+      expect(mockRunReport).toHaveBeenCalledWith(
+        reportCustomExcel,
+        'CUSTOM EXCEL',
+        null,
+        null,
+        undefined,
+        'uploaded-template.xlsx',
+      );
+    });
+
+    it('fails validation when CUSTOM EXCEL is run without an uploaded or pre-configured template', async () => {
+      const user = userEvent.setup();
+      render(
+        <ReportsTable
+          reports={[reportCustomExcel]}
+          appliedFilters={NO_FILTERS}
+          availableFormats={availableFormatsWithCustomExcel}
+        />,
+      );
+      await setRowFormat(
+        user,
+        `row-format-${reportCustomExcel.id}`,
+        'CUSTOM EXCEL',
+      );
+
+      const row = screen.getByText('Custom Excel Report').closest('tr')!;
+      await runRow(user, row);
+
+      expect(addNotification).toHaveBeenCalledWith({
+        title: 'REPORTS_VALIDATION_ERROR_TITLE',
+        message: 'REPORTS_MISSING_TEMPLATE_ERROR',
+        type: 'error',
+      });
+      expect(mockRunReport).not.toHaveBeenCalled();
+    });
   });
 });

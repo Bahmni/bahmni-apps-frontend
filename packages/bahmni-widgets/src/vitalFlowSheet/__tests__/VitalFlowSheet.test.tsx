@@ -24,8 +24,8 @@ const mockUsePatientUUID = usePatientUUID as jest.MockedFunction<
   typeof usePatientUUID
 >;
 
-// Mock react-router-dom to avoid TextEncoder issues
-jest.mock('react-router-dom', () => ({
+// Mock react-router to avoid TextEncoder issues
+jest.mock('react-router', () => ({
   useParams: () => ({ patientUuid: 'test-patient-uuid' }),
 }));
 

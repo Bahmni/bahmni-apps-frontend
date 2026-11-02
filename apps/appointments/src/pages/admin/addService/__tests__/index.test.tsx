@@ -11,8 +11,8 @@ import { useServiceStore } from '../../stores';
 import AddServicePage from '../index';
 import { defaultRow } from './__mocks__/AddServicePageMocks';
 
-jest.mock('react-router-dom', () => ({
-  ...jest.requireActual('react-router-dom'),
+jest.mock('react-router', () => ({
+  ...jest.requireActual('react-router'),
   useNavigate: () => mockNavigate,
 }));
 

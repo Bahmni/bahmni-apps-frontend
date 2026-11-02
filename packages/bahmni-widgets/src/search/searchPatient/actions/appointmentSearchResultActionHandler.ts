@@ -10,7 +10,7 @@ import {
   type Notification,
 } from '@bahmni/services';
 import { isSameDay, isBefore, isAfter } from 'date-fns';
-import { NavigateFunction } from 'react-router-dom';
+import { NavigateFunction } from 'react-router';
 import { PatientSearchViewModel } from '../utils';
 
 export const getAppointmentStatusClassName = (status: string): string => {

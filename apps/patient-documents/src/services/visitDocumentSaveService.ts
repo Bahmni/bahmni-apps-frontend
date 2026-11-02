@@ -43,6 +43,17 @@ interface SaveVisitDocumentsInput {
   authorPractitionerUuid?: string;
 }
 
+interface UploadDocumentFilesInput {
+  patientUuid: string;
+  encounterTypeName: string;
+  documents: DocumentSaveInput[];
+}
+
+export interface DocumentFilesUploadResult {
+  uploadedUrls: Record<string, string>;
+  failures: DocumentSaveFailure[];
+}
+
 const messageOf = (error: unknown): string =>
   error instanceof Error ? error.message : String(error);
 
@@ -54,27 +65,10 @@ export async function saveVisitDocuments({
   defaultDocumentType,
   authorPractitionerUuid,
 }: SaveVisitDocumentsInput): Promise<VisitDocumentSaveResult> {
-  const failures: DocumentSaveFailure[] = [];
-  const uploadedUrls: Record<string, string> = {};
-
-  const files = documents.flatMap((document) => document.files);
-  const uploads = await Promise.allSettled(
-    files.map((file) =>
-      file.uploadedUrl
-        ? Promise.resolve({ url: file.uploadedUrl })
-        : uploadDocument(file.file, encounterTypeName, patientUuid),
-    ),
-  );
-  files.forEach((file, index) => {
-    const upload = uploads[index];
-    if (upload.status === 'fulfilled') {
-      uploadedUrls[file.id] = upload.value.url;
-    } else {
-      failures.push({
-        fileName: file.fileName,
-        message: messageOf(upload.reason),
-      });
-    }
+  const { uploadedUrls, failures } = await uploadDocumentFiles({
+    patientUuid,
+    encounterTypeName,
+    documents,
   });
 
   const uploaded = documents.filter((document) =>
@@ -128,4 +122,35 @@ export async function saveVisitDocuments({
     uploadedUrls,
     failures,
   };
+}
+
+export async function uploadDocumentFiles({
+  patientUuid,
+  encounterTypeName,
+  documents,
+}: UploadDocumentFilesInput): Promise<DocumentFilesUploadResult> {
+  const failures: DocumentSaveFailure[] = [];
+  const uploadedUrls: Record<string, string> = {};
+
+  const files = documents.flatMap((document) => document.files);
+  const uploads = await Promise.allSettled(
+    files.map((file) =>
+      file.uploadedUrl
+        ? Promise.resolve({ url: file.uploadedUrl })
+        : uploadDocument(file.file, encounterTypeName, patientUuid),
+    ),
+  );
+  files.forEach((file, index) => {
+    const upload = uploads[index];
+    if (upload.status === 'fulfilled') {
+      uploadedUrls[file.id] = upload.value.url;
+    } else {
+      failures.push({
+        fileName: file.fileName,
+        message: messageOf(upload.reason),
+      });
+    }
+  });
+
+  return { uploadedUrls, failures };
 }
