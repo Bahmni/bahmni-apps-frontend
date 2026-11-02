@@ -1,4 +1,10 @@
-import { Button, ComboBox, InlineLoading, Tile } from '@bahmni/design-system';
+import {
+  Button,
+  ComboBox,
+  InlineLoading,
+  RequiredAsterisk,
+  Tile,
+} from '@bahmni/design-system';
 import {
   downloadBlob,
   exportConceptSet,
@@ -125,9 +131,7 @@ export const CsvExport: React.FC = () => {
               titleText={
                 <>
                   {t('ADMIN_CSV_EXPORT_FIELD_LABEL')}
-                  {showValidationError && (
-                    <span className={styles.requiredAsterisk}>*</span>
-                  )}
+                  <RequiredAsterisk />
                 </>
               }
               placeholder={t('ADMIN_CSV_EXPORT_SEARCH_PLACEHOLDER')}
@@ -140,10 +144,10 @@ export const CsvExport: React.FC = () => {
                 'ADMIN_CSV_EXPORT_SELECT_CONCEPT_REQUIRED_MESSAGE',
               )}
               onChange={({ selectedItem }) => {
-                if (typeof selectedItem === 'object' && selectedItem) {
+                if (selectedItem && typeof selectedItem === 'object') {
                   setSelectedConcept(selectedItem);
                   setHasClearedSelection(false);
-                } else if (selectedItem === null) {
+                } else {
                   setSelectedConcept(null);
                   setHasClearedSelection(true);
                 }

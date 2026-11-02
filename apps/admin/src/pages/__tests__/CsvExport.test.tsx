@@ -199,6 +199,28 @@ describe('CsvExport', () => {
     ).not.toBeInTheDocument();
   });
 
+  it('does not call the export when the form is submitted without a concept', async () => {
+    renderPage();
+
+    const form = screen
+      .getByTestId('admin-csv-export-page-test-id')
+      .querySelector('form');
+    expect(form).toBeInTheDocument();
+    fireEvent.submit(form!);
+
+    expect(mockExport).not.toHaveBeenCalled();
+    expect(mockAddNotification).not.toHaveBeenCalled();
+  });
+
+  it('shows the required asterisk next to the field label on initial load', () => {
+    renderPage();
+
+    expect(screen.getByText('*')).toBeInTheDocument();
+    expect(
+      screen.queryByText('Please select a concept from the list.'),
+    ).not.toBeInTheDocument();
+  });
+
   it('shows the mandatory asterisk and error when a selected concept is voided', async () => {
     renderPage();
 
@@ -227,7 +249,7 @@ describe('CsvExport', () => {
     ).not.toBeInTheDocument();
   });
 
-  it('shows no error when the input loses focus with unmatched typed text', async () => {
+  it('shows the error and asterisk when the input loses focus with unmatched typed text', async () => {
     renderPage();
 
     await typeSearch('Vital');
@@ -237,8 +259,43 @@ describe('CsvExport', () => {
     expect(getExportButton()).toBeDisabled();
     expect(mockGetConcept).not.toHaveBeenCalled();
     expect(
+      screen.getByText('Please select a concept from the list.'),
+    ).toBeInTheDocument();
+    expect(screen.getByText('*')).toBeInTheDocument();
+  });
+
+  it('selects the arrow-key-highlighted option on Enter and enables the export button', async () => {
+    // ComboBox scrolls the highlighted option into view, which jsdom does not implement
+    Element.prototype.scrollIntoView = jest.fn();
+    renderPage();
+
+    await typeSearch('vit');
+    await screen.findByRole('option', { name: 'Vital signs' });
+    await act(async () => {
+      fireEvent.keyDown(getInput(), { key: 'ArrowDown' });
+    });
+    await act(async () => {
+      fireEvent.keyDown(getInput(), { key: 'Enter' });
+    });
+
+    expect(getInput()).toHaveValue('Vital signs');
+    expect(getExportButton()).not.toBeDisabled();
+    expect(
       screen.queryByText('Please select a concept from the list.'),
     ).not.toBeInTheDocument();
+  });
+
+  it('shows the error on blur even when the typed text exactly matches a concept name', async () => {
+    renderPage();
+
+    await typeSearch('Vital signs');
+    fireEvent.blur(getInput());
+
+    expect(getExportButton()).toBeDisabled();
+    expect(mockGetConcept).not.toHaveBeenCalled();
+    expect(
+      screen.getByText('Please select a concept from the list.'),
+    ).toBeInTheDocument();
   });
 
   it('shows the error when the user voids the value typed in the input box', async () => {
@@ -273,7 +330,7 @@ describe('CsvExport', () => {
     expect(
       screen.queryByText('Please select a concept from the list.'),
     ).not.toBeInTheDocument();
-    expect(screen.queryByText('*')).not.toBeInTheDocument();
+    expect(screen.getByText('*')).toBeInTheDocument();
     expect(getExportButton()).not.toBeDisabled();
   });
 

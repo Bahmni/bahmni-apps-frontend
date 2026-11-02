@@ -1,0 +1,7 @@
+@use "@carbon/react/scss/spacing" as *;
+@use "@carbon/react/scss/theme" as *;
+
+.requiredAsterisk {
+  color: $support-error;
+  margin-left: $spacing-01;
+}

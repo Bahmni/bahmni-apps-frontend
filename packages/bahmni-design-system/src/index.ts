@@ -54,6 +54,10 @@ export {
 } from './atoms/tabs';
 export { NumberInput, type NumberInputProps } from './atoms/numberInput';
 export { ComboBox, type ComboBoxProps } from './atoms/comboBox';
+export {
+  RequiredAsterisk,
+  type RequiredAsteriskProps,
+} from './atoms/requiredAsterisk';
 export { TextInput, type TextInputProps } from './atoms/textInput';
 export { TextArea, type TextAreaProps } from './atoms/textArea';
 export { RowCell, type RowCellProps } from './atoms/rowCell';
