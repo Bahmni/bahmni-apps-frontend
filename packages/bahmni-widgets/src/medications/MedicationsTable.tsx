@@ -402,7 +402,6 @@ const MedicationsTable: React.FC<WidgetProps> = ({
           <Actions
             actions={actions}
             medication={row.fhirResource}
-            startDate={row.startDate}
             disabledActionTypes={[
               ...(isEditable(row) ? [] : ['edit']),
               ...(disableActions || !['active', 'on-hold'].includes(row.status)

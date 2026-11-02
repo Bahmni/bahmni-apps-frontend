@@ -13,6 +13,7 @@ import {
   getConfig,
   fetchMedicationOrdersMetadata,
   useTranslation,
+  type ConsultationEventPayload,
 } from '@bahmni/services';
 import { CANCEL_VACCINATION_INPUT_CONTROL_KEY } from '@bahmni/widgets';
 import { useQuery } from '@tanstack/react-query';
@@ -20,7 +21,6 @@ import { MedicationRequest } from 'fhir/r4';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 
 import { STOP_REASON_VALUESET_TITLE } from '../../../constants/app';
-import type { EncounterSessionStartContext } from '../../../events/startConsultation';
 import {
   MedicationConfig,
   MedicationJSONConfig,
@@ -36,7 +36,7 @@ import medicationConfigSchema from '../medicationRequest/schema.json';
 import styles from './styles/StopMedicationForm.module.scss';
 
 interface StopMedicationFormProps {
-  encounterSessionStartContext?: EncounterSessionStartContext;
+  encounterSessionStartContext?: ConsultationEventPayload;
   inputControlConfig?: ClinicalInputControlConfig;
 }
 
@@ -45,9 +45,12 @@ const StopMedicationForm: React.FC<StopMedicationFormProps> = React.memo(
     const { t } = useTranslation();
     const isCancelVaccination =
       inputControlConfig?.type === CANCEL_VACCINATION_INPUT_CONTROL_KEY;
-    const stopMedication = encounterSessionStartContext?.stopMedication as
-      | MedicationRequest
-      | undefined;
+    const stopMedication =
+      encounterSessionStartContext?.action?.type === 'delete'
+        ? (encounterSessionStartContext.action.resources?.[0] as
+            | MedicationRequest
+            | undefined)
+        : undefined;
     const {
       stopDate,
       stopReason,

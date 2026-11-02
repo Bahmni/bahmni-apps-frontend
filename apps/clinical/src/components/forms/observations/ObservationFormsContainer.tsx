@@ -28,6 +28,7 @@ import {
   DATETIME_REGEX_PATTERN,
   type AgeDetails,
   computeAgeDetails,
+  type ConsultationEventPayload,
 } from '@bahmni/services';
 import { useActivePractitioner, usePatientUUID } from '@bahmni/widgets';
 import { useQuery } from '@tanstack/react-query';
@@ -41,7 +42,6 @@ import {
   VALIDATION_STATE_INVALID,
   VALIDATION_STATE_SCRIPT_ERROR,
 } from '../../../constants/forms';
-import type { EncounterSessionStartContext } from '../../../events/startConsultation';
 import { useActionAreaExpandProps } from '../../../hooks/useActionAreaExpandProps';
 import { useClinicalAppData } from '../../../hooks/useClinicalAppData';
 import { useObservationFormData } from '../../../hooks/useObservationFormData';
@@ -83,7 +83,7 @@ interface ObservationFormsContainerProps {
   directMode?: boolean;
   onDirectModeSubmit?: () => void | Promise<void>;
   onDirectModeCancel?: () => void;
-  encounterSessionStartContext?: EncounterSessionStartContext;
+  encounterSessionStartContext?: ConsultationEventPayload;
   isActionAreaExpanded?: boolean;
   onToggleActionAreaExpand?: () => void;
 }
@@ -107,17 +107,21 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
     onToggleExpand: onToggleActionAreaExpand,
   });
 
+  const act = encounterSessionStartContext?.action;
+  const ctx = encounterSessionStartContext?.context;
+
   // Derive early so it can be used for hook initialisation below.
   const isEditMode =
-    encounterSessionStartContext?.editOnly === 'observationForms' &&
-    !!encounterSessionStartContext?.sourceEncounterUuid;
+    act?.type === 'update' &&
+    (act.resourceType === 'Observation' ||
+      act.resources?.[0]?.resourceType === 'Observation') &&
+    !!ctx?.encounter?.id;
 
   const activeEncounter = encounterSessionStartContext?.activeEncounter as
     | Encounter
     | null
     | undefined;
-  const sourceEncounterUuidFromContext =
-    encounterSessionStartContext?.sourceEncounterUuid as string | undefined;
+  const sourceEncounterUuidFromContext = act ? ctx?.encounter?.id : undefined;
   const isCopyover: boolean | undefined =
     !sourceEncounterUuidFromContext || activeEncounter === undefined
       ? undefined
@@ -130,7 +134,7 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
   // own setIsFormUpdated (uuid-based comparison against the observations it was mounted with).
   const [isFormUpdated, setIsFormUpdated] = React.useState(false);
 
-  const task = encounterSessionStartContext?.task as Task | undefined;
+  const task = ctx?.basedOn as Task | undefined;
   const patientUUID = usePatientUUID();
   const { user } = useActivePractitioner();
   const { episodeOfCare, activeVisitId } = useClinicalAppData();
