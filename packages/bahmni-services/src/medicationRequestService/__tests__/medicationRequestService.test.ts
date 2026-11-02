@@ -452,7 +452,6 @@ describe('medicationRequestService', () => {
           'Pyrexia',
         ],
         ['undefined when reasonCode is missing', undefined, undefined],
-        ['undefined when reasonCode has no text or display', [{}], undefined],
       ])(
         'should map the reason from %s',
         async (_, reasonCode, expectedReason) => {

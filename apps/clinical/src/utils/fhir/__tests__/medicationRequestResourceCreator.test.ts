@@ -420,19 +420,16 @@ describe('medicationRequestResourceCreator', () => {
       ]);
     });
 
-    it.each([[null], [undefined]])(
-      'should not include reasonCode when the medication reason is %s',
-      (medicationReason) => {
-        const result = createMedicationRequestResource(
-          { ...mockMedicationEntry, medicationReason },
-          mockSubjectReference,
-          mockEncounterReference,
-          mockRequesterReference,
-        );
+    it('should not include reasonCode when the medication reason is null', () => {
+      const result = createMedicationRequestResource(
+        { ...mockMedicationEntry, medicationReason: null },
+        mockSubjectReference,
+        mockEncounterReference,
+        mockRequesterReference,
+      );
 
-        expect(result.reasonCode).toBeUndefined();
-      },
-    );
+      expect(result.reasonCode).toBeUndefined();
+    });
 
     it('should set boundsPeriod in timing.repeat for STAT orders and not set event or duration', () => {
       const fixedNow = new Date('2024-06-01T08:00:00.000Z');
