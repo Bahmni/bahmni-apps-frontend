@@ -76,6 +76,15 @@ export function parseFhirToMedicationInputEntry(
       .filter(Boolean)
       .join(' ') ?? '';
 
+  const reasonCode = fhirMedRequest.reasonCode?.[0];
+  const reasonCoding = reasonCode?.coding?.[0];
+  const medicationReason = reasonCoding?.code
+    ? {
+        uuid: reasonCoding.code,
+        display: reasonCode?.text ?? reasonCoding.display ?? '',
+      }
+    : null;
+
   const doseForm = extractDoseForm(
     medication as unknown as Record<string, unknown>,
     displayName,
@@ -102,6 +111,7 @@ export function parseFhirToMedicationInputEntry(
     dispenseUnit,
     doseForm,
     note,
+    medicationReason,
     errors: {},
     hasBeenValidated: false,
   };

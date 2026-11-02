@@ -366,6 +366,10 @@ function formatMedications(bundle: Bundle): MedicationRequest[] {
       note: getNote(medication.note),
       cancellationNote: getCancellationNote(medication.note),
       doseForm: doseForm,
+      reason:
+        medication.reasonCode?.[0]?.text ??
+        medication.reasonCode?.[0]?.coding?.[0]?.display ??
+        undefined,
       statusReason:
         medication.statusReason?.text ??
         medication.statusReason?.coding?.[0]?.display ??
