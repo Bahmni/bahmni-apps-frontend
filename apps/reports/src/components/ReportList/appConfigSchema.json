@@ -16,6 +16,10 @@
         "paperSize": {
           "type": "string",
           "description": "Default paper size for generated reports (e.g., A4)"
+        },
+        "enableReportQueue": {
+          "type": "boolean",
+          "description": "Whether reports can be queued (run asynchronously) in addition to running immediately"
         }
       },
       "additionalProperties": true

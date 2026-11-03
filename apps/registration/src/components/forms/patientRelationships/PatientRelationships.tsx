@@ -1,7 +1,7 @@
 import { Button, SimpleDataTable } from '@bahmni/design-system';
 import { useTranslation } from '@bahmni/services';
 import { useImperativeHandle } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams } from 'react-router';
 import { RequiredAsterisk } from '../../common/RequiredAsterisk';
 import { RelationshipRow } from './RelationshipRow';
 import styles from './styles/index.module.scss';

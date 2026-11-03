@@ -5,6 +5,7 @@ import InvestigationsForm from './InvestigationsForm';
 
 registerInputControl({
   key: 'investigations',
+  handledResourceTypes: ['ServiceRequest'],
   component: InvestigationsForm,
   reset: () => useServiceRequestStore.getState().reset(),
   validate: () => true,

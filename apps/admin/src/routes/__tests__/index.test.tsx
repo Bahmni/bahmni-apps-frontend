@@ -1,6 +1,6 @@
 import { render, screen } from '@testing-library/react';
 import { Suspense } from 'react';
-import { MemoryRouter, Routes } from 'react-router-dom';
+import { MemoryRouter, Routes } from 'react-router';
 import { renderRoutes, routes } from '../index';
 
 jest.mock('../../components/AdminLayout', () => ({

@@ -1,4 +1,5 @@
 import { format } from 'date-fns';
+import { get, post } from '../api';
 import { BAHMNI_REPORTS_URL } from '../constants/app';
 import { ISO_DATE_FORMAT } from '../date/constants';
 import {
@@ -13,14 +14,15 @@ export const formatDateForQuery = (date: Date | null): string | null => {
   return format(date, ISO_DATE_FORMAT);
 };
 
-export const buildRunReportUrl = (
+const buildReportParams = (
   reportName: string,
   reportFormat: FormatKey,
   startDate?: Date | null,
   endDate?: Date | null,
   paperSize?: string,
   appName: string = DEFAULT_APP_NAME,
-): string => {
+  macroTemplateLocation?: string | null,
+): URLSearchParams => {
   const mimeType = FORMAT_MIME_TYPES[reportFormat];
   const params = new URLSearchParams({
     name: reportName,
@@ -35,6 +37,73 @@ export const buildRunReportUrl = (
   if (endDate) {
     params.append('endDate', formatDateForQuery(endDate) ?? '');
   }
+  if (macroTemplateLocation) {
+    params.append('macroTemplateLocation', macroTemplateLocation);
+  }
+
+  return params;
+};
+
+export const buildRunReportUrl = (
+  reportName: string,
+  reportFormat: FormatKey,
+  startDate?: Date | null,
+  endDate?: Date | null,
+  paperSize?: string,
+  appName: string = DEFAULT_APP_NAME,
+  macroTemplateLocation?: string | null,
+): string => {
+  const params = buildReportParams(
+    reportName,
+    reportFormat,
+    startDate,
+    endDate,
+    paperSize,
+    appName,
+    macroTemplateLocation,
+  );
 
   return `${BAHMNI_REPORTS_URL}/report?${params.toString()}`;
+};
+
+export interface ScheduleReportInput {
+  reportName: string;
+  reportFormat: FormatKey;
+  userName: string;
+  startDate?: Date | null;
+  endDate?: Date | null;
+  paperSize?: string;
+  appName?: string;
+  macroTemplateLocation?: string | null;
+}
+
+export const scheduleReport = ({
+  reportName,
+  reportFormat,
+  userName,
+  startDate,
+  endDate,
+  paperSize,
+  appName = DEFAULT_APP_NAME,
+  macroTemplateLocation,
+}: ScheduleReportInput): Promise<void> => {
+  const params = buildReportParams(
+    reportName,
+    reportFormat,
+    startDate,
+    endDate,
+    paperSize,
+    appName,
+    macroTemplateLocation,
+  );
+  params.append('userName', userName);
+
+  return get<void>(`${BAHMNI_REPORTS_URL}/schedule?${params.toString()}`);
+};
+
+export const uploadReportTemplate = (file: File): Promise<string> => {
+  const formData = new FormData();
+  formData.append('file', file);
+
+  return post<string, FormData>(`${BAHMNI_REPORTS_URL}/upload`, formData);
 };

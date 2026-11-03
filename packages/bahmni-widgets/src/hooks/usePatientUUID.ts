@@ -1,4 +1,4 @@
-import { useParams } from 'react-router-dom';
+import { useParams } from 'react-router';
 
 // TODO: Handle No Patient UUID By Redirecting User
 /**
