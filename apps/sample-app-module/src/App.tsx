@@ -1,4 +1,4 @@
-import { Route, Routes } from 'react-router-dom';
+import { Route, Routes } from 'react-router';
 import { SamplePage } from './pages/SamplePage';
 import { SampleParamPage } from './pages/SamplePageWithParam';
 

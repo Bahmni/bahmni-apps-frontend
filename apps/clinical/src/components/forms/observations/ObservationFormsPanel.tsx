@@ -1,16 +1,17 @@
 import { Loading } from '@bahmni/design-system';
 import { getObservationsFromFhir } from '@bahmni/form2-controls';
-import type { ObservationForm, Form2Observation } from '@bahmni/services';
 import {
   getObservationsBundleByEncounterUuid,
   getPatientFormData,
   fetchFormUuidByObservationDate,
+  type ConsultationEventPayload,
+  type ObservationForm,
+  type Form2Observation,
 } from '@bahmni/services';
 import { useActivePractitioner, usePatientUUID } from '@bahmni/widgets';
 import type { Bundle, Task, Observation, Reference } from 'fhir/r4';
 import React, { useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import type { EncounterSessionStartContext } from '../../../events/startConsultation';
 import { useClinicalAppData } from '../../../hooks/useClinicalAppData';
 import useObservationFormsSearch from '../../../hooks/useObservationFormsSearch';
 import { usePinnedObservationForms } from '../../../hooks/usePinnedObservationForms';
@@ -20,7 +21,7 @@ import ObservationForms from './ObservationForms';
 import styles from './styles/ObservationFormsContainer.module.scss';
 
 interface ObservationFormsPanelProps {
-  encounterSessionStartContext?: EncounterSessionStartContext;
+  encounterSessionStartContext?: ConsultationEventPayload;
 }
 
 interface ObservationExistingData {
@@ -37,21 +38,24 @@ const ObservationFormsPanel: React.FC<ObservationFormsPanelProps> = ({
   const { episodeOfCare } = useClinicalAppData();
   const episodeOfCareUuids = episodeOfCare.map((eoc) => eoc.uuid);
 
-  const formName = encounterSessionStartContext?.formName as string | undefined;
-  const directFormMode = encounterSessionStartContext?.directFormMode as
-    | boolean
-    | undefined;
-  const sourceEncounterUuid = encounterSessionStartContext?.sourceEncounterUuid;
+  const ctx = encounterSessionStartContext?.context;
+  const act = encounterSessionStartContext?.action;
+
+  const formName = ctx?.formName;
+  const directFormMode = ctx?.directFormMode;
+  const sourceEncounterUuid = act ? ctx?.encounter?.id : undefined;
   const activeEncounter = encounterSessionStartContext?.activeEncounter;
   const isCopyover: boolean | undefined =
     !sourceEncounterUuid || activeEncounter === undefined
       ? undefined
       : activeEncounter?.id !== sourceEncounterUuid;
-  const task = encounterSessionStartContext?.task as Task | undefined;
+  const task = ctx?.basedOn as Task | undefined;
   const basedOnRef = task?.basedOn?.[0]?.reference;
   const basedOnId = basedOnRef?.split('/').pop() ?? undefined;
   const isEditObservationFormsMode =
-    encounterSessionStartContext?.editOnly === 'observationForms';
+    act?.type === 'update' &&
+    (act.resourceType === 'Observation' ||
+      act.resources?.[0]?.resourceType === 'Observation');
   const isEditMode =
     isEditObservationFormsMode && !!sourceEncounterUuid && isCopyover === false;
   const isCopyoverMode =

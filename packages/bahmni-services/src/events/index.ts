@@ -6,6 +6,16 @@ export {
 } from './consultationEvents';
 
 export {
+  dispatchConsultationStart,
+  useSubscribeConsultationStart,
+  CONSULTATION_START_EVENT,
+  type ConsultationEncounter,
+  type ConsultationEventPayload,
+  type ConsultationEventContext,
+  type ConsultationEventAction,
+} from './startConsultationEvent';
+
+export {
   dispatchCDSSCheck,
   dispatchCDSSResults,
   useCDSSCheckListener,

@@ -1,8 +1,8 @@
+import type { ConsultationEventPayload } from '@bahmni/services';
 import { useQuery } from '@tanstack/react-query';
 import { act, render, screen, fireEvent } from '@testing-library/react';
 import React from 'react';
 
-import type { EncounterSessionStartContext } from '../../../../events/startConsultation';
 import { useStopMedicationStore } from '../../../../stores/stopMedicationsStore';
 import StopMedicationForm from '../StopMedicationForm';
 
@@ -117,9 +117,7 @@ const defaultQueryMock = ({ queryKey }: { queryKey: readonly unknown[] }) => {
   return { data: undefined, isLoading: false, error: null };
 };
 
-const renderForm = (
-  encounterSessionStartContext?: EncounterSessionStartContext,
-) =>
+const renderForm = (encounterSessionStartContext?: ConsultationEventPayload) =>
   render(
     <StopMedicationForm
       encounterSessionStartContext={encounterSessionStartContext}
@@ -143,7 +141,7 @@ describe('StopMedicationForm', () => {
     });
 
     it('returns null when encounterSessionStartContext has no stopMedication key', () => {
-      const { container } = renderForm({ encounterType: 'Consultation' });
+      const { container } = renderForm({});
       expect(container).toBeEmptyDOMElement();
     });
 
@@ -157,7 +155,9 @@ describe('StopMedicationForm', () => {
   describe('when stopMedication is provided', () => {
     it('renders the medication name from medicationReference.display', async () => {
       await act(async () => {
-        renderForm({ stopMedication: mockMedicationRequest });
+        renderForm({
+          action: { type: 'delete', resources: [mockMedicationRequest] },
+        });
       });
 
       expect(screen.getByText('Aspirin 100 mg')).toBeInTheDocument();
@@ -170,7 +170,9 @@ describe('StopMedicationForm', () => {
       };
 
       await act(async () => {
-        renderForm({ stopMedication: medWithoutDisplay });
+        renderForm({
+          action: { type: 'delete', resources: [medWithoutDisplay] },
+        });
       });
 
       expect(
@@ -183,7 +185,9 @@ describe('StopMedicationForm', () => {
   describe('field rendering with default field config', () => {
     it('renders the stop date picker input', async () => {
       await act(async () => {
-        renderForm({ stopMedication: mockMedicationRequest });
+        renderForm({
+          action: { type: 'delete', resources: [mockMedicationRequest] },
+        });
       });
 
       expect(
@@ -193,7 +197,9 @@ describe('StopMedicationForm', () => {
 
     it('renders the stop reason dropdown', async () => {
       await act(async () => {
-        renderForm({ stopMedication: mockMedicationRequest });
+        renderForm({
+          action: { type: 'delete', resources: [mockMedicationRequest] },
+        });
       });
 
       expect(
@@ -203,7 +209,9 @@ describe('StopMedicationForm', () => {
 
     it('renders the note textarea after clicking Add Note link', async () => {
       await act(async () => {
-        renderForm({ stopMedication: mockMedicationRequest });
+        renderForm({
+          action: { type: 'delete', resources: [mockMedicationRequest] },
+        });
       });
 
       await act(async () => {
@@ -217,7 +225,9 @@ describe('StopMedicationForm', () => {
 
     it('renders the form tile with the correct test id', async () => {
       await act(async () => {
-        renderForm({ stopMedication: mockMedicationRequest });
+        renderForm({
+          action: { type: 'delete', resources: [mockMedicationRequest] },
+        });
       });
 
       expect(
@@ -235,7 +245,9 @@ describe('StopMedicationForm', () => {
       );
 
       await act(async () => {
-        renderForm({ stopMedication: mockMedicationRequest });
+        renderForm({
+          action: { type: 'delete', resources: [mockMedicationRequest] },
+        });
       });
 
       expect(setMedicationToStop).toHaveBeenCalledWith(mockMedicationRequest);
@@ -267,7 +279,7 @@ describe('StopMedicationForm', () => {
         render(
           <StopMedicationForm
             encounterSessionStartContext={{
-              stopMedication: mockMedicationRequest,
+              action: { type: 'delete', resources: [mockMedicationRequest] },
             }}
             inputControlConfig={{ type: 'cancelVaccination' } as any}
           />,
@@ -284,7 +296,9 @@ describe('StopMedicationForm', () => {
       );
 
       await act(async () => {
-        renderForm({ stopMedication: mockMedicationRequest });
+        renderForm({
+          action: { type: 'delete', resources: [mockMedicationRequest] },
+        });
       });
 
       expect(setInputControlKey).toHaveBeenCalledWith('stopMedications');
@@ -300,7 +314,9 @@ describe('StopMedicationForm', () => {
       );
 
       await act(async () => {
-        renderForm({ stopMedication: mockMedicationRequest });
+        renderForm({
+          action: { type: 'delete', resources: [mockMedicationRequest] },
+        });
       });
 
       expect(capturedDropdownOnChange).not.toBeNull();
@@ -321,7 +337,9 @@ describe('StopMedicationForm', () => {
       );
 
       await act(async () => {
-        renderForm({ stopMedication: mockMedicationRequest });
+        renderForm({
+          action: { type: 'delete', resources: [mockMedicationRequest] },
+        });
       });
 
       capturedDropdownOnChange!({ selectedItem: null });
@@ -343,7 +361,9 @@ describe('StopMedicationForm', () => {
       );
 
       await act(async () => {
-        renderForm({ stopMedication: mockMedicationRequest });
+        renderForm({
+          action: { type: 'delete', resources: [mockMedicationRequest] },
+        });
       });
 
       expect(capturedDropdownOnChange).not.toBeNull();
@@ -365,7 +385,9 @@ describe('StopMedicationForm', () => {
       );
 
       await act(async () => {
-        renderForm({ stopMedication: mockMedicationRequest });
+        renderForm({
+          action: { type: 'delete', resources: [mockMedicationRequest] },
+        });
       });
 
       capturedDropdownOnChange!({
@@ -388,7 +410,9 @@ describe('StopMedicationForm', () => {
       );
 
       await act(async () => {
-        renderForm({ stopMedication: mockMedicationRequest });
+        renderForm({
+          action: { type: 'delete', resources: [mockMedicationRequest] },
+        });
       });
 
       const textarea = screen.getByPlaceholderText(
@@ -409,7 +433,9 @@ describe('StopMedicationForm', () => {
       );
 
       await act(async () => {
-        renderForm({ stopMedication: mockMedicationRequest });
+        renderForm({
+          action: { type: 'delete', resources: [mockMedicationRequest] },
+        });
       });
 
       const textarea = screen.getByPlaceholderText(
@@ -428,7 +454,9 @@ describe('StopMedicationForm', () => {
       );
 
       await act(async () => {
-        renderForm({ stopMedication: mockMedicationRequest });
+        renderForm({
+          action: { type: 'delete', resources: [mockMedicationRequest] },
+        });
       });
 
       const textarea = screen.getByPlaceholderText(
@@ -449,7 +477,9 @@ describe('StopMedicationForm', () => {
       );
 
       await act(async () => {
-        renderForm({ stopMedication: mockMedicationRequest });
+        renderForm({
+          action: { type: 'delete', resources: [mockMedicationRequest] },
+        });
       });
 
       await act(async () => {
@@ -465,7 +495,9 @@ describe('StopMedicationForm', () => {
       );
 
       await act(async () => {
-        renderForm({ stopMedication: mockMedicationRequest });
+        renderForm({
+          action: { type: 'delete', resources: [mockMedicationRequest] },
+        });
       });
 
       expect(screen.getByText('5/100')).toBeInTheDocument();
@@ -477,7 +509,9 @@ describe('StopMedicationForm', () => {
       );
 
       await act(async () => {
-        renderForm({ stopMedication: mockMedicationRequest });
+        renderForm({
+          action: { type: 'delete', resources: [mockMedicationRequest] },
+        });
       });
 
       expect(screen.getByText('100/100')).toBeInTheDocument();
@@ -488,7 +522,9 @@ describe('StopMedicationForm', () => {
   describe('date picker onChange', () => {
     it('renders the date picker input mounted in jsdom', async () => {
       await act(async () => {
-        renderForm({ stopMedication: mockMedicationRequest });
+        renderForm({
+          action: { type: 'delete', resources: [mockMedicationRequest] },
+        });
       });
 
       expect(
@@ -498,7 +534,9 @@ describe('StopMedicationForm', () => {
 
     it('renders the date picker input with the placeholder "dd/mm/yyyy"', async () => {
       await act(async () => {
-        renderForm({ stopMedication: mockMedicationRequest });
+        renderForm({
+          action: { type: 'delete', resources: [mockMedicationRequest] },
+        });
       });
 
       const input = screen.getByTestId('stop-medication-date-input');
@@ -516,7 +554,9 @@ describe('StopMedicationForm', () => {
       );
 
       await act(async () => {
-        renderForm({ stopMedication: mockMedicationRequest });
+        renderForm({
+          action: { type: 'delete', resources: [mockMedicationRequest] },
+        });
       });
 
       // The DatePickerInput renders invalidText when invalid is truthy.
@@ -528,7 +568,9 @@ describe('StopMedicationForm', () => {
 
     it('does not show a stopDate error when errors.stopDate is not set', async () => {
       await act(async () => {
-        renderForm({ stopMedication: mockMedicationRequest });
+        renderForm({
+          action: { type: 'delete', resources: [mockMedicationRequest] },
+        });
       });
 
       expect(
@@ -547,7 +589,9 @@ describe('StopMedicationForm', () => {
       );
 
       await act(async () => {
-        renderForm({ stopMedication: mockMedicationRequest });
+        renderForm({
+          action: { type: 'delete', resources: [mockMedicationRequest] },
+        });
       });
 
       // The mocked Dropdown renders invalidText as a <span> when invalid is true
@@ -558,7 +602,9 @@ describe('StopMedicationForm', () => {
 
     it('does not show a stopReason error when errors.stopReason is not set', async () => {
       await act(async () => {
-        renderForm({ stopMedication: mockMedicationRequest });
+        renderForm({
+          action: { type: 'delete', resources: [mockMedicationRequest] },
+        });
       });
 
       expect(
@@ -580,7 +626,9 @@ describe('StopMedicationForm', () => {
       );
 
       await act(async () => {
-        renderForm({ stopMedication: mockMedicationRequest });
+        renderForm({
+          action: { type: 'delete', resources: [mockMedicationRequest] },
+        });
       });
 
       expect(
@@ -590,7 +638,9 @@ describe('StopMedicationForm', () => {
 
     it('renders the stop date picker when isVisible is true', async () => {
       await act(async () => {
-        renderForm({ stopMedication: mockMedicationRequest });
+        renderForm({
+          action: { type: 'delete', resources: [mockMedicationRequest] },
+        });
       });
 
       expect(
@@ -612,7 +662,9 @@ describe('StopMedicationForm', () => {
       );
 
       await act(async () => {
-        renderForm({ stopMedication: mockMedicationRequest });
+        renderForm({
+          action: { type: 'delete', resources: [mockMedicationRequest] },
+        });
       });
 
       expect(
@@ -622,7 +674,9 @@ describe('StopMedicationForm', () => {
 
     it('renders the stop reason dropdown when isVisible is true', async () => {
       await act(async () => {
-        renderForm({ stopMedication: mockMedicationRequest });
+        renderForm({
+          action: { type: 'delete', resources: [mockMedicationRequest] },
+        });
       });
 
       expect(
@@ -644,7 +698,9 @@ describe('StopMedicationForm', () => {
       );
 
       await act(async () => {
-        renderForm({ stopMedication: mockMedicationRequest });
+        renderForm({
+          action: { type: 'delete', resources: [mockMedicationRequest] },
+        });
       });
 
       expect(
@@ -664,7 +720,9 @@ describe('StopMedicationForm', () => {
       );
 
       await act(async () => {
-        renderForm({ stopMedication: mockMedicationRequest });
+        renderForm({
+          action: { type: 'delete', resources: [mockMedicationRequest] },
+        });
       });
 
       expect(screen.queryByText(/\/100/)).not.toBeInTheDocument();
@@ -672,7 +730,9 @@ describe('StopMedicationForm', () => {
 
     it('renders the note textarea when isVisible is true after clicking Add Note', async () => {
       await act(async () => {
-        renderForm({ stopMedication: mockMedicationRequest });
+        renderForm({
+          action: { type: 'delete', resources: [mockMedicationRequest] },
+        });
       });
 
       await act(async () => {
@@ -698,7 +758,9 @@ describe('StopMedicationForm', () => {
     );
 
     await act(async () => {
-      renderForm({ stopMedication: mockMedicationRequest });
+      renderForm({
+        action: { type: 'delete', resources: [mockMedicationRequest] },
+      });
     });
 
     expect(screen.getByText('Aspirin 100 mg')).toBeInTheDocument();
@@ -743,7 +805,9 @@ describe('StopMedicationForm', () => {
       });
 
       await act(async () => {
-        renderForm({ stopMedication: mockMedicationRequest });
+        renderForm({
+          action: { type: 'delete', resources: [mockMedicationRequest] },
+        });
       });
 
       expect(setFieldConfig).toHaveBeenCalledWith(stopMedicationFields);
@@ -770,7 +834,9 @@ describe('StopMedicationForm', () => {
       });
 
       await act(async () => {
-        renderForm({ stopMedication: mockMedicationRequest });
+        renderForm({
+          action: { type: 'delete', resources: [mockMedicationRequest] },
+        });
       });
 
       expect(setFieldConfig).not.toHaveBeenCalled();
@@ -792,7 +858,9 @@ describe('StopMedicationForm', () => {
       });
 
       await act(async () => {
-        renderForm({ stopMedication: mockMedicationRequest });
+        renderForm({
+          action: { type: 'delete', resources: [mockMedicationRequest] },
+        });
       });
 
       // The Dropdown is rendered — the items prop carries conceptReasons
@@ -817,7 +885,9 @@ describe('StopMedicationForm', () => {
       });
 
       await act(async () => {
-        renderForm({ stopMedication: mockMedicationRequest });
+        renderForm({
+          action: { type: 'delete', resources: [mockMedicationRequest] },
+        });
       });
 
       expect(
@@ -839,7 +909,9 @@ describe('StopMedicationForm', () => {
       );
 
       await act(async () => {
-        renderForm({ stopMedication: mockMedicationRequest });
+        renderForm({
+          action: { type: 'delete', resources: [mockMedicationRequest] },
+        });
       });
 
       expect(
@@ -859,7 +931,9 @@ describe('StopMedicationForm', () => {
       );
 
       await act(async () => {
-        renderForm({ stopMedication: mockMedicationRequest });
+        renderForm({
+          action: { type: 'delete', resources: [mockMedicationRequest] },
+        });
       });
 
       expect(
@@ -871,7 +945,9 @@ describe('StopMedicationForm', () => {
   describe('date picker props', () => {
     it('renders with placeholder dd/mm/yyyy', async () => {
       await act(async () => {
-        renderForm({ stopMedication: mockMedicationRequest });
+        renderForm({
+          action: { type: 'delete', resources: [mockMedicationRequest] },
+        });
       });
 
       expect(screen.getByTestId('stop-medication-date-input')).toHaveAttribute(
@@ -891,7 +967,7 @@ describe('StopMedicationForm', () => {
         render(
           <StopMedicationForm
             encounterSessionStartContext={{
-              stopMedication: mockMedicationRequest,
+              action: { type: 'delete', resources: [mockMedicationRequest] },
             }}
             inputControlConfig={inputControlConfig}
           />,
@@ -908,7 +984,9 @@ describe('StopMedicationForm', () => {
 
     it('falls back to STOP_REASON_VALUESET_TITLE when inputControlConfig has no metadata', async () => {
       await act(async () => {
-        renderForm({ stopMedication: mockMedicationRequest });
+        renderForm({
+          action: { type: 'delete', resources: [mockMedicationRequest] },
+        });
       });
 
       expect(mockUseQuery).toHaveBeenCalledWith(
@@ -927,7 +1005,9 @@ describe('StopMedicationForm', () => {
       };
 
       await act(async () => {
-        renderForm({ stopMedication: scheduledMedication });
+        renderForm({
+          action: { type: 'delete', resources: [scheduledMedication] },
+        });
       });
 
       expect(
@@ -942,7 +1022,7 @@ describe('StopMedicationForm', () => {
         render(
           <StopMedicationForm
             encounterSessionStartContext={{
-              stopMedication: mockMedicationRequest,
+              action: { type: 'delete', resources: [mockMedicationRequest] },
             }}
           />,
         ),
@@ -957,7 +1037,9 @@ describe('StopMedicationForm', () => {
       await act(async () => {
         rerender(
           <StopMedicationForm
-            encounterSessionStartContext={{ stopMedication: anotherMedication }}
+            encounterSessionStartContext={{
+              action: { type: 'delete', resources: [anotherMedication] },
+            }}
           />,
         );
       });
@@ -991,7 +1073,9 @@ describe('StopMedicationForm', () => {
       );
 
       await act(async () => {
-        renderForm({ stopMedication: mockMedicationRequest });
+        renderForm({
+          action: { type: 'delete', resources: [mockMedicationRequest] },
+        });
       });
 
       // TextAreaWClose is rendered when note is non-empty (hasNote=true)
@@ -1015,7 +1099,7 @@ describe('StopMedicationForm', () => {
       render(
         <StopMedicationForm
           encounterSessionStartContext={{
-            stopMedication: mockMedicationRequest,
+            action: { type: 'delete', resources: [mockMedicationRequest] },
           }}
           inputControlConfig={cancelInputControlConfig}
         />,
@@ -1047,7 +1131,9 @@ describe('StopMedicationForm', () => {
 
     it('does not disable the date input in stop-medication mode', async () => {
       await act(async () => {
-        renderForm({ stopMedication: mockMedicationRequest });
+        renderForm({
+          action: { type: 'delete', resources: [mockMedicationRequest] },
+        });
       });
 
       expect(
@@ -1075,7 +1161,9 @@ describe('StopMedicationForm', () => {
       );
 
       await act(async () => {
-        renderForm({ stopMedication: mockMedicationRequest });
+        renderForm({
+          action: { type: 'delete', resources: [mockMedicationRequest] },
+        });
       });
 
       expect(setStopDate).not.toHaveBeenCalled();
