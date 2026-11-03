@@ -22,12 +22,9 @@ window.location = { href: '' } as any;
 describe('OrdersHeader Component', () => {
   const mockTranslate = jest.fn((key: string) => {
     const translations: Record<string, string> = {
-      HOME_LABEL: 'Home',
-      ORDERS_LABEL: 'Orders',
-      SEARCH_LABEL: 'Search',
-      NOTIFICATIONS_LABEL: 'Notifications',
-      USER_LABEL: 'User',
-      ORDERS_HEADER_LABEL: 'Orders Header',
+      HOME: 'Home',
+      ORDERS: 'Orders',
+      ORDERS_HEADER: 'Orders Header',
     };
     return translations[key] || key;
   });
@@ -54,44 +51,6 @@ describe('OrdersHeader Component', () => {
       render(<OrdersHeader />);
       expect(screen.getAllByText('Home').length).toBeGreaterThan(0);
       expect(screen.getByText('Orders')).toBeInTheDocument();
-    });
-  });
-
-  describe('Global Actions', () => {
-    test('renders search button', () => {
-      render(<OrdersHeader />);
-      const searchButton = screen.getByLabelText('Search');
-      expect(searchButton).toBeInTheDocument();
-    });
-
-    test('renders notifications button', () => {
-      render(<OrdersHeader />);
-      const notificationsButton = screen.getByLabelText('Notifications');
-      expect(notificationsButton).toBeInTheDocument();
-    });
-
-    test('renders user button', () => {
-      render(<OrdersHeader />);
-      const userButton = screen.getByLabelText('User');
-      expect(userButton).toBeInTheDocument();
-    });
-
-    test('search button has correct icon', () => {
-      const { container } = render(<OrdersHeader />);
-      const searchIcon = container.querySelector('#search-icon');
-      expect(searchIcon).toBeInTheDocument();
-    });
-
-    test('notifications button has correct icon', () => {
-      const { container } = render(<OrdersHeader />);
-      const notificationIcon = container.querySelector('#notification-icon');
-      expect(notificationIcon).toBeInTheDocument();
-    });
-
-    test('user button has correct icon', () => {
-      const { container } = render(<OrdersHeader />);
-      const userIcon = container.querySelector('#user-icon');
-      expect(userIcon).toBeInTheDocument();
     });
   });
 
@@ -123,21 +82,6 @@ describe('OrdersHeader Component', () => {
       render(<OrdersHeader />);
       expect(screen.getByText('Orders')).toBeInTheDocument();
     });
-
-    test('displays Search text in button', () => {
-      render(<OrdersHeader />);
-      expect(screen.getByText('Search')).toBeInTheDocument();
-    });
-
-    test('displays Notifications text in button', () => {
-      render(<OrdersHeader />);
-      expect(screen.getByText('Notifications')).toBeInTheDocument();
-    });
-
-    test('displays User text in button', () => {
-      render(<OrdersHeader />);
-      expect(screen.getByText('User')).toBeInTheDocument();
-    });
   });
 
   describe('Accessibility', () => {
@@ -147,19 +91,12 @@ describe('OrdersHeader Component', () => {
       expect(results).toHaveNoViolations();
     });
 
-    test('buttons have proper labels', () => {
+    test('does not render unimplemented global action buttons', () => {
       render(<OrdersHeader />);
 
-      const searchButton = screen.getByLabelText('Search');
-      const notificationsButton = screen.getByLabelText('Notifications');
-      const userButton = screen.getByLabelText('User');
-
-      expect(searchButton).toHaveAttribute('aria-label', 'Search');
-      expect(notificationsButton).toHaveAttribute(
-        'aria-label',
-        'Notifications',
-      );
-      expect(userButton).toHaveAttribute('aria-label', 'User');
+      expect(screen.queryByLabelText('Search')).not.toBeInTheDocument();
+      expect(screen.queryByLabelText('Notifications')).not.toBeInTheDocument();
+      expect(screen.queryByLabelText('User')).not.toBeInTheDocument();
     });
   });
 
@@ -171,15 +108,12 @@ describe('OrdersHeader Component', () => {
       expect(sideNav).not.toBeInTheDocument();
     });
 
-    test('has correct number of global actions', () => {
+    test('does not render global actions', () => {
       render(<OrdersHeader />);
-      const searchButton = screen.getByLabelText('Search');
-      const notificationsButton = screen.getByLabelText('Notifications');
-      const userButton = screen.getByLabelText('User');
 
-      expect(searchButton).toBeInTheDocument();
-      expect(notificationsButton).toBeInTheDocument();
-      expect(userButton).toBeInTheDocument();
+      expect(screen.queryByLabelText('Search')).not.toBeInTheDocument();
+      expect(screen.queryByLabelText('Notifications')).not.toBeInTheDocument();
+      expect(screen.queryByLabelText('User')).not.toBeInTheDocument();
     });
   });
 });

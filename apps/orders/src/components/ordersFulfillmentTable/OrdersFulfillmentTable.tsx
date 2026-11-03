@@ -5,8 +5,8 @@ import {
   ObservationData,
   TabStatus,
 } from '@bahmni/services';
-import { DataTableHeader } from '@carbon/react';
 import { ChevronDown } from '@carbon/icons-react';
+import { DataTableHeader } from '@carbon/react';
 import { faBed } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import React, {
@@ -338,6 +338,7 @@ export const OrdersFulfillmentTable: React.FC<OrdersFulfillmentTableProps> = ({
     headers,
     isStatusFilterOpen,
     selectedStatuses,
+    t,
     toggleStatusFilter,
     totalNewOrdersCount,
   ]);

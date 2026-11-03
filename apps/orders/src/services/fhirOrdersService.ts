@@ -4,6 +4,7 @@ import {
   getServiceRequestsForWorklist,
   getTasksByBasedOn,
 } from '@bahmni/services';
+import { format, parseISO } from 'date-fns';
 import {
   Bundle,
   MedicationRequest as FhirMedicationRequest,
@@ -12,7 +13,6 @@ import {
   ServiceRequest,
   Task,
 } from 'fhir/r4';
-import { format, parseISO } from 'date-fns';
 import { FHIR_TASK_STATUS_TO_UI_STATUS } from '../constants/orderStatusMappings';
 import {
   FhirAnnotation,
@@ -112,9 +112,7 @@ function indexByResourceType<T extends Resource>(
 }
 
 function calculatePatientDetails(patient?: Patient) {
-  const age = patient?.birthDate
-    ? calculateAge(patient.birthDate)
-    : undefined;
+  const age = patient?.birthDate ? calculateAge(patient.birthDate) : undefined;
   const { years, months, days } = age ?? { years: 0, months: 0, days: 0 };
   const name = patient?.name?.[0];
   return {
