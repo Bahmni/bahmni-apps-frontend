@@ -1,25 +1,70 @@
 @use "@carbon/react/scss/spacing" as *;
+@use "@carbon/react/scss/theme" as *;
 @use "@carbon/react/scss/type" as *;
+
+// Title on the left, duration inputs on the right. When the available width
+// (the resizable consultation pad, not the viewport) is too narrow to fit both,
+// the duration group wraps below the title and the inputs shrink to fit.
+.selectedConditionRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  column-gap: $spacing-05;
+  row-gap: $spacing-03;
+  width: 100%;
+}
 
 .selectedConditionTitle {
   @include type-style("heading-compact-01");
+  flex: 1 1 $spacing-13;
+  min-width: 0;
   margin: 0;
-  justify-self: start;
-  display: flex !important;
-  flex-direction: column !important;
+  overflow-wrap: anywhere;
 }
 
 .selectedConditionDuration {
-  display: flex !important;
-  flex-direction: row !important;
-  align-items: start !important;
+  flex: 0 1 auto;
+  min-width: 0;
+  max-width: 100%;
 }
 
-.selectedConditionDurationValue {
-  width: $spacing-13;
-  margin-right: $spacing-04;
+.selectedConditionDurationFieldset {
+  border: 0;
+  margin: 0;
+  padding: 0;
+  min-width: 0;
 }
 
-.selectedConditionDurationUnit {
-  width: $spacing-13;
+.selectedConditionDurationInputs {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: $spacing-03;
+}
+
+// Scoped under the inputs container to win over Carbon's .cds--form-item flex
+.selectedConditionDurationInputs > .selectedConditionDurationInput {
+  // No fixed width so the inputs can shrink to min-width on narrow panes
+  flex: 1 1 0;
+  width: auto;
+  max-width: $spacing-12;
+  min-width: $spacing-09;
+
+  :global(.cds--label) {
+    white-space: nowrap;
+    overflow: visible;
+  }
+}
+
+.selectedConditionDurationInputInvalid {
+  :global(.cds--text-input) {
+    outline: 2px solid $support-error;
+    outline-offset: -2px;
+  }
+}
+
+.selectedConditionDurationError {
+  @include type-style("helper-text-01");
+  color: $text-error;
+  margin-top: $spacing-02;
 }
