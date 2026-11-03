@@ -249,8 +249,8 @@ describe('OrdersFulfillmentTable', () => {
     fireEvent.click(expandButtons[0]);
 
     expect(screen.getAllByText('Mike Ronoh')).toHaveLength(2);
-    expect(screen.getByText('New')).toBeInTheDocument();
-    expect(screen.getByText('In Progress')).toBeInTheDocument();
+    expect(screen.getByText('STATUS_NEW')).toBeInTheDocument();
+    expect(screen.getByText('STATUS_IN_PROGRESS')).toBeInTheDocument();
   });
 
   it('shows unassigned text for orders without owner', () => {
@@ -279,7 +279,9 @@ describe('OrdersFulfillmentTable', () => {
     });
     fireEvent.click(expandButtons[0]);
 
-    const orderLink = screen.getByRole('link', { name: 'New Cast - Plaster' });
+    const orderLink = screen.getByRole('button', {
+      name: 'New Cast - Plaster',
+    });
     fireEvent.click(orderLink);
 
     expect(onOrderClick).toHaveBeenCalledWith('order-1-1');
@@ -300,7 +302,9 @@ describe('OrdersFulfillmentTable', () => {
     });
     fireEvent.click(expandButtons[0]);
 
-    const orderLink = screen.getByRole('link', { name: 'New Cast - Plaster' });
+    const orderLink = screen.getByRole('button', {
+      name: 'New Cast - Plaster',
+    });
     fireEvent.click(orderLink);
 
     expect(onOrderClick).toHaveBeenCalledWith('order-1-1');
@@ -384,7 +388,7 @@ describe('OrdersFulfillmentTable', () => {
       });
       fireEvent.click(expandButtons[0]);
 
-      const orderLinks = screen.getAllByRole('link', {
+      const orderLinks = screen.getAllByRole('button', {
         name: /New Cast - Plaster|Rehab Therapy - Limb/,
       });
       fireEvent.click(orderLinks[0]);
@@ -403,7 +407,7 @@ describe('OrdersFulfillmentTable', () => {
       });
       fireEvent.click(expandButtons[0]);
 
-      const orderLinks = screen.getAllByRole('link', {
+      const orderLinks = screen.getAllByRole('button', {
         name: /New Cast - Plaster|Rehab Therapy - Limb/,
       });
 
@@ -431,7 +435,7 @@ describe('OrdersFulfillmentTable', () => {
       });
       fireEvent.click(expandButtons[0]);
 
-      const orderLink = screen.getByRole('link', {
+      const orderLink = screen.getByRole('button', {
         name: 'New Cast - Plaster',
       });
       fireEvent.click(orderLink);
@@ -449,7 +453,7 @@ describe('OrdersFulfillmentTable', () => {
       });
       fireEvent.click(expandButtons[0]);
 
-      const orderLinks = screen.getAllByRole('link', {
+      const orderLinks = screen.getAllByRole('button', {
         name: /New Cast - Plaster|Rehab Therapy - Limb/,
       });
 
@@ -474,7 +478,7 @@ describe('OrdersFulfillmentTable', () => {
       });
       fireEvent.click(expandButtons[0]);
 
-      const orderLink = screen.getByRole('link', {
+      const orderLink = screen.getByRole('button', {
         name: 'New Cast - Plaster',
       });
       fireEvent.click(orderLink);

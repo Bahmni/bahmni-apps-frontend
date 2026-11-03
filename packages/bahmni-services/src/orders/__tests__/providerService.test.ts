@@ -50,7 +50,7 @@ describe('providerService', () => {
         );
 
         expect(mockGet).toHaveBeenCalledWith(
-          '/openmrs/ws/rest/v1//provider?v=custom:(id,name,uuid)&attrName=practitioner_type&attrValue=Radiology%20Technologist',
+          '/openmrs/ws/rest/v1/provider?v=custom:(id,name,uuid)&attrName=practitioner_type&attrValue=Radiology%20Technologist',
         );
         expect(result).toEqual([
           {
@@ -377,7 +377,7 @@ describe('providerService', () => {
         await fetchProvidersByTab('P&O Order', TEST_TAB_PRACTITIONER_TYPE_MAP);
 
         const expectedUrl =
-          '/openmrs/ws/rest/v1//provider?v=custom:(id,name,uuid)&attrName=practitioner_type&attrValue=P%26O%20Technician';
+          '/openmrs/ws/rest/v1/provider?v=custom:(id,name,uuid)&attrName=practitioner_type&attrValue=P%26O%20Technician';
         expect(mockGet).toHaveBeenCalledWith(expectedUrl);
       });
     });

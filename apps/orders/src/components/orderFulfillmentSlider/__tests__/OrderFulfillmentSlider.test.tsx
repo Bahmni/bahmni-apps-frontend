@@ -17,6 +17,10 @@ jest.mock('@bahmni/services', () => ({
   }),
   createOrUpdateTask: (...args: unknown[]) => mockCreateOrUpdateTask(...args),
   getCurrentProvider: (...args: unknown[]) => mockGetCurrentProvider(...args),
+  getFormattedError: (error: Error) => ({
+    title: 'Error',
+    message: error.message,
+  }),
   getObservationByConceptName: (...args: unknown[]) =>
     mockGetObservationByConceptName(...args),
 }));
@@ -1112,7 +1116,7 @@ describe('OrderFulfillmentSlider', () => {
       await waitFor(() => {
         expect(mockAddNotification).toHaveBeenCalledWith({
           title: 'ORDER_SAVE_ERROR',
-          message: '',
+          message: 'Network error',
           type: 'error',
           timeout: 5000,
         });

@@ -39,7 +39,7 @@ describe('ExpandedOrderRow', () => {
     render(<ExpandedOrderRow order={mockAssignedOrder} />);
 
     expect(screen.getByText('New Cast - Plaster')).toBeInTheDocument();
-    expect(screen.getByText('New')).toBeInTheDocument();
+    expect(screen.getByText('STATUS_NEW')).toBeInTheDocument();
     expect(screen.getByText('Mike Ronoh')).toBeInTheDocument();
     expect(screen.getByText('12 Nov 25 04:24 PM')).toBeInTheDocument();
     expect(screen.getByText('Ted Okatch')).toBeInTheDocument();

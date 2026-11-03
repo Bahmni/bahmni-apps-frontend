@@ -11,9 +11,7 @@ exports[`SaveAndCancelButtons Happy Paths should match snapshot 1`] = `
       type="button"
     >
       <span>
-        <span>
-          Cancel
-        </span>
+        Cancel
       </span>
     </button>
     <button
@@ -21,9 +19,7 @@ exports[`SaveAndCancelButtons Happy Paths should match snapshot 1`] = `
       data-testid="save"
       type="button"
     >
-      <span>
-        Save
-      </span>
+      Save
     </button>
   </div>
 </div>
