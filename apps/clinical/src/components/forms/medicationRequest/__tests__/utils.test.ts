@@ -10,6 +10,7 @@ import {
   createMedicationRequestEntries,
   getDefaultDosingUnit,
   getDefaultRoute,
+  getInvalidProps,
   getMedicationRequestComboBoxItems,
 } from '../utils';
 import {
@@ -38,6 +39,24 @@ jest.mock('../../../../services/medicationService', () => ({
 }));
 
 const mockGenerateUUID = generateUUID as jest.Mock;
+
+describe('getInvalidProps', () => {
+  const t = (key: string) => `translated:${key}`;
+
+  it('returns a valid state with empty text when there is no error', () => {
+    expect(getInvalidProps(undefined, t)).toEqual({
+      invalid: false,
+      invalidText: '',
+    });
+  });
+
+  it('returns an invalid state with the translated error text', () => {
+    expect(getInvalidProps('SOME_ERROR_KEY', t)).toEqual({
+      invalid: true,
+      invalidText: 'translated:SOME_ERROR_KEY',
+    });
+  });
+});
 
 describe('applyDefaultFrequency', () => {
   it('applies default frequency when none is set and default matches a non-immediate frequency', () => {

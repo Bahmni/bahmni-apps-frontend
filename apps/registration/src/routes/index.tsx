@@ -1,5 +1,5 @@
 import { lazy, ReactElement } from 'react';
-import { Route } from 'react-router-dom';
+import { Route } from 'react-router';
 import { Routes, RouteConfig } from './model';
 
 const PatientRegisterPage = lazy(

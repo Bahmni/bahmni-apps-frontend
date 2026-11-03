@@ -1,6 +1,6 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import { Suspense } from 'react';
-import { MemoryRouter, Routes } from 'react-router-dom';
+import { MemoryRouter, Routes } from 'react-router';
 import { routes, renderRoutes } from '..';
 
 jest.mock('@bahmni/widgets', () => ({
