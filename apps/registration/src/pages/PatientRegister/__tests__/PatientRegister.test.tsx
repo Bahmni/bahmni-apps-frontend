@@ -3,7 +3,7 @@ import { usePatientPhoto } from '@bahmni/widgets';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { ReactNode } from 'react';
-import { BrowserRouter } from 'react-router-dom';
+import { BrowserRouter } from 'react-router';
 import { useAdditionalIdentifiers } from '../../../hooks/useAdditionalIdentifiers';
 import { useCreatePatient } from '../../../hooks/useCreatePatient';
 import { usePatientDetails } from '../../../hooks/usePatientDetails';
@@ -68,8 +68,8 @@ jest.mock('@bahmni/widgets', () => ({
 // cannot strip its return value out from under the other tests.
 const mockRouteParams: { patientUuid?: string } = {};
 
-jest.mock('react-router-dom', () => ({
-  ...jest.requireActual('react-router-dom'),
+jest.mock('react-router', () => ({
+  ...jest.requireActual('react-router'),
   useNavigate: () => jest.fn(),
   useParams: () => mockRouteParams,
 }));

@@ -972,7 +972,6 @@ describe('DocumentsTable', () => {
       type: 'add',
       label: 'DOCUMENTS_ADD_ACTION',
       encounterType: 'Patient Document',
-      editTitle: 'DOCUMENTS_UPLOAD_TITLE',
       requiredPrivilege: ['Add Encounters'],
     };
 
@@ -1003,7 +1002,7 @@ describe('DocumentsTable', () => {
       );
     });
 
-    it('dispatches startConsultation for the documents control on click', async () => {
+    it('dispatches startConsultation to add a DocumentReference on click', async () => {
       const user = userEvent.setup();
       const listener = jest.fn();
       globalThis.addEventListener('startConsultation', listener);
@@ -1015,9 +1014,8 @@ describe('DocumentsTable', () => {
       globalThis.removeEventListener('startConsultation', listener);
       expect(listener).toHaveBeenCalledTimes(1);
       expect((listener.mock.calls[0][0] as CustomEvent).detail).toEqual({
-        encounterType: 'Patient Document',
-        editOnly: 'documents',
-        editTitle: 'DOCUMENTS_UPLOAD_TITLE',
+        context: { encounterType: 'Patient Document' },
+        action: { type: 'create', resourceType: 'DocumentReference' },
       });
     });
   });

@@ -9,7 +9,9 @@ import type { BundleEntry, Reference } from 'fhir/r4';
 import type { InputControlAttributes } from '../../../providers/clinicalConfig/models';
 import {
   DOCUMENT_ID_ATTRIBUTE,
+  DOCUMENT_ID_PATTERN,
   DOCUMENT_TYPE_ATTRIBUTE,
+  DOCUMENTS_ID_ALPHANUMERIC_ERROR,
   DOCUMENTS_ID_REQUIRED_ERROR,
   DOCUMENTS_SELECT_TYPE_ERROR,
   DOCUMENTS_UPLOAD_REQUIRED_ERROR,
@@ -35,11 +37,13 @@ export const validateEntry = (
   ) {
     errors.documentType = DOCUMENTS_SELECT_TYPE_ERROR;
   }
-  if (
-    isRequired(DOCUMENT_ID_ATTRIBUTE, attributes, false) &&
-    !entry.documentId.trim()
-  ) {
-    errors.documentId = DOCUMENTS_ID_REQUIRED_ERROR;
+  const documentId = entry.documentId.trim();
+  if (!documentId) {
+    if (isRequired(DOCUMENT_ID_ATTRIBUTE, attributes, false)) {
+      errors.documentId = DOCUMENTS_ID_REQUIRED_ERROR;
+    }
+  } else if (!DOCUMENT_ID_PATTERN.test(documentId)) {
+    errors.documentId = DOCUMENTS_ID_ALPHANUMERIC_ERROR;
   }
   if (entry.files.length === 0) {
     errors.files = DOCUMENTS_UPLOAD_REQUIRED_ERROR;

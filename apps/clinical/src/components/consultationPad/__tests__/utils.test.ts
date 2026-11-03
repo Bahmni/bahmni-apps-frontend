@@ -8,7 +8,6 @@ import type { InputControl } from '../../forms';
 import {
   captureUpdatedResources,
   getActiveEncounter,
-  getActiveEntries,
   loadEncounterInputControls,
 } from '../utils';
 import { makeMockEntry } from './__mocks__/indexMocks';
@@ -226,112 +225,6 @@ describe('loadEncounterInputControls', () => {
     expect(result.find((e) => e.key === 'allergies')).toBeUndefined();
     expect(result.find((e) => e.key === 'medication')).toBeUndefined();
     expect(result.find((e) => e.key === 'investigations')).toBeDefined();
-  });
-});
-
-describe('getActiveEntries', () => {
-  let registry: ReturnType<typeof loadEncounterInputControls>;
-
-  beforeEach(() => {
-    registry = loadEncounterInputControls(mockConsultationPadConfig);
-  });
-
-  it('includes all entries for Consultation encounter type', () => {
-    const result = getActiveEntries(registry, 'Consultation');
-
-    const expected = registry.filter(
-      (e) => !e.encounterTypes || e.encounterTypes.includes('Consultation'),
-    );
-    expect(result).toHaveLength(expected.length);
-    expect(result.find((e) => e.key === 'immunizationHistory')).toBeUndefined();
-  });
-
-  it('excludes entries restricted to specific encounter types for non-matching type', () => {
-    const result = getActiveEntries(registry, 'OPD');
-
-    const unrestricted = registry.filter((e) => !e.encounterTypes);
-    expect(result).toHaveLength(unrestricted.length);
-    result.forEach((entry) => expect(entry.encounterTypes).toBeUndefined());
-  });
-
-  it('returns only allergies + encounterDetails when editOnlyKey is "allergies"', () => {
-    const result = getActiveEntries(registry, 'Consultation', 'allergies');
-
-    expect(result.map((e) => e.key)).toEqual(
-      expect.arrayContaining(['encounterDetails', 'allergies']),
-    );
-    expect(result).toHaveLength(2);
-    expect(result.find((e) => e.key === 'medication')).toBeUndefined();
-    expect(result.find((e) => e.key === 'investigations')).toBeUndefined();
-  });
-
-  it('returns all matching entries (existing behaviour) when editOnlyKey is undefined', () => {
-    const withoutEditOnly = getActiveEntries(
-      registry,
-      'Consultation',
-      undefined,
-    );
-    const withoutArg = getActiveEntries(registry, 'Consultation');
-
-    expect(withoutEditOnly).toEqual(withoutArg);
-    expect(withoutEditOnly.length).toBeGreaterThan(2);
-  });
-
-  it('returns only encounterDetails when editOnlyKey does not match any entry key', () => {
-    const result = getActiveEntries(registry, 'Consultation', 'nonExistentKey');
-
-    expect(result).toHaveLength(1);
-    expect(result[0].key).toBe('encounterDetails');
-  });
-
-  it('encounterDetails always passes the editOnlyKey filter when editOnlyKey is set', () => {
-    const result = getActiveEntries(registry, 'Consultation', 'medication');
-
-    const encounterDetailsEntry = result.find(
-      (e) => e.key === 'encounterDetails',
-    );
-    expect(encounterDetailsEntry).toBeDefined();
-    expect(result.find((e) => e.key === 'medication')).toBeDefined();
-    expect(result).toHaveLength(2);
-  });
-
-  it('excludes onActionTriggered controls from normal consultation', () => {
-    const registryWithTriggered = [
-      ...registry,
-      {
-        key: 'stopMedications',
-        onActionTriggered: true,
-        component: () => null,
-        reset: jest.fn(),
-        validate: jest.fn().mockReturnValue(true),
-        hasData: jest.fn().mockReturnValue(false),
-        subscribe: jest.fn().mockReturnValue(jest.fn()),
-      },
-    ];
-    const result = getActiveEntries(registryWithTriggered, 'Consultation');
-    expect(result.find((e) => e.key === 'stopMedications')).toBeUndefined();
-  });
-
-  it('includes onActionTriggered control when it is the editOnly target', () => {
-    const registryWithTriggered = [
-      ...registry,
-      {
-        key: 'stopMedications',
-        onActionTriggered: true,
-        component: () => null,
-        reset: jest.fn(),
-        validate: jest.fn().mockReturnValue(true),
-        hasData: jest.fn().mockReturnValue(false),
-        subscribe: jest.fn().mockReturnValue(jest.fn()),
-      },
-    ];
-    const result = getActiveEntries(
-      registryWithTriggered,
-      'Consultation',
-      'stopMedications',
-    );
-    expect(result.find((e) => e.key === 'stopMedications')).toBeDefined();
-    expect(result).toHaveLength(2); // stopMedications + encounterDetails
   });
 });
 

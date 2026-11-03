@@ -447,6 +447,85 @@ describe('MedicationRequestForm', () => {
     );
   });
 
+  describe('Medication reason concept set', () => {
+    const conceptSetUuid = 'medication-reason-concept-set-uuid';
+    const reasonConfig = (attributes: { name: string }[]) => ({
+      type: 'medication',
+      metadata: { medicationReasonConceptSetUuid: conceptSetUuid },
+      attributes,
+    });
+    const getMedicationReasonQueryOptions = () =>
+      mockUseQuery.mock.calls
+        .map(([options]) => options as any)
+        .find(
+          (options) => options.queryKey[0] === 'medicationReasonConceptSet',
+        );
+
+    it('fetches the configured concept set when the reason attribute is configured', () => {
+      renderForm(reasonConfig([{ name: 'reason' }]));
+
+      const options = getMedicationReasonQueryOptions();
+      expect(options.queryKey).toEqual([
+        'medicationReasonConceptSet',
+        conceptSetUuid,
+      ]);
+      expect(options.enabled).toBe(true);
+    });
+
+    it('does not fetch the concept set when the reason attribute is not configured', () => {
+      renderForm(reasonConfig([]));
+
+      expect(getMedicationReasonQueryOptions().enabled).toBe(false);
+    });
+
+    it('does not fetch the concept set when no concept set uuid is configured', () => {
+      renderForm({
+        type: 'medication',
+        metadata: {},
+        attributes: [{ name: 'reason' }],
+      });
+
+      expect(getMedicationReasonQueryOptions().enabled).toBe(false);
+    });
+
+    it('shows the concept set members as options in the Reason dropdown', async () => {
+      const user = userEvent.setup();
+      mockUseQuery.mockImplementation((({
+        queryKey,
+      }: {
+        queryKey: readonly unknown[];
+      }) => {
+        if (queryKey[0] === 'medicationReasonConceptSet') {
+          return {
+            data: {
+              resourceType: 'ValueSet',
+              expansion: {
+                contains: [
+                  { code: 'reason-1-uuid', display: 'Fever' },
+                  { code: 'reason-2-uuid', display: 'Malaria' },
+                ],
+              },
+            },
+            isLoading: false,
+            error: null,
+          };
+        }
+        return defaultQueryMock({ queryKey });
+      }) as any);
+      mockUseMedicationRequestStore.mockReturnValue(
+        makeMockStore({
+          selectedMedicationRequests: [mockSelectedMedication],
+        }) as any,
+      );
+
+      renderForm(reasonConfig([{ name: 'reason' }]));
+      await user.click(screen.getByRole('combobox', { name: 'Reason' }));
+
+      expect(screen.getByText('Fever')).toBeInTheDocument();
+      expect(screen.getByText('Malaria')).toBeInTheDocument();
+    });
+  });
+
   describe('Snapshots', () => {
     it.each([
       ['medications form with no selected items', undefined, []],

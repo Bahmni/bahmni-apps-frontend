@@ -1,5 +1,11 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import {
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+  within,
+} from '@testing-library/react';
 import { StrictMode, useState } from 'react';
 import { DocumentUpload } from '../DocumentUpload';
 import { DocumentEntry, DocumentUploadProps, PendingDocument } from '../models';
@@ -164,10 +170,51 @@ describe('DocumentUpload', () => {
       expect(screen.queryByRole('button', { name: /close/i })).toBeNull();
     });
 
-    it('lists the documents under a heading when given one', () => {
-      renderWidget({ documentsTitle: 'Added document type' });
+    describe('default document type', () => {
+      it('preselects the matching type once the types have loaded', async () => {
+        renderWidget({ defaultOption: 'prescription' });
 
-      expect(screen.getByText('Added document type')).toBeVisible();
+        await waitFor(() => expect(latest()[0].documentType).toEqual(TYPES[1]));
+      });
+
+      it('preselects it in a document added with "Add more"', async () => {
+        renderWidget({ defaultOption: 'Prescription' });
+        await waitFor(() => expect(latest()[0].documentType).toEqual(TYPES[1]));
+
+        fireEvent.click(screen.getByTestId('document-upload-add-more'));
+
+        expect(latest().map((doc) => doc.documentType)).toEqual([
+          TYPES[1],
+          TYPES[1],
+        ]);
+      });
+
+      it('keeps a type the user already picked', async () => {
+        renderWidget({
+          defaultOption: 'Prescription',
+          initial: [entry('e1', { documentType: TYPES[0] })],
+        });
+
+        await waitFor(() => expect(getDocumentTypes).toHaveBeenCalled());
+        await new Promise((resolve) => setTimeout(resolve, 0));
+
+        expect(onChange).not.toHaveBeenCalled();
+      });
+
+      it('leaves the type empty when no default is given', async () => {
+        renderWidget();
+
+        await waitFor(() => expect(getDocumentTypes).toHaveBeenCalled());
+        await new Promise((resolve) => setTimeout(resolve, 0));
+
+        expect(onChange).not.toHaveBeenCalled();
+      });
+    });
+
+    it('lists the documents under a heading when given one', () => {
+      renderWidget({ documentsTitle: 'Add Document' });
+
+      expect(screen.getByText('Add Document')).toBeVisible();
     });
 
     it('locks the controls while saving', () => {
@@ -205,11 +252,47 @@ describe('DocumentUpload', () => {
 
     it('marks the type as required only when it is', () => {
       const { unmount } = renderWidget({ config: TYPE_REQUIRED_CONFIG });
-      expect(screen.getByText('DOCUMENTS_DOCUMENT_TYPE_LABEL*')).toBeVisible();
+      const label = screen.getByText('DOCUMENTS_DOCUMENT_TYPE_LABEL');
+      expect(label).toBeVisible();
+      expect(within(label).getByText('*')).toBeInTheDocument();
       unmount();
 
       renderWidget();
       expect(screen.getByText('DOCUMENTS_DOCUMENT_TYPE_LABEL')).toBeVisible();
+      expect(screen.queryByText('*')).not.toBeInTheDocument();
+    });
+
+    it('styles the required mark with its own class so it can be shown in red', () => {
+      renderWidget({ config: TYPE_REQUIRED_CONFIG });
+
+      expect(screen.getByText('*')).toHaveClass('requiredAsterisk');
+    });
+
+    it('marks the document id as required only when it is', () => {
+      const { unmount } = renderWidget({
+        config: {
+          attributes: [
+            { name: 'documentType', required: false },
+            { name: 'documentId', required: true },
+          ],
+          metadata: METADATA,
+        },
+      });
+      const label = screen.getByText('DOCUMENTS_DOCUMENT_ID_LABEL');
+      expect(within(label).getByText('*')).toBeInTheDocument();
+      unmount();
+
+      renderWidget({
+        config: {
+          attributes: [
+            { name: 'documentType', required: false },
+            { name: 'documentId', required: false },
+          ],
+          metadata: METADATA,
+        },
+      });
+      expect(screen.getByText('DOCUMENTS_DOCUMENT_ID_LABEL')).toBeVisible();
+      expect(screen.queryByText('*')).not.toBeInTheDocument();
     });
 
     it('records the type that is chosen', async () => {
