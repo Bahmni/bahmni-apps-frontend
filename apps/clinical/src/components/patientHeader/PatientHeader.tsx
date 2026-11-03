@@ -94,7 +94,7 @@ const PatientHeader: React.FC<PatientHeaderProps> = ({
   useSubscribeConsultationSaved(
     (payload) => {
       if (payload.patientUUID === patientUUID) {
-        refetch();
+        void refetch();
       }
     },
     [patientUUID],
@@ -139,6 +139,7 @@ const PatientHeader: React.FC<PatientHeaderProps> = ({
           isActionAreaVisible={isActionAreaVisible}
           editActiveEncounter={editActiveEncounter}
           isLoading={isLoading}
+          activeEncounter={activeEncounter}
         />
         <DocumentPrintButton
           printOptions={printOptions}

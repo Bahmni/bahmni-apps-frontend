@@ -16,7 +16,7 @@ import {
 } from '@bahmni/widgets';
 import { usePatientPhoto } from '@bahmni/widgets';
 import { useRef, useState, useEffect, useMemo } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router';
 import { AdditionalIdentifiersRef } from '../../components/forms/additionalIdentifiers/AdditionalIdentifiers';
 import { AdditionalInfoRef } from '../../components/forms/additionalInfo/AdditionalInfo';
 import { AddressInfoRef } from '../../components/forms/addressInfo/AddressInfo';

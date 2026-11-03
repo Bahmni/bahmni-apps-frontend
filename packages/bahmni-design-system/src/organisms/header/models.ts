@@ -1,4 +1,4 @@
-import { ReactNode, ComponentType } from 'react';
+import { ReactNode, ComponentType, MouseEvent } from 'react';
 
 /**
  * Side navigation item for header with side navigation component
@@ -20,6 +20,7 @@ export interface HeaderBreadcrumbItem {
   label: string;
   href?: string;
   isCurrentPage?: boolean;
+  onClick?: (event: MouseEvent<HTMLElement>) => void;
 }
 
 /**

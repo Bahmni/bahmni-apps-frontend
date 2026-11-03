@@ -49,7 +49,7 @@ export const LocationProvider: React.FC<LocationProviderProps> = ({
       }
     };
 
-    initializeLocation();
+    void initializeLocation();
   }, []);
 
   const handleSetLocation = useCallback(

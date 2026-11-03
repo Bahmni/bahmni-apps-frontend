@@ -323,6 +323,22 @@ export const blobToDataUrl = (blob: Blob): Promise<string> => {
 };
 
 /**
+ * Triggers a browser download of the given blob
+ * @param blob - The file contents
+ * @param filename - The name to save the file as
+ */
+export const downloadBlob = (blob: Blob, filename: string): void => {
+  const url = URL.createObjectURL(blob);
+  const anchor = document.createElement('a');
+  anchor.href = url;
+  anchor.download = filename;
+  document.body.appendChild(anchor);
+  anchor.click();
+  anchor.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 0);
+};
+
+/**
  * Return the data type of the given value
  * @param value - Value for which the type is to be found
  * @returns string of what is the type of the input
@@ -376,13 +392,14 @@ export function camelToScreamingSnakeCase(str: string): string {
 }
 
 /**
- * Resolves ComboBox items based on loading, error, and empty states
- * Returns a single disabled sentinel item for loading/error/empty states, or the actual items
+ * Resolves the items array for a ComboBox based on the current query state.
+ * Returns a single disabled sentinel item for loading, error, or empty states,
+ * otherwise returns the actual items.
  *
  * @param isLoading - Whether the data is currently loading
- * @param isError - Whether an error occurred
- * @param items - The actual items to display
- * @param toSentinel - Factory function that builds a shape-compatible placeholder from a message
+ * @param isError - Whether the query encountered an error
+ * @param items - The actual data items to display when available
+ * @param toSentinel - Factory that creates a sentinel item of type T from a message string
  * @param messages - The translated message strings for each state
  */
 export function resolveComboBoxItems<T extends object>(
@@ -444,3 +461,18 @@ export const formatCountry = (
     return code;
   }
 };
+
+export const encodeValue = (value: string): string =>
+  btoa(
+    encodeURIComponent(value).replace(/%([0-9A-F]{2})/g, (_, hex) =>
+      String.fromCharCode(Number.parseInt(hex, 16)),
+    ),
+  );
+
+export const decodeValue = (value: string): string =>
+  decodeURIComponent(
+    Array.from(
+      atob(value),
+      (c) => '%' + c.charCodeAt(0).toString(16).padStart(2, '0'),
+    ).join(''),
+  );

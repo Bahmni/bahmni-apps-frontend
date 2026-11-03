@@ -270,6 +270,7 @@ describe('Widget Registry', () => {
         'treatment',
         'immunizationHistory',
         'tasksControl',
+        'visits',
       ];
 
       expect(types).toHaveLength(expectedTypes.length);
@@ -399,7 +400,7 @@ describe('Widget Registry', () => {
       resetWidgetRegistry();
       const countAfterReset = getAllWidgetTypes().length;
 
-      expect(countAfterReset).toBe(15); // Only built-in widgets
+      expect(countAfterReset).toBe(16); // Only built-in widgets
       expect(countWithCustom).toBeGreaterThan(countAfterReset);
     });
   });

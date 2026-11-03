@@ -1,5 +1,5 @@
 import { lazy } from 'react';
-import { Navigate, Route } from 'react-router-dom';
+import { Navigate, Route } from 'react-router';
 import { Routes, RouteConfig } from './model';
 
 const HomePage = lazy(() =>
@@ -8,11 +8,22 @@ const HomePage = lazy(() =>
   })),
 );
 
+const Credits = lazy(() =>
+  import('../components/Credits').then((module) => ({
+    default: module.Credits,
+  })),
+);
+
 export const routes: Routes = [
   {
     path: '/',
     component: HomePage,
     name: 'Home',
+  },
+  {
+    path: '/credits',
+    component: Credits,
+    name: 'Credits',
   },
 ];
 

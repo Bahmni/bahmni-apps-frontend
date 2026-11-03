@@ -1,7 +1,7 @@
 import { type AccessDeniedRouteState, useTranslation } from '@bahmni/services';
 import { useNotification } from '@bahmni/widgets';
 import React, { useEffect, useRef } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router';
 import { ACCESS_DENIED_NOTIFICATION_TIMEOUT_MS } from '../../constants/app';
 import { HomePageGrid } from '../HomePageGrid';
 import { HomePageHeader } from '../HomePageHeader';

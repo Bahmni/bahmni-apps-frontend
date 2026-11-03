@@ -1,5 +1,6 @@
 export {
   searchConcepts,
+  searchConceptsByQuery,
   searchFHIRConcepts,
   searchFHIRConceptsByName,
   getConceptById,
@@ -10,4 +11,5 @@ export {
   type ConceptSearch,
   type ConceptClass,
   type ConceptData,
+  type ConceptQueryResult,
 } from './models';

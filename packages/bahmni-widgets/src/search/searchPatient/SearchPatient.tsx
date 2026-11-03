@@ -20,6 +20,13 @@ import {
 import searchStrategyRegistry from './strategies/SearchStrategyRegistry';
 import styles from './styles/SearchPatient.module.scss';
 
+const toLocalDateString = (date: Date) =>
+  [
+    date.getFullYear(),
+    String(date.getMonth() + 1).padStart(2, '0'),
+    String(date.getDate()).padStart(2, '0'),
+  ].join('-');
+
 const SearchPatient = ({ extensionParams }: SearchWidgetProps) => {
   const configUrl = extensionParams?.configUrl;
 
@@ -42,6 +49,9 @@ const SearchPatient = ({ extensionParams }: SearchWidgetProps) => {
   const [dropdownItems, setDropdownItems] = useState<string[]>([]);
   const [selectedDropdownItem, setSelectedDropdownItem] = useState<string>('');
   const [searchFields, setSearchFields] = useState<PatientSearchField[]>([]);
+  const [appointmentDate, setAppointmentDate] = useState<Date | null>(
+    new Date(),
+  );
   const [patientSearchData, setPatientSearchData] = useState<
     PatientSearchResultBundle | undefined
   >(undefined);
@@ -108,6 +118,9 @@ const SearchPatient = ({ extensionParams }: SearchWidgetProps) => {
       ) ?? false
     );
   };
+
+  const isDateSearch = () =>
+    getSelectedField()?.fields[0] === 'appointmentDate';
 
   useEffect(() => {
     setPatientSearchData(data);
@@ -179,7 +192,18 @@ const SearchPatient = ({ extensionParams }: SearchWidgetProps) => {
     setIsAdvancedSearch(false);
   };
 
+  const handleDateChange = (date: Date | null) => {
+    if (!date) return;
+    setAppointmentDate(date);
+  };
+
   const handleAdvanceSearch = () => {
+    if (isDateSearch()) {
+      if (!appointmentDate) return;
+      setSearchTerm(toLocalDateString(appointmentDate));
+      setIsAdvancedSearch(true);
+      return;
+    }
     if (!advanceSearchInput.trim()) return;
     const trimmedValue = advanceSearchInput.trim();
 
@@ -219,6 +243,7 @@ const SearchPatient = ({ extensionParams }: SearchWidgetProps) => {
 
   const handleDropdownChange = (item: string) => {
     setSelectedDropdownItem(item);
+    setAppointmentDate(new Date());
     setAdvanceSearchInput('');
     setSearchInput('');
     setSearchTerm('');
@@ -257,9 +282,11 @@ const SearchPatient = ({ extensionParams }: SearchWidgetProps) => {
     : undefined;
 
   const resultsFieldType = isAdvancedSearch ? selectedFieldType : '';
+  const selectedField = getSelectedField();
+  const appointmentSearchFields = selectedField ? [selectedField] : [];
   const resultsSearchFields =
     resultsFieldType === 'appointment'
-      ? (patientSearchConfig?.appointment ?? [])
+      ? appointmentSearchFields
       : (patientSearchConfig?.customAttributes ?? []);
 
   return (
@@ -275,8 +302,11 @@ const SearchPatient = ({ extensionParams }: SearchWidgetProps) => {
         validationError={validationError}
         dropdownItems={dropdownItems}
         selectedDropdownItem={selectedDropdownItem}
+        isDateSearch={isDateSearch()}
+        appointmentDate={appointmentDate}
         onNameChange={handleNameChange}
         onAdvanceChange={handleAdvanceChange}
+        onDateChange={handleDateChange}
         onNameSearch={handleNameSearch}
         onAdvanceSearch={handleAdvanceSearch}
         onNameClear={handleNameClear}
@@ -290,6 +320,7 @@ const SearchPatient = ({ extensionParams }: SearchWidgetProps) => {
           isLoading={isLoading}
           isError={isError}
           isAdvancedSearch={isAdvancedSearch}
+          isDateSearch={isDateSearch()}
           searchFields={resultsSearchFields}
           selectedFieldType={resultsFieldType}
           patientDetailUrl={patientSearchConfig?.patientDetailUrl}

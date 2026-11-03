@@ -16,7 +16,6 @@ import { axe, toHaveNoViolations } from 'jest-axe';
 import { useClinicalAppData } from '../../../hooks/useClinicalAppData';
 import { useEncounterConcepts } from '../../../hooks/useEncounterConcepts';
 import { useClinicalConfig } from '../../../providers/clinicalConfig';
-import { useAllergyStore } from '../../../stores/allergyStore';
 import { useEncounterDetailsStore } from '../../../stores/encounterDetailsStore';
 import { useObservationFormsStore } from '../../../stores/observationFormsStore';
 import ConsultationPad from '../index';
@@ -134,7 +133,9 @@ const renderComponent = (
   render(
     <QueryClientProvider client={queryClient}>
       <ConsultationPad
-        encounterSessionStartContext={{ encounterType: 'Consultation' }}
+        encounterSessionStartContext={{
+          context: { encounterType: 'Consultation' },
+        }}
         onClose={jest.fn()}
         {...props}
       />
@@ -326,9 +327,11 @@ describe('ConsultationPad', () => {
 
       renderComponent({
         encounterSessionStartContext: {
-          encounterType: 'Consultation',
-          editOnly: 'observationForms',
-          sourceEncounterUuid: EDIT_ENCOUNTER_UUID,
+          context: {
+            encounterType: 'Consultation',
+            encounter: { resourceType: 'Encounter', id: EDIT_ENCOUNTER_UUID },
+          },
+          action: { type: 'update', resourceType: 'Observation' },
         },
       });
 
@@ -349,7 +352,9 @@ describe('ConsultationPad', () => {
   describe('encounterType prop validation', () => {
     it('renders error state when specified encounterType is not defined in configuration', () => {
       renderComponent({
-        encounterSessionStartContext: { encounterType: 'UnknownType' },
+        encounterSessionStartContext: {
+          context: { encounterType: 'UnknownType' },
+        },
       });
 
       expect(screen.getByText('Something went wrong')).toBeInTheDocument();
@@ -364,14 +369,16 @@ describe('ConsultationPad', () => {
       } as any);
 
       renderComponent({
-        encounterSessionStartContext: { encounterType: 'Consultation' },
+        encounterSessionStartContext: {
+          context: { encounterType: 'Consultation' },
+        },
       });
 
       expect(screen.queryByTestId('allergies-divider')).not.toBeInTheDocument();
     });
 
     it.each([
-      ['valid', { encounterType: 'Consultation' }],
+      ['valid', { context: { encounterType: 'Consultation' } }],
       ['not set', {}],
     ])(
       'does not show error state when encounterType is %s',
@@ -503,8 +510,10 @@ describe('ConsultationPad', () => {
 
       renderComponent({
         encounterSessionStartContext: {
-          encounterType: 'Consultation',
-          sourceEncounterUuid: 'missing-uuid',
+          context: {
+            encounterType: 'Consultation',
+            encounter: { resourceType: 'Encounter', id: 'missing-uuid' },
+          },
         },
       });
 
@@ -551,8 +560,10 @@ describe('ConsultationPad', () => {
 
       renderComponent({
         encounterSessionStartContext: {
-          encounterType: 'Consultation',
-          sourceEncounterUuid: 'existing-uuid',
+          context: {
+            encounterType: 'Consultation',
+            encounter: { resourceType: 'Encounter', id: 'existing-uuid' },
+          },
         },
       });
 
@@ -870,7 +881,11 @@ describe('ConsultationPad', () => {
       });
     });
 
-    it('shows error when direct submit succeeds but bundle submission fails in mixed scenario', async () => {
+    it('shows error and never calls direct submit when bundle submission fails in mixed scenario', async () => {
+      // The bundle now runs first: a direct-submit entry (e.g. a non-coded
+      // allergy saved via REST) must never be persisted when the bundle that
+      // was meant to carry the rest of the consultation fails, or it's left
+      // permanently orphaned with no corresponding encounter.
       const mockDirectSubmit = jest.fn().mockResolvedValue(undefined);
       const directEntry = {
         ...makeMockEntry('stopMedications'),
@@ -893,12 +908,12 @@ describe('ConsultationPad', () => {
       await userEvent.click(screen.getByTestId('primary-button'));
 
       await waitFor(() => {
-        expect(mockDirectSubmit).toHaveBeenCalled();
         expect(submitConsultation).toHaveBeenCalled();
         expect(mockAddNotification).toHaveBeenCalledWith(
           expect.objectContaining({ type: 'error' }),
         );
       });
+      expect(mockDirectSubmit).not.toHaveBeenCalled();
     });
 
     it('calls submitConsultation when mixed entries (direct + bundle)', async () => {
@@ -927,6 +942,138 @@ describe('ConsultationPad', () => {
       });
     });
 
+    it('still submits the bundle when a direct-submit entry has bundle data', async () => {
+      // Allergies split their data: "other" goes through onDirectSubmit, the
+      // rest must still travel in the encounter bundle.
+      const mockDirectSubmit = jest.fn().mockResolvedValue(undefined);
+      const splitEntry = {
+        ...makeMockEntry('allergies'),
+        hasData: jest.fn().mockReturnValue(true),
+        hasBundleData: jest.fn().mockReturnValue(true),
+        onDirectSubmit: mockDirectSubmit,
+      };
+
+      jest.mocked(getActiveEntries).mockReturnValue([splitEntry] as any);
+
+      renderComponent();
+      await userEvent.click(screen.getByTestId('primary-button'));
+
+      await waitFor(() => {
+        expect(mockDirectSubmit).toHaveBeenCalled();
+        expect(submitConsultation).toHaveBeenCalled();
+      });
+    });
+
+    it('calls onDirectSubmit only after the bundle submission succeeds, not before', async () => {
+      const callOrder: string[] = [];
+      const mockDirectSubmit = jest.fn().mockImplementation(async () => {
+        callOrder.push('onDirectSubmit');
+      });
+      jest.mocked(submitConsultation).mockImplementation(async () => {
+        callOrder.push('submitConsultation');
+        return mockSubmitResult;
+      });
+      const splitEntry = {
+        ...makeMockEntry('allergies'),
+        hasData: jest.fn().mockReturnValue(true),
+        hasBundleData: jest.fn().mockReturnValue(true),
+        onDirectSubmit: mockDirectSubmit,
+      };
+
+      jest.mocked(getActiveEntries).mockReturnValue([splitEntry] as any);
+
+      renderComponent();
+      await userEvent.click(screen.getByTestId('primary-button'));
+
+      await waitFor(() => {
+        expect(mockDirectSubmit).toHaveBeenCalled();
+      });
+      expect(callOrder).toEqual(['submitConsultation', 'onDirectSubmit']);
+    });
+
+    it('resets bundle-only entries once the bundle succeeds but keeps the pad open and the direct-submit entry unreset when onDirectSubmit then fails, so retry cannot resubmit the bundle', async () => {
+      const bundleOnlyEntry = {
+        ...makeMockEntry('medication'),
+        hasData: jest.fn().mockReturnValue(true),
+      };
+      const mockDirectSubmit = jest
+        .fn()
+        .mockRejectedValue(new Error('REST save failed'));
+      const splitEntry = {
+        ...makeMockEntry('allergies'),
+        hasData: jest.fn().mockReturnValue(true),
+        hasBundleData: jest.fn().mockReturnValue(true),
+        onDirectSubmit: mockDirectSubmit,
+      };
+      const onClose = jest.fn();
+
+      jest
+        .mocked(getActiveEntries)
+        .mockReturnValue([bundleOnlyEntry, splitEntry] as any);
+
+      renderComponent({ onClose });
+      await userEvent.click(screen.getByTestId('primary-button'));
+
+      await waitFor(() => {
+        expect(mockAddNotification).toHaveBeenCalledWith(
+          expect.objectContaining({ type: 'error' }),
+        );
+      });
+
+      // The bundle (medication) already succeeded and must never be
+      // resubmitted on retry, so it's reset immediately.
+      expect(bundleOnlyEntry.reset).toHaveBeenCalled();
+      // The failed direct-submit entry (allergies) keeps its data so the
+      // next retry attempt picks it back up instead of losing it.
+      expect(splitEntry.reset).not.toHaveBeenCalled();
+      expect(onClose).not.toHaveBeenCalled();
+    });
+
+    it('never calls onDirectSubmit when the bundle submission fails, so a direct-submitted allergy is never left without an encounter', async () => {
+      const mockDirectSubmit = jest.fn().mockResolvedValue(undefined);
+      jest
+        .mocked(submitConsultation)
+        .mockRejectedValue(new Error('Bundle failed'));
+      const splitEntry = {
+        ...makeMockEntry('allergies'),
+        hasData: jest.fn().mockReturnValue(true),
+        hasBundleData: jest.fn().mockReturnValue(true),
+        onDirectSubmit: mockDirectSubmit,
+      };
+
+      jest.mocked(getActiveEntries).mockReturnValue([splitEntry] as any);
+
+      renderComponent();
+      await userEvent.click(screen.getByTestId('primary-button'));
+
+      await waitFor(() => {
+        expect(mockAddNotification).toHaveBeenCalledWith(
+          expect.objectContaining({ type: 'error' }),
+        );
+      });
+      expect(mockDirectSubmit).not.toHaveBeenCalled();
+    });
+
+    it('skips the bundle when a direct-submit entry has no bundle data', async () => {
+      const mockDirectSubmit = jest.fn().mockResolvedValue(undefined);
+      const splitEntry = {
+        ...makeMockEntry('allergies'),
+        hasData: jest.fn().mockReturnValue(true),
+        hasBundleData: jest.fn().mockReturnValue(false),
+        onDirectSubmit: mockDirectSubmit,
+      };
+
+      jest.mocked(getActiveEntries).mockReturnValue([splitEntry] as any);
+
+      renderComponent();
+      await userEvent.click(screen.getByTestId('primary-button'));
+
+      await waitFor(() => {
+        expect(mockDirectSubmit).toHaveBeenCalled();
+      });
+      expect(submitConsultation).not.toHaveBeenCalled();
+    });
+
     it('shows error notification when onDirectSubmit throws', async () => {
       const mockDirectSubmit = jest
         .fn()
@@ -950,73 +1097,128 @@ describe('ConsultationPad', () => {
     });
   });
 
-  describe('editTitle and editOnly (BAH-4652)', () => {
-    it('shows editTitle translated value when encounterSessionStartContext.editTitle is set', () => {
+  describe('Source encounter handling', () => {
+    const encounter = {
+      resourceType: 'Encounter' as const,
+      id: 'enc-123',
+      status: 'in-progress' as const,
+    };
+
+    beforeEach(() => {
+      jest.mocked(getEncounterByUuid).mockClear();
+      jest.mocked(getEncounterByUuid).mockResolvedValue(encounter as any);
+    });
+
+    it('does not fetch the encounter again for a plain Continue (encounter, no action)', async () => {
       renderComponent({
         encounterSessionStartContext: {
-          encounterType: 'Consultation',
-          editTitle: 'EDIT_ALLERGIES_TITLE',
+          context: { encounterType: 'Consultation', encounter },
         },
       });
 
-      // i18n resolves 'EDIT_ALLERGIES_TITLE' → 'Edit Allergies' (from locale_en.json)
+      await waitFor(() => {
+        expect(screen.getByTestId('action-area')).toBeInTheDocument();
+      });
+      expect(getEncounterByUuid).not.toHaveBeenCalled();
+    });
+
+    it('fetches the source encounter for an edit action', async () => {
+      renderComponent({
+        encounterSessionStartContext: {
+          context: { encounterType: 'Consultation', encounter },
+          action: {
+            type: 'update',
+            resources: [{ resourceType: 'MedicationRequest', id: 'm-1' }],
+          },
+        },
+      });
+
+      await waitFor(() => {
+        expect(getEncounterByUuid).toHaveBeenCalledWith(
+          'enc-123',
+          expect.anything(),
+        );
+      });
+    });
+  });
+
+  describe('Pad title derivation', () => {
+    it('shows "Continue" when context.encounter is present', () => {
+      renderComponent({
+        encounterSessionStartContext: {
+          context: {
+            encounterType: 'Consultation',
+            encounter: {
+              resourceType: 'Encounter',
+              id: 'enc-123',
+              status: 'in-progress',
+            },
+          },
+        },
+      });
+
       expect(screen.getByTestId('action-area-title')).toHaveTextContent(
-        'Edit Allergies',
+        'Continue Consultation',
       );
     });
 
-    it('shows "New Consultation" when editTitle is not set', () => {
+    it('shows "New Consultation" when no context.encounter', () => {
       renderComponent({
-        encounterSessionStartContext: { encounterType: 'Consultation' },
+        encounterSessionStartContext: {
+          context: { encounterType: 'Consultation' },
+        },
       });
 
-      // i18n resolves 'CONSULTATION_ACTION_NEW' → 'New Consultation'
       expect(screen.getByTestId('action-area-title')).toHaveTextContent(
         'New Consultation',
       );
     });
 
-    it('calls getActiveEntries with editOnlyKey when encounterSessionStartContext.editOnly is set', () => {
+    it.each([
+      [
+        'edit allergy',
+        { type: 'update' as const, resourceType: 'AllergyIntolerance' },
+        'Edit Allergies',
+      ],
+      [
+        'edit medication',
+        { type: 'update' as const, resourceType: 'MedicationRequest' },
+        'Edit Medications',
+      ],
+      [
+        'stop medication',
+        { type: 'delete' as const, resourceType: 'MedicationRequest' },
+        'Stop Medication',
+      ],
+    ])('shows the %s title from the action', (_, action, expectedTitle) => {
       renderComponent({
         encounterSessionStartContext: {
-          encounterType: 'Consultation',
-          editOnly: 'allergies',
+          context: { encounterType: 'Consultation' },
+          action,
+        },
+      });
+
+      expect(screen.getByTestId('action-area-title')).toHaveTextContent(
+        expectedTitle,
+      );
+    });
+
+    it('calls getActiveEntries with context and action from structured payload', () => {
+      renderComponent({
+        encounterSessionStartContext: {
+          context: { encounterType: 'Consultation' },
+          action: {
+            type: 'update',
+            resources: [{ resourceType: 'AllergyIntolerance', id: 'a1' }],
+          },
         },
       });
 
       expect(getActiveEntries).toHaveBeenCalledWith(
         expect.anything(),
-        expect.anything(),
-        'allergies',
+        expect.objectContaining({ encounterType: 'Consultation' }),
+        expect.objectContaining({ type: 'update' }),
       );
-    });
-
-    it('seeds allergyStore when preloadedAllergies prop is provided', () => {
-      const preloadSpy = jest.spyOn(
-        useAllergyStore.getState(),
-        'preloadAllergies',
-      );
-      const mockAllergies = [
-        {
-          id: 'allergen-1',
-          display: 'Peanut',
-          type: 'food',
-          selectedSeverity: null,
-          selectedReactions: [],
-          errors: {},
-          hasBeenValidated: false,
-        },
-      ];
-
-      renderComponent({
-        encounterSessionStartContext: {
-          encounterType: 'Consultation',
-          preloadedAllergies: mockAllergies as any,
-        },
-      });
-
-      expect(preloadSpy).toHaveBeenCalledWith(mockAllergies);
-      preloadSpy.mockRestore();
     });
   });
 

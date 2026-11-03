@@ -10,7 +10,8 @@ import {
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { Suspense, useEffect, useState } from 'react';
-import { Routes } from 'react-router-dom';
+import { Routes } from 'react-router';
+import styles from './App.module.scss';
 import { PrivilegeGuard } from './components/PrivilegeGuard';
 import { queryClientConfig } from './config/tanstackQuery';
 import { BAHMNI_ADMIN_NAMESPACE } from './constants/app';
@@ -34,14 +35,14 @@ export function App() {
       }
     };
 
-    initializeApp();
+    void initializeApp();
   }, []);
 
   if (!isInitialized) {
     return <Loading />;
   }
   return (
-    <Content>
+    <Content className={styles.content}>
       <QueryClientProvider client={queryClient}>
         <NotificationProvider>
           <UserPrivilegeProvider>

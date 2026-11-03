@@ -109,7 +109,7 @@ describe('ImmunizationForm Integration Tests', () => {
     render(
       <ImmunizationForm
         encounterSessionStartContext={{
-          basedOn: mockMedicationRequestNoMedRef,
+          context: { basedOn: mockMedicationRequestNoMedRef },
         }}
         inputControlConfig={mockAdministrationInputControlConfigAllowed}
       />,
@@ -218,7 +218,7 @@ describe('ImmunizationForm Integration Tests', () => {
     render(
       <ImmunizationForm
         encounterSessionStartContext={{
-          basedOn: mockMedicationRequestNoMedRef,
+          context: { basedOn: mockMedicationRequestNoMedRef },
         }}
         inputControlConfig={mockAdministrationInputControlConfigAllowed}
       />,
@@ -332,7 +332,9 @@ describe('ImmunizationForm Integration Tests', () => {
 
     render(
       <ImmunizationForm
-        encounterSessionStartContext={{ basedOn: mockMedicationRequest }}
+        encounterSessionStartContext={{
+          context: { basedOn: mockMedicationRequest },
+        }}
         inputControlConfig={mockAdministrationInputControlConfig}
       />,
       { wrapper: createWrapper() },
@@ -372,7 +374,9 @@ describe('ImmunizationForm Integration Tests', () => {
 
       render(
         <ImmunizationForm
-          encounterSessionStartContext={{ basedOn: mockMedicationRequest }}
+          encounterSessionStartContext={{
+            context: { basedOn: mockMedicationRequest },
+          }}
           inputControlConfig={mockAdministrationConfigWithCDSS}
         />,
         {

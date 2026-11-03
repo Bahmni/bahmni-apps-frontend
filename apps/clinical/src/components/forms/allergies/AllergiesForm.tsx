@@ -5,7 +5,14 @@ import {
   SelectedItem,
   InlineNotification,
 } from '@bahmni/design-system';
-import { useTranslation, getFormattedAllergies } from '@bahmni/services';
+import {
+  fetchOtherNonCodedAllergenUUID,
+  getFormattedAllergies,
+  mapAllergyToInputEntry,
+  OTHER_NON_CODED_ALLERGEN_UUID,
+  useTranslation,
+  type ConsultationEventPayload,
+} from '@bahmni/services';
 import {
   useNotification,
   usePatientUUID,
@@ -13,8 +20,14 @@ import {
   CONSULTATION_PAD_PRIVILEGES,
 } from '@bahmni/widgets';
 import { useQuery } from '@tanstack/react-query';
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import type { EncounterSessionStartContext } from '../../../events/startConsultation';
+import type { AllergyIntolerance } from 'fhir/r4';
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import useAllergenSearch from '../../../hooks/useAllergenSearch';
 import { AllergenConcept } from '../../../models/allergy';
 import { useAllergyStore } from '../../../stores/allergyStore';
@@ -33,10 +46,20 @@ const allergiesQueryKeys = (patientUUID: string) =>
  * It allows users to search for allergies, select them, and specify severity and reactions.
  */
 const AllergiesForm: React.FC<{
-  encounterSessionStartContext?: EncounterSessionStartContext;
+  encounterSessionStartContext?: ConsultationEventPayload;
 }> = React.memo(({ encounterSessionStartContext }) => {
-  // True when opened via the row/section edit button — search to add new allergy is hidden.
-  const isEditMode = !!encounterSessionStartContext?.preloadedAllergies;
+  const action = encounterSessionStartContext?.action;
+  const allergiesToEdit = useMemo(
+    () =>
+      action?.type === 'update'
+        ? (action.resources?.filter(
+            (r): r is AllergyIntolerance =>
+              r.resourceType === 'AllergyIntolerance',
+          ) ?? [])
+        : [],
+    [action],
+  );
+  const isEditMode = allergiesToEdit.length > 0;
   const { t } = useTranslation();
   const patientUUID = usePatientUUID();
   const { addNotification } = useNotification();
@@ -63,6 +86,7 @@ const AllergiesForm: React.FC<{
     updateSeverity,
     updateReactions,
     updateNote,
+    updateNonCodedAllergen,
   } = useAllergyStore();
 
   // Use allergen search hook
@@ -94,27 +118,82 @@ const AllergiesForm: React.FC<{
     }
   }, [existingAllergiesLoading, existingAllergiesError, addNotification, t]);
 
+  // Resolves this install's actual Other, Non-Coded concept uuid as early as
+  // possible. A bare fetch-and-cache effect isn't enough here: the checks
+  // below feed the Specify Allergen field's visibility in the memoized
+  // SelectedAllergyItem, and nothing would tell React to re-render once the
+  // fetch resolved, so a preloaded "Other" allergy could keep that field
+  // hidden for the lifetime of the form. Holding the result in state (rather
+  // than only the module-level cache fetchOtherNonCodedAllergenUUID
+  // populates) gives this component something that changes on resolution, so
+  // everything derived from otherNonCodedAllergenId below recomputes instead
+  // of staying stuck on the hardcoded CIEL default.
+  const [otherNonCodedAllergenId, setOtherNonCodedAllergenId] = useState(
+    OTHER_NON_CODED_ALLERGEN_UUID,
+  );
+
+  const [otherNonCodedResolved, setOtherNonCodedResolved] = useState(false);
+
+  useEffect(() => {
+    fetchOtherNonCodedAllergenUUID()
+      .then((uuid) => {
+        setOtherNonCodedAllergenId(uuid);
+        setOtherNonCodedResolved(true);
+      })
+      .catch((err: Error) => {
+        addNotification({
+          title: t('ERROR_DEFAULT_TITLE'),
+          message: err.message,
+          type: 'error',
+        });
+      });
+  }, [addNotification, t]);
+
+  // Seeds the store once per set of resources being edited. It waits for the
+  // install's Other, Non-Coded uuid so mapAllergyToInputEntry classifies
+  // correctly, and is keyed by resource id so a re-render that rebuilds the
+  // payload object never re-seeds over the user's in-progress edits.
+  const editResourceKey = allergiesToEdit.map((a) => a.id).join(',');
+  const seededKeyRef = useRef<string | null>(null);
+  useEffect(() => {
+    if (!otherNonCodedResolved || !editResourceKey) return;
+    if (seededKeyRef.current === editResourceKey) return;
+    seededKeyRef.current = editResourceKey;
+    useAllergyStore
+      .getState()
+      .preloadAllergies(allergiesToEdit.map(mapAllergyToInputEntry));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [otherNonCodedResolved, editResourceKey]);
+
   const handleSearch = (searchTerm: string) => {
     setSearchAllergenTerm(searchTerm);
   };
 
   const isDuplicateAllergy = useCallback(
     (allergyId: string): boolean => {
-      // Check against existing allergies from backend
-      const isExistingAllergy = existingAllergies?.some(
-        (a) => a.id === allergyId,
-      );
+      // The Other, Non-Coded concept is shared by every free-text allergy, so
+      // picking it again always represents a distinct new allergen — concept
+      // identity can't be used to detect a duplicate here. Each resulting
+      // entry gets its own unique entryId, so multiple can coexist safely.
+      if (allergyId === otherNonCodedAllergenId) return false;
 
       // Check against currently selected allergies in the form
       const isSelectedAllergy = selectedAllergies.some(
         (a) => a.id === allergyId,
       );
 
+      // Check against existing allergies from backend. Compare by
+      // conceptCode, not id: id is now the unique FHIR resource id (needed
+      // for table/React keys), so it can never match a concept uuid here.
+      const isExistingAllergy = existingAllergies?.some(
+        (a) => a.conceptCode === allergyId,
+      );
+
       // We need || here (not ??) because we're checking boolean false values
       // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
       return !!(isExistingAllergy || isSelectedAllergy);
     },
-    [existingAllergies, selectedAllergies],
+    [existingAllergies, selectedAllergies, otherNonCodedAllergenId],
   );
 
   // Clear notification when search term is cleared or when the duplicate allergy is no longer a duplicate
@@ -161,7 +240,14 @@ const AllergiesForm: React.FC<{
     // Successfully added, clear any previous duplicate notification
     setShowDuplicateNotification(false);
     setDuplicateAllergyId(null);
-    addAllergy(selectedItem as AllergenConcept);
+    // Only classify once the install's real uuid is known; otherwise leave it
+    // undefined so submission resolves it first.
+    addAllergy(
+      selectedItem as AllergenConcept,
+      otherNonCodedResolved
+        ? selectedItem.uuid === otherNonCodedAllergenId
+        : undefined,
+    );
     setSearchAllergenTerm('');
     setSelectedAllergenItem(selectedItem);
   };
@@ -203,9 +289,11 @@ const AllergiesForm: React.FC<{
     }
 
     return searchResults.map((item) => {
-      const isAlreadySelected = selectedAllergies.some(
-        (a) => a.id === item.uuid,
-      );
+      // The Other, Non-Coded concept is never "already added" — selecting it
+      // again always adds a distinct new free-text allergen.
+      const isAlreadySelected =
+        item.uuid !== otherNonCodedAllergenId &&
+        selectedAllergies.some((a) => a.id === item.uuid);
       return {
         ...item,
         display: isAlreadySelected
@@ -223,6 +311,7 @@ const AllergiesForm: React.FC<{
     error,
     existingAllergiesError,
     selectedAllergies,
+    otherNonCodedAllergenId,
     t,
   ]);
 
@@ -284,16 +373,18 @@ const AllergiesForm: React.FC<{
         >
           {selectedAllergies.map((allergy) => (
             <SelectedItem
-              key={allergy.id}
+              key={allergy.entryId}
               className={styles.selectedAllergyItem}
-              onClose={() => removeAllergy(allergy.id)}
+              onClose={() => removeAllergy(allergy.entryId)}
             >
               <SelectedAllergyItem
                 allergy={allergy}
+                isNonCoded={allergy.id === otherNonCodedAllergenId}
                 reactionConcepts={reactionConcepts}
                 updateSeverity={updateSeverity}
                 updateReactions={updateReactions}
                 updateNote={updateNote}
+                updateNonCodedAllergen={updateNonCodedAllergen}
               />
             </SelectedItem>
           ))}

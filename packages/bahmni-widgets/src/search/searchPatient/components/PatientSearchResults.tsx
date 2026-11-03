@@ -12,10 +12,11 @@ import {
   PatientSearchField,
   PatientSearchResult,
   PatientSearchResultBundle,
+  formatDateTime,
   formatUrl,
   useTranslation,
 } from '@bahmni/services';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import { useNotification } from '../../../notification';
 import { useUserPrivilege } from '../../../userPrivileges/useUserPrivilege';
 import {
@@ -42,6 +43,7 @@ interface PatientSearchResultsProps {
   isLoading: boolean;
   isError: boolean;
   isAdvancedSearch: boolean;
+  isDateSearch: boolean;
   searchFields: PatientSearchField[];
   selectedFieldType: string;
   patientDetailUrl?: string;
@@ -54,6 +56,7 @@ const PatientSearchResults = ({
   isLoading,
   isError,
   isAdvancedSearch,
+  isDateSearch,
   searchFields,
   selectedFieldType,
   patientDetailUrl,
@@ -185,7 +188,7 @@ const PatientSearchResults = ({
                 data-testid={`patient-action-button-${action.translationKey}`}
                 onClick={() => {
                   if (!data) return;
-                  handleActionButtonClick(
+                  void handleActionButtonClick(
                     action,
                     row as PatientSearchViewModel<AppointmentSearchResult>,
                     data,
@@ -235,9 +238,13 @@ const PatientSearchResults = ({
     return String(cellValue ?? '');
   };
 
+  const displayTerm = isDateSearch
+    ? formatDateTime(searchTerm, t).formattedResult
+    : searchTerm;
+
   const emptyMessage = isAdvancedSearch
     ? t('REGISTRATION_PATIENT_SEARCH_CUSTOM_ATTRIBUTE_EMPTY_MESSAGE', {
-        searchTerm,
+        searchTerm: displayTerm,
       })
     : t('REGISTRATION_PATIENT_SEARCH_EMPTY_MESSAGE', { searchTerm });
 

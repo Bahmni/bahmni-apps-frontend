@@ -1,0 +1,41 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Reports Configuration",
+  "type": "object",
+  "additionalProperties": {
+    "type": "object",
+    "required": ["name", "type"],
+    "properties": {
+      "name": {
+        "type": "string",
+        "description": "Display name of the report"
+      },
+      "type": {
+        "type": "string",
+        "description": "Report generator type"
+      },
+      "requiredPrivilege": {
+        "type": "string",
+        "description": "Privilege required to view/run this report"
+      },
+      "config": {
+        "type": "object",
+        "properties": {
+          "dateRangeRequired": {
+            "type": "boolean",
+            "description": "Whether this report requires a date range (defaults to true)"
+          },
+          "paperSize": {
+            "type": "string",
+            "description": "Paper size for PDF generation (e.g., A4)"
+          },
+          "macroTemplatePath": {
+            "type": "string",
+            "description": "Path to macro template for custom Excel reports"
+          }
+        },
+        "additionalProperties": true
+      }
+    }
+  }
+}

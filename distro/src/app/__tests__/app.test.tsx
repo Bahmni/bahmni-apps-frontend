@@ -1,5 +1,5 @@
 import { act, render, screen } from '@testing-library/react';
-import { BrowserRouter, MemoryRouter } from 'react-router-dom';
+import { BrowserRouter, MemoryRouter } from 'react-router';
 
 import App from '../app';
 

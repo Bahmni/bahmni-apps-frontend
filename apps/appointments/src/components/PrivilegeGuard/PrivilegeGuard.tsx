@@ -7,7 +7,7 @@ import {
 } from '@bahmni/services';
 import { useUserPrivilege } from '@bahmni/widgets';
 import React, { ReactNode } from 'react';
-import { Navigate } from 'react-router-dom';
+import { Navigate } from 'react-router';
 import { APPOINTMENTS_PRIVILEGE } from '../../constants/app';
 
 export interface PrivilegeGuardProps {

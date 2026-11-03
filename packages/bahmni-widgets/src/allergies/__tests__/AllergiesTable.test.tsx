@@ -30,6 +30,7 @@ jest.mock('@bahmni/services', () => ({
   ...jest.requireActual('@bahmni/services'),
   getFormattedAllergies: jest.fn(),
   getAllergies: jest.fn(),
+  fetchOtherNonCodedAllergenUUID: jest.fn().mockResolvedValue('other-uuid'),
   mapAllergyToInputEntry: jest.fn((fhir: any) => ({
     id: fhir.id,
     display: fhir.code?.text ?? '',
@@ -70,6 +71,7 @@ const mockAddNotification = jest.fn();
 
 const mockAllergy: FormattedAllergy = {
   id: 'allergy-1',
+  conceptCode: 'concept-peanut',
   display: 'Peanut Allergy',
   severity: AllergySeverity.moderate,
   category: ['food'],
@@ -460,6 +462,7 @@ describe('AllergiesTable', () => {
         resourceId: 'resource-uuid-1',
       };
       const fhirAllergy = {
+        resourceType: 'AllergyIntolerance',
         id: 'resource-uuid-1',
         code: { text: 'Peanut' },
       };
@@ -481,11 +484,15 @@ describe('AllergiesTable', () => {
       await waitFor(() => {
         expect(capturedStartEvent).not.toBeNull();
         expect(capturedStartEvent!.detail).toMatchObject({
-          editOnly: 'allergies',
-          editTitle: 'EDIT_ALLERGIES_TITLE',
-          preloadedAllergies: expect.arrayContaining([
-            expect.objectContaining({ id: 'resource-uuid-1' }),
-          ]),
+          action: expect.objectContaining({
+            type: 'update',
+            resources: expect.arrayContaining([
+              expect.objectContaining({
+                resourceType: 'AllergyIntolerance',
+                id: 'resource-uuid-1',
+              }),
+            ]),
+          }),
         });
       });
     });

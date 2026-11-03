@@ -8,7 +8,7 @@ import {
 import { useUserPrivilege } from '@bahmni/widgets';
 import { useQueryClient } from '@tanstack/react-query';
 import { useMemo } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router';
 import { useCreateVisit, useIsCreatingVisit } from '../../hooks/useVisit';
 import { VisitTypeSelector } from '../../pages/PatientRegister/visitTypeSelector';
 import { useRegistrationConfig } from '../../providers/registrationConfig';

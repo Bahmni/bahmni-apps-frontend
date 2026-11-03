@@ -7,6 +7,7 @@ import {
   CriterionConfig,
   CriterionRow,
   LookupOption,
+  SearchContextConfig,
   TextInput,
 } from '../models';
 import {
@@ -30,6 +31,9 @@ import {
   validateConfigForCriteria,
   toSearchAuditEventType,
   needsDisplayKey,
+  conditionsToRows,
+  hydrateRecentSearch,
+  makeRow,
 } from '../utils';
 import {
   mockContextMultipleDefaults,
@@ -1248,5 +1252,103 @@ describe('getLookupComboBoxItems', () => {
       expect.any(Function),
       messages,
     );
+  });
+});
+
+describe('conditionsToRows / hydrateRecentSearch', () => {
+  const criteria: CriterionConfig[] = [
+    {
+      id: 'given',
+      field: { key: 'name.given' },
+      translationKey: 'GIVEN',
+      input: { kind: 'text', placeholderTranslationKey: 'P' },
+    },
+    {
+      id: 'age',
+      field: { key: 'age' },
+      translationKey: 'AGE',
+      input: {
+        kind: 'numeric',
+        placeholderTranslationKey: 'P',
+        rangeAllowed: true,
+      },
+    },
+    {
+      id: 'identifier:national',
+      field: { key: 'identifier', keyType: 'national' },
+      translationKey: 'ID',
+      input: { kind: 'text', placeholderTranslationKey: 'P' },
+    },
+  ];
+
+  const context = {
+    context: 'patient',
+    criteria,
+  } as SearchContextConfig;
+
+  it('round-trips rows built by buildPayload, dropping the location leaf', () => {
+    const rows: CriterionRow[] = [
+      { ...makeRow('given'), value: { value: 'José' } },
+      {
+        ...makeRow('age'),
+        value: {
+          from: { value: '10', comparator: null },
+          to: { value: '20', comparator: null },
+        },
+      },
+      { ...makeRow('identifier:national'), value: { value: 'A1' } },
+    ];
+    const { criteria: group } = buildPayload(
+      resolveRows(rows, criteria),
+      'patient',
+      'loc-1',
+    );
+
+    const restored = conditionsToRows(group, criteria);
+
+    expect(
+      restored.map(({ criterionKey, value }) => ({ criterionKey, value })),
+    ).toEqual(rows.map(({ criterionKey, value }) => ({ criterionKey, value })));
+  });
+
+  it('drops conditions whose field is no longer configured', () => {
+    const restored = conditionsToRows(
+      {
+        operator: 'AND',
+        conditions: [
+          { field: 'removed.field', comparator: 'eq', value: 'x' },
+          { field: 'name.given', comparator: 'eq', value: 'Ann' },
+        ],
+      },
+      criteria,
+    );
+    expect(restored).toHaveLength(1);
+    expect(restored[0].criterionKey).toBe('given');
+  });
+
+  it('hydrates only when the saved entity is an available context and rows survive', () => {
+    const group = {
+      operator: 'AND' as const,
+      conditions: [
+        { field: 'name.given', comparator: 'eq' as const, value: 'Ann' },
+      ],
+    };
+    const recent = (entity: string, criteriaGroup = group) => ({
+      version: 1 as const,
+      savedAt: '',
+      payload: { entity, criteria: criteriaGroup },
+    });
+
+    expect(hydrateRecentSearch(recent('patient'), [context])?.contextKey).toBe(
+      'patient',
+    );
+    expect(hydrateRecentSearch(recent('appointment'), [context])).toBeNull();
+    expect(hydrateRecentSearch(null, [context])).toBeNull();
+    expect(
+      hydrateRecentSearch(
+        recent('patient', { operator: 'AND', conditions: [] }),
+        [context],
+      ),
+    ).toBeNull();
   });
 });

@@ -5,6 +5,7 @@ import {
   transformContainerObservationsToForm2Observations,
   convertImmutableToPlainObject,
   extractNotesFromFormData,
+  findConceptDatatype,
   FormData,
   ConceptValue,
   Form2Observation,
@@ -806,6 +807,44 @@ describe('observationFormsTransformer', () => {
       expect(transformedObservations[0].value).toBe('Existing value');
     });
 
+    it('should re-append note when only a voided placeholder for the concept is present', () => {
+      // Guards against regression: injectMissingDeleteObs injects a voided clone that
+      // carries the original concept.uuid; if the dedup guard treated it as "already present",
+      // an untouched note-only observation would be silently dropped from the bundle.
+      const formData = {
+        children: [
+          {
+            conceptUuid: 'note-concept-uuid',
+            value: null,
+            comment: 'Patient prefers morning visits',
+            id: 'field1',
+          },
+        ],
+      };
+      const transformedObservations: Form2Observation[] = [
+        {
+          concept: { uuid: 'note-concept-uuid', datatype: 'Text' },
+          uuid: 'existing-note-uuid',
+          value: null,
+          voided: true,
+          obsDatetime: '2024-01-15T10:00:00.000Z',
+          formNamespace: 'Bahmni',
+          formFieldPath: 'field1',
+        },
+      ];
+
+      extractNotesFromFormData(formData, transformedObservations);
+
+      expect(transformedObservations).toHaveLength(2);
+      const appended = transformedObservations.find((o) => !o.voided);
+      expect(appended).toMatchObject({
+        concept: { uuid: 'note-concept-uuid' },
+        value: null,
+        comment: 'Patient prefers morning visits',
+      });
+      expect(appended?.uuid).toBeUndefined();
+    });
+
     it('should extract conceptUuid from nested value.concept structure', () => {
       const formData = {
         children: [
@@ -1190,6 +1229,28 @@ describe('observationFormsTransformer', () => {
       );
 
       expect(result[0].concept.datatype).toBe('Text');
+    });
+  });
+
+  describe('findConceptDatatype', () => {
+    const metadata: FormMetadata = {
+      uuid: 'form-uuid',
+      name: 'Test Form',
+      version: '1',
+      published: true,
+      schema: {
+        controls: [
+          { concept: { uuid: 'date-concept-uuid', datatype: 'Date' } },
+        ],
+      },
+    };
+
+    it('returns the schema datatype for a known concept', () => {
+      expect(findConceptDatatype(metadata, 'date-concept-uuid')).toBe('Date');
+    });
+
+    it('returns undefined for an unknown concept', () => {
+      expect(findConceptDatatype(metadata, 'unknown-uuid')).toBeUndefined();
     });
   });
 });

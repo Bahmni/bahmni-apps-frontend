@@ -1,3 +1,5 @@
+import * as services from '@bahmni/services';
+import { OTHER_NON_CODED_ALLERGEN_UUID } from '@bahmni/services';
 import { useHasPrivilege } from '@bahmni/widgets';
 import {
   QueryClient,
@@ -101,6 +103,7 @@ const mockReactions: Coding[] = [
 
 const mockSelectedAllergy = {
   id: mockAllergen.uuid,
+  entryId: mockAllergen.uuid,
   display: mockAllergen.display,
   selectedSeverity: null,
   selectedReactions: [],
@@ -123,6 +126,7 @@ const mockAllergyStore = {
   updateSeverity: jest.fn(),
   updateReactions: jest.fn(),
   updateNote: jest.fn(),
+  updateNonCodedAllergen: jest.fn(),
   validateAllAllergies: jest.fn(),
   reset: jest.fn(),
   getState: jest.fn(),
@@ -265,7 +269,7 @@ describe('AllergiesForm', () => {
       await user.click(screen.getByText('Peanut Allergy [Food]'));
 
       await waitFor(() => {
-        expect(mockAddAllergy).toHaveBeenCalledWith(mockAllergen);
+        expect(mockAddAllergy).toHaveBeenCalledWith(mockAllergen, undefined);
       });
     });
 
@@ -325,7 +329,7 @@ describe('AllergiesForm', () => {
       // because the ComboBox wouldn't accept new input if selectedItem was still set
       await user.click(screen.getByText('Shellfish Allergy [Food]'));
       await waitFor(() => {
-        expect(mockAddAllergy).toHaveBeenCalledWith(secondAllergen);
+        expect(mockAddAllergy).toHaveBeenCalledWith(secondAllergen, undefined);
       });
     });
 
@@ -551,13 +555,16 @@ describe('AllergiesForm', () => {
       const removeButton = screen.getByRole('button', { name: /close/i });
       removeButton.click();
 
-      expect(mockRemoveAllergy).toHaveBeenCalledWith(mockSelectedAllergy.id);
+      expect(mockRemoveAllergy).toHaveBeenCalledWith(
+        mockSelectedAllergy.entryId,
+      );
     });
 
     it('should handle multiple selected allergies', () => {
       const secondAllergy = {
         ...mockSelectedAllergy,
         id: 'test-allergy-2',
+        entryId: 'test-allergy-2',
         display: 'Shellfish Allergy',
       };
 
@@ -567,6 +574,83 @@ describe('AllergiesForm', () => {
 
       expect(screen.getByText(/Peanut Allergy/)).toBeInTheDocument();
       expect(screen.getByText(/Shellfish Allergy/)).toBeInTheDocument();
+    });
+  });
+
+  describe('Multiple Other, Non-Coded allergies (ID collision regression)', () => {
+    // Both entries share the same allergen concept id — only entryId tells them
+    // apart. Real seed data can already contain two such records for one patient.
+    const otherEntryOne = {
+      id: OTHER_NON_CODED_ALLERGEN_UUID,
+      entryId: 'other-entry-1',
+      display: 'you',
+      type: 'medication',
+      nonCodedAllergen: 'you',
+      selectedSeverity: null,
+      selectedReactions: [],
+      errors: {},
+      hasBeenValidated: false,
+    };
+    const otherEntryTwo = {
+      id: OTHER_NON_CODED_ALLERGEN_UUID,
+      entryId: 'other-entry-2',
+      display: 'jj',
+      type: 'medication',
+      nonCodedAllergen: 'jj',
+      selectedSeverity: null,
+      selectedReactions: [],
+      errors: {},
+      hasBeenValidated: false,
+    };
+
+    it('renders both free-text inputs with distinct DOM ids', () => {
+      renderAllergiesForm({
+        selectedAllergies: [otherEntryOne, otherEntryTwo],
+      });
+
+      expect(
+        screen.getByTestId('allergy-non-coded-name-other-entry-1'),
+      ).toBeInTheDocument();
+      expect(
+        screen.getByTestId('allergy-non-coded-name-other-entry-2'),
+      ).toBeInTheDocument();
+    });
+
+    it('edits the free-text value on one entry without affecting the other', async () => {
+      const user = userEvent.setup();
+      const mockUpdateNonCodedAllergen = jest.fn();
+      renderAllergiesForm({
+        selectedAllergies: [otherEntryOne, otherEntryTwo],
+        updateNonCodedAllergen: mockUpdateNonCodedAllergen,
+      });
+
+      const firstInput = screen.getByTestId(
+        'allergy-non-coded-name-other-entry-1',
+      );
+      await user.type(firstInput, '!');
+
+      // Every call must target entry #1's entryId, never entry #2's.
+      expect(mockUpdateNonCodedAllergen.mock.calls.length).toBeGreaterThan(0);
+      mockUpdateNonCodedAllergen.mock.calls.forEach((call) => {
+        expect(call[0]).toBe('other-entry-1');
+      });
+    });
+
+    it('removing one Other allergy only calls removeAllergy with its own entryId', () => {
+      const mockRemoveAllergy = jest.fn();
+      renderAllergiesForm({
+        selectedAllergies: [otherEntryOne, otherEntryTwo],
+        removeAllergy: mockRemoveAllergy,
+      });
+
+      const closeButtons = screen.getAllByRole('button', { name: /close/i });
+      expect(closeButtons).toHaveLength(2);
+
+      closeButtons[0].click();
+
+      expect(mockRemoveAllergy).toHaveBeenCalledTimes(1);
+      expect(mockRemoveAllergy).toHaveBeenCalledWith('other-entry-1');
+      expect(mockRemoveAllergy).not.toHaveBeenCalledWith('other-entry-2');
     });
   });
 
@@ -718,7 +802,7 @@ describe('AllergiesForm', () => {
       await user.click(screen.getByText('Shellfish [Food]'));
 
       await waitFor(() => {
-        expect(mockAddAllergy).toHaveBeenCalledWith(anotherAllergen);
+        expect(mockAddAllergy).toHaveBeenCalledWith(anotherAllergen, undefined);
       });
     });
   });
@@ -728,8 +812,18 @@ describe('AllergiesForm', () => {
       const user = userEvent.setup();
       const mockAddAllergy = jest.fn();
 
+      // Realistic FormattedAllergy shape: id is the unique FHIR resource
+      // uuid, conceptCode is the allergen concept identity — duplicate
+      // detection must compare against conceptCode, not id (id would never
+      // match a concept uuid from the allergen search).
       (useQuery as jest.Mock).mockReturnValue({
-        data: [{ id: mockAllergen.uuid, display: 'Peanut Allergy' }] as any,
+        data: [
+          {
+            id: 'existing-allergy-resource-uuid',
+            conceptCode: mockAllergen.uuid,
+            display: 'Peanut Allergy',
+          },
+        ] as any,
         isLoading: false,
         error: null,
       });
@@ -745,6 +839,46 @@ describe('AllergiesForm', () => {
       await user.click(screen.getByText('Peanut Allergy [Food]'));
 
       expect(mockAddAllergy).not.toHaveBeenCalled();
+    });
+
+    it('should allow adding an allergy whose resource id happens to differ from every concept uuid being searched (regression: dedup must not compare by id)', async () => {
+      const user = userEvent.setup();
+      const mockAddAllergy = jest.fn();
+      const unrelatedAllergen: AllergenConcept = {
+        uuid: 'unrelated-concept-uuid',
+        display: 'Shellfish Allergy',
+        type: 'food',
+        disabled: false,
+      };
+
+      // An existing backend allergy for a *different* concept — its id
+      // (resource uuid) is unrelated to unrelatedAllergen's concept uuid, and
+      // must not accidentally suppress adding it.
+      (useQuery as jest.Mock).mockReturnValue({
+        data: [
+          {
+            id: 'existing-allergy-resource-uuid',
+            conceptCode: mockAllergen.uuid,
+            display: 'Peanut Allergy',
+          },
+        ] as any,
+        isLoading: false,
+        error: null,
+      });
+      mockAllergenSearchHook({ allergens: [unrelatedAllergen] });
+      renderAllergiesForm({ addAllergy: mockAddAllergy });
+
+      await user.type(getSearchCombobox(), 'shellfish');
+
+      await waitFor(() => {
+        expect(
+          screen.getByText('Shellfish Allergy [Food]'),
+        ).toBeInTheDocument();
+      });
+
+      await user.click(screen.getByText('Shellfish Allergy [Food]'));
+
+      expect(mockAddAllergy).toHaveBeenCalledWith(unrelatedAllergen, undefined);
     });
   });
 
@@ -792,7 +926,7 @@ describe('AllergiesForm', () => {
       await user.keyboard('{Enter}');
 
       await waitFor(() => {
-        expect(mockAddAllergy).toHaveBeenCalledWith(freshAllergen);
+        expect(mockAddAllergy).toHaveBeenCalledWith(freshAllergen, undefined);
       });
     });
   });
@@ -825,24 +959,92 @@ describe('AllergiesForm', () => {
   });
 
   describe('Edit mode (encounterSessionStartContext)', () => {
-    const preloadedAllergies = [
-      {
-        id: 'pre-allergy-1',
-        display: 'Shellfish',
-        type: 'food',
-        selectedSeverity: null,
-        selectedReactions: [],
-        errors: {},
-        hasBeenValidated: false,
-        isModified: false as boolean | undefined,
+    const editPayload = {
+      action: {
+        type: 'update' as const,
+        resources: [{ resourceType: 'AllergyIntolerance', id: 'allergy-1' }],
       },
-    ];
+    };
 
-    it('isEditMode is true when encounterSessionStartContext has preloadedAllergies', () => {
+    it('pre-fills the allergy store from the action resources once the non-coded concept resolves', async () => {
+      const preloadAllergies = jest.fn();
+      const getStateSpy = jest
+        .spyOn(useAllergyStore, 'getState')
+        .mockReturnValue({ preloadAllergies } as never);
+      const fetchSpy = jest
+        .spyOn(services, 'fetchOtherNonCodedAllergenUUID')
+        .mockResolvedValue('other-non-coded-uuid');
+
       renderAllergiesForm(
         {},
-        { encounterSessionStartContext: { preloadedAllergies } },
+        {
+          encounterSessionStartContext: {
+            action: {
+              type: 'update' as const,
+              resources: [
+                {
+                  resourceType: 'AllergyIntolerance',
+                  id: 'allergy-1',
+                  code: {
+                    coding: [{ code: 'peanut-uuid' }],
+                    text: 'Peanut',
+                  },
+                  category: ['food'],
+                  reaction: [
+                    {
+                      severity: 'severe',
+                      manifestation: [{ coding: [{ code: 'hives-uuid' }] }],
+                    },
+                  ],
+                },
+              ],
+            },
+          },
+        },
       );
+
+      await waitFor(() => expect(preloadAllergies).toHaveBeenCalledTimes(1));
+      expect(preloadAllergies).toHaveBeenCalledWith([
+        expect.objectContaining({
+          id: 'peanut-uuid',
+          resourceId: 'allergy-1',
+          display: 'Peanut',
+          type: 'food',
+          selectedSeverity: expect.objectContaining({ code: 'severe' }),
+          selectedReactions: [expect.objectContaining({ code: 'hives-uuid' })],
+        }),
+      ]);
+
+      getStateSpy.mockRestore();
+      fetchSpy.mockRestore();
+    });
+
+    it('does not pre-fill the store when opened to add a new allergy', async () => {
+      const preloadAllergies = jest.fn();
+      const getStateSpy = jest
+        .spyOn(useAllergyStore, 'getState')
+        .mockReturnValue({ preloadAllergies } as never);
+
+      renderAllergiesForm(
+        {},
+        {
+          encounterSessionStartContext: {
+            action: {
+              type: 'create' as const,
+              resourceType: 'AllergyIntolerance',
+            },
+          },
+        },
+      );
+
+      await waitFor(() => expect(getSearchCombobox()).toBeInTheDocument());
+      expect(preloadAllergies).not.toHaveBeenCalled();
+
+      getStateSpy.mockRestore();
+    });
+
+    it('isEditMode is true when action.type is update with AllergyIntolerance', () => {
+      renderAllergiesForm({}, { encounterSessionStartContext: editPayload });
 
       expect(
         screen.queryByTestId('allergies-search-combobox'),
@@ -850,10 +1052,7 @@ describe('AllergiesForm', () => {
     });
 
     it('search ComboBox is NOT rendered when isEditMode is true', () => {
-      renderAllergiesForm(
-        {},
-        { encounterSessionStartContext: { preloadedAllergies } },
-      );
+      renderAllergiesForm({}, { encounterSessionStartContext: editPayload });
 
       expect(
         screen.queryByRole('combobox', { name: /search for allergies/i }),
@@ -866,20 +1065,21 @@ describe('AllergiesForm', () => {
       expect(getSearchCombobox()).toBeInTheDocument();
     });
 
-    it('search ComboBox IS rendered when encounterSessionStartContext has no preloadedAllergies', () => {
+    it('search ComboBox IS rendered when no action resources', () => {
       renderAllergiesForm(
         {},
-        { encounterSessionStartContext: { encounterType: 'Consultation' } },
+        {
+          encounterSessionStartContext: {
+            context: { encounterType: 'Consultation' },
+          },
+        },
       );
 
       expect(getSearchCombobox()).toBeInTheDocument();
     });
 
     it('title shows EDIT_ALLERGIES_FORM_TITLE translation key when isEditMode is true', () => {
-      renderAllergiesForm(
-        {},
-        { encounterSessionStartContext: { preloadedAllergies } },
-      );
+      renderAllergiesForm({}, { encounterSessionStartContext: editPayload });
 
       expect(screen.getByTestId('allergies-form-title')).toHaveTextContent(
         'EDIT_ALLERGIES_FORM_TITLE',

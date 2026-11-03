@@ -16,7 +16,10 @@ export enum AllergySeverity {
  */
 //TODO: Move to Bahmni Widgets
 export interface FormattedAllergy {
+  /** Unique per-record identity (the FHIR resource id when available) — use for table/React keys, never for concept-identity comparisons like duplicate detection. */
   readonly id: string;
+  /** Allergen *concept* identity — shared by every non-coded ("Other") allergy, so compare against this (not `id`) to detect "this concept is already selected". */
+  readonly conceptCode: string;
   /** FHIR AllergyIntolerance resource UUID — required for PUT (edit existing allergy). */
   readonly resourceId?: string;
   readonly display: string;
@@ -39,7 +42,18 @@ export interface FormattedAllergy {
  * Interface representing an allergy input entry for form handling
  */
 export interface AllergyInputEntry {
+  /**
+   * Allergen *concept* identity. Not unique per record: every non-coded
+   * ("Other") allergy shares the same Other, Non-Coded concept uuid, so this
+   * must never be used as a React/store key — use `entryId` instead.
+   */
   id: string;
+  /**
+   * Unique per-record identity: the FHIR AllergyIntolerance resource UUID for
+   * an existing allergy, or a generated client-side id for a new, unsaved one.
+   * Store operations (update/remove) and list keys must key off this, not `id`.
+   */
+  entryId: string;
   /** FHIR AllergyIntolerance resource UUID. When set, bundle uses PUT to update the existing resource. */
   resourceId?: string;
   /** True when the user has changed severity, reactions, or note since the allergy was pre-loaded. */
@@ -48,51 +62,53 @@ export interface AllergyInputEntry {
   rawFhirResource?: AllergyIntolerance;
   display: string;
   type: string;
+  /**
+   * Whether this entry is the Other, Non-Coded allergen, as classified against
+   * the install's resolved concept uuid. Left undefined when the entry was
+   * created before that uuid was known, in which case submission must resolve
+   * it first; a defined value lets coded-only submissions skip the lookup.
+   */
+  isNonCoded?: boolean;
+  /** Free-text allergen name, captured only for the Other, Non-Coded concept. */
+  nonCodedAllergen?: string;
   selectedSeverity: Coding | null;
   selectedReactions: Coding[];
   note?: string;
   errors: {
     severity?: string;
     reactions?: string;
+    nonCodedAllergen?: string;
   };
   hasBeenValidated: boolean;
 }
 
-/** Maps a raw FHIR AllergyIntolerance resource to an AllergyInputEntry for the edit form. */
-export function mapAllergyToInputEntry(
-  fhir: AllergyIntolerance,
-): AllergyInputEntry {
-  const allergenCode = fhir.code?.coding?.[0]?.code ?? fhir.id ?? '';
-  const severity = fhir.reaction?.[0]?.severity;
-  const seen = new Set<string>();
-  const selectedReactions: Coding[] = [];
-  for (const r of fhir.reaction ?? []) {
-    for (const m of r.manifestation ?? []) {
-      for (const c of m.coding ?? []) {
-        if (!c.system && c.code && !seen.has(c.code)) {
-          seen.add(c.code);
-          selectedReactions.push(c as Coding);
-        }
-      }
-    }
-  }
-  return {
-    id: allergenCode,
-    resourceId: fhir.id,
-    rawFhirResource: fhir,
-    display: fhir.code?.text ?? '',
-    type: fhir.category?.[0] ?? '',
-    selectedSeverity: severity
-      ? { code: severity, display: `SEVERITY_${severity.toUpperCase()}` }
-      : null,
-    selectedReactions,
-    note: fhir.note?.map((n) => n.text).join('; '),
-    errors: {},
-    hasBeenValidated: false,
+export type AllergenType = 'food' | 'medication' | 'environment';
+
+/** OpenMRS AllergenType enum values, as accepted by the REST allergy API. */
+export const OPENMRS_ALLERGEN_TYPE: Record<AllergenType, string> = {
+  medication: 'DRUG',
+  food: 'FOOD',
+  environment: 'ENVIRONMENT',
+};
+
+/** Request body for POST /openmrs/ws/rest/v1/patient/{patientUuid}/allergy */
+export interface SaveAllergyRequest {
+  allergen: {
+    allergenType: string;
+    codedAllergen: { uuid: string };
+    /** Required by OpenMRS when codedAllergen is Other, Non-Coded. */
+    nonCodedAllergen?: string;
   };
+  reactions: { reaction: { uuid: string } }[];
+  /** OpenMRS severity *concept* UUID — not the FHIR severity code. */
+  severity: { uuid: string } | null;
+  comment?: string;
 }
 
-export type AllergenType = 'food' | 'medication' | 'environment';
+/** Response body from the OpenMRS REST allergy API — same shape for create and update. */
+export interface SaveAllergyResponse {
+  uuid: string;
+}
 
 export interface AllergenConcept {
   uuid: string;

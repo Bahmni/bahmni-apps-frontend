@@ -1,5 +1,5 @@
 import { lazy } from 'react';
-import { Navigate, Route } from 'react-router-dom';
+import { Navigate, Route } from 'react-router';
 import { Routes, RouteConfig } from './model';
 
 const AdminDashboard = lazy(() =>
@@ -14,6 +14,18 @@ const CsvUpload = lazy(() =>
   })),
 );
 
+const CsvExport = lazy(() =>
+  import('../pages/CsvExport').then((module) => ({
+    default: module.CsvExport,
+  })),
+);
+
+const AuditLog = lazy(() =>
+  import('../pages/AuditLog').then((module) => ({
+    default: module.AuditLog,
+  })),
+);
+
 export const routes: Routes = [
   {
     path: '/',
@@ -24,6 +36,16 @@ export const routes: Routes = [
     path: '/csv',
     component: CsvUpload,
     name: 'CsvUpload',
+  },
+  {
+    path: '/csvExport',
+    component: CsvExport,
+    name: 'CsvExport',
+  },
+  {
+    path: '/auditlog',
+    component: AuditLog,
+    name: 'AuditLog',
   },
 ];
 

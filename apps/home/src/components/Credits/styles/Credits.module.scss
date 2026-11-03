@@ -1,0 +1,50 @@
+.contributors {
+  position: absolute;
+  width: 18em;
+  height: 50em;
+  bottom: 0;
+  left: 50%;
+  margin-left: -9em;
+  font-family: 'Times New Roman', Times, serif;
+  font-size: 350%;
+  font-weight: bold;
+  line-height: normal;
+  letter-spacing: normal;
+  text-align: justify;
+  overflow: hidden;
+  transform-origin: 50% 100%;
+  transform: perspective(300px) rotateX(25deg);
+}
+
+.contributorList {
+  position: absolute;
+  text-align: justify;
+  top: 100%;
+  animation: scroll 150s linear 1s infinite;
+
+  // Carbon's reset zeroes paragraph margins and gives <p> its own font size and
+  // weight; restore the browser defaults the legacy page relied on.
+  p {
+    margin: 1em 0;
+    font: inherit;
+  }
+}
+
+// The crawl starts below the viewport (top: 100%), so with the animation off
+// the list is placed in view instead.
+@media (prefers-reduced-motion: reduce) {
+  .contributorList {
+    animation: none;
+    top: 0;
+  }
+}
+
+@keyframes scroll {
+  0% {
+    top: 100%;
+  }
+
+  100% {
+    top: -250%;
+  }
+}

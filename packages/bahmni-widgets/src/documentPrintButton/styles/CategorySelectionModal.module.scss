@@ -1,0 +1,58 @@
+@use "@carbon/react/scss/spacing" as *;
+@use "@carbon/react/scss/theme" as *;
+@use "@carbon/react/scss/type" as *;
+
+.modal {
+  :global(.cds--modal-content) {
+    padding-block-end: $spacing-05;
+  }
+
+  :global(.cds--modal-container) {
+    inline-size: 32rem;
+    max-inline-size: 90vw;
+  }
+}
+
+.itemList {
+  display: flex;
+  flex-direction: column;
+}
+
+.item {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-02;
+  width: 100%;
+  text-align: left;
+  border-bottom: 1px solid $border-subtle-02;
+
+  &:global(.cds--tile--clickable) {
+    padding-block: $spacing-04;
+    padding-inline: 0;
+    background-color: transparent;
+
+    &:hover {
+      background-color: $layer-hover-01;
+    }
+  }
+
+  &:last-child {
+    border-bottom: none;
+  }
+}
+
+.itemPrimary {
+  @include type-style("heading-compact-01");
+  color: $text-primary;
+}
+
+.itemSecondary {
+  @include type-style("body-compact-01");
+  color: $text-secondary;
+}
+
+.stateMessage {
+  @include type-style("body-compact-01");
+  color: $text-secondary;
+  padding-block: $spacing-05;
+}
