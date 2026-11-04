@@ -8,8 +8,10 @@ import {
 import {
   fetchOtherNonCodedAllergenUUID,
   getFormattedAllergies,
+  mapAllergyToInputEntry,
   OTHER_NON_CODED_ALLERGEN_UUID,
   useTranslation,
+  type ConsultationEventPayload,
 } from '@bahmni/services';
 import {
   useNotification,
@@ -18,8 +20,14 @@ import {
   CONSULTATION_PAD_PRIVILEGES,
 } from '@bahmni/widgets';
 import { useQuery } from '@tanstack/react-query';
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import type { EncounterSessionStartContext } from '../../../events/startConsultation';
+import type { AllergyIntolerance } from 'fhir/r4';
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import useAllergenSearch from '../../../hooks/useAllergenSearch';
 import { AllergenConcept } from '../../../models/allergy';
 import { useAllergyStore } from '../../../stores/allergyStore';
@@ -38,10 +46,20 @@ const allergiesQueryKeys = (patientUUID: string) =>
  * It allows users to search for allergies, select them, and specify severity and reactions.
  */
 const AllergiesForm: React.FC<{
-  encounterSessionStartContext?: EncounterSessionStartContext;
+  encounterSessionStartContext?: ConsultationEventPayload;
 }> = React.memo(({ encounterSessionStartContext }) => {
-  // True when opened via the row/section edit button — search to add new allergy is hidden.
-  const isEditMode = !!encounterSessionStartContext?.preloadedAllergies;
+  const action = encounterSessionStartContext?.action;
+  const allergiesToEdit = useMemo(
+    () =>
+      action?.type === 'update'
+        ? (action.resources?.filter(
+            (r): r is AllergyIntolerance =>
+              r.resourceType === 'AllergyIntolerance',
+          ) ?? [])
+        : [],
+    [action],
+  );
+  const isEditMode = allergiesToEdit.length > 0;
   const { t } = useTranslation();
   const patientUUID = usePatientUUID();
   const { addNotification } = useNotification();
@@ -130,6 +148,22 @@ const AllergiesForm: React.FC<{
         });
       });
   }, [addNotification, t]);
+
+  // Seeds the store once per set of resources being edited. It waits for the
+  // install's Other, Non-Coded uuid so mapAllergyToInputEntry classifies
+  // correctly, and is keyed by resource id so a re-render that rebuilds the
+  // payload object never re-seeds over the user's in-progress edits.
+  const editResourceKey = allergiesToEdit.map((a) => a.id).join(',');
+  const seededKeyRef = useRef<string | null>(null);
+  useEffect(() => {
+    if (!otherNonCodedResolved || !editResourceKey) return;
+    if (seededKeyRef.current === editResourceKey) return;
+    seededKeyRef.current = editResourceKey;
+    useAllergyStore
+      .getState()
+      .preloadAllergies(allergiesToEdit.map(mapAllergyToInputEntry));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [otherNonCodedResolved, editResourceKey]);
 
   const handleSearch = (searchTerm: string) => {
     setSearchAllergenTerm(searchTerm);
