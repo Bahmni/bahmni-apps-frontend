@@ -135,6 +135,23 @@ describe('directPrintHandler.trigger / printTemplate', () => {
     expect(setIsPrinting).toHaveBeenLastCalledWith(false);
   });
 
+  it('logs the original error for debugging without showing it to the user', async () => {
+    const error = new Error('template missing');
+    mockRenderAsHtml.mockRejectedValue(error);
+    const consoleError = jest
+      .spyOn(console, 'error')
+      .mockImplementation(() => undefined);
+
+    await printTemplate(option, {}, { setIsPrinting });
+
+    expect(consoleError).toHaveBeenCalledWith(expect.any(String), error);
+    expect(notificationService.showError).toHaveBeenCalledWith(
+      'PRINT_DOCUMENT_ERROR_TITLE',
+      'PRINT_DOCUMENT_ERROR_MESSAGE',
+    );
+    consoleError.mockRestore();
+  });
+
   it('does not open the print dialog when rendering fails', async () => {
     mockRenderAsHtml.mockRejectedValue(new Error('template missing'));
 

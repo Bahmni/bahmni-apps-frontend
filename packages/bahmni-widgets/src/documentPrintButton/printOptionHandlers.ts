@@ -45,7 +45,12 @@ export async function printTemplate(
       data,
     });
     await printViaIframe(html);
-  } catch {
+  } catch (error) {
+    // eslint-disable-next-line no-console
+    console.error(
+      `Failed to print document for template ${option.templateId}`,
+      error,
+    );
     notificationService.showError(
       i18next.t('PRINT_DOCUMENT_ERROR_TITLE'),
       i18next.t('PRINT_DOCUMENT_ERROR_MESSAGE'),
