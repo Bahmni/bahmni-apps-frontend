@@ -1566,6 +1566,90 @@ describe('PatientRegister', () => {
       ).toBeInTheDocument();
     });
 
+    it('should pass multiple options through in configured order', async () => {
+      const options = [
+        { translationKey: 'CARD_B', templateId: 'B_V1' },
+        { translationKey: 'CARD_A', templateId: 'A_V1' },
+        { translationKey: 'CARD_C', templateId: 'C_V1' },
+      ];
+      mockConfig(options);
+      mockPrivileges([]);
+      mockSavedPatient();
+
+      renderComponent();
+      await screen.findByTestId('print-registration-card');
+
+      expect(lastPrintProps().printOptions).toEqual(options);
+    });
+
+    it('should not render the print button when printOptions is an empty list', () => {
+      mockConfig([]);
+      mockPrivileges([]);
+      mockSavedPatient();
+
+      renderComponent();
+
+      expect(
+        screen.queryByTestId('print-registration-card'),
+      ).not.toBeInTheDocument();
+    });
+
+    it('should keep unrestricted options and hide restricted ones for a user with no privileges', async () => {
+      const open = { ...PRINT_OPTION, templateId: 'OPEN_V1' };
+      const restricted = {
+        translationKey: 'RESTRICTED_CARD',
+        templateId: 'RESTRICTED_V1',
+        privileges: ['app:registration:printcard'],
+      };
+      mockConfig([restricted, open]);
+      mockPrivileges([]);
+      mockSavedPatient();
+
+      renderComponent();
+      await screen.findByTestId('print-registration-card');
+
+      expect(lastPrintProps().printOptions).toEqual([open]);
+    });
+
+    it('should disable the print button while a create is in flight', async () => {
+      (useCreatePatient as jest.Mock).mockReturnValue({
+        mutateAsync: mockMutateAsync,
+        isPending: true,
+      });
+      mockConfig([PRINT_OPTION]);
+      mockPrivileges([{ name: 'View Patients' }]);
+      mockSavedPatient();
+
+      renderComponent();
+
+      expect(
+        await screen.findByTestId('print-registration-card'),
+      ).toBeDisabled();
+    });
+
+    it('should enable the print button once the save has completed', async () => {
+      (useUpdatePatient as jest.Mock).mockReturnValue({
+        mutateAsync: mockMutateAsync,
+        isPending: true,
+      });
+      mockConfig([PRINT_OPTION]);
+      mockPrivileges([{ name: 'View Patients' }]);
+      mockSavedPatient();
+
+      const { rerender } = renderComponent();
+      expect(
+        await screen.findByTestId('print-registration-card'),
+      ).toBeDisabled();
+
+      (useUpdatePatient as jest.Mock).mockReturnValue({
+        mutateAsync: mockMutateAsync,
+        isPending: false,
+      });
+      rerender(<PatientRegister />);
+
+      expect(screen.getByTestId('print-registration-card')).toBeEnabled();
+    });
+
     it('should not print the previous patient after navigating to another patient', async () => {
       mockConfig([PRINT_OPTION]);
       mockPrivileges([{ name: 'View Patients' }]);

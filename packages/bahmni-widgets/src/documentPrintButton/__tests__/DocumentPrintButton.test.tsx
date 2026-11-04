@@ -1,5 +1,5 @@
 import { notificationService, renderAsHtml } from '@bahmni/services';
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import type { Encounter } from 'fhir/r4';
 import React from 'react';
@@ -39,14 +39,16 @@ jest.mock('@bahmni/services', () => ({
   getUserPreferredLocale: jest.fn().mockReturnValue('en'),
   notificationService: { showError: jest.fn() },
   useTranslation: () => ({ t: (key: string) => key }),
-  getFormattedError: jest
-    .fn()
-    .mockReturnValue({ title: 'Print Error', message: 'Failed to print' }),
   getUserLoginLocation: jest.fn(() => {
     throw new Error('no login location cookie');
   }),
   getRecentVisitEncounters: jest.fn(),
   formatDateTime: jest.fn().mockReturnValue({ formattedResult: '01-Jan-2024' }),
+}));
+
+jest.mock('i18next', () => ({
+  __esModule: true,
+  default: { t: (key: string) => key },
 }));
 
 jest.mock('../../activePractitioner', () => ({
@@ -166,6 +168,71 @@ describe('DocumentPrintButton', () => {
         />,
       );
       expect(screen.getByTestId('print-btn')).toBeDisabled();
+    });
+  });
+
+  describe('multiple options', () => {
+    it('lists the remaining options in configured order after the primary', () => {
+      const three = [
+        { translationKey: 'PRINT_A', templateId: 'a' },
+        { translationKey: 'PRINT_B', templateId: 'b' },
+        { translationKey: 'PRINT_C', templateId: 'c' },
+      ];
+      render(
+        <DocumentPrintButton
+          printOptions={three}
+          renderContext={renderContext}
+          data-testid="print-btn"
+        />,
+      );
+
+      const labels = within(screen.getByTestId('print-btn'))
+        .getAllByRole('button')
+        .map((b) => b.textContent);
+      expect(labels).toEqual(['PRINT_A', 'PRINT_B', 'PRINT_C']);
+    });
+
+    it('renders the single-option button without a dropdown', () => {
+      render(
+        <DocumentPrintButton
+          printOptions={singleOption}
+          renderContext={renderContext}
+          data-testid="print-btn"
+        />,
+      );
+
+      expect(screen.getAllByRole('button')).toHaveLength(1);
+    });
+
+    it('disables the primary action and menu items when disabled=true', () => {
+      render(
+        <DocumentPrintButton
+          printOptions={multipleOptions}
+          renderContext={renderContext}
+          data-testid="print-btn"
+          disabled
+        />,
+      );
+
+      expect(screen.getByText('PRINT_SUMMARY')).toBeDisabled();
+    });
+
+    it('prints the selected non-primary option template', async () => {
+      render(
+        <DocumentPrintButton
+          printOptions={multipleOptions}
+          renderContext={renderContext}
+        />,
+      );
+
+      await userEvent.click(screen.getByText('PRINT_PRESCRIPTION'));
+
+      await waitFor(() =>
+        expect(mockRenderAsHtml).toHaveBeenCalledWith(
+          expect.objectContaining({ templateId: 'prescription' }),
+        ),
+      );
+      expect(mockPrintViaIframe).toHaveBeenCalledTimes(1);
     });
   });
 
@@ -358,10 +425,29 @@ describe('DocumentPrintButton', () => {
 
       await waitFor(() =>
         expect(notificationService.showError).toHaveBeenCalledWith(
-          'Print Error',
-          'Failed to print',
+          'PRINT_DOCUMENT_ERROR_TITLE',
+          'PRINT_DOCUMENT_ERROR_MESSAGE',
         ),
       );
+      expect(mockPrintViaIframe).not.toHaveBeenCalled();
+    });
+
+    it('restores the print control after a render failure', async () => {
+      mockRenderAsHtml.mockRejectedValue(new Error('Network error'));
+
+      render(
+        <DocumentPrintButton
+          printOptions={singleOption}
+          renderContext={renderContext}
+        />,
+      );
+
+      await userEvent.click(screen.getByText('PRINT_SUMMARY'));
+
+      expect(await screen.findByText('PRINT_SUMMARY')).toBeInTheDocument();
+      expect(
+        screen.queryByText('PRINT_MODAL_PREPARING_DOCUMENT'),
+      ).not.toBeInTheDocument();
     });
   });
 

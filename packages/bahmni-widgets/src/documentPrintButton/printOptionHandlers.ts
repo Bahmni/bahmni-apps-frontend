@@ -1,9 +1,9 @@
 import {
-  getFormattedError,
   getUserPreferredLocale,
   notificationService,
   renderAsHtml,
 } from '@bahmni/services';
+import i18next from 'i18next';
 import { categoryPickers } from './categoryPickers/types';
 import type { CategoryPicker, PrintOption } from './categoryPickers/types';
 import { printViaIframe } from './printViaIframe';
@@ -31,12 +31,12 @@ export async function printTemplate(
 ): Promise<void> {
   ctx.setIsPrinting(true);
 
-  const baseData = ctx.getRenderData
-    ? await ctx.getRenderData(option.templateId)
-    : ctx.renderData;
-  const data = extraData ? { ...baseData, ...extraData } : baseData;
-
   try {
+    const baseData = ctx.getRenderData
+      ? await ctx.getRenderData(option.templateId)
+      : ctx.renderData;
+    const data = extraData ? { ...baseData, ...extraData } : baseData;
+
     const html = await renderAsHtml({
       templateId: option.templateId,
       format: 'html',
@@ -45,9 +45,11 @@ export async function printTemplate(
       data,
     });
     await printViaIframe(html);
-  } catch (error) {
-    const { title, message } = getFormattedError(error);
-    notificationService.showError(title, message);
+  } catch {
+    notificationService.showError(
+      i18next.t('PRINT_DOCUMENT_ERROR_TITLE'),
+      i18next.t('PRINT_DOCUMENT_ERROR_MESSAGE'),
+    );
   } finally {
     ctx.setIsPrinting(false);
   }
