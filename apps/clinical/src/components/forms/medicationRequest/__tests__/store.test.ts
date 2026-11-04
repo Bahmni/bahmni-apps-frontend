@@ -35,6 +35,11 @@ const FIELD_UPDATE_CASES: FieldUpdateCase[] = [
   ['dispenseQuantity', 'updateDispenseQuantity', 10],
   ['dispenseUnit', 'updateDispenseUnit', mockDispenseUnit],
   ['note', 'updateNote', 'Some note'],
+  [
+    'medicationReason',
+    'updateMedicationReason',
+    { uuid: 'reason-uuid', display: 'Fever' },
+  ],
 ];
 
 const ERROR_CLEARING_CASES: FieldUpdateCase[] = [
@@ -47,6 +52,11 @@ const ERROR_CLEARING_CASES: FieldUpdateCase[] = [
   ['instruction', 'updateInstruction', mockInstruction],
   ['note', 'updateNote', 'Some note'],
   ['prn', 'updateIsPRN', true],
+  [
+    'reason',
+    'updateMedicationReason',
+    { uuid: 'reason-uuid', display: 'Fever' },
+  ],
 ];
 
 const ERROR_RETAINED_CASES: FieldUpdateCase[] = [
@@ -58,14 +68,20 @@ const ERROR_RETAINED_CASES: FieldUpdateCase[] = [
   ['instruction', 'updateInstruction', null],
   ['note', 'updateNote', ''],
   ['prn', 'updateIsPRN', false],
+  ['reason', 'updateMedicationReason', null],
+];
+
+const requiredAttributesWithReason = [
+  ...mockRequiredMedicationAttributes,
+  { name: 'reason', required: true },
 ];
 
 describe('useMedicationRequestStore', () => {
   beforeEach(() => {
     store().reset();
     vacStore().reset();
-    store().setAttributes(mockRequiredMedicationAttributes);
-    vacStore().setAttributes(mockRequiredMedicationAttributes);
+    store().setAttributes(requiredAttributesWithReason);
+    vacStore().setAttributes(requiredAttributesWithReason);
   });
 
   describe('Initialization', () => {
@@ -382,7 +398,28 @@ describe('useMedicationRequestStore', () => {
         expect(entry.errors.route).toBeDefined();
         expect(entry.errors.duration).toBeDefined();
         expect(entry.errors.durationUnit).toBeDefined();
+        expect(entry.errors.reason).toBe(
+          'MEDICATION_REQUEST_INPUT_CONTROL_REASON_REQUIRED',
+        );
       });
+    });
+
+    it('does not require a reason when the reason attribute is not required or not configured', () => {
+      store().setAttributes(mockRequiredMedicationAttributes);
+      store().addItem(mockMedication, 'Paracetamol 500mg');
+      store().validateAll();
+      expect(
+        store().selectedMedicationRequests[0].errors.reason,
+      ).toBeUndefined();
+
+      store().setAttributes([
+        ...mockRequiredMedicationAttributes,
+        { name: 'reason', required: false },
+      ]);
+      store().validateAll();
+      expect(
+        store().selectedMedicationRequests[0].errors.reason,
+      ).toBeUndefined();
     });
 
     it('does not require duration or durationUnit when isSTAT is true', () => {
@@ -413,6 +450,10 @@ describe('useMedicationRequestStore', () => {
       store().updateDurationUnit(id, mockDurationUnit);
       store().updateInstruction(id, mockInstruction);
       store().updateNote(id, 'Some note');
+      store().updateMedicationReason(id, {
+        uuid: 'reason-uuid',
+        display: 'Fever',
+      });
 
       const isValid = store().validateAll();
 
@@ -793,6 +834,28 @@ describe('useMedicationRequestStore', () => {
       expect(store().hasEditChanges()).toBe(true);
 
       store().updateNote('edit-note', 'original note');
+      expect(store().hasEditChanges()).toBe(false);
+    });
+
+    it('detects medicationReason change and reverts cleanly', () => {
+      const originalReason = { uuid: 'reason-1', display: 'Fever' };
+      const entries = [
+        {
+          ...mockMedicationEntry,
+          id: 'edit-reason',
+          fhirResourceId: 'fhir-reason',
+          medicationReason: originalReason,
+        },
+      ];
+      store().loadMedicationsForEdit(entries);
+
+      store().updateMedicationReason('edit-reason', {
+        uuid: 'reason-2',
+        display: 'Malaria',
+      });
+      expect(store().hasEditChanges()).toBe(true);
+
+      store().updateMedicationReason('edit-reason', originalReason);
       expect(store().hasEditChanges()).toBe(false);
     });
 

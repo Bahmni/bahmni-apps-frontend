@@ -1058,10 +1058,10 @@
     "@babel/helper-string-parser" "^7.27.1"
     "@babel/helper-validator-identifier" "^7.27.1"
 
-"@bahmni/form2-controls@1.0.1-dev.111":
-  version "1.0.1-dev.111"
-  resolved "https://registry.yarnpkg.com/@bahmni/form2-controls/-/form2-controls-1.0.1-dev.111.tgz#79cfc26d624f7b0c66ea3aa3580fd17fb511467f"
-  integrity sha512-/gN9AhhfdwAl00s9D9GbeIZzTx2JRNRqdhmulhWXiepYs/hmJUgFUcECSmNnpCD8bUpmLWW/hh9N2kIoBwh9Hg==
+"@bahmni/form2-controls@1.0.1-dev.114":
+  version "1.0.1-dev.114"
+  resolved "https://registry.yarnpkg.com/@bahmni/form2-controls/-/form2-controls-1.0.1-dev.114.tgz#4e2294215b450138b1eff51d1f612bc619af25dc"
+  integrity sha512-EvmzGQg3I/YrYRYAhXpQ7dsEyPtEKpCdlfgPI8qYX3N8yyZZY6MM0xAS2mG249AnTCFnd7TFmMFI8fBgtOvRRg==
   dependencies:
     ajv "^8.17.1"
     base64-inline-loader "^1.1.0"
@@ -9684,9 +9684,9 @@ follow-redirects@^1.0.0, follow-redirects@^1.15.11, follow-redirects@^1.15.6:
   integrity sha512-deG2P0JfjrTxl50XGCDyfI97ZGVCxIpfKYmfyrQ54n5FO/0gfIES8C/Psl6kWVDolizcaaxZJnTS0QSMxvnsBQ==
 
 follow-redirects@^1.16.0:
-  version "1.16.0"
-  resolved "https://registry.yarnpkg.com/follow-redirects/-/follow-redirects-1.16.0.tgz#28474a159d3b9d11ef62050a14ed60e4df6d61bc"
-  integrity sha512-y5rN/uOsadFT/JfYwhxRS5R7Qce+g3zG97+JrtFZlC9klX/W5hD7iiLzScI4nZqUS7DNUdhPgw4xI8W2LuXlUw==
+  version "1.16.2"
+  resolved "https://registry.yarnpkg.com/follow-redirects/-/follow-redirects-1.16.2.tgz#a233160dd1bc9b16cbbab43709e6adc7cc941c8c"
+  integrity sha512-/kVP2U8z596Ia0gwFrwyIeo74ta5aVmSeU1FfAUMAmcEP5EP7zydmag3SLiN64NaRKef3lxsq7i/g7ltJQDGow==
 
 for-each@^0.3.3, for-each@^0.3.5:
   version "0.3.5"
