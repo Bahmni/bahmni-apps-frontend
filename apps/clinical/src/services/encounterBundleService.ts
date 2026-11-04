@@ -1,7 +1,6 @@
 import {
   ConditionInputEntry,
   DiagnosisInputEntry,
-  calculateOnsetDate,
   createBundleEntry,
   ENCOUNTER_BUNDLE_URL,
   isNonCodedAllergen,
@@ -14,6 +13,7 @@ import { ALLERGY_INTOLERANCE_RESOURCE_TYPE } from '../constants/allergy';
 import { CONSULTATION_ERROR_MESSAGES } from '../constants/errors';
 import { AllergyInputEntry } from '../models/allergy';
 import { ServiceRequestInputEntry } from '../models/serviceRequest';
+import { calculateConditionOnsetDate } from '../utils/conditionDuration';
 import {
   createDeleteAllergyResource,
   createEncounterAllergyResource,
@@ -396,21 +396,13 @@ export function createConditionsBundleEntries({
   const conditionEntries: BundleEntry[] = [];
 
   for (const condition of selectedConditions) {
-    if (
-      !condition ||
-      typeof condition.durationValue !== 'number' ||
-      !condition.durationUnit ||
-      condition.durationValue === null ||
-      condition.durationUnit === null
-    ) {
+    const onsetDate = condition
+      ? calculateConditionOnsetDate(consultationDate, condition)
+      : undefined;
+
+    if (!condition || !onsetDate) {
       throw new Error(CONSULTATION_ERROR_MESSAGES.INVALID_CONDITION_PARAMS);
     }
-
-    const onsetDate = calculateOnsetDate(
-      consultationDate,
-      condition.durationValue,
-      condition.durationUnit,
-    );
 
     const conditionResourceURL = `urn:uuid:${crypto.randomUUID()}`;
     const conditionResource = createEncounterConditionResource(
@@ -419,7 +411,7 @@ export function createConditionsBundleEntries({
       createEncounterReferenceFromString(encounterReference),
       createPractitionerReference(practitionerUUID),
       consultationDate,
-      onsetDate!,
+      onsetDate,
       'active',
       condition.conceptSystem,
     );
