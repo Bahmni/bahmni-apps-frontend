@@ -1,4 +1,15 @@
 /**
+ * Parameters for creating an order fulfillment encounter linked to an active visit
+ */
+export interface OrderFulfillmentEncounterParams {
+  patientUuid: string;
+  visitUuid: string;
+  practitionerUuid: string;
+  locationUuid: string;
+  encounterTypeUuid: string;
+}
+
+/**
  * Represents a Forms encounter response from the REST API
  */
 export interface FormsEncounter {

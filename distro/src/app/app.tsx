@@ -40,6 +40,12 @@ const ReportsApp = lazy(() =>
   })),
 );
 
+const OrdersApp = lazy(() =>
+  import('@bahmni/orders-app').then((module) => ({
+    default: module.OrdersApp,
+  })),
+);
+
 export function App() {
   return (
     <AppContextProvider>
@@ -56,6 +62,7 @@ export function App() {
           />
           <Route path="/admin/*" element={<AdminApp />} />
           <Route path="/reports/*" element={<ReportsApp />} />
+          <Route path="/orders/*" element={<OrdersApp />} />
           <Route path="*" element={<NotFoundPage />} />
         </Routes>
       </Suspense>

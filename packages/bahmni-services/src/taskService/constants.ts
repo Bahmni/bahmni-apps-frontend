@@ -22,3 +22,10 @@ export const TASKS_URL = (
 
   return url;
 };
+
+export const FHIR_TASK_URL = '/openmrs/ws/fhir2/R4/Task';
+
+export const TASK_SEARCH_URL = `${FHIR_TASK_URL}/_search`;
+
+export const TASKS_BY_BASED_ON_URL = (basedOnRefs: string[]) =>
+  `${FHIR_TASK_URL}?based-on=${basedOnRefs.join(',')}&_include=Task:owner&_count=${basedOnRefs.length}`;
