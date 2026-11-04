@@ -1219,7 +1219,9 @@ describe('StopMedicationForm', () => {
       );
 
       await act(async () => {
-        renderForm({ stopMedication: mockMedicationRequest });
+        renderForm({
+          action: { type: 'delete', resources: [mockMedicationRequest] },
+        });
       });
 
       const dateInput = screen.getByTestId('stop-medication-date-input');
