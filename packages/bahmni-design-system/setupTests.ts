@@ -3,12 +3,9 @@ import { initFontAwesome } from './src/fontawesome';
 initFontAwesome();
 
 global.ResizeObserver = class ResizeObserver {
-  constructor(_callback: ResizeObserverCallback) {
-    void _callback;
-  }
-  observe() {}
-  unobserve() {}
-  disconnect() {}
+  observe = jest.fn();
+  unobserve = jest.fn();
+  disconnect = jest.fn();
 };
 
 global.DOMRect = class DOMRect {
