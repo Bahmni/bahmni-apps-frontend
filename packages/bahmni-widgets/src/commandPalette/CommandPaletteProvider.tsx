@@ -23,6 +23,7 @@ interface CommandPaletteProviderProps {
   patientFieldsConfig: PatientFieldsConfig;
   trigger: TriggerConfig;
   searchAnnotations: SearchAnnotation[];
+  portalContainer?: Element | DocumentFragment;
 }
 
 const CommandPaletteProviderInner: React.FC<CommandPaletteProviderProps> = ({
@@ -32,6 +33,7 @@ const CommandPaletteProviderInner: React.FC<CommandPaletteProviderProps> = ({
   patientFieldsConfig,
   trigger,
   searchAnnotations,
+  portalContainer,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const toggle = useCallback(() => setIsOpen((prev) => !prev), []);
@@ -47,6 +49,7 @@ const CommandPaletteProviderInner: React.FC<CommandPaletteProviderProps> = ({
       patientActions,
       patientFieldsConfig,
       searchAnnotations,
+      portalContainer,
     }),
     [
       isOpen,
@@ -55,6 +58,7 @@ const CommandPaletteProviderInner: React.FC<CommandPaletteProviderProps> = ({
       patientActions,
       patientFieldsConfig,
       searchAnnotations,
+      portalContainer,
     ],
   );
 
