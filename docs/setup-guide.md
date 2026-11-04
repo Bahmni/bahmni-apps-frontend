@@ -159,7 +159,7 @@ This method provides a faster development experience with hot reloading:
    yarn nx serve distro
    ```
 
-   This will start the development server and automatically open your browser at [http://localhost:3000](http://localhost:3000).
+   This will start the development server at [http://localhost:3000](http://localhost:3000).
 
 2. **Set Up Authentication**:
 
