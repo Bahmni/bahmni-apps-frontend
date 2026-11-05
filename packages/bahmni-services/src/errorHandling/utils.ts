@@ -98,7 +98,7 @@ export const PATIENT_NOT_FOUND_ERROR_KEY = 'ERROR_PATIENT_NOT_FOUND';
 // error, and restricted to GET so a failed create/update on the same URL is
 // not mislabelled as a missing patient.
 const PATIENT_RESOURCE_REQUEST = /\/Patient\/[0-9a-f-]{36}(?:[?#]|$)/i;
-const PATIENT_NOT_FOUND_STATUSES = [400, 404];
+const PATIENT_NOT_FOUND_STATUSES = new Set([400, 404]);
 
 const isPatientResourceFetch = (config?: {
   url?: string;
@@ -137,7 +137,7 @@ export const getFormattedError = (
       // missing/invalid, so surface a dedicated "patient not found" message.
       if (
         isPatientResourceFetch(requestConfig) &&
-        PATIENT_NOT_FOUND_STATUSES.includes(status)
+        PATIENT_NOT_FOUND_STATUSES.has(status)
       ) {
         return { title: 'Error', message: PATIENT_NOT_FOUND_ERROR_KEY };
       }
