@@ -124,7 +124,8 @@
     "immutable": "4.3.9",
     "proxy-addr": "2.0.8",
     "@carbon/icons-react": "11.65.0",
-    "dompurify": "^3.4.17"
+    "dompurify": "^3.4.17",
+    "follow-redirects": "1.16.2"
   },
   "workspaces": [
     "apps/*",
