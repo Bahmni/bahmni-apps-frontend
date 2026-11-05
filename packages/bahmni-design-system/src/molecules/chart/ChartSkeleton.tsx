@@ -15,15 +15,14 @@ export const ChartSkeleton: React.FC<ChartSkeletonProps> = ({
   className = '',
 }) => {
   return (
-    // NOSONAR
-    <div
-      role="status"
+    <output
+      aria-live="polite"
       aria-label={ariaLabel}
       data-testid={testId}
       className={`${styles.chart} ${className}`}
     >
       <CodeSnippetSkeleton type="multi" className={styles.loading} />
-    </div>
+    </output>
   );
 };
 

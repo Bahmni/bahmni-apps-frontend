@@ -2,11 +2,11 @@
 
 exports[`ChartSkeleton matches snapshot 1`] = `
 <div>
-  <div
+  <output
     aria-label="Loading chart."
+    aria-live="polite"
     class="chart "
     data-testid="chart-skeleton"
-    role="status"
   >
     <div
       class="loading cds--snippet cds--skeleton cds--snippet--multi"
@@ -19,6 +19,6 @@ exports[`ChartSkeleton matches snapshot 1`] = `
         <span />
       </div>
     </div>
-  </div>
+  </output>
 </div>
 `;
