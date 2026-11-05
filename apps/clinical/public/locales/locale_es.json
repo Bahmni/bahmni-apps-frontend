@@ -508,6 +508,7 @@
   "OBSERVATION_ADDED_FORM_VALIDATION_ERROR_TITLE_EMPTY": "No se han introducido datos",
   "OBSERVATION_ADDED_FORM_VALIDATION_ERROR_TITLE_INVALID": "Entrada de datos inválida",
   "OBSERVATION_ADDED_FORM_VALIDATION_ERROR_TITLE_MANDATORY": "Faltan campos obligatorios",
+  "OBSERVATION_ADDED_FORM_VALIDATION_ERROR_TITLE_NOTES_REQUIRED": "Faltan notas obligatorias",
   "OBSERVATION_ADDED_FORM_VALIDATION_ERROR_TITLE_SCRIPT_ERROR": "Error de Script (Guardar)",
   "OBSERVATION_FORMS_ADDED_FORMS": "Formularios Agregados",
   "OBSERVATION_FORMS_ERROR_LOADING_FORMS": "Error al cargar formularios. Por favor, inténtelo de nuevo más tarde.",
