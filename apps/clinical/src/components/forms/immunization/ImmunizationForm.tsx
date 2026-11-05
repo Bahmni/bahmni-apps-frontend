@@ -14,11 +14,11 @@ import {
   useTranslation,
   filterCdsCardsForItems,
   useCDSSResultsListener,
+  type ConsultationEventPayload,
 } from '@bahmni/services';
 import { useQueries, useQuery } from '@tanstack/react-query';
 import { Medication, MedicationRequest } from 'fhir/r4';
 import { useEffect, useMemo, useState } from 'react';
-import type { EncounterSessionStartContext } from '../../../events/startConsultation';
 import { useClinicalConfig } from '../../../providers/clinicalConfig';
 import type { InputControl as ClinicalInputControlConfig } from '../../../providers/clinicalConfig/models';
 import CDSCardAlert from '../../cdsCardAlert/CDSCardAlert';
@@ -42,7 +42,7 @@ const ImmunizationForm = ({
   encounterSessionStartContext,
   inputControlConfig,
 }: {
-  encounterSessionStartContext?: EncounterSessionStartContext;
+  encounterSessionStartContext?: ConsultationEventPayload;
   inputControlConfig?: ClinicalInputControlConfig;
 }) => {
   const { t } = useTranslation();
@@ -62,7 +62,9 @@ const ImmunizationForm = ({
 
   const basedOn =
     immunizationFormType === IMMUNIZATION_ADMINISTRATION_INPUT_CONTROL_KEY
-      ? (encounterSessionStartContext?.basedOn as MedicationRequest | undefined)
+      ? (encounterSessionStartContext?.context?.basedOn as
+          | MedicationRequest
+          | undefined)
       : undefined;
 
   const basedOnReference = basedOn?.id;

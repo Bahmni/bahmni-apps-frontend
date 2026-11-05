@@ -111,8 +111,9 @@ const createMockConditionEntry = (
 ): ConditionInputEntry => ({
   id: 'uuid-3',
   display: 'Chronic Hypertension',
-  durationValue: 6,
-  durationUnit: 'months',
+  durationYears: null,
+  durationMonths: 6,
+  durationDays: null,
   errors: {},
   hasBeenValidated: false,
   ...overrides,
@@ -148,14 +149,16 @@ const mockConditionEntries = [
   createMockConditionEntry({
     id: 'uuid-3',
     display: 'Chronic Hypertension',
-    durationValue: 6,
-    durationUnit: 'months',
+    durationYears: null,
+    durationMonths: 6,
+    durationDays: null,
   }),
   createMockConditionEntry({
     id: 'uuid-4',
     display: 'Type 2 Diabetes',
-    durationValue: null,
-    durationUnit: null,
+    durationYears: null,
+    durationMonths: null,
+    durationDays: null,
   }),
 ];
 const mockExistingConditions = [
@@ -583,13 +586,62 @@ describe('ConditionsAndDiagnoses', () => {
     });
 
     test('should handle condition duration updates', async () => {
+      const user = userEvent.setup();
       renderComponent([], mockConditionEntries);
       expect(screen.getByText('Chronic Hypertension')).toBeInTheDocument();
       expect(screen.getByText('Type 2 Diabetes')).toBeInTheDocument();
-      // This test needs to be more specific about how duration updates are handled.
-      // It currently only checks for rendering, not interaction.
-      // A more robust test would involve simulating input into the duration fields
-      // within SelectedConditionItem and asserting that updateConditionDuration is called.
+
+      await user.type(
+        screen.getByTestId('condition-duration-years-uuid-4'),
+        '2',
+      );
+
+      expect(updateConditionDurationMock).toHaveBeenCalledWith(
+        'uuid-4',
+        'years',
+        2,
+      );
+    });
+
+    test('should render years, months and days inputs for each condition', () => {
+      renderComponent([], mockConditionEntries);
+
+      expect(screen.getAllByLabelText('Years')).toHaveLength(2);
+      expect(screen.getAllByLabelText('Months')).toHaveLength(2);
+      expect(screen.getAllByLabelText('Days')).toHaveLength(2);
+      expect(
+        screen.getByTestId('condition-duration-months-uuid-3'),
+      ).toHaveValue('6');
+      expect(
+        screen.getByTestId('condition-duration-months-uuid-4'),
+      ).toHaveValue('');
+    });
+
+    test('should show duration error only on the invalid condition row', () => {
+      renderComponent(
+        [],
+        [
+          createMockConditionEntry({
+            id: 'uuid-3',
+            durationMonths: 6,
+            hasBeenValidated: true,
+          }),
+          createMockConditionEntry({
+            id: 'uuid-4',
+            display: 'Type 2 Diabetes',
+            durationMonths: null,
+            errors: { duration: 'CONDITIONS_DURATION_REQUIRED' },
+            hasBeenValidated: true,
+          }),
+        ],
+      );
+
+      expect(
+        screen.queryByTestId('condition-duration-error-uuid-3'),
+      ).not.toBeInTheDocument();
+      expect(
+        screen.getByTestId('condition-duration-error-uuid-4'),
+      ).toHaveTextContent('Enter duration in years, months or days');
     });
   });
 

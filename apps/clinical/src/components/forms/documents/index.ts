@@ -6,6 +6,7 @@ import { createDocumentBundleEntries } from './utils';
 
 registerInputControl({
   key: DOCUMENTS_INPUT_CONTROL_KEY,
+  handledResourceTypes: ['DocumentReference'],
   component: DocumentsForm,
   reset: () => useDocumentsStore.getState().reset(),
   validate: () => useDocumentsStore.getState().validateAll(),

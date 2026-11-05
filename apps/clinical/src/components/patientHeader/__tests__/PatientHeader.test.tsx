@@ -4,11 +4,11 @@ import {
   resetEncounterSession,
   setEncounterSessionDecision,
   getEncounterSessionSnapshot,
+  dispatchConsultationStart,
 } from '@bahmni/services';
 import { render, screen, fireEvent, act } from '@testing-library/react';
 import { axe, toHaveNoViolations } from 'jest-axe';
 import React from 'react';
-import { dispatchConsultationStart } from '../../../events/startConsultation';
 import { useEncounterSession } from '../../../hooks/useEncounterSession';
 import { usePatientVisit } from '../../../hooks/usePatientVisit';
 import PatientHeader from '../PatientHeader';
@@ -19,12 +19,10 @@ expect.extend(toHaveNoViolations);
 jest.mock('@bahmni/services', () => ({
   ...jest.requireActual('@bahmni/services'),
   useTranslation: jest.fn(),
+  dispatchConsultationStart: jest.fn(),
   // Let the real store functions through so we can assert on them
 }));
 
-jest.mock('../../../events/startConsultation', () => ({
-  dispatchConsultationStart: jest.fn(),
-}));
 // Mock the PatientDetails component
 jest.mock('@bahmni/widgets', () => ({
   ...jest.requireActual('@bahmni/widgets'),

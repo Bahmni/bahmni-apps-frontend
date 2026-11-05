@@ -285,6 +285,7 @@ export {
   groupObservationsByEncounter,
   type EncounterGroup,
 } from './observationService';
+export { getBundle } from './fhirBundle';
 export {
   getCurrentProvider,
   fetchAllProviders,
@@ -449,6 +450,13 @@ export {
   useSubscribeConsultationSaved,
   CONSULTATION_SAVED_EVENT,
   type ConsultationSavedEventPayload,
+  dispatchConsultationStart,
+  useSubscribeConsultationStart,
+  CONSULTATION_START_EVENT,
+  type ConsultationEncounter,
+  type ConsultationEventPayload,
+  type ConsultationEventContext,
+  type ConsultationEventAction,
   dispatchCDSSCheck,
   dispatchCDSSResults,
   useCDSSCheckListener,
