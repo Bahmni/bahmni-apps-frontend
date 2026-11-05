@@ -14,6 +14,7 @@ import {
 import {
   useTranslation,
   formatDateTime,
+  dispatchConsultationStart,
   getDocumentReferencePage,
   useSubscribeConsultationSaved,
   DocumentViewModel,
@@ -38,15 +39,11 @@ import {
   printAttachmentsInOrder,
 } from './utils';
 
-const CONSULTATION_START_EVENT = 'startConsultation';
 const ADD_DOCUMENT_ACTION_TYPE = 'add';
-const DOCUMENTS_INPUT_CONTROL_KEY = 'documents';
 const PRINT_CONTAINER_ID = 'document-print-container';
 
 interface AddDocumentActionConfig extends WidgetActionConfig {
   encounterType?: string;
-  editOnly?: string;
-  editTitle?: string;
 }
 const PrintSpinner: React.FC = () => <InlineLoading />;
 
@@ -142,15 +139,10 @@ const DocumentsTable: React.FC<WidgetProps> = ({ config, encounterUuids }) => {
 
   const handleAddDocument = useCallback(() => {
     if (!addAction) return;
-    globalThis.dispatchEvent(
-      new CustomEvent(CONSULTATION_START_EVENT, {
-        detail: {
-          encounterType: addAction.encounterType,
-          editOnly: addAction.editOnly ?? DOCUMENTS_INPUT_CONTROL_KEY,
-          ...(addAction.editTitle ? { editTitle: addAction.editTitle } : {}),
-        },
-      }),
-    );
+    dispatchConsultationStart({
+      context: { encounterType: addAction.encounterType },
+      action: { type: 'create', resourceType: 'DocumentReference' },
+    });
   }, [addAction]);
 
   const { data, isLoading, isError, error, refetch } = useQuery({

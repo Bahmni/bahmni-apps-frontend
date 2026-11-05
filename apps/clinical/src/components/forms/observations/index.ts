@@ -5,6 +5,7 @@ import ObservationFormsPanel from './ObservationFormsPanel';
 
 registerInputControl({
   key: 'observationForms',
+  handledResourceTypes: ['Observation'],
   component: ObservationFormsPanel,
   reset: () => useObservationFormsStore.getState().reset(),
   validate: () => useObservationFormsStore.getState().validate(),
