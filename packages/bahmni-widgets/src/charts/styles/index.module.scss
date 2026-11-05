@@ -1,0 +1,24 @@
+@use "@carbon/react/scss/theme" as *;
+@use "@carbon/react/scss/type" as *;
+@use "@carbon/react/scss/spacing" as *;
+
+.empty,
+.error {
+  padding: $spacing-07;
+  text-align: center;
+  font-style: italic;
+}
+
+.empty {
+  @include type-style('body-compact-01');
+  color: $text-secondary;
+}
+
+.error {
+  @include type-style("body-compact-02");
+  color: $text-error;
+}
+
+.chart {
+  width: 100%;
+}
