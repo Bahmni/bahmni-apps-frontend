@@ -13,13 +13,14 @@ import {
   ScatterChartOptions,
 } from '@carbon/charts';
 import { useQuery } from '@tanstack/react-query';
+import { Bundle } from 'fhir/r4';
 import React from 'react';
 import { usePatientUUID } from '../hooks/usePatientUUID';
 import { WidgetProps } from '../registry/model';
 import { resolveNavigationURL } from '../utils/urlUtils';
 import { CHART_MAPPERS, SUPPORTED_CHART_TYPES } from './constants';
 import { mapLineChart, type MappedChart } from './mappers';
-import type { ChartConfig, ChartData } from './model';
+import type { ChartConfig } from './model';
 import styles from './styles/index.module.scss';
 import { evaluateChartData } from './utils';
 
@@ -71,11 +72,11 @@ const renderChart = (
   }
 };
 
-const fetchPatientChartData = async (
+const fetchBundle = async (
   patientUUID: string | null | undefined,
   chartConfig: ChartConfig,
   t: (content: string) => string,
-) => {
+): Promise<Bundle> => {
   if (!patientUUID) {
     throw new Error(t('CHART_MISSING_PATIENT_ID'));
   }
@@ -87,14 +88,7 @@ const fetchPatientChartData = async (
     throw new Error(t('CHART_URL_UNRESOLVED'));
   }
 
-  const bundle = await getBundle(url);
-  const mapper =
-    CHART_MAPPERS[chartConfig.chartType as keyof typeof CHART_MAPPERS] ??
-    mapLineChart;
-
-  const chartData: ChartData = await evaluateChartData(chartConfig, bundle, t);
-
-  return mapper({ title: t(chartConfig.title) })(chartData);
+  return getBundle(url);
 };
 
 const Chart: React.FC<ChartWidgetPropTypes> = ({ config }) => {
@@ -102,20 +96,47 @@ const Chart: React.FC<ChartWidgetPropTypes> = ({ config }) => {
   const patientUUID = usePatientUUID();
   const chartConfig = config as ChartConfig;
 
-  const { data, isLoading, error, isError } = useQuery<
-    MappedChart | null,
-    Error
-  >({
-    queryKey: ['chart', chartConfig?.url, patientUUID],
-    enabled:
-      !!chartConfig?.url &&
-      SUPPORTED_CHART_TYPES.has(chartConfig?.chartType ?? ''),
-    queryFn: async () => fetchPatientChartData(patientUUID, chartConfig, t),
+  const chartType = chartConfig?.chartType;
+  const invalidChartType = !SUPPORTED_CHART_TYPES.has(chartType ?? '');
+  const canFetch = !!chartConfig?.url && !invalidChartType;
+
+  const {
+    data: bundle,
+    isLoading: bundleIsLoading,
+    isError: bundleIsError,
+    error: bundleError,
+  } = useQuery<Bundle | null, Error>({
+    queryKey: ['chart-bundle', chartConfig?.url, patientUUID],
+    enabled: canFetch,
+    queryFn: async () => fetchBundle(patientUUID, chartConfig, t),
   });
 
-  const invalidChartType = !SUPPORTED_CHART_TYPES.has(
-    chartConfig?.chartType ?? '',
-  );
+  const {
+    data,
+    isLoading: deriveIsLoading,
+    isError: deriveIsError,
+    error: deriveError,
+  } = useQuery<MappedChart, Error>({
+    queryKey: [
+      'chart-data',
+      chartConfig?.url,
+      patientUUID,
+      chartConfig?.expression,
+      chartType,
+      chartConfig?.title,
+    ],
+    enabled: canFetch && !!bundle,
+    queryFn: async () => {
+      const mapper =
+        CHART_MAPPERS[chartType as keyof typeof CHART_MAPPERS] ?? mapLineChart;
+      const chartData = await evaluateChartData(chartConfig, bundle!, t);
+      return mapper({ title: t(chartConfig.title) })(chartData);
+    },
+  });
+
+  const isLoading = bundleIsLoading || deriveIsLoading;
+  const isError = bundleIsError || deriveIsError;
+  const error = deriveError ?? bundleError;
 
   if (invalidChartType || isError || error) {
     return (
@@ -151,7 +172,7 @@ const Chart: React.FC<ChartWidgetPropTypes> = ({ config }) => {
 
   return (
     <div id="chart-id" data-testid="chart-test-id" className={styles.chart}>
-      {renderChart(chartConfig.chartType, data)}
+      {renderChart(chartType, data)}
     </div>
   );
 };

@@ -1,7 +1,6 @@
 import {
   type AreaChartOptions,
   type BarChartOptions,
-  type ChartOptions,
   type ChartTabularData,
   type LineChartOptions,
   type ScatterChartOptions,
@@ -10,13 +9,15 @@ import {
 import { DEFAULT_CHART_HEIGHT } from '../constants';
 import { ChartData } from '../model';
 
+type SupportedChartOptions =
+  | LineChartOptions
+  | AreaChartOptions
+  | BarChartOptions
+  | ScatterChartOptions;
+
 export interface MappedChart {
   data: ChartTabularData;
-  options:
-    | LineChartOptions
-    | AreaChartOptions
-    | BarChartOptions
-    | ScatterChartOptions;
+  options: SupportedChartOptions;
   ariaLabel: string;
   testId: string;
 }
@@ -46,11 +47,7 @@ const toTabularData = (
 const buildOptions = (
   ChartData: ChartData,
   title: string,
-):
-  | LineChartOptions
-  | AreaChartOptions
-  | BarChartOptions
-  | ScatterChartOptions => {
+): SupportedChartOptions => {
   const { xType, unit, yDomain, xTitle, yTitle } = ChartData;
 
   const resolvedXTitle = xTitle ?? (xType === 'date' ? 'Date' : 'Period');
@@ -117,11 +114,7 @@ const buildOptions = (
     canvasZoom: {
       enabled: true,
     },
-  } as
-    | LineChartOptions
-    | AreaChartOptions
-    | BarChartOptions
-    | ScatterChartOptions;
+  } as SupportedChartOptions;
 };
 
 const map =
@@ -142,4 +135,4 @@ export const mapAreaChart = map('Area');
 export const mapBarChart = map('Bar');
 export const mapScatterChart = map('Scatter');
 
-export type { ChartOptions };
+export type { ChartOptions } from '@carbon/charts';

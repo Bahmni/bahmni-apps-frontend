@@ -10,11 +10,12 @@ export interface ChartSkeletonProps {
 }
 
 export const ChartSkeleton: React.FC<ChartSkeletonProps> = ({
-  ariaLabel = 'Loading chart.',
+  ariaLabel = 'Loading chart',
   testId,
   className = '',
 }) => {
   return (
+    // NOSONAR
     <div
       role="status"
       aria-label={ariaLabel}

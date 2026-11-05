@@ -1,6 +1,12 @@
 import { getBundle } from '@bahmni/services';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { render, RenderResult, screen, waitFor } from '@testing-library/react';
+import {
+  act,
+  render,
+  RenderResult,
+  screen,
+  waitFor,
+} from '@testing-library/react';
 import { axe, toHaveNoViolations } from 'jest-axe';
 import React from 'react';
 import Graph from '..';
@@ -95,18 +101,24 @@ const baseConfig = (overrides: Partial<ChartConfig> = {}): ChartConfig => ({
   ...overrides,
 });
 
-const renderGraph = (config: ChartConfig): RenderResult => {
-  const client = new QueryClient({
+const makeClient = () =>
+  new QueryClient({
     defaultOptions: {
       queries: { retry: false, staleTime: 0 },
     },
   });
 
+const renderGraph = (
+  config: ChartConfig,
+  client = makeClient(),
+): RenderResult & { client: QueryClient } => {
   const wrapper = ({ children }: { children: React.ReactNode }) => (
     <QueryClientProvider client={client}>{children}</QueryClientProvider>
   );
 
-  return render(<Graph config={config as never} />, { wrapper });
+  const result = render(<Graph config={config as never} />, { wrapper });
+
+  return { ...result, client };
 };
 
 describe('Graph widget', () => {
@@ -245,6 +257,55 @@ describe('Graph widget', () => {
       );
       expect(mockGetBundle).not.toHaveBeenCalled();
     });
+  });
+
+  it('fetches the shared bundle once and derives each chart independently', async () => {
+    mockGetBundle.mockResolvedValue({
+      resourceType: 'Bundle',
+      type: 'searchset',
+      entry: [
+        {
+          resource: {
+            systolic: 120,
+            systolic2: 130,
+            pulse: 72,
+          },
+        },
+      ],
+    } as never);
+
+    const client = makeClient();
+
+    const systolic = renderGraph(
+      baseConfig({
+        chartType: 'line',
+        title: 'Systolic',
+        expression:
+          '{"points":[{"x":1,"y":entry[0].resource.systolic},{"x":2,"y":entry[0].resource.systolic2}],"xType":"category"}',
+      }),
+      client,
+    );
+    const pulse = renderGraph(
+      baseConfig({
+        chartType: 'bar',
+        title: 'Pulse',
+        expression:
+          '{"points":[{"x":1,"y":entry[0].resource.pulse}],"xType":"category"}',
+      }),
+      client,
+    );
+
+    const [line, bar] = await Promise.all([
+      systolic.findByTestId('mock-LineChart'),
+      pulse.findByTestId('mock-BarChart'),
+    ]);
+    await act(async () => {
+      await Promise.resolve();
+    });
+
+    expect(line.getAttribute('data-points')).toBe('2');
+    expect(bar.getAttribute('data-points')).toBe('1');
+    expect(mockGetBundle).toHaveBeenCalledTimes(1);
   });
 
   it('matches snapshot', async () => {
