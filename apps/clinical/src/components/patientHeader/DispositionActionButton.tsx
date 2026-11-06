@@ -1,9 +1,16 @@
 import { Button, SkeletonPlaceholder } from '@bahmni/design-system';
-import { useTranslation } from '@bahmni/services';
+import { useTranslation, dispatchConsultationStart } from '@bahmni/services';
 import { useHasPrivilege, CONSULTATION_PAD_PRIVILEGES } from '@bahmni/widgets';
+import type { ServiceRequest } from 'fhir/r4';
 import React from 'react';
-import { dispatchConsultationStart } from '../../events/startConsultation';
 import styles from './styles/PatientHeader.module.scss';
+
+const DISPOSITION_SERVICE_REQUEST: ServiceRequest = {
+  resourceType: 'ServiceRequest',
+  status: 'draft',
+  intent: 'order',
+  subject: {},
+};
 
 interface DispositionActionButtonProps {
   isActionAreaVisible: boolean;
@@ -12,8 +19,8 @@ interface DispositionActionButtonProps {
 
 /**
  * Header action button that opens the Consultation Pad scoped to the
- * Disposition form only, mirroring how Stop Medications opens the pad
- * (see `stopMedications` input control / `editOnly`).
+ * Disposition form only, by dispatching a draft ServiceRequest action;
+ * the draft status distinguishes it from the investigations control.
  */
 const DispositionActionButton: React.FC<DispositionActionButtonProps> = ({
   isActionAreaVisible,
@@ -44,8 +51,10 @@ const DispositionActionButton: React.FC<DispositionActionButtonProps> = ({
       disabled={isActionAreaVisible}
       onClick={() =>
         dispatchConsultationStart({
-          editOnly: 'disposition',
-          editTitle: 'DISPOSITION_FORM_TITLE',
+          action: {
+            type: 'create',
+            resources: [DISPOSITION_SERVICE_REQUEST],
+          },
         })
       }
       data-testid="disposition-action-button"
