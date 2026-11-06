@@ -1,4 +1,5 @@
 import type { ConsultationEventAction } from '@bahmni/services';
+import type { ServiceRequest } from 'fhir/r4';
 import type { InputControl } from '../../forms';
 import {
   clearRegistry,
@@ -8,6 +9,7 @@ import { getActiveEntries, getPadTitleKey } from '../utils';
 
 import '../../forms/allergies';
 import '../../forms/conditionsAndDiagnoses';
+import '../../forms/disposition';
 import '../../forms/documents';
 import '../../forms/encounterDetails';
 import '../../forms/immunization';
@@ -21,6 +23,7 @@ jest.mock(
   '../../forms/conditionsAndDiagnoses/ConditionsAndDiagnoses',
   () => 'ConditionsAndDiagnoses',
 );
+jest.mock('../../forms/disposition/Disposition', () => 'Disposition');
 jest.mock('../../forms/documents/DocumentsForm', () => 'DocumentsForm');
 jest.mock(
   '../../forms/encounterDetails/EncounterDetails',
@@ -49,11 +52,19 @@ jest.mock(
 
 // Mirrors the deployed consultationPad config: every control is limited to
 // the encounter type it is configured for, as in standard-config app.json.
+const DRAFT_SERVICE_REQUEST: ServiceRequest = {
+  resourceType: 'ServiceRequest',
+  status: 'draft',
+  intent: 'order',
+  subject: {},
+};
+
 const DEPLOYED_ENCOUNTER_TYPES: Record<string, string[] | undefined> = {
   encounterDetails: undefined,
   allergies: ['Consultation'],
   conditionsAndDiagnoses: ['Consultation'],
   investigations: ['Consultation'],
+  disposition: ['Consultation'],
   documents: ['Consultation'],
   medication: ['Consultation'],
   vaccination: ['Consultation'],
@@ -163,6 +174,14 @@ describe('getActiveEntries (real control registrations)', () => {
       'Order investigation opens only the investigations control',
       { type: 'create', resourceType: 'ServiceRequest' },
       withEncounterDetails('investigations'),
+    ],
+    [
+      'Record disposition opens only the disposition control',
+      {
+        type: 'create',
+        resources: [DRAFT_SERVICE_REQUEST],
+      },
+      withEncounterDetails('disposition'),
     ],
     [
       'Edit observation opens only the observation forms control',
