@@ -1,5 +1,5 @@
 import '@testing-library/jest-dom';
-import { TextEncoder, TextDecoder } from 'util';
+import { TextEncoder, TextDecoder } from 'node:util';
 import { initFontAwesome } from '@bahmni/design-system';
 import { toHaveNoViolations } from 'jest-axe';
 import './setupTests.i18n';
