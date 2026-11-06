@@ -3,7 +3,7 @@
 [![Build & Publish](https://github.com/Bahmni/bahmni-apps-frontend/actions/workflows/build-and-publish.yml/badge.svg)](https://github.com/Bahmni/bahmni-apps-frontend/actions/workflows/build-and-publish.yml)
 [![License: MPL 2.0](https://img.shields.io/badge/License-MPL_2.0-brightgreen.svg)](https://opensource.org/licenses/MPL-2.0)
 [![Version](https://img.shields.io/badge/version-1.1.0-blue)](https://github.com/Bahmni/bahmni-apps-frontend/blob/main/.appversion)
-[![Node.js](https://img.shields.io/badge/node-%3E%3D22.x-brightgreen)](https://nodejs.org/)
+[![Node.js](https://img.shields.io/badge/node-%3E%3D22.22.0-brightgreen)](https://nodejs.org/)
 
 A React TypeScript monorepo application for Bahmni, built with [Nx](https://nx.dev/), Webpack, and the [Carbon Design System](https://carbondesignsystem.com/). Includes PWA support for offline capabilities.
 
@@ -36,7 +36,7 @@ For documentation on each feature, see the [Additional Documentation](#additiona
 - **Carbon Design System** — IBM's open-source design system for healthcare UIs
 - **Nx Monorepo Tooling** — incremental builds, affected-only testing/lint, and a rich project-graph for fast CI
 - **Webpack** — primary module bundler; Vite is used for library builds
-- **React Router v7** — file-based and code-based declarative routing
+- **React Router v8** — declarative routing (`react-router`)
 - **i18n Support** — Internationalization for multiple languages via i18next
 - **Storybook** — isolated component development and visual catalogue (`.storybook/` config present)
 - **PWA / Offline Support** — Workbox-powered service worker for offline capability
@@ -46,7 +46,7 @@ For documentation on each feature, see the [Additional Documentation](#additiona
 
 ## Prerequisites
 
-- **Node.js v22.x or later** (LTS recommended — CI pins `NODE_VERSION: "22"` in `.github/workflows/build-and-publish.yml`)
+- **Node.js >= 22.22.0** (enforced via the `engines` field in `package.json`; CI uses Node 22 in `.github/workflows/build-and-publish.yml`)
 - **Yarn v1.22.x or later**
 
 ## Getting Started
@@ -129,8 +129,8 @@ yarn nx show projects
 yarn nx graph
 
 # Build a single app
-# Use `yarn nx show projects` to list exact project names (e.g. clinical-app, not clinical)
-yarn nx build clinical-app
+# Use `yarn nx show projects` to list exact project names (e.g. @bahmni/clinical-app, not clinical)
+yarn nx build @bahmni/clinical-app
 
 # Run all tests (serial execution required by this repo's Jest suites)
 yarn nx run-many --all --target=test --parallel=1
@@ -172,26 +172,26 @@ All scripts in `package.json`:
 | Technology | Version | Role |
 |---|---|---|
 | [React](https://react.dev/) | ^19.0.0 | UI library |
-| [TypeScript](https://www.typescriptlang.org/) | ~5.9.x | Type-safe JavaScript |
-| [Carbon Design System](https://carbondesignsystem.com/) | latest | IBM's healthcare design system |
-| [Nx](https://nx.dev/) | 22.x | Monorepo build system & task orchestration |
-| [Webpack](https://webpack.js.org/) | 5.x | Primary module bundler for apps |
+| [TypeScript](https://www.typescriptlang.org/) | ~5.9.2 | Type-safe JavaScript |
+| [Carbon Design System](https://carbondesignsystem.com/) (`@carbon/react`) | ^1.83.0 | IBM's healthcare design system |
+| [Nx](https://nx.dev/) | 22.0.2 | Monorepo build system & task orchestration |
+| [Webpack](https://webpack.js.org/) | ^5.102.1 | Primary module bundler for apps |
 | [Vite](https://vite.dev/) | ^7.0.0 | Module bundler for library builds (`@nx/vite`) |
-| [React Router](https://reactrouter.com/) | ^7.x | Routing library (react-router-dom) |
-| [TanStack Query](https://tanstack.com/query/v5) | ^5.x | Server state management and data fetching |
-| [Zustand](https://zustand.docs.pmnd.rs/) | ^5.x | Lightweight client-side state stores |
-| [i18next](https://www.i18next.com/) | latest | Internationalization framework |
-| [Jest](https://jestjs.io/) | latest | Testing framework |
+| [React Router](https://reactrouter.com/) | ^8.3.0 | Routing library (`react-router`) |
+| [TanStack Query](https://tanstack.com/query/v5) | ^5.85.5 | Server state management and data fetching |
+| [Zustand](https://zustand.docs.pmnd.rs/) | ^5.0.7 | Lightweight client-side state stores |
+| [i18next](https://www.i18next.com/) | ^24.2.3 | Internationalization framework |
+| [Jest](https://jestjs.io/) | ^29.7.0 | Testing framework |
 | [Vitest](https://vitest.dev/) | ^3.0.0 | Fast unit testing for Vite-based libs |
-| [React Testing Library](https://testing-library.com/docs/react-testing-library/intro/) | latest | React component testing utilities |
+| [React Testing Library](https://testing-library.com/docs/react-testing-library/intro/) | ^16.2.0 | React component testing utilities |
 | [jest-axe](https://github.com/nickcolley/jest-axe) | ^10.0.0 | Automated accessibility (a11y) assertions |
-| [ESLint](https://eslint.org/) | latest | Code quality and style enforcement |
-| [Prettier](https://prettier.io/) | latest | Code formatter |
-| [Sass](https://sass-lang.com/) | 1.77.x | SCSS stylesheets |
+| [ESLint](https://eslint.org/) | ^9.22.0 | Code quality and style enforcement |
+| [Prettier](https://prettier.io/) | ^3.5.3 | Code formatter |
+| [Sass](https://sass-lang.com/) | 1.77.6 | SCSS stylesheets |
 | [Storybook](https://storybook.js.org/) | config present | Component explorer and visual catalogue |
-| [Husky](https://typicode.github.io/husky/) | ^9.x | Git pre-commit hooks |
-| [lint-staged](https://github.com/lint-staged/lint-staged) | ^15.x | Run linters on staged files only |
-| [Workbox](https://developers.google.com/web/tools/workbox) | latest | PWA / service-worker tooling |
+| [Husky](https://typicode.github.io/husky/) | ^9.1.7 | Git pre-commit hooks |
+| [lint-staged](https://github.com/lint-staged/lint-staged) | ^15.5.0 | Run linters on staged files only |
+| [Workbox](https://developers.google.com/web/tools/workbox) (`workbox-webpack-plugin`) | ^7.0.0 | PWA / service-worker tooling |
 
 ## State Management
 
@@ -205,8 +205,8 @@ This project uses a layered approach to state:
 
 | Tool | Purpose |
 |---|---|
-| **Husky** | Manages Git lifecycle hooks (pre-commit, commit-msg) |
-| **lint-staged** | Runs ESLint + Prettier automatically on staged `.ts`/`.tsx` files before every commit |
+| **Husky** | Manages Git hooks: `pre-commit` runs affected lint and test; `pre-push` runs affected lint, test and build |
+| **lint-staged** | Runs `eslint --fix` and `nx format:write` on staged `.ts`/`.tsx` files |
 | **SonarQube** | Static analysis and code quality gate; configuration in `sonar-project.properties` |
 | **EditorConfig** | Consistent editor settings (indentation, line endings) via `.editorconfig` |
 | **TruffleHog** | Secret scanning on every push (`.github/workflows/trufflehog.yml`) |
@@ -237,7 +237,7 @@ A `Dockerfile` and supporting configuration are located in the `docker/` directo
 
 ```
 docker/
-├── Dockerfile              # Multi-stage production image
+├── Dockerfile              # Apache HTTPD image serving the built distro bundle
 └── httpd_directory.conf    # Apache HTTPD virtual-host configuration
 ```
 
@@ -253,10 +253,10 @@ Kubernetes deployment is managed via Helm charts located in the `helm/` director
 helm/
 ├── Chart.yaml        # Chart metadata and version
 ├── values.yaml       # Default Helm values
-└── templates/        # Kubernetes manifest templates
+└── templates/        # Deployment, Service and HPA manifest templates
 ```
 
-The CI/CD pipeline commits updated Helm chart values on every versioned release. Consult `helm/values.yaml` for configurable parameters (image tag, replica count, ingress, etc.).
+On releases, the CI/CD pipeline sets the chart version and image tag, lints and packages the chart, and publishes it to the [Bahmni helm-charts](https://github.com/Bahmni/helm-charts) repository. Consult `helm/values.yaml` for configurable parameters (image tag, replica count, service, autoscaling, etc.).
 
 ## Architecture Decision Records
 
@@ -305,13 +305,13 @@ The full security reporting, discussion, and disclosure process is documented in
 
 We welcome contributions from the community! Here is how to get involved:
 
-1. **Browse open issues** — check the [Bahmni Jira board](https://bahmni.atlassian.net/jira/software/c/projects/BAH/boards/131) for issues tagged `frontend` or `bahmni-apps-frontend`.
+1. **Browse open issues** — check the [Bahmni Jira board](https://bahmni.atlassian.net/jira/software/c/projects/BAH/boards/131).
 2. **Fork & branch** — fork this repository and create a feature branch named after the Jira issue (e.g. `BAH-1234`).
 3. **Follow coding standards** — run `yarn lint:fix` and `yarn test` before pushing.
-4. **Open a Pull Request** — target the `main` branch; fill in the PR template and link the Jira card.
-5. **Review process** — all PRs require at least one approval from a Bahmni core team member.
+4. **Open a Pull Request** — target the `main` branch; fill in the pull request template and link the Jira card.
+5. **Review process** — PRs are reviewed by Bahmni maintainers before merge.
 
-For questions or discussions, open a [GitHub Issue](https://github.com/Bahmni/bahmni-apps-frontend/issues), join the conversation on [GitHub Discussions](https://github.com/Bahmni/bahmni-apps-frontend/discussions), or connect with the wider community via the [Bahmni Community](https://bahmni.org/community).
+For questions or discussions, open a [GitHub Issue](https://github.com/Bahmni/bahmni-apps-frontend/issues) or reach out via the [Bahmni community](https://bahmni.org/).
 
 ## Notice & Legal
 
