@@ -41,12 +41,13 @@ const mockAddNotification = jest.fn();
 
 const renderWithProviders = (
   activePractitionerValue: ActivePractitionerContextType = buildActivePractitionerValue(),
+  props?: { locationName?: string },
 ) => {
   (useActivePractitioner as jest.Mock).mockReturnValue(activePractitionerValue);
 
   return render(
     <UserActionProvider>
-      <UserGlobalAction />
+      <UserGlobalAction {...props} />
     </UserActionProvider>,
   );
 };
@@ -493,7 +494,9 @@ describe('UserGlobalAction', () => {
 
     it('should have no accessibility violations when the menu is open', async () => {
       registerChangePasswordAndLogout();
-      renderWithProviders(buildActivePractitionerValue());
+      renderWithProviders(buildActivePractitionerValue(), {
+        locationName: 'Bahmni Clinic',
+      });
       await userEvent.click(
         screen.getByTestId('user-global-action-button-test-id'),
       );
@@ -533,6 +536,59 @@ describe('UserGlobalAction', () => {
         buildActivePractitionerValue({ loading: true }),
       );
       expect(container.firstChild).toMatchSnapshot();
+    });
+  });
+
+  describe('Location display', () => {
+    it('should render the read-only location row with title truncation when locationName is provided', async () => {
+      renderWithProviders(buildActivePractitionerValue(), {
+        locationName: 'Bahmni Clinic',
+      });
+
+      const button = screen.getByTestId('user-global-action-button-test-id');
+      await userEvent.click(button);
+
+      await waitFor(() => {
+        // Query by the title attribute instead of the aria-label
+        const locationRow = screen.getByTitle('Bahmni Clinic');
+        expect(locationRow).toBeInTheDocument();
+        // Assert that the i18n mock output successfully attached to the ARIA label
+        expect(locationRow).toHaveAttribute(
+          'aria-label',
+          'LOGIN_LOCATION_LABEL Bahmni Clinic',
+        );
+      });
+    });
+
+    it('should not render the location row when locationName is omitted', async () => {
+      renderWithProviders(buildActivePractitionerValue());
+
+      const button = screen.getByTestId('user-global-action-button-test-id');
+      await userEvent.click(button);
+
+      await waitFor(() => {
+        expect(screen.getByRole('menu')).toBeInTheDocument();
+      });
+
+      expect(screen.queryByTitle('Bahmni Clinic')).not.toBeInTheDocument();
+    });
+
+    it('should ensure arrow-key navigation skips the location row', async () => {
+      registerChangePasswordAndLogout();
+      renderWithProviders(buildActivePractitionerValue(), {
+        locationName: 'Bahmni Clinic',
+      });
+
+      await userEvent.click(
+        screen.getByTestId('user-global-action-button-test-id'),
+      );
+
+      //simulate pressing the down arrow key
+      await userEvent.keyboard('{ArrowDown}');
+
+      const items = await screen.findAllByRole('menuitem');
+      expect(items[0]).toHaveFocus();
+      expect(items[0]).toHaveTextContent('USER_CHANGE_PASSWORD_GLOBAL_ACTION');
     });
   });
 });
