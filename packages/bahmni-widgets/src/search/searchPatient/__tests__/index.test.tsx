@@ -661,6 +661,11 @@ describe('SearchPatient', () => {
 
     beforeEach(() => {
       (searchAppointmentsByAttribute as jest.Mock).mockResolvedValue([]);
+      localStorage.setItem('default_dateFormat', 'MM/dd/yyyy');
+    });
+
+    afterEach(() => {
+      localStorage.removeItem('default_dateFormat');
     });
 
     it('shows a date picker pre-filled with today instead of the text input when appointment date is selected', async () => {
