@@ -192,7 +192,8 @@ export const CONCEPT_GROUPS = {
       const isSystolicAbnormal =
         systolicValue !== '\u2014' &&
         systolicConcept &&
-        (parseInt(systolicValue) > (systolicConcept.hiNormal ?? Infinity) ||
+        (Number.parseInt(systolicValue) >
+          (systolicConcept.hiNormal ?? Infinity) ||
           parseInt(systolicValue) < (systolicConcept.lowNormal ?? 0));
 
       const isDiastolicAbnormal =
