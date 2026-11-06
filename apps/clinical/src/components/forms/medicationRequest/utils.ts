@@ -30,6 +30,13 @@ export function findAttr(
   return attributes?.find((a) => a.name === name);
 }
 
+export function getInvalidProps(
+  error: string | undefined,
+  t: (key: string) => string,
+): { invalid: boolean; invalidText: string } {
+  return { invalid: !!error, invalidText: error ? t(error) : '' };
+}
+
 export function applyDefaultInstruction(
   attributes: InputControlAttributes[],
   medicationConfig: MedicationConfig,

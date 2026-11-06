@@ -4,6 +4,7 @@ import {
   VALIDATION_STATE_EMPTY,
   VALIDATION_STATE_MANDATORY,
   VALIDATION_STATE_INVALID,
+  VALIDATION_STATE_NOTES_REQUIRED,
 } from '../../constants/forms';
 import { useObservationFormsStore } from '../observationFormsStore';
 
@@ -716,6 +717,24 @@ describe('observationFormsStore', () => {
         );
       });
 
+      expect(result.current.validate()).toBe(false);
+    });
+
+    it('should return false when a selected form has notes required validation error', () => {
+      const { result } = renderHook(() => useObservationFormsStore());
+
+      act(() => {
+        result.current.addForm(mockForm1);
+        result.current.updateFormData(
+          'form-1',
+          mockObservations,
+          VALIDATION_STATE_NOTES_REQUIRED,
+        );
+      });
+
+      expect(result.current.formsData['form-1'].validationErrorType).toBe(
+        VALIDATION_STATE_NOTES_REQUIRED,
+      );
       expect(result.current.validate()).toBe(false);
     });
 

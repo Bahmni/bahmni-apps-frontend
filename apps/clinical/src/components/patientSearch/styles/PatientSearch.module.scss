@@ -2,12 +2,12 @@
 @use "@carbon/react/scss/theme" as *;
 @use "@carbon/react/scss/type" as *;
 
-$header-actions-offset: 6rem; // 3 action buttons × 2rem each — offset to clear global action buttons in header
+$user-menu-fallback-width: 150px; // matches max-inline-size of the user menu (UserGlobalAction) — guarantees no overlap
 
 .patientSearchContainer {
   position: fixed;
   top: 0;
-  right: $header-actions-offset;
+  right: $user-menu-fallback-width;
   z-index: 9000; // above header (z-index: 8000) but below modals
   padding-block: $spacing-02;
   width: 20rem;

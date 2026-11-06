@@ -6,6 +6,10 @@
 .page {
   padding-top: $spacing-05;
   padding-inline: calc($spacing-12 + $spacing-05);
+  // `layer-01` is the gray surface Bahmni's theme sets in applyTheme.ts
+  // (#f4f4f4) for the mockup's gray-page/white-card look — reference it
+  // via the token instead of duplicating the hex here.
+  background-color: $layer-01;
 }
 
 @include breakpoint-down(lg) {

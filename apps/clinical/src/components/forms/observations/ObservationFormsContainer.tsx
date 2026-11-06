@@ -24,9 +24,11 @@ import {
   convertImmutableToPlainObject,
   extractNotesFromFormData,
   formatDateForControl,
+  findConceptDatatype,
   DATETIME_REGEX_PATTERN,
   type AgeDetails,
   computeAgeDetails,
+  type ConsultationEventPayload,
 } from '@bahmni/services';
 import { useActivePractitioner, usePatientUUID } from '@bahmni/widgets';
 import { useQuery } from '@tanstack/react-query';
@@ -39,8 +41,8 @@ import {
   VALIDATION_STATE_MANDATORY,
   VALIDATION_STATE_INVALID,
   VALIDATION_STATE_SCRIPT_ERROR,
+  VALIDATION_STATE_NOTES_REQUIRED,
 } from '../../../constants/forms';
-import type { EncounterSessionStartContext } from '../../../events/startConsultation';
 import { useActionAreaExpandProps } from '../../../hooks/useActionAreaExpandProps';
 import { useClinicalAppData } from '../../../hooks/useClinicalAppData';
 import { useObservationFormData } from '../../../hooks/useObservationFormData';
@@ -49,14 +51,13 @@ import { usePinnedObservationForms } from '../../../hooks/usePinnedObservationFo
 import {
   extractVersionFromFormFieldPath,
   findBasedOnFromObservations,
-  injectMissingDeleteObs,
-  markUnchangedObservations,
-  mergeObsExistingData,
-  restoreComplexValues,
+  reconcileObservations,
 } from '../../../utils/fhir/observationReconciliation';
 import EncounterDetails from '../encounterDetails/EncounterDetails';
 import styles from './styles/ObservationFormsContainer.module.scss';
 import { executeOnFormSaveEvent } from './utils/formEventExecutor';
+
+const isNotesError = (message: string) => /\bnotes?\b/i.test(message);
 
 const AGE_DETAILS_DEFAULT: AgeDetails = {
   year: 0,
@@ -78,14 +79,15 @@ interface ObservationFormsContainerProps {
       | typeof VALIDATION_STATE_EMPTY
       | typeof VALIDATION_STATE_MANDATORY
       | typeof VALIDATION_STATE_INVALID
-      | typeof VALIDATION_STATE_SCRIPT_ERROR,
+      | typeof VALIDATION_STATE_SCRIPT_ERROR
+      | typeof VALIDATION_STATE_NOTES_REQUIRED,
     basedOn?: Reference,
   ) => void;
   existingObservations?: Form2Observation[];
   directMode?: boolean;
   onDirectModeSubmit?: () => void | Promise<void>;
   onDirectModeCancel?: () => void;
-  encounterSessionStartContext?: EncounterSessionStartContext;
+  encounterSessionStartContext?: ConsultationEventPayload;
   isActionAreaExpanded?: boolean;
   onToggleActionAreaExpand?: () => void;
 }
@@ -109,17 +111,21 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
     onToggleExpand: onToggleActionAreaExpand,
   });
 
+  const act = encounterSessionStartContext?.action;
+  const ctx = encounterSessionStartContext?.context;
+
   // Derive early so it can be used for hook initialisation below.
   const isEditMode =
-    encounterSessionStartContext?.editOnly === 'observationForms' &&
-    !!encounterSessionStartContext?.sourceEncounterUuid;
+    act?.type === 'update' &&
+    (act.resourceType === 'Observation' ||
+      act.resources?.[0]?.resourceType === 'Observation') &&
+    !!ctx?.encounter?.id;
 
   const activeEncounter = encounterSessionStartContext?.activeEncounter as
     | Encounter
     | null
     | undefined;
-  const sourceEncounterUuidFromContext =
-    encounterSessionStartContext?.sourceEncounterUuid as string | undefined;
+  const sourceEncounterUuidFromContext = act ? ctx?.encounter?.id : undefined;
   const isCopyover: boolean | undefined =
     !sourceEncounterUuidFromContext || activeEncounter === undefined
       ? undefined
@@ -132,7 +138,7 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
   // own setIsFormUpdated (uuid-based comparison against the observations it was mounted with).
   const [isFormUpdated, setIsFormUpdated] = React.useState(false);
 
-  const task = encounterSessionStartContext?.task as Task | undefined;
+  const task = ctx?.basedOn as Task | undefined;
   const patientUUID = usePatientUUID();
   const { user } = useActivePractitioner();
   const { episodeOfCare, activeVisitId } = useClinicalAppData();
@@ -183,6 +189,7 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
     | typeof VALIDATION_STATE_MANDATORY
     | typeof VALIDATION_STATE_INVALID
     | typeof VALIDATION_STATE_SCRIPT_ERROR
+    | typeof VALIDATION_STATE_NOTES_REQUIRED
   >(null);
   const [validationErrorMessage, setValidationErrorMessage] = useState<
     string | null
@@ -275,9 +282,20 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
     };
 
     const convertDateTime = (obs: Form2Observation): Form2Observation => {
+      // Date-only concepts must match the date-only value form calculations write,
+      // otherwise CarbonContainer flags the form as updated on load. Take the calendar
+      // date from the string as-is: converting through Date shifts it by a day when the
+      // browser is behind the server's timezone (e.g. 00:00 UTC is the previous day in UTC-3).
       const converted =
         typeof obs.value === 'string' && DATETIME_REGEX_PATTERN.test(obs.value)
-          ? { ...obs, value: formatDateForControl(new Date(obs.value)) }
+          ? {
+              ...obs,
+              value:
+                formMetadata &&
+                findConceptDatatype(formMetadata, obs.concept.uuid) === 'Date'
+                  ? obs.value.slice(0, 10)
+                  : formatDateForControl(new Date(obs.value)),
+            }
           : obs;
       if (converted.groupMembers) {
         return {
@@ -317,7 +335,7 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
       .map(convertComplex)
       .map(convertDateTime)
       .map(normalizeInterpretation);
-  }, [existingObservations]);
+  }, [existingObservations, formMetadata]);
 
   const handlePinToggle = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -379,19 +397,7 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
               )
             : [];
 
-        mergeObsExistingData(
-          transformedObservations,
-          initialObservationsRef.current,
-        );
-        restoreComplexValues(
-          transformedObservations,
-          initialObservationsRef.current,
-        );
-        injectMissingDeleteObs(
-          transformedObservations,
-          initialObservationsRef.current,
-        );
-        markUnchangedObservations(
+        reconcileObservations(
           transformedObservations,
           initialObservationsRef.current,
         );
@@ -456,19 +462,7 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
       setValidationErrorMessage(null);
 
       try {
-        mergeObsExistingData(
-          transformedObservations,
-          initialObservationsRef.current,
-        );
-        restoreComplexValues(
-          transformedObservations,
-          initialObservationsRef.current,
-        );
-        injectMissingDeleteObs(
-          transformedObservations,
-          initialObservationsRef.current,
-        );
-        markUnchangedObservations(
+        reconcileObservations(
           transformedObservations,
           initialObservationsRef.current,
         );
@@ -502,7 +496,11 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
           error instanceof Error
             ? error.message
             : t('OBSERVATION_FORM_SCRIPT_ERROR_MESSAGE');
-        setValidationErrorType(VALIDATION_STATE_SCRIPT_ERROR);
+        setValidationErrorType(
+          isNotesError(errorMessage)
+            ? VALIDATION_STATE_NOTES_REQUIRED
+            : VALIDATION_STATE_SCRIPT_ERROR,
+        );
         setValidationErrorMessage(errorMessage);
       }
     }
@@ -524,27 +522,15 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
             )
           : [];
 
+      reconcileObservations(
+        transformedObservations,
+        initialObservationsRef.current,
+      );
+
       // Extract and append notes-only observations
       extractAndAppendNotesFromFormData(
         formContainerRef,
         transformedObservations,
-      );
-
-      mergeObsExistingData(
-        transformedObservations,
-        initialObservationsRef.current,
-      );
-      restoreComplexValues(
-        transformedObservations,
-        initialObservationsRef.current,
-      );
-      injectMissingDeleteObs(
-        transformedObservations,
-        initialObservationsRef.current,
-      );
-      markUnchangedObservations(
-        transformedObservations,
-        initialObservationsRef.current,
       );
 
       handleSaveForm(transformedObservations, validationErrorType);
@@ -599,7 +585,8 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
       )}
 
       {validationErrorType &&
-        validationErrorType !== VALIDATION_STATE_SCRIPT_ERROR && (
+        validationErrorType !== VALIDATION_STATE_SCRIPT_ERROR &&
+        validationErrorType !== VALIDATION_STATE_NOTES_REQUIRED && (
           <div className={styles.inlineNotificationWrapper}>
             <InlineNotification
               kind="error"
@@ -616,7 +603,8 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
           </div>
         )}
 
-      {validationErrorType === VALIDATION_STATE_SCRIPT_ERROR &&
+      {(validationErrorType === VALIDATION_STATE_SCRIPT_ERROR ||
+        validationErrorType === VALIDATION_STATE_NOTES_REQUIRED) &&
         validationErrorMessage && (
           <div className={styles.inlineNotificationWrapper}>
             <InlineNotification

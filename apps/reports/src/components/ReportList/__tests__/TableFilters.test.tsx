@@ -160,7 +160,7 @@ describe('TableFilters', () => {
 
     const [start] = defaultProps.onStartDateChange.mock.calls[0];
     const expectedStart = new Date();
-    expectedStart.setDate(expectedStart.getDate() - 6);
+    expectedStart.setDate(expectedStart.getDate() - 7);
     expect(start.toDateString()).toBe(expectedStart.toDateString());
   });
 
@@ -227,6 +227,20 @@ describe('TableFilters', () => {
     expect(defaultProps.onEndDateChange).toHaveBeenCalledWith(
       new Date('2024-03-15'),
     );
+  });
+
+  it('clears the selected preset when a date is manually picked', async () => {
+    render(<TableFilters {...defaultProps} selectedPreset="THIS_MONTH" />);
+
+    await userEvent.click(
+      screen.getByRole('button', { name: 'set-filter-start-date' }),
+    );
+    expect(defaultProps.onPresetChange).toHaveBeenCalledWith(null);
+
+    await userEvent.click(
+      screen.getByRole('button', { name: 'set-filter-end-date' }),
+    );
+    expect(defaultProps.onPresetChange).toHaveBeenCalledWith(null);
   });
 
   it('clears the start/end date to null when the date picker is cleared', async () => {

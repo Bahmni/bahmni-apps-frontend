@@ -70,6 +70,12 @@ const createMockFhirMedRequest = (
     quantity: { value: 20, code: 'dose-unit-mg' },
   },
   note: [{ text: 'Take with water' }],
+  reasonCode: [
+    {
+      coding: [{ code: 'reason-fever', display: 'Fever (coded)' }],
+      text: 'Fever',
+    },
+  ],
   ...overrides,
 });
 
@@ -101,6 +107,10 @@ describe('parseFhirToMedicationInputEntry', () => {
     expect(result.isSTAT).toBe(false);
     expect(result.dispenseQuantity).toBe(20);
     expect(result.note).toBe('Take with water');
+    expect(result.medicationReason).toEqual({
+      uuid: 'reason-fever',
+      display: 'Fever',
+    });
     expect(result.medication.id).toBe('med-456');
     expect(result.errors).toEqual({});
     expect(result.hasBeenValidated).toBe(false);
@@ -125,8 +135,10 @@ describe('parseFhirToMedicationInputEntry', () => {
   it('handles missing dosage gracefully', () => {
     const fhirMed = createMockFhirMedRequest();
     fhirMed.dosageInstruction = [{}];
+    fhirMed.reasonCode = undefined;
     const result = parseFhirToMedicationInputEntry(fhirMed, mockConfig);
 
+    expect(result.medicationReason).toBeNull();
     expect(result.dosage).toBe(0);
     expect(result.dosageUnit).toBeNull();
     expect(result.frequency).toBeNull();
@@ -177,9 +189,16 @@ describe('parseFhirToMedicationInputEntry', () => {
   it('handles missing notes', () => {
     const fhirMed = createMockFhirMedRequest();
     fhirMed.note = undefined;
+    fhirMed.reasonCode = [
+      { coding: [{ code: 'reason-fever', display: 'Pyrexia' }] },
+    ];
     const result = parseFhirToMedicationInputEntry(fhirMed, mockConfig);
 
     expect(result.note).toBe('');
+    expect(result.medicationReason).toEqual({
+      uuid: 'reason-fever',
+      display: 'Pyrexia',
+    });
   });
 
   it('handles contained medication resource', () => {

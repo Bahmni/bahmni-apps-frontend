@@ -1,9 +1,18 @@
-import { createEncounterBundle } from '@bahmni/services';
+import { createEncounterBundle, uploadDocument } from '@bahmni/services';
 import * as encounterBundleService from '../../../services/encounterBundleService';
 import { useEncounterDetailsStore } from '../../../stores/encounterDetailsStore';
 import * as conceptExtractor from '../../../utils/fhir/conceptExtractor';
 import * as encounterResourceCreator from '../../../utils/fhir/encounterResourceCreator';
+import '../../forms/documents';
+import {
+  CONSENT_FORM_TYPE,
+  createBlankDocumentEntry,
+  createPendingDocument,
+} from '../../forms/documents/__tests__/__mocks__/documentsMocks';
+import { useDocumentsStore } from '../../forms/documents/store';
+import { getRegisteredInputControls } from '../../forms/registry';
 import { submitConsultation } from '../services';
+import { getActiveEntries } from '../utils';
 import {
   mockBundle,
   mockEncounterBundleEntry,
@@ -17,6 +26,7 @@ import {
 jest.mock('@bahmni/services', () => ({
   ...jest.requireActual('@bahmni/services'),
   createEncounterBundle: jest.fn(),
+  uploadDocument: jest.fn(),
 }));
 jest.mock('../../../stores/encounterDetailsStore');
 jest.mock('../../../services/encounterBundleService');
@@ -114,5 +124,124 @@ describe('submitConsultation', () => {
     expect(entry.createBundleEntries).toHaveBeenCalledWith(
       expect.objectContaining({ statDurationInMilliseconds: 5000 }),
     );
+  });
+
+  it('lets a form entry finish its preparation before its bundle entries are built', async () => {
+    const order: string[] = [];
+    const entry = mockFormEntry({
+      prepareBundleEntries: jest.fn(async () => {
+        await Promise.resolve();
+        order.push('prepared');
+      }),
+      createBundleEntries: jest.fn(() => {
+        order.push('built');
+        return [];
+      }),
+    });
+
+    await submitConsultation({
+      activeEncounter: null,
+      episodeOfCareUuids: [],
+      activeEntries: [entry],
+    });
+
+    expect(order).toEqual(['prepared', 'built']);
+  });
+
+  it('saves nothing when an entry fails to prepare, whatever the other entries hold', async () => {
+    mockPostEncounterBundle.mockClear();
+    const failing = mockFormEntry({
+      prepareBundleEntries: jest
+        .fn()
+        .mockRejectedValue(new Error('Upload failed')),
+    });
+    const other = mockFormEntry({ createBundleEntries: jest.fn(() => []) });
+
+    const submission = submitConsultation({
+      activeEncounter: null,
+      episodeOfCareUuids: [],
+      activeEntries: [failing, other],
+    });
+
+    await expect(submission).rejects.toThrow();
+    expect(other.createBundleEntries).not.toHaveBeenCalled();
+    expect(mockPostEncounterBundle).not.toHaveBeenCalled();
+  });
+
+  it('does not prepare form entries that have no data', async () => {
+    const entry = mockFormEntry({
+      hasData: jest.fn().mockReturnValue(false),
+      prepareBundleEntries: jest.fn(),
+    });
+
+    await submitConsultation({
+      activeEncounter: null,
+      episodeOfCareUuids: [],
+      activeEntries: [entry],
+    });
+
+    expect(entry.prepareBundleEntries).not.toHaveBeenCalled();
+  });
+});
+
+describe('submitConsultation with the real documents control', () => {
+  const mockUploadDocument = jest.mocked(uploadDocument);
+  const card = (id: string, fileName: string) => ({
+    ...createBlankDocumentEntry(id),
+    documentType: CONSENT_FORM_TYPE,
+    files: [createPendingDocument(fileName)],
+  });
+  const documentsOnly = () =>
+    getActiveEntries(
+      getRegisteredInputControls(),
+      'Patient Document',
+      'documents',
+    );
+
+  beforeEach(() => {
+    global.URL.revokeObjectURL = jest.fn();
+    mockPostEncounterBundle.mockClear();
+    mockCreateEncounterBundle.mockClear();
+    mockUploadDocument.mockReset();
+    useDocumentsStore.getState().reset();
+    useDocumentsStore
+      .getState()
+      .setEntries([card('DOC1', 'a.png'), card('DOC2', 'b.png')]);
+  });
+
+  const submit = () =>
+    submitConsultation({
+      activeEncounter: null,
+      episodeOfCareUuids: [],
+      activeEntries: documentsOnly(),
+    });
+
+  it('saves nothing when one of two document cards fails to upload', async () => {
+    mockUploadDocument.mockImplementation(async (file: File) => {
+      if (file.name === 'b.png') throw new Error('Disk full');
+      return { url: `100/${file.name}` };
+    });
+
+    await expect(submit()).rejects.toThrow();
+
+    expect(mockCreateEncounterBundle).not.toHaveBeenCalled();
+    expect(mockPostEncounterBundle).not.toHaveBeenCalled();
+  });
+
+  it('saves both cards on the retry, uploading only the file that failed before', async () => {
+    mockUploadDocument.mockImplementation(async (file: File) => {
+      if (file.name === 'b.png') throw new Error('Disk full');
+      return { url: `100/${file.name}` };
+    });
+    await expect(submit()).rejects.toThrow();
+    mockUploadDocument.mockReset();
+    mockUploadDocument.mockResolvedValue({ url: '100/b.png' });
+
+    await submit();
+
+    expect(mockUploadDocument).toHaveBeenCalledTimes(1);
+    expect(mockPostEncounterBundle).toHaveBeenCalledTimes(1);
+    const [entries] = mockCreateEncounterBundle.mock.calls[0];
+    expect(entries).toHaveLength(3);
   });
 });

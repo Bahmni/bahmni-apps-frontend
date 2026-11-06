@@ -675,7 +675,7 @@ export const ImplementationGuidance: Story = {
 \`\`\`tsx
 import React from 'react';
 import Header from '@components/common/header/Header';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router';
 
 const MyLayout: React.FC = ({ children }) => {
   const navigate = useNavigate();

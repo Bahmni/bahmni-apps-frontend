@@ -1,4 +1,10 @@
-import { Button, ComboBox, InlineLoading, Tile } from '@bahmni/design-system';
+import {
+  Button,
+  ComboBox,
+  InlineLoading,
+  RequiredAsterisk,
+  Tile,
+} from '@bahmni/design-system';
 import {
   downloadBlob,
   exportConceptSet,
@@ -29,6 +35,7 @@ export const CsvExport: React.FC = () => {
   const [selectedConcept, setSelectedConcept] = useState<ConceptOption | null>(
     null,
   );
+  const [hasClearedSelection, setHasClearedSelection] = useState(false);
   const debouncedTerm = useDebounce(inputValue.trim(), SEARCH_DEBOUNCE_MS);
 
   const { data: searchResults = [] } = useQuery({
@@ -89,24 +96,21 @@ export const CsvExport: React.FC = () => {
   });
 
   const handleInputChange = (value: string) => {
-    setInputValue(value);
     if (selectedConcept && value !== selectedConcept.name) {
       setSelectedConcept(null);
+      setHasClearedSelection(true);
+    } else if (!selectedConcept && inputValue !== '' && value === '') {
+      setHasClearedSelection(true);
     }
+    setInputValue(value);
   };
+
+  const showValidationError = hasClearedSelection && !selectedConcept;
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (exportMutation.isPending) return;
-    if (!selectedConcept) {
-      addNotification({
-        type: 'error',
-        title: t('ADMIN_CSV_EXPORT_SELECT_CONCEPT_TITLE'),
-        message: t('ADMIN_CSV_EXPORT_SELECT_CONCEPT_MESSAGE'),
-        timeout: NOTIFICATION_TIMEOUT_MS,
-      });
-      return;
-    }
+    if (!selectedConcept) return;
     exportMutation.mutate(selectedConcept);
   };
 
@@ -124,19 +128,30 @@ export const CsvExport: React.FC = () => {
             <ComboBox<ConceptOption>
               id="csv-export-concept-search"
               data-testid="csv-export-concept-search-test-id"
-              titleText=""
+              titleText={
+                <>
+                  {t('ADMIN_CSV_EXPORT_FIELD_LABEL')}
+                  <RequiredAsterisk />
+                </>
+              }
               placeholder={t('ADMIN_CSV_EXPORT_SEARCH_PLACEHOLDER')}
               aria-label={t('ADMIN_CSV_EXPORT_SEARCH_ARIA_LABEL')}
               items={options}
               itemToString={(item) => item?.name ?? ''}
               selectedItem={selectedConcept}
-              onChange={({ selectedItem }) =>
-                setSelectedConcept(
-                  typeof selectedItem === 'object'
-                    ? (selectedItem ?? null)
-                    : null,
-                )
-              }
+              invalid={showValidationError}
+              invalidText={t(
+                'ADMIN_CSV_EXPORT_SELECT_CONCEPT_REQUIRED_MESSAGE',
+              )}
+              onChange={({ selectedItem }) => {
+                if (selectedItem && typeof selectedItem === 'object') {
+                  setSelectedConcept(selectedItem);
+                  setHasClearedSelection(false);
+                } else {
+                  setSelectedConcept(null);
+                  setHasClearedSelection(true);
+                }
+              }}
               onInputChange={handleInputChange}
               allowCustomValue
               disabled={exportMutation.isPending}
@@ -148,7 +163,7 @@ export const CsvExport: React.FC = () => {
             kind="primary"
             size="md"
             testId="csv-export-button-test-id"
-            disabled={exportMutation.isPending}
+            disabled={exportMutation.isPending || !selectedConcept}
           >
             {exportMutation.isPending ? (
               <InlineLoading

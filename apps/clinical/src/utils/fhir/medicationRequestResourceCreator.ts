@@ -55,6 +55,15 @@ export const createMedicationRequestResource = (
     ];
   }
 
+  if (medicationEntry.medicationReason) {
+    medicationRequest.reasonCode = [
+      createCodeableConcept(
+        [createCoding(medicationEntry.medicationReason.uuid)],
+        medicationEntry.medicationReason.display,
+      ),
+    ];
+  }
+
   return medicationRequest;
 };
 
