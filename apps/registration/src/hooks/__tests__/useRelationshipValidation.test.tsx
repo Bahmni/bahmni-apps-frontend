@@ -59,7 +59,7 @@ describe('useRelationshipValidation', () => {
 
       let isValid = false;
       act(() => {
-        isValid = result.current.validateRelationships(relationships);
+        isValid = result.current.validateRelationships(relationships, false);
       });
 
       expect(isValid).toBe(false);
@@ -85,7 +85,7 @@ describe('useRelationshipValidation', () => {
 
       let isValid = false;
       act(() => {
-        isValid = result.current.validateRelationships(relationships);
+        isValid = result.current.validateRelationships(relationships, false);
       });
 
       expect(isValid).toBe(true);
@@ -116,7 +116,7 @@ describe('useRelationshipValidation', () => {
 
       let isValid = false;
       act(() => {
-        isValid = result.current.validateRelationships(relationships);
+        isValid = result.current.validateRelationships(relationships, false);
       });
 
       expect(isValid).toBe(false);
@@ -154,7 +154,7 @@ describe('useRelationshipValidation', () => {
 
       let isValid = false;
       act(() => {
-        isValid = result.current.validateRelationships(relationships);
+        isValid = result.current.validateRelationships(relationships, true);
       });
 
       expect(isValid).toBe(true);
@@ -166,7 +166,6 @@ describe('useRelationshipValidation', () => {
         wrapper,
       });
 
-      // Pre-existing duplicate rows saved before backend validation was added
       const relationships: RelationshipData[] = [
         {
           id: 'rel-1',
@@ -188,7 +187,7 @@ describe('useRelationshipValidation', () => {
 
       let isValid = false;
       act(() => {
-        isValid = result.current.validateRelationships(relationships);
+        isValid = result.current.validateRelationships(relationships, true);
       });
 
       expect(isValid).toBe(true);
@@ -214,7 +213,7 @@ describe('useRelationshipValidation', () => {
 
       let isValid = false;
       act(() => {
-        isValid = result.current.validateRelationships(relationships);
+        isValid = result.current.validateRelationships(relationships, true);
       });
 
       expect(isValid).toBe(true);
@@ -247,7 +246,7 @@ describe('useRelationshipValidation', () => {
 
       let isValid = false;
       act(() => {
-        isValid = result.current.validateRelationships(relationships);
+        isValid = result.current.validateRelationships(relationships, true);
       });
 
       expect(isValid).toBe(true);
@@ -279,7 +278,7 @@ describe('useRelationshipValidation', () => {
 
       let isValid = false;
       act(() => {
-        isValid = result.current.validateRelationships(relationships);
+        isValid = result.current.validateRelationships(relationships, true);
       });
 
       expect(isValid).toBe(false);
@@ -312,7 +311,7 @@ describe('useRelationshipValidation', () => {
 
       let isValid = false;
       act(() => {
-        isValid = result.current.validateRelationships(relationships);
+        isValid = result.current.validateRelationships(relationships, false);
       });
 
       expect(isValid).toBe(true);
@@ -349,7 +348,7 @@ describe('useRelationshipValidation', () => {
 
       let isValid = false;
       act(() => {
-        isValid = result.current.validateRelationships(relationships);
+        isValid = result.current.validateRelationships(relationships, false);
       });
 
       expect(isValid).toBe(false);
@@ -358,6 +357,170 @@ describe('useRelationshipValidation', () => {
       });
       expect(result.current.validationErrors['rel-3']).toEqual({
         patientId: 'REGISTRATION_RELATIONSHIP_ALREADY_EXISTS',
+      });
+    });
+
+    it('should reject a brand new patient with no relationship data and notify', () => {
+      const { result } = renderHook(() => useRelationshipValidation(), {
+        wrapper,
+      });
+
+      const relationships: RelationshipData[] = [
+        {
+          id: 'rel-1',
+          relationshipType: '',
+          patientId: '',
+          tillDate: '',
+        },
+      ];
+
+      let isValid = false;
+      act(() => {
+        isValid = result.current.validateRelationships(relationships, false);
+      });
+
+      expect(isValid).toBe(false);
+      expect(result.current.validationErrors).toEqual({});
+      expect(result.current.generalError).toBe(
+        'REGISTRATION_RELATIONSHIP_REQUIRED',
+      );
+    });
+
+    it('should not block an existing patient with zero fetched relationships, even though no row has isExisting set', () => {
+      // Regression: an existing patient with no relationships recorded gets a single
+      // blank placeholder row (no `isExisting` field at all). Whether this is a "new
+      // patient" must come from isExistingPatient, not from inspecting row data.
+      const { result } = renderHook(() => useRelationshipValidation(), {
+        wrapper,
+      });
+
+      const relationships: RelationshipData[] = [
+        {
+          id: 'rel-1',
+          relationshipType: '',
+          patientId: '',
+          tillDate: '',
+          isDefaultPlaceholder: true,
+        },
+      ];
+
+      let isValid = false;
+      act(() => {
+        isValid = result.current.validateRelationships(relationships, true);
+      });
+
+      expect(isValid).toBe(true);
+      expect(result.current.generalError).toBeNull();
+    });
+
+    it('should reject a blank row the user explicitly added via "Add another", unlike the auto-provided placeholder', () => {
+      const { result } = renderHook(() => useRelationshipValidation(), {
+        wrapper,
+      });
+
+      const relationships: RelationshipData[] = [
+        {
+          id: 'rel-1',
+          relationshipType: 'parent-child-uuid',
+          patientId: 'P001',
+          patientUuid: 'uuid-1',
+          tillDate: '',
+          isExisting: true,
+        },
+        {
+          id: 'rel-2',
+          relationshipType: '',
+          patientId: '',
+          tillDate: '',
+        },
+      ];
+
+      let isValid = false;
+      act(() => {
+        isValid = result.current.validateRelationships(relationships, true);
+      });
+
+      expect(isValid).toBe(false);
+      expect(result.current.validationErrors['rel-2']).toEqual({
+        relationshipType: 'REGISTRATION_RELATIONSHIP_TYPE_REQUIRED',
+      });
+    });
+
+    it('should allow an existing patient to remove their last relationship without the mandatory notification', () => {
+      const { result } = renderHook(() => useRelationshipValidation(), {
+        wrapper,
+      });
+
+      const relationships: RelationshipData[] = [
+        {
+          id: 'rel-1',
+          relationshipType: 'parent-child-uuid',
+          patientId: 'P001',
+          patientUuid: 'uuid-1',
+          tillDate: '',
+          isExisting: true,
+          isDeleted: true,
+        },
+      ];
+
+      let isValid = false;
+      act(() => {
+        isValid = result.current.validateRelationships(relationships, true);
+      });
+
+      expect(isValid).toBe(true);
+      expect(result.current.generalError).toBeNull();
+    });
+
+    it('should reject row with relationshipType but no patientId', () => {
+      const { result } = renderHook(() => useRelationshipValidation(), {
+        wrapper,
+      });
+
+      const relationships: RelationshipData[] = [
+        {
+          id: 'rel-1',
+          relationshipType: 'parent-child-uuid',
+          patientId: '',
+          patientUuid: '',
+          tillDate: '',
+        },
+      ];
+
+      let isValid = false;
+      act(() => {
+        isValid = result.current.validateRelationships(relationships, false);
+      });
+
+      expect(isValid).toBe(false);
+      expect(result.current.validationErrors['rel-1']).toEqual({
+        patientId: 'REGISTRATION_PATIENT_SELECTION_REQUIRED',
+      });
+    });
+
+    it('should reject row with patientId but no relationshipType', () => {
+      const { result } = renderHook(() => useRelationshipValidation(), {
+        wrapper,
+      });
+
+      const relationships: RelationshipData[] = [
+        {
+          id: 'rel-1',
+          relationshipType: '',
+          patientId: 'P001',
+          patientUuid: 'uuid-1',
+          tillDate: '',
+        },
+      ];
+
+      let isValid = false;
+      act(() => {
+        isValid = result.current.validateRelationships(relationships, false);
+      });
+
+      expect(isValid).toBe(false);
+      expect(result.current.validationErrors['rel-1']).toEqual({
+        relationshipType: 'REGISTRATION_RELATIONSHIP_TYPE_REQUIRED',
       });
     });
   });
@@ -378,7 +541,7 @@ describe('useRelationshipValidation', () => {
       ];
 
       act(() => {
-        result.current.validateRelationships(relationships);
+        result.current.validateRelationships(relationships, false);
       });
 
       expect(result.current.validationErrors['rel-1']).toBeDefined();
@@ -415,7 +578,7 @@ describe('useRelationshipValidation', () => {
       ];
 
       act(() => {
-        result.current.validateRelationships(relationships);
+        result.current.validateRelationships(relationships, false);
       });
 
       expect(

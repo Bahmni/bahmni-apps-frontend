@@ -176,7 +176,7 @@ describe('PatientRelationships', () => {
       await user.click(addButton);
 
       await waitFor(() => {
-        expect(ref.current?.getData()).toHaveLength(2);
+        expect(ref.current?.getData()).toHaveLength(1);
       });
     });
 
@@ -207,7 +207,7 @@ describe('PatientRelationships', () => {
       });
     });
 
-    it('should validate empty relationships correctly', async () => {
+    it('should reject empty relationships for a brand new patient', async () => {
       render(<PatientRelationships ref={ref} />, { wrapper });
 
       await waitFor(() => {
@@ -219,8 +219,10 @@ describe('PatientRelationships', () => {
         isValid = ref.current?.validate();
       });
 
-      // Empty relationships are allowed (they are skipped during validation)
-      expect(isValid).toBe(true);
+      expect(isValid).toBe(false);
+      expect(
+        screen.getByTestId('patient-relationships-general-error'),
+      ).toHaveTextContent('REGISTRATION_RELATIONSHIP_REQUIRED');
     });
 
     it('should validate incomplete relationships correctly', async () => {
@@ -276,6 +278,46 @@ describe('PatientRelationships', () => {
 
       // Should pass validation (has both relationshipType and patientUuid)
       expect(isValid).toBe(true);
+    });
+
+    it('should reject a blank row added via "Add another", even when an existing valid row is present', async () => {
+      const user = userEvent.setup();
+      const initialData: RelationshipData[] = [
+        {
+          id: 'rel-1',
+          relationshipType: 'rel-type-1',
+          patientId: 'GAN123456',
+          patientUuid: 'uuid-123',
+          tillDate: '31/12/2024',
+        },
+      ];
+
+      render(<PatientRelationships ref={ref} initialData={initialData} />, {
+        wrapper,
+      });
+
+      await waitFor(() => {
+        expect(ref.current).not.toBeNull();
+      });
+
+      const addButton = screen.getByRole('button', {
+        name: 'REGISTRATION_ADD_RELATIONSHIP',
+      });
+      await user.click(addButton);
+
+      await waitFor(() => {
+        expect(
+          screen.getAllByRole('button', { name: 'REGISTRATION_REMOVE' }),
+        ).toHaveLength(2);
+      });
+      expect(ref.current?.getData()).toHaveLength(1);
+
+      let isValid;
+      act(() => {
+        isValid = ref.current?.validate();
+      });
+
+      expect(isValid).toBe(false);
     });
   });
 });

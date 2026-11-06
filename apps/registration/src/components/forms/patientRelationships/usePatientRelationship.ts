@@ -3,6 +3,7 @@ import { useState, useEffect, useCallback } from 'react';
 import type { PatientSuggestion } from '../../../hooks/usePatientSearch';
 import { usePatientSearch } from '../../../hooks/usePatientSearch';
 import { useRelationshipValidation } from '../../../hooks/useRelationshipValidation';
+import { isRelationshipRowMeaningful } from '../../../utils/relationshipUtils';
 import type { RelationshipData } from './PatientRelationships';
 
 const RELATIONSHIP_FIELDS = {
@@ -30,6 +31,7 @@ export const usePatientRelationship = ({
             relationshipType: '',
             patientId: '',
             tillDate: '',
+            isDefaultPlaceholder: true,
           },
         ],
   );
@@ -43,9 +45,11 @@ export const usePatientRelationship = ({
   const {
     relationshipTypes,
     validationErrors,
+    generalError,
     validateRelationships,
     clearFieldError,
     clearAllErrors,
+    clearGeneralError,
   } = useRelationshipValidation();
 
   const {
@@ -127,8 +131,9 @@ export const usePatientRelationship = ({
         clearSearch(id);
         setSearchTerms((prev) => ({ ...prev, [id]: '' }));
       }
+      clearGeneralError();
     },
-    [clearFieldError, clearSearch, setSearchTerms],
+    [clearFieldError, clearGeneralError, clearSearch, setSearchTerms],
   );
 
   const handlePatientSearch = useCallback(
@@ -197,11 +202,18 @@ export const usePatientRelationship = ({
     [clearSearch],
   );
 
-  const getData = useCallback(() => relationships, [relationships]);
+  const getData = useCallback(() => {
+    // Filter out completely empty rows - only save rows with at least some data
+    return relationships.filter((rel) => {
+      if (rel.isExisting || rel.isDeleted) return true;
+      // For new rows, include only if at least one required field is filled
+      return isRelationshipRowMeaningful(rel);
+    });
+  }, [relationships]);
 
   const validate = useCallback(
-    () => validateRelationships(relationships),
-    [validateRelationships, relationships],
+    () => validateRelationships(relationships, !!currentPatientUuid),
+    [validateRelationships, relationships, currentPatientUuid],
   );
 
   const clearData = useCallback(() => {
@@ -218,6 +230,7 @@ export const usePatientRelationship = ({
     relationships,
     relationshipTypes,
     validationErrors,
+    generalError,
     getPatientSuggestions,
     updateRelationship,
     handlePatientSearch,
