@@ -18,7 +18,11 @@ button.abnormal-button {
 }
 
 .form-control-buttons button.active {
-  background: linear-gradient(to bottom, $border-subtle-01, $border-subtle-02) !important;
+  background: linear-gradient(
+    to bottom,
+    $border-subtle-01,
+    $border-subtle-02
+  ) !important;
   background-color: $border-subtle-02 !important;
   border: 1px solid $border-subtle-02 !important;
   color: $text-primary !important;
@@ -27,7 +31,11 @@ button.abnormal-button {
 }
 
 .form-control-buttons button:hover:not(:disabled) {
-  background: linear-gradient(to bottom, $layer-hover-01, $border-subtle-02) !important;
+  background: linear-gradient(
+    to bottom,
+    $layer-hover-01,
+    $border-subtle-02
+  ) !important;
 }
 
 button.abnormal-button {
@@ -63,16 +71,30 @@ button.abnormal-button:disabled {
 /**
  * Fix tooltip arrow positioning to remove gap and make it appear attached to the info text
  */
-.form-builder-row .form-builder-column-wrapper .form-builder-column .form-field-wrap .form-builder-tooltip-wrap .form-builder-tooltip-description i {
+.form-builder-row
+  .form-builder-column-wrapper
+  .form-builder-column
+  .form-field-wrap
+  .form-builder-tooltip-wrap
+  .form-builder-tooltip-description
+  i {
   bottom: -10px !important;
 }
 
-.form-builder-row .form-builder-column-wrapper .form-builder-column .form-field-wrap input.form-builder-error {
+.form-builder-row
+  .form-builder-column-wrapper
+  .form-builder-column
+  .form-field-wrap
+  input.form-builder-error {
   outline: $spacing-01 solid $red-30 !important;
   background: $red-20 !important;
 }
 
-.form-builder-row .form-builder-column-wrapper .form-builder-column .form-field-wrap textarea.form-builder-error {
+.form-builder-row
+  .form-builder-column-wrapper
+  .form-builder-column
+  .form-field-wrap
+  textarea.form-builder-error {
   outline: $spacing-01 solid $red-30 !important;
   background: $red-20 !important;
 }
@@ -115,4 +137,14 @@ button.abnormal-button:disabled {
   overflow: hidden !important;
   text-overflow: ellipsis !important;
   white-space: nowrap !important;
+}
+
+.form-control-buttons button {
+  width: auto !important;
+  min-width: 175px !important;
+  white-space: normal !important;
+  overflow: visible !important;
+  text-overflow: unset !important;
+  height: auto !important;
+  min-height: 32px !important;
 }

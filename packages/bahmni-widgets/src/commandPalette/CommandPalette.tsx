@@ -221,7 +221,9 @@ export const CommandPalette: React.FC = () => {
                         <span className={styles.annotationSuggestionPrefix}>
                           {ann.prefix}
                         </span>
-                        <span className={styles.itemLabel}>{ann.label}</span>
+                        <span className={styles.itemLabel} title={ann.label}>
+                          {ann.label}
+                        </span>
                       </Command.Item>
                     ))}
                 </Command.Group>
@@ -245,7 +247,10 @@ export const CommandPalette: React.FC = () => {
                     <span className={styles.navIcon} aria-hidden="true">
                       ↗
                     </span>
-                    <span className={styles.itemLabel}>
+                    <span
+                      className={styles.itemLabel}
+                      title={t(item.label, { defaultValue: item.label })}
+                    >
                       {t(item.label, { defaultValue: item.label })}
                     </span>
                   </Command.Item>
