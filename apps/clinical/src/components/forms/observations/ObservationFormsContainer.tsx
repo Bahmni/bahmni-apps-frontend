@@ -41,6 +41,7 @@ import {
   VALIDATION_STATE_MANDATORY,
   VALIDATION_STATE_INVALID,
   VALIDATION_STATE_SCRIPT_ERROR,
+  VALIDATION_STATE_NOTES_REQUIRED,
 } from '../../../constants/forms';
 import { useActionAreaExpandProps } from '../../../hooks/useActionAreaExpandProps';
 import { useClinicalAppData } from '../../../hooks/useClinicalAppData';
@@ -55,6 +56,8 @@ import {
 import EncounterDetails from '../encounterDetails/EncounterDetails';
 import styles from './styles/ObservationFormsContainer.module.scss';
 import { executeOnFormSaveEvent } from './utils/formEventExecutor';
+
+const isNotesError = (message: string) => /\bnotes?\b/i.test(message);
 
 const AGE_DETAILS_DEFAULT: AgeDetails = {
   year: 0,
@@ -76,7 +79,8 @@ interface ObservationFormsContainerProps {
       | typeof VALIDATION_STATE_EMPTY
       | typeof VALIDATION_STATE_MANDATORY
       | typeof VALIDATION_STATE_INVALID
-      | typeof VALIDATION_STATE_SCRIPT_ERROR,
+      | typeof VALIDATION_STATE_SCRIPT_ERROR
+      | typeof VALIDATION_STATE_NOTES_REQUIRED,
     basedOn?: Reference,
   ) => void;
   existingObservations?: Form2Observation[];
@@ -185,6 +189,7 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
     | typeof VALIDATION_STATE_MANDATORY
     | typeof VALIDATION_STATE_INVALID
     | typeof VALIDATION_STATE_SCRIPT_ERROR
+    | typeof VALIDATION_STATE_NOTES_REQUIRED
   >(null);
   const [validationErrorMessage, setValidationErrorMessage] = useState<
     string | null
@@ -491,7 +496,11 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
           error instanceof Error
             ? error.message
             : t('OBSERVATION_FORM_SCRIPT_ERROR_MESSAGE');
-        setValidationErrorType(VALIDATION_STATE_SCRIPT_ERROR);
+        setValidationErrorType(
+          isNotesError(errorMessage)
+            ? VALIDATION_STATE_NOTES_REQUIRED
+            : VALIDATION_STATE_SCRIPT_ERROR,
+        );
         setValidationErrorMessage(errorMessage);
       }
     }
@@ -576,7 +585,8 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
       )}
 
       {validationErrorType &&
-        validationErrorType !== VALIDATION_STATE_SCRIPT_ERROR && (
+        validationErrorType !== VALIDATION_STATE_SCRIPT_ERROR &&
+        validationErrorType !== VALIDATION_STATE_NOTES_REQUIRED && (
           <div className={styles.inlineNotificationWrapper}>
             <InlineNotification
               kind="error"
@@ -593,7 +603,8 @@ const ObservationFormsContainer: React.FC<ObservationFormsContainerProps> = ({
           </div>
         )}
 
-      {validationErrorType === VALIDATION_STATE_SCRIPT_ERROR &&
+      {(validationErrorType === VALIDATION_STATE_SCRIPT_ERROR ||
+        validationErrorType === VALIDATION_STATE_NOTES_REQUIRED) &&
         validationErrorMessage && (
           <div className={styles.inlineNotificationWrapper}>
             <InlineNotification
