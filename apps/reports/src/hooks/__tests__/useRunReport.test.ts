@@ -51,6 +51,8 @@ describe('useRunReport', () => {
       startDate,
       endDate,
       report.config?.paperSize,
+      undefined,
+      undefined,
     );
     expect(windowOpenSpy).toHaveBeenCalledWith(
       'https://example.com/bahmnireports/report?name=OPD+Visit+Count',
@@ -85,6 +87,8 @@ describe('useRunReport', () => {
       undefined,
       undefined,
       report.config?.paperSize,
+      undefined,
+      undefined,
     );
     expect(windowOpenSpy).toHaveBeenCalled();
     expect(opened).toBe(true);
@@ -113,6 +117,8 @@ describe('useRunReport', () => {
       undefined,
       undefined,
       'A3',
+      undefined,
+      undefined,
     );
   });
 
@@ -127,6 +133,31 @@ describe('useRunReport', () => {
       undefined,
       undefined,
       report.config?.paperSize,
+      undefined,
+      undefined,
+    );
+  });
+
+  it('passes the resolved macroTemplateLocation through to buildRunReportUrl', () => {
+    const { result } = renderHook(() => useRunReport());
+
+    result.current.runReport(
+      report,
+      'CUSTOM EXCEL',
+      undefined,
+      undefined,
+      undefined,
+      'uploaded-template.xlsx',
+    );
+
+    expect(mockBuildRunReportUrl).toHaveBeenCalledWith(
+      report.name,
+      'CUSTOM EXCEL',
+      undefined,
+      undefined,
+      report.config?.paperSize,
+      undefined,
+      'uploaded-template.xlsx',
     );
   });
 

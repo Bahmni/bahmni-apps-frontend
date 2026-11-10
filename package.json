@@ -2,6 +2,9 @@
   "name": "@bahmni/source",
   "version": "0.1.0",
   "license": "MPLv2",
+  "engines": {
+    "node": ">=22.22.0"
+  },
   "scripts": {
     "create:app": "node ./scripts/create-app.js",
     "dev": "nx serve distro",
@@ -21,14 +24,14 @@
   },
   "private": true,
   "dependencies": {
-    "@bahmni/form2-controls": "1.0.1-dev.111",
+    "@bahmni/form2-controls": "1.0.1-dev.116",
     "@tanstack/react-query": "^5.85.5",
     "@types/fhir": "^0.0.41",
     "browser-image-compression": "^2.0.2",
     "cmdk": "^1.1.1",
-    "react": "^19.0.0",
-    "react-dom": "^19.0.0",
-    "react-router-dom": "^7.15.0",
+    "react": "^19.2.7",
+    "react-dom": "^19.2.7",
+    "react-router": "^8.3.0",
     "zustand": "^5.0.7"
   },
   "devDependencies": {
@@ -119,7 +122,10 @@
     "picomatch": "4.0.4",
     "fast-uri": "3.1.7",
     "immutable": "4.3.9",
-    "proxy-addr": "2.0.8"
+    "proxy-addr": "2.0.8",
+    "@carbon/icons-react": "11.65.0",
+    "dompurify": "^3.4.17",
+    "follow-redirects": "1.16.2"
   },
   "workspaces": [
     "apps/*",

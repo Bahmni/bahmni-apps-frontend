@@ -70,6 +70,7 @@ jest.mock('../ReportsTable', () => ({
     };
     availableFormats: string[];
     defaultPaperSize?: string;
+    enableReportQueue?: boolean;
   }) => (
     <div data-testid="reports-table-stub">
       <span data-testid="rt-count">{props.reports.length}</span>
@@ -80,6 +81,9 @@ jest.mock('../ReportsTable', () => ({
       <span data-testid="rt-format">{props.appliedFilters.format ?? ''}</span>
       <span data-testid="rt-formats">{props.availableFormats.join(',')}</span>
       <span data-testid="rt-paper-size">{props.defaultPaperSize ?? ''}</span>
+      <span data-testid="rt-enable-queue">
+        {String(!!props.enableReportQueue)}
+      </span>
     </div>
   ),
 }));
@@ -306,6 +310,29 @@ describe('ReportList', () => {
       '',
     );
     expect(screen.getByTestId('tf-preset')).toHaveTextContent('');
+  });
+
+  it('passes enableReportQueue through to ReportsTable based on app config', () => {
+    mockUseReportsAppConfig.mockReturnValue({
+      data: {
+        config: {
+          supportedFormats: ['pdf', 'csv'],
+          paperSize: 'A3',
+          enableReportQueue: true,
+        },
+      },
+    } as ReturnType<typeof useReportsAppConfig>);
+    mockUseReportsConfig.mockReturnValue({
+      data: reportsConfig,
+      isLoading: false,
+      error: null,
+    } as ReturnType<typeof useReportsConfig>);
+
+    render(<ReportList />);
+
+    expect(
+      within(getDateRangeSection()).getByTestId('rt-enable-queue'),
+    ).toHaveTextContent('true');
   });
 
   it('has no accessibility violations', async () => {

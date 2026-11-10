@@ -36,4 +36,5 @@ export interface DocumentUploadProps {
   config?: DocumentUploadConfig;
   documentsTitle?: string;
   isSaving?: boolean;
+  defaultOption?: string | null;
 }

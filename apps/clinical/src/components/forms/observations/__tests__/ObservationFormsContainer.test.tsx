@@ -114,6 +114,7 @@ jest.mock('../../../../constants/forms', () => ({
   VALIDATION_STATE_MANDATORY: 'mandatory',
   VALIDATION_STATE_INVALID: 'invalid',
   VALIDATION_STATE_SCRIPT_ERROR: 'script_error',
+  VALIDATION_STATE_NOTES_REQUIRED: 'notes_required',
 }));
 
 // Mock the formEventExecutor
@@ -1020,8 +1021,10 @@ describe('ObservationFormsContainer', () => {
 
   describe('Copyover notice', () => {
     const editCopyoverContext = {
-      editOnly: 'observationForms',
-      sourceEncounterUuid: 'source-encounter-uuid',
+      context: {
+        encounter: { resourceType: 'Encounter', id: 'source-encounter-uuid' },
+      },
+      action: { type: 'update', resourceType: 'Observation' },
       activeEncounter: { id: 'session-different-uuid' } as any,
     };
 
@@ -1452,6 +1455,82 @@ describe('ObservationFormsContainer', () => {
         expect(screen.getByTestId('notification-title')).toHaveTextContent(
           'translated_OBSERVATION_FORM_VALIDATION_ERROR_TITLE_INVALID',
         );
+      });
+    });
+
+    describe('onFormSave script errors', () => {
+      const setupScriptError = (message: string) => {
+        mockUseObservationFormData.mockReturnValue({
+          observations: [{ concept: { uuid: 'test' }, value: 'test value' }],
+          handleFormDataChange: jest.fn(),
+          resetForm: jest.fn(),
+          formMetadata: mockMetadata,
+          isLoadingMetadata: false,
+          metadataError: null,
+        });
+        mockGetValue.mockReturnValue({
+          observations: [{ concept: { uuid: 'test' }, value: 'test value' }],
+          errors: [],
+        });
+        mockExecuteOnFormSaveEvent.mockImplementation(() => {
+          throw new Error(message);
+        });
+      };
+
+      it('should keep the generic script error title for non-notes script errors', async () => {
+        setupScriptError('Image quality reason required');
+
+        render(
+          <ObservationFormsContainer
+            {...defaultProps}
+            viewingForm={mockForm}
+            onFormObservationsChange={jest.fn()}
+            onViewingFormChange={jest.fn()}
+          />,
+        );
+
+        fireEvent.click(screen.getByTestId('primary-button'));
+
+        await waitFor(() => {
+          expect(screen.getByTestId('notification-title')).toHaveTextContent(
+            'translated_OBSERVATION_FORM_SCRIPT_ERROR_TITLE',
+          );
+        });
+        expect(screen.getByTestId('notification-subtitle')).toHaveTextContent(
+          'Image quality reason required',
+        );
+      });
+
+      it('should save with the notes_required validation type when Save is clicked again', async () => {
+        setupScriptError('Notes are required for Other');
+        const mockOnFormObservationsChange = jest.fn();
+
+        render(
+          <ObservationFormsContainer
+            {...defaultProps}
+            viewingForm={mockForm}
+            onFormObservationsChange={mockOnFormObservationsChange}
+            onViewingFormChange={jest.fn()}
+          />,
+        );
+
+        const saveButton = screen.getByTestId('primary-button');
+        fireEvent.click(saveButton);
+        await waitFor(() => {
+          expect(screen.getByTestId('inline-notification')).toBeInTheDocument();
+        });
+        expect(mockOnFormObservationsChange).not.toHaveBeenCalled();
+
+        fireEvent.click(saveButton);
+
+        await waitFor(() => {
+          expect(mockOnFormObservationsChange).toHaveBeenCalledWith(
+            mockForm.uuid,
+            expect.any(Array),
+            'notes_required',
+            undefined,
+          );
+        });
       });
     });
 
@@ -2184,8 +2263,10 @@ describe('Edit mode - hasFormChanges / change detection', () => {
   };
 
   const editModeContext = {
-    editOnly: 'observationForms' as const,
-    sourceEncounterUuid: 'edit-encounter-uuid',
+    context: {
+      encounter: { resourceType: 'Encounter', id: 'edit-encounter-uuid' },
+    },
+    action: { type: 'update', resourceType: 'Observation' },
   };
 
   const defaultProps = {

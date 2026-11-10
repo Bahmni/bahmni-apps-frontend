@@ -64,6 +64,7 @@ const toSaveAllergyRequest = async (
 
 registerInputControl({
   key: 'allergies',
+  handledResourceTypes: ['AllergyIntolerance'],
   component: AllergiesForm,
   reset: () => useAllergyStore.getState().reset(),
   validate: () => useAllergyStore.getState().validateAllAllergies(),

@@ -1,7 +1,7 @@
 import { Loading } from '@bahmni/design-system';
 import { AppContextProvider } from '@bahmni/widgets';
 import { lazy, Suspense } from 'react';
-import { Navigate, Route, Routes } from 'react-router-dom';
+import { Navigate, Route, Routes } from 'react-router';
 
 const HomeApp = lazy(() =>
   import('@bahmni/home-app').then((module) => ({ default: module.HomeApp })),

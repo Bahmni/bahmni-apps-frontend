@@ -58,6 +58,7 @@ describe('useReportsAppConfig', () => {
       'HTML',
     ]);
     expect(result.current.data?.config?.paperSize).toBe('A3');
+    expect(result.current.data?.config?.enableReportQueue).toBe(true);
   });
 
   it('falls back to an empty config when the fetch fails', async () => {

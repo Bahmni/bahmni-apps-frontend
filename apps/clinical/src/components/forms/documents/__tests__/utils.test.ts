@@ -1,5 +1,5 @@
 import type { DocumentEntry } from '@bahmni/widgets';
-import { createDocumentBundleEntries } from '../utils';
+import { createDocumentBundleEntries, validateEntry } from '../utils';
 import {
   CONSENT_FORM_TYPE,
   createBlankDocumentEntry,
@@ -93,5 +93,61 @@ describe('createDocumentBundleEntries', () => {
     expect(
       (bundleEntries[0].resource as { content: unknown[] }).content,
     ).toHaveLength(2);
+  });
+});
+
+describe('validateEntry', () => {
+  const requiredId = [{ name: 'documentId', required: true }];
+  const optionalId = [{ name: 'documentId', required: false }];
+
+  it.each(['AB12', 'abc', '12345', ' AB12 '])(
+    'accepts the alphanumeric document id "%s"',
+    (documentId) => {
+      const errors = validateEntry(
+        createDocumentEntry({ documentId }),
+        requiredId,
+      );
+
+      expect(errors.documentId).toBeUndefined();
+    },
+  );
+
+  it.each(['DOC-1', 'DOC_1', 'DOC 1', 'DOC#1', 'ID/22', 'é1'])(
+    'rejects the non-alphanumeric document id "%s"',
+    (documentId) => {
+      const errors = validateEntry(
+        createDocumentEntry({ documentId }),
+        requiredId,
+      );
+
+      expect(errors.documentId).toBe('DOCUMENTS_DOCUMENT_ID_ALPHANUMERIC');
+    },
+  );
+
+  it('rejects a non-alphanumeric document id even when the id is optional', () => {
+    const errors = validateEntry(
+      createDocumentEntry({ documentId: 'DOC-1' }),
+      optionalId,
+    );
+
+    expect(errors.documentId).toBe('DOCUMENTS_DOCUMENT_ID_ALPHANUMERIC');
+  });
+
+  it('asks for a value when a required document id is blank', () => {
+    const errors = validateEntry(
+      createDocumentEntry({ documentId: '   ' }),
+      requiredId,
+    );
+
+    expect(errors.documentId).toBe('INPUT_VALUE_REQUIRED');
+  });
+
+  it('allows a blank document id when it is not required', () => {
+    const errors = validateEntry(
+      createDocumentEntry({ documentId: '' }),
+      optionalId,
+    );
+
+    expect(errors.documentId).toBeUndefined();
   });
 });

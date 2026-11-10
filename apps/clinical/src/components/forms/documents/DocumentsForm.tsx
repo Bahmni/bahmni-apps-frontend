@@ -32,7 +32,7 @@ const DocumentsForm: React.FC<DocumentsFormProps> = ({
         config={inputControlConfig ?? {}}
         documents={entries}
         onDocumentsChange={setEntries}
-        documentsTitle={t('DOCUMENTS_ADDED_DOCUMENT_TYPE')}
+        documentsTitle={t('DOCUMENTS_ADD_ACTION')}
       />
     </div>
   );

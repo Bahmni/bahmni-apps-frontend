@@ -7,7 +7,7 @@ import {
 } from '@bahmni/design-system';
 import { useTranslation } from '@bahmni/services';
 import { createPortal } from 'react-dom';
-import { useParams } from 'react-router-dom';
+import { useParams } from 'react-router';
 import { useActiveVisit, useVisitTypes } from '../../hooks/useVisit';
 import { useRegistrationConfig } from '../../providers/registrationConfig';
 import { transformVisitTypesToArray } from '../../utils/visitUtils';

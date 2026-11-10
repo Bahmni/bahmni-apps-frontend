@@ -69,6 +69,7 @@ export const updateRowField = (
 
   if (field === 'startTime') {
     delete errors.startTime;
+    delete errors.endTime;
     delete errors.overlap;
     return applyDerivedEndTime(
       { ...row, startTime: value as string, errors },
