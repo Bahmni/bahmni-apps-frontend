@@ -212,6 +212,56 @@ describe('ConditionsTable', () => {
     ).toBeInTheDocument();
   });
 
+  it('should show the duration for a condition with a same-day onset', () => {
+    (useQuery as jest.Mock).mockReturnValue({
+      data: {
+        conditions: [
+          {
+            ...buildCondition(1),
+            onsetDate: new Date().toISOString(),
+          },
+        ],
+        total: 1,
+      },
+      error: null,
+      isError: false,
+      isLoading: false,
+    });
+    renderTable();
+    const activePanel = screen.getByTestId('condition-table-active');
+    expect(
+      within(activePanel).getByText('CONDITION_ONSET_SINCE_FORMAT'),
+    ).toBeInTheDocument();
+    expect(
+      within(activePanel).queryByText('CONDITION_TABLE_NOT_AVAILABLE'),
+    ).not.toBeInTheDocument();
+  });
+
+  it('should show "Not available" for a condition with no onset date', () => {
+    (useQuery as jest.Mock).mockReturnValue({
+      data: {
+        conditions: [
+          {
+            ...buildCondition(1),
+            onsetDate: undefined,
+          },
+        ],
+        total: 1,
+      },
+      error: null,
+      isError: false,
+      isLoading: false,
+    });
+    renderTable();
+    const activePanel = screen.getByTestId('condition-table-active');
+    expect(
+      within(activePanel).getByText('CONDITION_TABLE_NOT_AVAILABLE'),
+    ).toBeInTheDocument();
+    expect(
+      within(activePanel).queryByText('CONDITION_ONSET_SINCE_FORMAT'),
+    ).not.toBeInTheDocument();
+  });
+
   describe('Pagination', () => {
     const manyConditions = Array.from({ length: 3 }, (_, i) =>
       buildCondition(i + 1),

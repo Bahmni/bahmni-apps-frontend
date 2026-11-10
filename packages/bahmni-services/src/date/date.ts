@@ -286,12 +286,14 @@ export function calculateOnsetDate(
 }
 
 /**
- * Formats a date string into a clean relative time format for use with i18n templates.
- * Converts all time periods to days/months/years only and removes qualifiers like "about", "almost", "ago".
- * Minutes and hours are rounded up to "1 day".
+ * Formats a date string into a compound relative duration for use with i18n templates.
+ * Decomposes the exact gap between the date and now into years/months/days (same
+ * decomposition as calculateAge/getFormattedAge) and renders only the non-zero
+ * components, abbreviated and space-separated (e.g. "1 y 6 m 10 d", "2 y", "10 d").
+ * A same-day date rounds up to "1 d", matching the pre-existing sub-day behavior.
  *
  * @param date - ISO date string to format (e.g., "2025-06-17T07:02:38.000Z" or "2025-06-17")
- * @returns FormatDateResult with clean time format (e.g., "3 days", "1 month", "2 years")
+ * @returns FormatDateResult with compound duration (e.g., "1 y 6 m 10 d", "2 y", "1 d")
  */
 export function formatDateDistance(
   date: string,
@@ -326,56 +328,29 @@ export function formatDateDistance(
   }
 
   const now = new Date();
+  const onset = parseResult.date!;
 
-  // Calculate differences in various units
-  const diffInMilliseconds = now.getTime() - parseResult.date!.getTime();
-  const diffInDays = Math.floor(diffInMilliseconds / (1000 * 60 * 60 * 24));
-  const diffInMonths = differenceInMonths(now, parseResult.date!);
-  const diffInYears = differenceInYears(now, parseResult.date!);
+  const years = differenceInYears(now, onset);
+  const afterYears = addYears(onset, years);
+  const months = differenceInMonths(now, afterYears);
+  const afterMonths = addMonths(afterYears, months);
+  const days = differenceInDays(now, afterMonths);
 
-  let formattedResult: string;
+  const components: Array<[number, string]> = [
+    [years, 'CONDITION_DURATION_YEAR_SHORT'],
+    [months, 'CONDITION_DURATION_MONTH_SHORT'],
+    [days, 'CONDITION_DURATION_DAY_SHORT'],
+  ];
 
-  if (diffInYears >= 5) {
-    const monthInFraction = diffInMonths % 12;
-    const yearValue = monthInFraction > 6 ? diffInYears + 1 : diffInYears;
-    const yearUnit = t('YEARS', {
-      count: yearValue,
-    });
-    formattedResult = `${yearValue}${yearUnit}`;
-  } else if (diffInYears >= 1) {
-    // Use years for periods >= 1 year
-    const monthInFraction = diffInMonths % 12;
-    const yearUnit = t('YEARS', {
-      count: diffInYears + monthInFraction,
-    });
-    const newLocal = diffInYears + 1;
-    formattedResult =
-      monthInFraction === 0
-        ? `${diffInYears}${yearUnit}`
-        : monthInFraction > 6
-          ? `${newLocal}${yearUnit}`
-          : `${diffInYears}.5${yearUnit}`;
-  } else if (diffInMonths >= 11) {
-    const yearUnit = t('YEARS', {
-      count: 1,
-    });
-    formattedResult = `1${yearUnit}`;
-  } else if (diffInMonths >= 1) {
-    // Use months for periods >= 1 month but < 1 year
-    const daysInFraction = diffInDays % 30;
-    const monthValue = daysInFraction > 15 ? diffInMonths + 1 : diffInMonths;
-    const monthUnit = t('MONTHS', {
-      count: monthValue,
-    });
-    formattedResult = `${monthValue}${monthUnit}`;
-  } else {
-    // Use days for everything else (including hours, minutes - round up to at least 1 day)
-    const days = Math.max(1, diffInDays);
-    const dayUnit = t('DAYS', {
-      count: days,
-    });
-    formattedResult = `${days}${dayUnit}`;
-  }
+  const parts = components
+    .filter(([value]) => value > 0)
+    .map(([value, key]) => `${value} ${t(key)}`);
+
+  // Same-day onset: preserve the pre-existing round-up-to-1-day behavior.
+  const formattedResult =
+    parts.length > 0
+      ? parts.join(' ')
+      : `1 ${t('CONDITION_DURATION_DAY_SHORT')}`;
 
   return { formattedResult };
 }
