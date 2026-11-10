@@ -22,4 +22,8 @@ export {
   type SaveAllergyResponse,
   OPENMRS_ALLERGEN_TYPE,
 } from './models';
-export { isNonCodedAllergen, mapAllergyToInputEntry } from './utils';
+export {
+  isNonCodedAllergen,
+  mapAllergyToInputEntry,
+  resolveNonCodedAllergenName,
+} from './utils';

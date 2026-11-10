@@ -179,18 +179,10 @@ export const useAllergyStore = create<AllergyState>((set, get) => ({
           delete errors.reactions;
         }
 
-        // OpenMRS rejects a non-coded allergy with no free-text allergen name
-        // (allergyapi.allergen.nonCodedAllergen.required), so block it here
-        // rather than letting the save fail server-side.
-        if (
-          isNonCodedAllergen(allergy.id) &&
-          !allergy.nonCodedAllergen?.trim()
-        ) {
-          errors.nonCodedAllergen = 'INPUT_VALUE_REQUIRED';
-          isValid = false;
-        } else {
-          delete errors.nonCodedAllergen;
-        }
+        // The free-text name is optional: submission defaults it (see
+        // resolveNonCodedAllergenName) so OpenMRS's
+        // allergyapi.allergen.nonCodedAllergen.required rule is still met.
+        delete errors.nonCodedAllergen;
 
         return {
           ...allergy,
