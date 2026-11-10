@@ -340,6 +340,66 @@ describe('useAllergyStore', () => {
     });
   });
 
+  describe('validateAllAllergies - Other, Non-Coded (Specify allergen optional)', () => {
+    const addOther = (result: {
+      current: ReturnType<typeof useAllergyStore.getState>;
+    }) => {
+      act(() => {
+        result.current.addAllergy(
+          { ...mockAllergen, uuid: OTHER_NON_CODED_ALLERGEN_UUID },
+          true,
+        );
+      });
+      return result.current.selectedAllergies[0].entryId;
+    };
+
+    test('is valid with severity and reactions but an empty Specify allergen', () => {
+      const { result } = renderHook(() => useAllergyStore());
+      const entryId = addOther(result);
+      act(() => {
+        result.current.updateSeverity(entryId, ALLERGY_SEVERITY_CONCEPTS[0]);
+        result.current.updateReactions(entryId, [mockReactions[0]]);
+      });
+
+      let isValid = false;
+      act(() => {
+        isValid = result.current.validateAllAllergies();
+      });
+
+      expect(isValid).toBe(true);
+      expect(result.current.selectedAllergies[0].errors).toEqual({});
+    });
+
+    test('still requires severity and reactions', () => {
+      const { result } = renderHook(() => useAllergyStore());
+      addOther(result);
+
+      let isValid = true;
+      act(() => {
+        isValid = result.current.validateAllAllergies();
+      });
+
+      expect(isValid).toBe(false);
+      const { errors } = result.current.selectedAllergies[0];
+      expect(errors.severity).toBe('DROPDOWN_VALUE_REQUIRED');
+      expect(errors.reactions).toBe('DROPDOWN_VALUE_REQUIRED');
+      expect(errors.nonCodedAllergen).toBeUndefined();
+    });
+
+    test('does not set a nonCodedAllergen error on coded allergies either', () => {
+      const { result } = renderHook(() => useAllergyStore());
+      act(() => {
+        result.current.addAllergy(mockAllergen);
+      });
+      act(() => {
+        result.current.validateAllAllergies();
+      });
+      expect(
+        result.current.selectedAllergies[0].errors.nonCodedAllergen,
+      ).toBeUndefined();
+    });
+  });
+
   // RESET TESTS
   describe('reset', () => {
     test('should clear all selected allergies', () => {
