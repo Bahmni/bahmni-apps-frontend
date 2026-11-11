@@ -51,7 +51,7 @@ describe('getFormattedError', () => {
                 severity: 'error',
                 code: 'processing',
                 diagnostics:
-                  'Error occurred while processing bundle entry [urn:uuid:abc-123]. An active Admit order already exists for this visit',
+                  'Error occurred while processing bundle entry [urn:uuid:abc-123]. An active Admit Patient order already exists for this visit',
               },
             ],
           },
@@ -77,7 +77,7 @@ describe('getFormattedError', () => {
                 severity: 'error',
                 code: 'processing',
                 diagnostics:
-                  'An active Discharge order already exists for this visit',
+                  'An active Discharge Patient order already exists for this visit',
               },
             ],
           },
@@ -89,6 +89,54 @@ describe('getFormattedError', () => {
       expect(result).toEqual({
         title: 'Bad Request',
         message: 'DISPOSITION_ACTIVE_DISCHARGE_ORDER_EXISTS',
+      });
+    });
+
+    it('maps the duplicate Transfer order message to its translation key', () => {
+      const fhirError = {
+        response: {
+          status: 400,
+          data: {
+            resourceType: 'OperationOutcome',
+            issue: [
+              {
+                severity: 'error',
+                code: 'processing',
+                diagnostics:
+                  'An active Transfer Patient order already exists for this visit',
+              },
+            ],
+          },
+        },
+      } as AxiosError;
+
+      expect(getFormattedError(fhirError)).toEqual({
+        title: 'Bad Request',
+        message: 'DISPOSITION_ACTIVE_TRANSFER_ORDER_EXISTS',
+      });
+    });
+
+    it('maps the duplicate Undo Discharge order message to its translation key', () => {
+      const fhirError = {
+        response: {
+          status: 400,
+          data: {
+            resourceType: 'OperationOutcome',
+            issue: [
+              {
+                severity: 'error',
+                code: 'processing',
+                diagnostics:
+                  'An active Undo Discharge order already exists for this visit',
+              },
+            ],
+          },
+        },
+      } as AxiosError;
+
+      expect(getFormattedError(fhirError)).toEqual({
+        title: 'Bad Request',
+        message: 'DISPOSITION_ACTIVE_UNDO_DISCHARGE_ORDER_EXISTS',
       });
     });
 
