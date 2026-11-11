@@ -149,8 +149,10 @@ const DispositionTable: React.FC<WidgetProps> = ({
   const accessor = useCallback((row: DispositionViewModel, key: string) => {
     if (key === 'date' || key === 'recordedTime') {
       const value = row[key];
-      const time = value ? new Date(value).getTime() : NaN;
-      return Number.isNaN(time) ? 0 : time;
+      const parsed = value ? new Date(value) : null;
+      if (!parsed || Number.isNaN(parsed.getTime())) return 0;
+      if (key === 'date') parsed.setHours(0, 0, 0, 0);
+      return parsed.getTime();
     }
     return undefined;
   }, []);
