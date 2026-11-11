@@ -139,6 +139,7 @@ const DispositionTable: React.FC<WidgetProps> = ({
         key: 'recordedTime',
         header: t('DISPOSITION_RECORDED_TIME'),
         enableSorting: true,
+        defaultSortDirection: 'desc' as const,
       },
       { key: 'recordedBy', header: t('DISPOSITION_RECORDED_BY') },
     ],
