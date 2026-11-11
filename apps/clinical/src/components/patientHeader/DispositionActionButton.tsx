@@ -3,6 +3,7 @@ import { useTranslation, dispatchConsultationStart } from '@bahmni/services';
 import { useHasPrivilege, CONSULTATION_PAD_PRIVILEGES } from '@bahmni/widgets';
 import type { ServiceRequest } from 'fhir/r4';
 import React from 'react';
+import { useClinicalConfig } from '../../providers/clinicalConfig';
 import styles from './styles/PatientHeader.module.scss';
 
 const DISPOSITION_SERVICE_REQUEST: ServiceRequest = {
@@ -19,7 +20,8 @@ interface DispositionActionButtonProps {
 
 /**
  * Header action button that opens the Consultation Pad scoped to the
- * Disposition form only, by dispatching a draft ServiceRequest action;
+ * Disposition form only. Rendered only when a disposition input control is
+ * configured and the user holds its privileges. Dispatches a draft ServiceRequest action;
  * the draft status distinguishes it from the investigations control.
  */
 const DispositionActionButton: React.FC<DispositionActionButtonProps> = ({
@@ -27,11 +29,18 @@ const DispositionActionButton: React.FC<DispositionActionButtonProps> = ({
   isLoading,
 }) => {
   const { t } = useTranslation();
+  const { clinicalConfig } = useClinicalConfig();
+  const dispositionControl =
+    clinicalConfig?.consultationPad?.inputControls?.find(
+      (c) => c.type === 'disposition',
+    );
   const canAddDisposition = useHasPrivilege(
-    CONSULTATION_PAD_PRIVILEGES.DISPOSITION,
+    dispositionControl?.privileges?.length
+      ? dispositionControl.privileges
+      : CONSULTATION_PAD_PRIVILEGES.DISPOSITION,
   );
 
-  if (!canAddDisposition) {
+  if (!dispositionControl || !canAddDisposition) {
     return null;
   }
 
