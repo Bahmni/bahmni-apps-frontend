@@ -234,27 +234,27 @@ export const CommandPalette: React.FC = () => {
                 heading={t('COMMAND_PALETTE_GROUP_NAVIGATION')}
                 className={styles.group}
               >
-                {navItems.map((item) => (
-                  <Command.Item
-                    key={item.id}
-                    value={item.label}
-                    className={styles.item}
-                    onSelect={() => {
-                      close();
-                      navigateToPath(item.path, item.newTab);
-                    }}
-                  >
-                    <span className={styles.navIcon} aria-hidden="true">
-                      ↗
-                    </span>
-                    <span
-                      className={styles.itemLabel}
-                      title={t(item.label, { defaultValue: item.label })}
+                {navItems.map((item) => {
+                  const navLabel = t(item.label, { defaultValue: item.label });
+                  return (
+                    <Command.Item
+                      key={item.id}
+                      value={item.label}
+                      className={styles.item}
+                      onSelect={() => {
+                        close();
+                        navigateToPath(item.path, item.newTab);
+                      }}
                     >
-                      {t(item.label, { defaultValue: item.label })}
-                    </span>
-                  </Command.Item>
-                ))}
+                      <span className={styles.navIcon} aria-hidden="true">
+                        ↗
+                      </span>
+                      <span className={styles.itemLabel} title={navLabel}>
+                        {navLabel}
+                      </span>
+                    </Command.Item>
+                  );
+                })}
               </Command.Group>
             )}
 

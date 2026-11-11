@@ -56,6 +56,7 @@ describe('PatientCommandItem', () => {
     );
 
     expect(screen.getByText('John Doe · P001')).toBeInTheDocument();
+    expect(screen.getByTitle('John Doe · P001')).toBeInTheDocument();
   });
 
   it('renders patient initials in avatar', () => {

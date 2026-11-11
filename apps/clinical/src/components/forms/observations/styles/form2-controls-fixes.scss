@@ -113,11 +113,14 @@ button.abnormal-button:disabled {
 .form-builder-row .obs-control-select-wrapper .needsclick__control {
   width: 100% !important;
   max-width: 100% !important;
+  height: auto !important;
 }
 
 .form-builder-row .obs-control-select-wrapper .needsclick__value-container {
   max-width: calc(100% - 40px) !important;
-  overflow: hidden !important;
+  overflow: visible !important;
+  height: auto !important;
+  flex-wrap: wrap !important;
 }
 
 .form-builder-row .obs-control-select-wrapper .needsclick__input-container {
@@ -134,9 +137,11 @@ button.abnormal-button:disabled {
 }
 
 .form-builder-row .obs-control-select-wrapper .needsclick__single-value {
-  overflow: hidden !important;
-  text-overflow: ellipsis !important;
-  white-space: nowrap !important;
+  overflow: visible !important;
+  text-overflow: unset !important;
+  white-space: normal !important;
+  word-break: break-word !important;
+  max-width: 100% !important;
 }
 
 .form-control-buttons button {
