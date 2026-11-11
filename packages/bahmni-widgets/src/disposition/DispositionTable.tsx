@@ -39,6 +39,7 @@ const DispositionTable: React.FC<WidgetProps> = ({
   const patientUUID = usePatientUUID();
   const { addNotification } = useNotification();
   const orderType = (config?.orderType as string) || DISPOSITION_ORDER_TYPE;
+  const conceptName = config?.conceptName as string | undefined;
 
   const emptyEncounterFilter = shouldEnableEncounterFilter(
     episodeOfCareUuids,
@@ -71,8 +72,8 @@ const DispositionTable: React.FC<WidgetProps> = ({
   });
 
   const { data: typeNames } = useQuery({
-    queryKey: ['dispositionTypeNames', getUserPreferredLocale()],
-    queryFn: fetchDispositionTypeNames,
+    queryKey: ['dispositionTypeNames', conceptName, getUserPreferredLocale()],
+    queryFn: () => fetchDispositionTypeNames(conceptName),
     staleTime: Infinity,
   });
 

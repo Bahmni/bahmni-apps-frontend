@@ -77,9 +77,13 @@ const Disposition: React.FC<DispositionProps> = React.memo(
     const configuredDispositionTypes = inputControlConfig?.metadata
       ?.dispositionTypes as DispositionType[] | undefined;
 
+    const conceptName = inputControlConfig?.metadata?.conceptName as
+      | string
+      | undefined;
+
     const { data: fetchedDispositionTypes } = useQuery({
-      queryKey: ['dispositionTypes'],
-      queryFn: fetchDispositionTypes,
+      queryKey: ['dispositionTypes', conceptName],
+      queryFn: () => fetchDispositionTypes(conceptName),
     });
 
     const patientUUID = usePatientUUID();

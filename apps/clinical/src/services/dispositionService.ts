@@ -6,7 +6,7 @@ import {
 } from '@bahmni/services';
 import type { DispositionType } from '../stores/dispositionStore';
 
-const DISPOSITION_CONCEPT_NAME = 'Disposition';
+export const DEFAULT_DISPOSITION_CONCEPT_NAME = 'Disposition';
 const DISPOSITION_CUSTOM_VIEW =
   'custom:(uuid,name,answers:(uuid,name,names:(name,locale,conceptNameType),mappings))';
 const EMRAPI_MAPPING_SOURCE = 'org.openmrs.module.emrapi';
@@ -76,9 +76,11 @@ const getLocalizedName = (
   return localized?.name ?? concept.name?.name ?? '';
 };
 
-export const fetchDispositionTypes = async (): Promise<DispositionType[]> => {
+export const fetchDispositionTypes = async (
+  conceptName: string = DEFAULT_DISPOSITION_CONCEPT_NAME,
+): Promise<DispositionType[]> => {
   const concept = (await searchConceptByName(
-    DISPOSITION_CONCEPT_NAME,
+    conceptName,
     DISPOSITION_CUSTOM_VIEW,
   )) as DispositionConceptData | null;
 
