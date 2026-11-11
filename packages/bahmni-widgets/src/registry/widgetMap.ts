@@ -35,6 +35,10 @@ export const builtInWidgets: WidgetConfig[] = [
     component: lazy(() => import('../labinvestigation/LabInvestigation')),
   },
   {
+    type: 'disposition',
+    component: lazy(() => import('../disposition/DispositionTable')),
+  },
+  {
     type: 'observations',
     component: lazy(() => import('../observations/Observations')),
   },
