@@ -1,6 +1,7 @@
 import { useTranslation, dispatchConsultationStart } from '@bahmni/services';
 import { useHasPrivilege } from '@bahmni/widgets';
 import { render, screen, fireEvent } from '@testing-library/react';
+import { useClinicalConfig } from '../../../providers/clinicalConfig';
 import DispositionActionButton from '../DispositionActionButton';
 import '@testing-library/jest-dom';
 
@@ -13,6 +14,24 @@ jest.mock('@bahmni/widgets', () => ({
   ...jest.requireActual('@bahmni/widgets'),
   useHasPrivilege: jest.fn(),
 }));
+
+jest.mock('../../../providers/clinicalConfig', () => ({
+  useClinicalConfig: jest.fn(),
+}));
+
+const mockUseClinicalConfig = useClinicalConfig as jest.MockedFunction<
+  typeof useClinicalConfig
+>;
+
+const configWith = (inputControls: unknown[]) =>
+  ({
+    clinicalConfig: { consultationPad: { inputControls } },
+  }) as any;
+
+const dispositionControl = {
+  type: 'disposition',
+  privileges: ['Custom Disposition Privilege'],
+};
 
 const mockUseTranslation = useTranslation as jest.MockedFunction<
   typeof useTranslation
@@ -35,6 +54,7 @@ describe('DispositionActionButton', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockUseTranslation.mockReturnValue({ t: (key: string) => key } as any);
+    mockUseClinicalConfig.mockReturnValue(configWith([dispositionControl]));
   });
 
   describe('when user has Add Encounters privilege', () => {
@@ -99,5 +119,39 @@ describe('DispositionActionButton', () => {
     expect(
       screen.queryByTestId('disposition-action-button'),
     ).not.toBeInTheDocument();
+  });
+
+  it('hides button when no disposition input control is configured', () => {
+    mockUseHasPrivilege.mockReturnValue(true);
+    mockUseClinicalConfig.mockReturnValue(
+      configWith([{ type: 'investigations' }]),
+    );
+
+    render(<DispositionActionButton {...defaultProps} />);
+
+    expect(
+      screen.queryByTestId('disposition-action-button'),
+    ).not.toBeInTheDocument();
+  });
+
+  it('checks the privileges configured on the disposition control', () => {
+    mockUseHasPrivilege.mockReturnValue(true);
+
+    render(<DispositionActionButton {...defaultProps} />);
+
+    expect(mockUseHasPrivilege).toHaveBeenCalledWith([
+      'Custom Disposition Privilege',
+    ]);
+  });
+
+  it('falls back to Add Encounters when the control declares no privileges', () => {
+    mockUseHasPrivilege.mockReturnValue(true);
+    mockUseClinicalConfig.mockReturnValue(
+      configWith([{ type: 'disposition', privileges: [] }]),
+    );
+
+    render(<DispositionActionButton {...defaultProps} />);
+
+    expect(mockUseHasPrivilege).toHaveBeenCalledWith(['Add Encounters']);
   });
 });
