@@ -50,6 +50,24 @@ describe('dispositionService', () => {
       ]);
     });
 
+    it('searches the Disposition concept by default and the configured name when given', async () => {
+      mockSearchConceptByName.mockResolvedValue({ answers: [] } as any);
+
+      await fetchDispositionTypes();
+      await fetchDispositionTypes('Custom Disposition');
+
+      expect(mockSearchConceptByName).toHaveBeenNthCalledWith(
+        1,
+        'Disposition',
+        expect.any(String),
+      );
+      expect(mockSearchConceptByName).toHaveBeenNthCalledWith(
+        2,
+        'Custom Disposition',
+        expect.any(String),
+      );
+    });
+
     it('falls back to the concept uuid when no emrapi mapping is present', async () => {
       mockSearchConceptByName.mockResolvedValue({
         answers: [
