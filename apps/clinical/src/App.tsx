@@ -8,16 +8,14 @@ import {
   ActivePractitionerProvider,
   UserActionProvider,
 } from '@bahmni/widgets';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import React, { Suspense, useEffect, useState } from 'react';
 import { Routes } from 'react-router';
-import { queryClientConfig } from './config/tanstackQuery';
+import { queryClient } from './config/queryClient';
 import { CLINICAL_NAMESPACE } from './constants/app';
 import { ClinicalConfigProvider } from './providers/clinicalConfig';
 import { routes, renderRoutes } from './routes';
-
-const queryClient = new QueryClient(queryClientConfig);
 
 const ClinicalApp: React.FC = () => {
   const [isInitialized, setIsInitialized] = useState(false);

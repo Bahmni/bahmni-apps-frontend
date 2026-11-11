@@ -4,6 +4,7 @@ export interface ServiceRequestInputEntry {
   display: string;
   selectedPriority?: SupportedServiceRequestPriority;
   note?: string;
+  occurrenceDate?: Date;
 }
 
 export type SupportedServiceRequestPriority = 'routine' | 'stat';
