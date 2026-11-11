@@ -128,13 +128,31 @@ const DispositionTable: React.FC<WidgetProps> = ({
   const headers = useMemo(
     () => [
       { key: 'type', header: t('DISPOSITION_TYPE_LABEL') },
-      { key: 'date', header: t('DISPOSITION_DATE_LABEL') },
+      {
+        key: 'date',
+        header: t('DISPOSITION_DATE_LABEL'),
+        enableSorting: true,
+        defaultSortDirection: 'desc' as const,
+      },
       { key: 'notes', header: t('DISPOSITION_NOTES_LABEL') },
-      { key: 'recordedTime', header: t('DISPOSITION_RECORDED_TIME') },
+      {
+        key: 'recordedTime',
+        header: t('DISPOSITION_RECORDED_TIME'),
+        enableSorting: true,
+      },
       { key: 'recordedBy', header: t('DISPOSITION_RECORDED_BY') },
     ],
     [t],
   );
+
+  const accessor = useCallback((row: DispositionViewModel, key: string) => {
+    if (key === 'date' || key === 'recordedTime') {
+      const value = row[key];
+      const time = value ? new Date(value).getTime() : NaN;
+      return Number.isNaN(time) ? 0 : time;
+    }
+    return undefined;
+  }, []);
 
   const renderCell = useCallback(
     (row: DispositionViewModel, cellId: string) => {
@@ -169,6 +187,7 @@ const DispositionTable: React.FC<WidgetProps> = ({
         errorStateMessage={isError ? error?.message : undefined}
         emptyStateMessage={t('NO_DISPOSITIONS')}
         renderCell={renderCell}
+        accessor={accessor}
         className={styles.dispositionTable}
         dataTestId="disposition-table-data"
       />
