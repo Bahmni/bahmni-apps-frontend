@@ -4,7 +4,7 @@ import { DispositionViewModel } from './models';
 
 export const DISPOSITION_ORDER_TYPE = 'ADT Order';
 
-const DISPOSITION_CONCEPT_NAME = 'Disposition';
+export const DEFAULT_DISPOSITION_CONCEPT_NAME = 'Disposition';
 const DISPOSITION_CUSTOM_VIEW =
   'custom:(uuid,name,answers:(uuid,name,names:(name,locale,conceptNameType)))';
 
@@ -22,11 +22,11 @@ const getLocalizedName = (answer: DispositionAnswer, locale: string) => {
   return localized?.name ?? answer.name?.name;
 };
 
-export const fetchDispositionTypeNames = async (): Promise<
-  Map<string, string>
-> => {
+export const fetchDispositionTypeNames = async (
+  conceptName: string = DEFAULT_DISPOSITION_CONCEPT_NAME,
+): Promise<Map<string, string>> => {
   const concept = (await searchConceptByName(
-    DISPOSITION_CONCEPT_NAME,
+    conceptName,
     DISPOSITION_CUSTOM_VIEW,
   )) as { answers?: DispositionAnswer[] } | null;
   const locale = getUserPreferredLocale();
