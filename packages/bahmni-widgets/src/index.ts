@@ -44,6 +44,7 @@ export { LabInvestigation } from './labinvestigation';
 export { SearchPatient } from './search/searchPatient';
 export { VitalFlowSheet } from './vitalFlowSheet';
 export { GenericServiceRequestTable } from './genericServiceRequest';
+export { DispositionTable } from './disposition';
 export { TaskList } from './tasks';
 export { PatientProgramsTable } from './patientPrograms';
 export { ImmunizationHistory } from './immunizationHistory';
