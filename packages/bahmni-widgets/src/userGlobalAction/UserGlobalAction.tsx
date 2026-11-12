@@ -5,7 +5,7 @@ import {
   hasPrivilege,
   useTranslation,
 } from '@bahmni/services';
-import { UserAvatar } from '@carbon/icons-react';
+import { UserAvatar, Location } from '@carbon/icons-react';
 import { HeaderGlobalAction, HeaderGlobalActionProps } from '@carbon/react';
 import {
   AriaAttributes,
@@ -51,7 +51,12 @@ const HeaderGlobalActionWithHtmlAttrs = HeaderGlobalAction as ComponentType<
   }
 >;
 
-export const UserGlobalAction = () => {
+interface UserGlobalActionProps {
+  /** The logged-in user's location, shown as a read-only row at the top of the menu when present. */
+  locationName?: string;
+}
+
+export const UserGlobalAction = ({ locationName }: UserGlobalActionProps) => {
   const { t } = useTranslation();
   const { userPrivileges } = useUserPrivilege();
   const { addNotification } = useNotification();
@@ -179,6 +184,9 @@ export const UserGlobalAction = () => {
         aria-haspopup="menu"
         aria-expanded={isOpen}
         aria-controls={MENU_ID}
+        aria-describedby={
+          isOpen && locationName ? `${MENU_ID}-location` : undefined
+        }
         isActive={isOpen}
         onClick={() => setIsOpen((open) => !open)}
         className={styles.userAction}
@@ -200,6 +208,22 @@ export const UserGlobalAction = () => {
         label={t('USER_GLOBAL_ACTION_MENU')}
         onClose={() => setIsOpen(false)}
       >
+        {locationName && (
+          // As the outer carbon menu is <ul> its direct children should be <li>
+          <li role="presentation">
+            <div
+              role="group"
+              id={`${MENU_ID}-location`}
+              aria-label={t('LOGIN_LOCATION_LABEL', { name: locationName })}
+              title={locationName}
+              className={styles.locationInfo}
+            >
+              <Location aria-hidden="true" />
+              <span className={styles.locationText}>{locationName}</span>
+            </div>
+          </li>
+        )}
+
         {filteredActions.map((action) => (
           <MenuItem
             id={`user-global-action-${action.id}`}

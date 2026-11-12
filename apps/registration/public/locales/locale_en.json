@@ -141,6 +141,7 @@
   "GENDER_F": "Female",
   "HOME_LABEL": "Home",
   "LOADING_PATIENT_DETAILS": "Navigating to patient details...",
+  "LOGIN_LOCATION_LABEL": "Login location: {{name}}",
   "MONTHS_one": " month",
   "MONTHS_other": " months",
   "NO_EXTENSIONS_CONFIGURED": "No extensions configured",
