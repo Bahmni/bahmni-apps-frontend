@@ -40,7 +40,7 @@ describe('getFormattedError', () => {
       });
     });
 
-    it('should handle FHIR OperationOutcome without duplicate medication error', () => {
+    it('maps the duplicate Admit order message to its translation key', () => {
       const fhirError = {
         response: {
           status: 400,
@@ -49,10 +49,130 @@ describe('getFormattedError', () => {
             issue: [
               {
                 severity: 'error',
-                code: 'invalid',
+                code: 'processing',
+                diagnostics:
+                  'Error occurred while processing bundle entry [urn:uuid:abc-123]. An active Admit Patient order already exists for this visit',
+              },
+            ],
+          },
+        },
+      } as AxiosError;
+
+      const result = getFormattedError(fhirError);
+
+      expect(result).toEqual({
+        title: 'Bad Request',
+        message: 'DISPOSITION_ACTIVE_ADMIT_ORDER_EXISTS',
+      });
+    });
+
+    it('maps the duplicate Discharge order message to its translation key', () => {
+      const fhirError = {
+        response: {
+          status: 400,
+          data: {
+            resourceType: 'OperationOutcome',
+            issue: [
+              {
+                severity: 'error',
+                code: 'processing',
+                diagnostics:
+                  'An active Discharge Patient order already exists for this visit',
+              },
+            ],
+          },
+        },
+      } as AxiosError;
+
+      const result = getFormattedError(fhirError);
+
+      expect(result).toEqual({
+        title: 'Bad Request',
+        message: 'DISPOSITION_ACTIVE_DISCHARGE_ORDER_EXISTS',
+      });
+    });
+
+    it('maps the duplicate Transfer order message to its translation key', () => {
+      const fhirError = {
+        response: {
+          status: 400,
+          data: {
+            resourceType: 'OperationOutcome',
+            issue: [
+              {
+                severity: 'error',
+                code: 'processing',
+                diagnostics:
+                  'An active Transfer Patient order already exists for this visit',
+              },
+            ],
+          },
+        },
+      } as AxiosError;
+
+      expect(getFormattedError(fhirError)).toEqual({
+        title: 'Bad Request',
+        message: 'DISPOSITION_ACTIVE_TRANSFER_ORDER_EXISTS',
+      });
+    });
+
+    it('maps the duplicate Undo Discharge order message to its translation key', () => {
+      const fhirError = {
+        response: {
+          status: 400,
+          data: {
+            resourceType: 'OperationOutcome',
+            issue: [
+              {
+                severity: 'error',
+                code: 'processing',
+                diagnostics:
+                  'An active Undo Discharge order already exists for this visit',
+              },
+            ],
+          },
+        },
+      } as AxiosError;
+
+      expect(getFormattedError(fhirError)).toEqual({
+        title: 'Bad Request',
+        message: 'DISPOSITION_ACTIVE_UNDO_DISCHARGE_ORDER_EXISTS',
+      });
+    });
+
+    it('does not surface raw diagnostics for unrecognised FHIR OperationOutcome errors', () => {
+      const fhirError = {
+        response: {
+          status: 400,
+          data: {
+            resourceType: 'OperationOutcome',
+            issue: [
+              {
+                severity: 'error',
+                code: 'processing',
                 diagnostics: 'Some other validation error',
               },
             ],
+          },
+        },
+      } as AxiosError;
+
+      const result = getFormattedError(fhirError);
+
+      expect(result).toEqual({
+        title: 'Bad Request',
+        message:
+          'Invalid input parameters. Please check your request and try again.',
+      });
+    });
+
+    it('falls back to the generic message when the OperationOutcome has no diagnostics at all', () => {
+      const fhirError = {
+        response: {
+          status: 400,
+          data: {
+            resourceType: 'OperationOutcome',
+            issue: [{ severity: 'error', code: 'invalid' }],
           },
         },
       } as AxiosError;
