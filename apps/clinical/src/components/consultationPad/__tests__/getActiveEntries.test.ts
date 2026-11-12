@@ -113,6 +113,7 @@ describe('getActiveEntries (real control registrations)', () => {
       );
       expect(result).not.toContain('stopMedications');
       expect(result).not.toContain('cancelVaccination');
+      expect(result).not.toContain('disposition');
     });
 
     it('starting an Immunization encounter shows only the immunization controls', () => {

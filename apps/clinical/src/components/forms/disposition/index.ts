@@ -6,6 +6,7 @@ import Disposition from './Disposition';
 
 registerInputControl({
   key: 'disposition',
+  handledActionTypes: ['create'],
   handledResourceTypes: ['ServiceRequest'],
   handledResourceStatuses: ['draft'],
   component: Disposition,
