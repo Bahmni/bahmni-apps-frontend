@@ -176,6 +176,7 @@ export {
   type SaveAllergyResponse,
   OPENMRS_ALLERGEN_TYPE,
   isNonCodedAllergen,
+  resolveNonCodedAllergenName,
   OTHER_NON_CODED_ALLERGEN_UUID,
   mapAllergyToInputEntry,
   getAllergies,

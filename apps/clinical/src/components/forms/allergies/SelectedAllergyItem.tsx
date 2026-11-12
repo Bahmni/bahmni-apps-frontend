@@ -157,6 +157,7 @@ const SelectedAllergyItem: React.FC<SelectedAllergyItemProps> = React.memo(
             data-testid={`allergy-non-coded-name-${entryId}`}
             labelText={t('ALLERGY_OTHER_ALLERGEN_LABEL')}
             placeholder={t('ALLERGY_OTHER_ALLERGEN_PLACEHOLDER')}
+            helperText={t('ALLERGY_OTHER_ALLERGEN_HELPER')}
             value={nonCodedAllergen ?? ''}
             onChange={(e) => updateNonCodedAllergen(entryId, e.target.value)}
             invalid={hasNonCodedError}

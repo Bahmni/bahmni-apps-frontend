@@ -118,6 +118,114 @@ describe('allergies control - REST save path', () => {
       );
     });
 
+    describe('Specify allergen left empty (optional, BAH-5006)', () => {
+      it("defaults nonCodedAllergen to the picked concept's display name instead of omitting it", async () => {
+        useAllergyStore.setState({
+          selectedAllergies: [
+            makeNonCodedAllergy({ display: 'Other', nonCodedAllergen: '' }),
+          ],
+        });
+
+        await allergiesControl().onDirectSubmit!();
+
+        expect(saveAllergy).toHaveBeenCalledWith(
+          'patient-123',
+          {
+            allergen: {
+              allergenType: 'DRUG',
+              codedAllergen: { uuid: OTHER_NON_CODED_ALLERGEN_UUID },
+              nonCodedAllergen: 'Other',
+            },
+            reactions: [{ reaction: { uuid: 'reaction-uuid' } }],
+            severity: { uuid: MILD_CONCEPT },
+          },
+          undefined,
+        );
+      });
+
+      it('treats an undefined or whitespace-only name as empty', async () => {
+        useAllergyStore.setState({
+          selectedAllergies: [
+            makeNonCodedAllergy({
+              entryId: 'a',
+              display: 'Other',
+              nonCodedAllergen: undefined,
+            }),
+            makeNonCodedAllergy({
+              entryId: 'b',
+              display: 'Other',
+              nonCodedAllergen: '   ',
+            }),
+          ],
+        });
+
+        await allergiesControl().onDirectSubmit!();
+
+        expect(saveAllergy).toHaveBeenCalledTimes(2);
+        for (const call of (saveAllergy as jest.Mock).mock.calls) {
+          expect(call[1].allergen.nonCodedAllergen).toBe('Other');
+        }
+      });
+
+      it('falls back to "Other" when the concept display is also blank', async () => {
+        useAllergyStore.setState({
+          selectedAllergies: [
+            makeNonCodedAllergy({ display: '', nonCodedAllergen: '' }),
+          ],
+        });
+
+        await allergiesControl().onDirectSubmit!();
+
+        expect(
+          (saveAllergy as jest.Mock).mock.calls[0][1].allergen.nonCodedAllergen,
+        ).toBe('Other');
+      });
+
+      it('never overwrites a name the user typed', async () => {
+        useAllergyStore.setState({
+          selectedAllergies: [
+            makeNonCodedAllergy({
+              display: 'Other',
+              nonCodedAllergen: 'Latex gloves',
+            }),
+          ],
+        });
+
+        await allergiesControl().onDirectSubmit!();
+
+        expect(
+          (saveAllergy as jest.Mock).mock.calls[0][1].allergen.nonCodedAllergen,
+        ).toBe('Latex gloves');
+      });
+
+      it('editing an existing Other allergy keeps its saved name and updates in place', async () => {
+        // mapAllergyToInputEntry puts the saved free text in both display and
+        // nonCodedAllergen; clearing the input must not blank the record.
+        useAllergyStore.setState({
+          selectedAllergies: [
+            makeNonCodedAllergy({
+              resourceId: 'existing-allergy-uuid',
+              isModified: true,
+              display: 'Bee venom',
+              nonCodedAllergen: '',
+            }),
+          ],
+        });
+
+        await allergiesControl().onDirectSubmit!();
+
+        expect(saveAllergy).toHaveBeenCalledWith(
+          'patient-123',
+          expect.objectContaining({
+            allergen: expect.objectContaining({
+              nonCodedAllergen: 'Bee venom',
+            }),
+          }),
+          'existing-allergy-uuid',
+        );
+      });
+    });
+
     it('carries the category through for a food non-coded allergen', async () => {
       useAllergyStore.setState({
         selectedAllergies: [makeNonCodedAllergy({ type: 'food' })],

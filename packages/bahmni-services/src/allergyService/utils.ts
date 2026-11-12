@@ -21,6 +21,23 @@ export const setOtherNonCodedAllergenUuid = (uuid: string): void => {
 export const isNonCodedAllergen = (conceptUuid: string): boolean =>
   conceptUuid === resolvedOtherNonCodedAllergenUuid;
 
+/** Last-resort name when neither a typed name nor the concept's display exists. */
+const DEFAULT_NON_CODED_ALLERGEN_NAME = 'Other';
+
+/**
+ * The free-text name OpenMRS requires for an Other, Non-Coded allergy. The
+ * Specify allergen input is optional, so this resolves, in order: the name the
+ * user typed (never overwritten), then the selected concept's own display name
+ * (also what an edited entry falls back to if its text is cleared), then
+ * "Other". Mirrors the legacy UI's BAH-5006 behaviour.
+ */
+export const resolveNonCodedAllergenName = (
+  entry: Pick<AllergyInputEntry, 'nonCodedAllergen' | 'display'>,
+): string =>
+  [entry.nonCodedAllergen, entry.display]
+    .map((value) => (typeof value === 'string' ? value.trim() : ''))
+    .find(Boolean) ?? DEFAULT_NON_CODED_ALLERGEN_NAME;
+
 /**
  * Maps a raw FHIR AllergyIntolerance resource to an AllergyInputEntry for the
  * edit form. Callers must await fetchOtherNonCodedAllergenUUID() first so the
