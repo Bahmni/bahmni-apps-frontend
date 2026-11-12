@@ -221,7 +221,9 @@ export const CommandPalette: React.FC = () => {
                         <span className={styles.annotationSuggestionPrefix}>
                           {ann.prefix}
                         </span>
-                        <span className={styles.itemLabel}>{ann.label}</span>
+                        <span className={styles.itemLabel} title={ann.label}>
+                          {ann.label}
+                        </span>
                       </Command.Item>
                     ))}
                 </Command.Group>
@@ -232,24 +234,27 @@ export const CommandPalette: React.FC = () => {
                 heading={t('COMMAND_PALETTE_GROUP_NAVIGATION')}
                 className={styles.group}
               >
-                {navItems.map((item) => (
-                  <Command.Item
-                    key={item.id}
-                    value={item.label}
-                    className={styles.item}
-                    onSelect={() => {
-                      close();
-                      navigateToPath(item.path, item.newTab);
-                    }}
-                  >
-                    <span className={styles.navIcon} aria-hidden="true">
-                      ↗
-                    </span>
-                    <span className={styles.itemLabel}>
-                      {t(item.label, { defaultValue: item.label })}
-                    </span>
-                  </Command.Item>
-                ))}
+                {navItems.map((item) => {
+                  const navLabel = t(item.label, { defaultValue: item.label });
+                  return (
+                    <Command.Item
+                      key={item.id}
+                      value={item.label}
+                      className={styles.item}
+                      onSelect={() => {
+                        close();
+                        navigateToPath(item.path, item.newTab);
+                      }}
+                    >
+                      <span className={styles.navIcon} aria-hidden="true">
+                        ↗
+                      </span>
+                      <span className={styles.itemLabel} title={navLabel}>
+                        {navLabel}
+                      </span>
+                    </Command.Item>
+                  );
+                })}
               </Command.Group>
             )}
 

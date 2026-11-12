@@ -37,7 +37,7 @@ export const CollapsibleRowGroup: React.FC<CollapsibleRowGroupProps> = ({
     >
       <Accordion align="start" size="lg">
         <AccordionItem
-          title={title}
+          title={<span title={title}>{title}</span>}
           open={open}
           testId={`${id}-test-id-accordion-item`}
           className={styles.accordion}
