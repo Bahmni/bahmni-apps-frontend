@@ -119,8 +119,6 @@ button.abnormal-button:disabled {
 .form-builder-row .obs-control-select-wrapper .needsclick__value-container {
   max-width: calc(100% - 40px) !important;
   overflow: visible !important;
-  height: auto !important;
-  flex-wrap: wrap !important;
 }
 
 .form-builder-row .obs-control-select-wrapper .needsclick__input-container {
@@ -138,10 +136,8 @@ button.abnormal-button:disabled {
 
 .form-builder-row .obs-control-select-wrapper .needsclick__single-value {
   overflow: visible !important;
-  text-overflow: unset !important;
   white-space: normal !important;
-  word-break: break-word !important;
-  max-width: 100% !important;
+  overflow-wrap: break-word !important;
 }
 
 .form-control-buttons button {
