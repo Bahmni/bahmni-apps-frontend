@@ -524,7 +524,7 @@ export const parseTelecomAttributeTypeMap = (
         system: system.trim().toLowerCase(),
         use: use?.trim() ? use.trim().toLowerCase() : undefined,
         rank:
-          rank?.trim() && !isNaN(Number(rank.trim()))
+          rank?.trim() && !Number.isNaN(Number(rank.trim()))
             ? Number(rank.trim())
             : undefined,
       });
