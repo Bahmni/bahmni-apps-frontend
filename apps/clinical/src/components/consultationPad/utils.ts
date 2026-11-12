@@ -100,10 +100,9 @@ export function getActiveEntries(
       return false;
     }
 
+    if (!entry.handledResourceStatuses?.length) return true;
     return (
-      !resourceStatus ||
-      !entry.handledResourceStatuses?.length ||
-      entry.handledResourceStatuses.includes(resourceStatus)
+      !!resourceStatus && entry.handledResourceStatuses.includes(resourceStatus)
     );
   });
 
@@ -227,5 +226,6 @@ export function captureUpdatedResources(entries: InputControl[]) {
     documents: hasData('documents'),
     serviceRequests,
     observationFormsWithBasedOn: extractId(observationFormsBasedOn?.basedOn),
+    disposition: hasData('disposition'),
   };
 }
