@@ -1,0 +1,16 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Graph widget matches snapshot 1`] = `
+<div>
+  <div
+    data-testid="chart-loading-test-id"
+    id="chart-loading-id"
+  >
+    <div
+      data-aria="Loading chart"
+      data-testid="mock-ChartSkeleton"
+      data-tid="chart-loading"
+    />
+  </div>
+</div>
+`;

@@ -1,0 +1,69 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Area chart wrapper matches snapshot 1`] = `
+<div>
+  <div
+    aria-label="Area chart"
+    class="chart "
+    data-testid="test"
+    role="img"
+  >
+    <div
+      data-options="{"title":"Area chart"}"
+      data-points="2"
+      data-testid="carbon-area"
+    />
+  </div>
+</div>
+`;
+
+exports[`Bar chart wrapper matches snapshot 1`] = `
+<div>
+  <div
+    aria-label="Bar chart"
+    class="chart "
+    data-testid="test"
+    role="img"
+  >
+    <div
+      data-options="{"title":"Bar chart"}"
+      data-points="2"
+      data-testid="carbon-bar"
+    />
+  </div>
+</div>
+`;
+
+exports[`Line chart wrapper matches snapshot 1`] = `
+<div>
+  <div
+    aria-label="Line chart"
+    class="chart "
+    data-testid="test"
+    role="img"
+  >
+    <div
+      data-options="{"title":"Line chart"}"
+      data-points="2"
+      data-testid="carbon-line"
+    />
+  </div>
+</div>
+`;
+
+exports[`Scatter chart wrapper matches snapshot 1`] = `
+<div>
+  <div
+    aria-label="Scatter chart"
+    class="chart "
+    data-testid="test"
+    role="img"
+  >
+    <div
+      data-options="{"title":"Scatter chart"}"
+      data-points="2"
+      data-testid="carbon-scatter"
+    />
+  </div>
+</div>
+`;

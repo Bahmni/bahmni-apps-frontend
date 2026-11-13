@@ -67,6 +67,10 @@ export const builtInWidgets: WidgetConfig[] = [
     component: lazy(() => import('../tasks/TaskList')),
   },
   {
+    type: 'charts',
+    component: lazy(() => import('../charts')),
+  },
+  {
     type: 'visits',
     component: lazy(() => import('../visits/VisitsTable')),
   },

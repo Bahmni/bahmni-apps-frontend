@@ -5,6 +5,7 @@ import {
   Location,
   type AvailableStockResponse,
 } from '@bahmni/services';
+import { format } from 'date-fns';
 import {
   BundleEntry,
   Extension,
@@ -308,7 +309,7 @@ export function createImmunizationBundleEntries({
           route: entry.route ? { coding: [{ code: entry.route }] } : undefined,
           site: entry.site ? { coding: [{ code: entry.site }] } : undefined,
           expirationDate: entry.expiryDate
-            ? entry.expiryDate.toISOString().split('T')[0]
+            ? format(entry.expiryDate, 'yyyy-MM-dd')
             : undefined,
           manufacturer: entry.manufacturer
             ? { display: entry.manufacturer }
@@ -329,7 +330,9 @@ export function createImmunizationBundleEntries({
       },
       patient: encounterSubject,
       primarySource: isAdministration,
-      occurrenceDateTime: entry.administeredOn?.toISOString(),
+      occurrenceDateTime: entry.administeredOn
+        ? format(entry.administeredOn, "yyyy-MM-dd'T'HH:mm:ssXXX")
+        : undefined,
       location: entry.administeredLocation
         ? resolveLocationReference(entry.administeredLocation)
         : undefined,

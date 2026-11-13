@@ -6,6 +6,7 @@ import {
   VALIDATION_STATE_MANDATORY,
   VALIDATION_STATE_INVALID,
   VALIDATION_STATE_SCRIPT_ERROR,
+  VALIDATION_STATE_NOTES_REQUIRED,
 } from '../constants/forms';
 
 export interface ObservationFormData {
@@ -18,7 +19,8 @@ export interface ObservationFormData {
     | typeof VALIDATION_STATE_EMPTY
     | typeof VALIDATION_STATE_MANDATORY
     | typeof VALIDATION_STATE_INVALID
-    | typeof VALIDATION_STATE_SCRIPT_ERROR;
+    | typeof VALIDATION_STATE_SCRIPT_ERROR
+    | typeof VALIDATION_STATE_NOTES_REQUIRED;
   basedOn?: Reference;
 }
 
@@ -36,7 +38,8 @@ export interface ObservationFormsState {
       | typeof VALIDATION_STATE_EMPTY
       | typeof VALIDATION_STATE_MANDATORY
       | typeof VALIDATION_STATE_INVALID
-      | typeof VALIDATION_STATE_SCRIPT_ERROR,
+      | typeof VALIDATION_STATE_SCRIPT_ERROR
+      | typeof VALIDATION_STATE_NOTES_REQUIRED,
     basedOn?: Reference,
   ) => void;
   getFormData: (formUuid: string) => ObservationFormData | undefined;
@@ -117,7 +120,8 @@ export const useObservationFormsStore = create<ObservationFormsState>(
         | typeof VALIDATION_STATE_EMPTY
         | typeof VALIDATION_STATE_MANDATORY
         | typeof VALIDATION_STATE_INVALID
-        | typeof VALIDATION_STATE_SCRIPT_ERROR,
+        | typeof VALIDATION_STATE_SCRIPT_ERROR
+        | typeof VALIDATION_STATE_NOTES_REQUIRED,
       basedOn?: Reference,
     ) => {
       if (!validateFormUuid(formUuid)) {
@@ -196,7 +200,8 @@ export const useObservationFormsStore = create<ObservationFormsState>(
           formData.validationErrorType === VALIDATION_STATE_MANDATORY ||
           formData.validationErrorType === VALIDATION_STATE_EMPTY ||
           formData.validationErrorType === VALIDATION_STATE_INVALID ||
-          formData.validationErrorType === VALIDATION_STATE_SCRIPT_ERROR
+          formData.validationErrorType === VALIDATION_STATE_SCRIPT_ERROR ||
+          formData.validationErrorType === VALIDATION_STATE_NOTES_REQUIRED
         ) {
           return false;
         }

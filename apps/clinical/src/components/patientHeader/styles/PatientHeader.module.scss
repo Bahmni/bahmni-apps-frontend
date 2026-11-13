@@ -23,6 +23,11 @@
   height: $spacing-08;
 }
 
+.dispositionButtonSkeleton {
+  width: $spacing-13;
+  height: $spacing-08;
+}
+
 @include breakpoint-down(lg) {
   .header {
     flex-direction: column;

@@ -23,6 +23,29 @@ const isFHIROperationOutcome = (
   );
 };
 
+// Backend (ServiceRequestValidatorImpl) duplicate-disposition message is
+// "An active <disposition concept name> order already exists for this visit",
+// where the name is the OpenMRS concept name (e.g. "Admit Patient", "Undo Discharge")
+const DISPOSITION_ACTIVE_ORDER_ERRORS: Array<{ pattern: RegExp; key: string }> =
+  [
+    {
+      pattern: /active undo discharge\b.*order already exists/i,
+      key: 'DISPOSITION_ACTIVE_UNDO_DISCHARGE_ORDER_EXISTS',
+    },
+    {
+      pattern: /active admit\b.*order already exists/i,
+      key: 'DISPOSITION_ACTIVE_ADMIT_ORDER_EXISTS',
+    },
+    {
+      pattern: /active discharge\b.*order already exists/i,
+      key: 'DISPOSITION_ACTIVE_DISCHARGE_ORDER_EXISTS',
+    },
+    {
+      pattern: /active transfer\b.*order already exists/i,
+      key: 'DISPOSITION_ACTIVE_TRANSFER_ORDER_EXISTS',
+    },
+  ];
+
 /**
  * Extracts error message from FHIR OperationOutcome
  */
@@ -31,10 +54,15 @@ const parseFHIRError = (outcome: FHIROperationOutcome): string | null => {
     return null;
   }
 
-  // Check for duplicate medication error
   for (const issue of outcome.issue) {
     if (issue.diagnostics?.includes('Order.cannot.have.more.than.one')) {
       return 'ERROR_DUPLICATE_ACTIVE_MEDICATION';
+    }
+    const dispositionError = DISPOSITION_ACTIVE_ORDER_ERRORS.find(
+      ({ pattern }) => pattern.test(issue.diagnostics ?? ''),
+    );
+    if (dispositionError) {
+      return dispositionError.key;
     }
   }
 

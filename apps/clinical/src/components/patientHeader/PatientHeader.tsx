@@ -18,6 +18,7 @@ import { useEncounterSession } from '../../hooks/useEncounterSession';
 import { usePatientVisit } from '../../hooks/usePatientVisit';
 import { useClinicalConfig } from '../../providers/clinicalConfig';
 import ConsultationActionButton from './ConsultationActionButton';
+import DispositionActionButton from './DispositionActionButton';
 import styles from './styles/PatientHeader.module.scss';
 
 interface PatientHeaderProps {
@@ -135,6 +136,10 @@ const PatientHeader: React.FC<PatientHeaderProps> = ({
     >
       <PatientDetails />
       <div className={styles.actionButtons}>
+        <DispositionActionButton
+          isActionAreaVisible={isActionAreaVisible}
+          isLoading={isLoading}
+        />
         <ConsultationActionButton
           isActionAreaVisible={isActionAreaVisible}
           editActiveEncounter={editActiveEncounter}

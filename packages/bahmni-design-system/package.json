@@ -27,6 +27,7 @@
   },
   "dependencies": {
     "@bahmni/services": "^0.0.1-0",
+    "@carbon/charts-react": "1.27.21",
     "@carbon/layout": "^11.34.0",
     "@carbon/react": "^1.83.0",
     "@fortawesome/fontawesome-svg-core": "^6.7.2",

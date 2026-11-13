@@ -1,0 +1,1 @@
+export { getBundle } from './fhirBundleService';
