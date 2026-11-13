@@ -33,7 +33,7 @@ export const useCsvUpload = () => {
 
   const upload = useCallback(
     async (files: File[], importType: ImportType) => {
-      for (const [index, file] of files.entries()) {
+      const uploadFile = async (file: File, index: number) => {
         setUploadState({
           fileName: file.name,
           fileIndex: index + 1,
@@ -75,7 +75,15 @@ export const useCsvUpload = () => {
             timeout: 5000,
           });
         }
-      }
+      };
+
+      // Upload sequentially: each file starts only after the previous one has settled.
+      const uploadFrom = async (index: number): Promise<void> => {
+        if (index >= files.length) return;
+        await uploadFile(files[index], index);
+        await uploadFrom(index + 1);
+      };
+      await uploadFrom(0);
       setUploadState(null);
       await queryClient.invalidateQueries({
         queryKey: IMPORTED_ITEMS_QUERY_KEY,
