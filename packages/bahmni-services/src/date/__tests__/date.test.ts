@@ -29,11 +29,11 @@ const mockT = (key: string, options?: { count?: number }) => {
       return count === 1 ? ' month' : ' months';
     case 'YEARS':
       return count === 1 ? ' year' : ' years';
-    case 'CONDITION_DURATION_YEAR_SHORT':
+    case 'DATE_DISTANCE_YEAR_SHORT':
       return 'y';
-    case 'CONDITION_DURATION_MONTH_SHORT':
+    case 'DATE_DISTANCE_MONTH_SHORT':
       return 'm';
-    case 'CONDITION_DURATION_DAY_SHORT':
+    case 'DATE_DISTANCE_DAY_SHORT':
       return 'd';
     case 'DATE_ERROR_PARSE':
       return 'Parse Error';
@@ -498,13 +498,19 @@ describe('formatDateDistance', () => {
     ).toBe('1 d');
   });
 
-  it('should round up a same-day onset to "1 d" (pre-existing sub-day behavior)', () => {
+  it('should keep non-adjacent non-zero components when the middle one is zero', () => {
+    expect(
+      formatDateDistance('2024-06-08T07:02:38.000Z', mockT).formattedResult,
+    ).toBe('1 y 10 d');
+  });
+
+  it('should show "0 d" for a same-day onset', () => {
     expect(
       formatDateDistance('2025-06-18T03:02:38.000Z', mockT).formattedResult,
-    ).toBe('1 d');
+    ).toBe('0 d');
     expect(
       formatDateDistance('2025-06-18T06:32:38.000Z', mockT).formattedResult,
-    ).toBe('1 d');
+    ).toBe('0 d');
   });
 
   it('should format a date-only (legacy/external) onset the same way', () => {

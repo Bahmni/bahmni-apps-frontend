@@ -37,6 +37,26 @@ export interface AgeDetails {
   ageText: string;
 }
 
+interface DurationComponents {
+  years: number;
+  months: number;
+  days: number;
+}
+
+/**
+ * Decomposes the gap between two dates into whole years, months, and days,
+ * each remainder carried into the next unit (year remainder feeds the month
+ * calculation, month remainder feeds the day calculation).
+ */
+function decomposeDuration(start: Date, end: Date): DurationComponents {
+  const years = differenceInYears(end, start);
+  const afterYears = addYears(start, years);
+  const months = differenceInMonths(end, afterYears);
+  const afterMonths = addMonths(afterYears, months);
+  const days = differenceInDays(end, afterMonths);
+  return { years, months, days };
+}
+
 export function computeAgeDetails(birthdate: string): AgeDetails | null {
   if (!birthdate) return null;
   const birth = parseISO(birthdate);
@@ -44,11 +64,11 @@ export function computeAgeDetails(birthdate: string): AgeDetails | null {
   const now = new Date();
   if (birth > now) return null;
   const ageInDays = differenceInDays(now, birth);
-  const year = differenceInYears(now, birth);
-  const afterYears = addYears(birth, year);
-  const month = differenceInMonths(now, afterYears);
-  const afterMonths = addMonths(afterYears, month);
-  const day = differenceInDays(now, afterMonths);
+  const {
+    years: year,
+    months: month,
+    days: day,
+  } = decomposeDuration(birth, now);
   const ageText = `${year}y ${month}m ${day}d`;
   return { year, month, day, ageInDays, ageText };
 }
@@ -66,13 +86,7 @@ export function calculateAge(dateString: string): Age | null {
   const today = new Date();
   if (birthDate > today) return null; // Future dates are invalid
 
-  const years = differenceInYears(today, birthDate);
-  const lastBirthday = addYears(birthDate, years);
-
-  const months = differenceInMonths(today, lastBirthday);
-  const lastMonthAnniversary = addMonths(lastBirthday, months);
-
-  const days = differenceInDays(today, lastMonthAnniversary);
+  const { years, months, days } = decomposeDuration(birthDate, today);
 
   return { years, months, days };
 }
@@ -290,10 +304,10 @@ export function calculateOnsetDate(
  * Decomposes the exact gap between the date and now into years/months/days (same
  * decomposition as calculateAge/getFormattedAge) and renders only the non-zero
  * components, abbreviated and space-separated (e.g. "1 y 6 m 10 d", "2 y", "10 d").
- * A same-day date rounds up to "1 d", matching the pre-existing sub-day behavior.
+ * A same-day date shows "0 d" rather than an empty string.
  *
  * @param date - ISO date string to format (e.g., "2025-06-17T07:02:38.000Z" or "2025-06-17")
- * @returns FormatDateResult with compound duration (e.g., "1 y 6 m 10 d", "2 y", "1 d")
+ * @returns FormatDateResult with compound duration (e.g., "1 y 6 m 10 d", "2 y", "0 d")
  */
 export function formatDateDistance(
   date: string,
@@ -330,27 +344,21 @@ export function formatDateDistance(
   const now = new Date();
   const onset = parseResult.date!;
 
-  const years = differenceInYears(now, onset);
-  const afterYears = addYears(onset, years);
-  const months = differenceInMonths(now, afterYears);
-  const afterMonths = addMonths(afterYears, months);
-  const days = differenceInDays(now, afterMonths);
+  const { years, months, days } = decomposeDuration(onset, now);
 
   const components: Array<[number, string]> = [
-    [years, 'CONDITION_DURATION_YEAR_SHORT'],
-    [months, 'CONDITION_DURATION_MONTH_SHORT'],
-    [days, 'CONDITION_DURATION_DAY_SHORT'],
+    [years, 'DATE_DISTANCE_YEAR_SHORT'],
+    [months, 'DATE_DISTANCE_MONTH_SHORT'],
+    [days, 'DATE_DISTANCE_DAY_SHORT'],
   ];
 
   const parts = components
     .filter(([value]) => value > 0)
     .map(([value, key]) => `${value} ${t(key)}`);
 
-  // Same-day onset: preserve the pre-existing round-up-to-1-day behavior.
+  // Same-day onset: all components are zero, so show "0 d" instead of an empty string.
   const formattedResult =
-    parts.length > 0
-      ? parts.join(' ')
-      : `1 ${t('CONDITION_DURATION_DAY_SHORT')}`;
+    parts.length > 0 ? parts.join(' ') : `0 ${t('DATE_DISTANCE_DAY_SHORT')}`;
 
   return { formattedResult };
 }
@@ -424,11 +432,7 @@ export function getFormattedAge(
     typeof birthDate === 'string' ? parseISO(birthDate) : new Date(birthDate);
   const today = new Date();
 
-  const years = differenceInYears(today, birthDateObj);
-  const lastBirthday = addYears(birthDateObj, years);
-  const months = differenceInMonths(today, lastBirthday);
-  const lastMonthAnniversary = addMonths(lastBirthday, months);
-  const days = differenceInDays(today, lastMonthAnniversary);
+  const { years, months, days } = decomposeDuration(birthDateObj, today);
 
   const translationKeys = {
     years: 'YEARS',
