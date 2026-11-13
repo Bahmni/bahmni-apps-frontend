@@ -37,18 +37,12 @@ export interface AgeDetails {
   ageText: string;
 }
 
-interface DurationComponents {
-  years: number;
-  months: number;
-  days: number;
-}
-
 /**
  * Decomposes the gap between two dates into whole years, months, and days,
  * each remainder carried into the next unit (year remainder feeds the month
  * calculation, month remainder feeds the day calculation).
  */
-function decomposeDuration(start: Date, end: Date): DurationComponents {
+function decomposeDuration(start: Date, end: Date): Age {
   const years = differenceInYears(end, start);
   const afterYears = addYears(start, years);
   const months = differenceInMonths(end, afterYears);
@@ -86,9 +80,7 @@ export function calculateAge(dateString: string): Age | null {
   const today = new Date();
   if (birthDate > today) return null; // Future dates are invalid
 
-  const { years, months, days } = decomposeDuration(birthDate, today);
-
-  return { years, months, days };
+  return decomposeDuration(birthDate, today);
 }
 
 /**
