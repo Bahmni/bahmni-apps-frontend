@@ -34,7 +34,7 @@ import React, {
   useState,
 } from 'react';
 import { useSearchParams } from 'react-router';
-import ConsultationPadContainer from '../components/consultationPadContainer';
+import ConsultationPadGuard from '../components/consultationPadGuard';
 import DashboardContainer from '../components/dashboardContainer/DashboardContainer';
 import PatientHeader from '../components/patientHeader/PatientHeader';
 import PatientSearch from '../components/patientSearch/PatientSearch';
@@ -406,7 +406,7 @@ const ConsultationPage: React.FC = () => {
         layoutVariant={viewingForm ? 'extended' : 'default'}
         actionArea={
           consultationPayload && (
-            <ConsultationPadContainer
+            <ConsultationPadGuard
               encounterSessionStartContext={consultationPayload}
               onClose={() => {
                 setIsActionAreaVisible((prev) => !prev);

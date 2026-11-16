@@ -26,6 +26,30 @@ describe('ActionArea', () => {
     expect(screen.getByTestId('test-content')).toBeInTheDocument();
   });
 
+  it('applies contentClassName to the content section', () => {
+    render(<ActionArea {...defaultProps} contentClassName="custom-content" />);
+
+    expect(screen.getByRole('region', { name: 'Test Title' })).toHaveClass(
+      'custom-content',
+    );
+  });
+
+  it('renders the main button as primary by default', () => {
+    render(<ActionArea {...defaultProps} />);
+
+    expect(screen.getByTestId('action-area-primary-button')).toHaveClass(
+      'cds--btn--primary',
+    );
+  });
+
+  it('renders the main button with the requested kind', () => {
+    render(<ActionArea {...defaultProps} primaryButtonKind="secondary" />);
+
+    expect(screen.getByTestId('action-area-primary-button')).toHaveClass(
+      'cds--btn--secondary',
+    );
+  });
+
   it('renders with only primary button when secondaryButtonText is not provided', () => {
     const propsWithoutSecondary = {
       title: 'Test Title',

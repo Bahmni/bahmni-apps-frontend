@@ -319,6 +319,74 @@ describe('getFormattedError', () => {
     });
   });
 
+  describe('EoC lock error', () => {
+    const lockedOutcome = (status: number) =>
+      ({
+        response: {
+          status,
+          data: {
+            resourceType: 'OperationOutcome',
+            issue: [
+              {
+                severity: 'error',
+                code: 'conflict',
+                diagnostics:
+                  'EoC is locked. To perform any action, please reopen it.',
+                details: {
+                  coding: [
+                    {
+                      system: 'http://iom.org/fhir/CodeSystem/error-code',
+                      code: 'EOC_LOCKED',
+                    },
+                  ],
+                },
+              },
+            ],
+          },
+        },
+      }) as AxiosError;
+
+    it('should map a FHIR 409 carrying the EOC_LOCKED code to the translation key', () => {
+      expect(getFormattedError(lockedOutcome(409))).toEqual({
+        title: 'Conflict',
+        message: 'ERROR_EOC_LOCKED',
+      });
+    });
+
+    it('should map a REST 409 body with error EOC_LOCKED to the translation key', () => {
+      const error = {
+        response: {
+          status: 409,
+          data: { error: 'EOC_LOCKED', message: 'EoC is locked.' },
+        },
+      } as AxiosError;
+
+      expect(getFormattedError(error).message).toBe('ERROR_EOC_LOCKED');
+    });
+
+    it('should show the backend message for a 409 without the EOC_LOCKED code', () => {
+      const error = {
+        response: {
+          status: 409,
+          data: { error: 'Identifier already exists' },
+        },
+      } as AxiosError;
+
+      expect(getFormattedError(error)).toEqual({
+        title: 'Conflict',
+        message: 'Identifier already exists',
+      });
+    });
+
+    it('should fall back to a generic message for a 409 with no body', () => {
+      const error = { response: { status: 409, data: {} } } as AxiosError;
+
+      expect(getFormattedError(error).message).toBe(
+        'The request conflicts with the current state. Please refresh and try again.',
+      );
+    });
+  });
+
   describe('HTTP status errors', () => {
     it('should handle 401 Unauthorized error', () => {
       const error = {

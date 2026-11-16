@@ -9,6 +9,7 @@ interface FHIROperationOutcome {
     severity: string;
     code: string;
     diagnostics?: string;
+    details?: { coding?: Array<{ system?: string; code?: string }> };
   }>;
 }
 
@@ -46,12 +47,39 @@ const DISPOSITION_ACTIVE_ORDER_ERRORS: Array<{ pattern: RegExp; key: string }> =
     },
   ];
 
+export const EOC_LOCKED_ERROR_CODE = 'EOC_LOCKED';
+export const EOC_LOCKED_ERROR_KEY = 'ERROR_EOC_LOCKED';
+
+const isEocLockedOutcome = (outcome: FHIROperationOutcome): boolean =>
+  Array.isArray(outcome.issue) &&
+  outcome.issue.some((issue) =>
+    issue.details?.coding?.some(
+      (coding) => coding.code === EOC_LOCKED_ERROR_CODE,
+    ),
+  );
+
+const isEocLockedBody = (data: unknown): boolean => {
+  if (!data || typeof data !== 'object') return false;
+  const body = data as Record<string, unknown>;
+  const error = body.error;
+  return (
+    error === EOC_LOCKED_ERROR_CODE ||
+    (typeof error === 'object' &&
+      error !== null &&
+      (error as Record<string, unknown>).code === EOC_LOCKED_ERROR_CODE)
+  );
+};
+
 /**
  * Extracts error message from FHIR OperationOutcome
  */
 const parseFHIRError = (outcome: FHIROperationOutcome): string | null => {
   if (!outcome.issue || !Array.isArray(outcome.issue)) {
     return null;
+  }
+
+  if (isEocLockedOutcome(outcome)) {
+    return EOC_LOCKED_ERROR_KEY;
   }
 
   for (const issue of outcome.issue) {
@@ -205,6 +233,22 @@ export const getFormattedError = (
           message =
             forbiddenMessage ??
             'You are not authorized to perform this action.';
+          break;
+        }
+        case 409: {
+          title = 'Conflict';
+          const conflictData: unknown = axiosError.response.data;
+          if (
+            (isFHIROperationOutcome(conflictData) &&
+              isEocLockedOutcome(conflictData)) ||
+            isEocLockedBody(conflictData)
+          ) {
+            message = EOC_LOCKED_ERROR_KEY;
+            break;
+          }
+          message =
+            extractBackendMessage(conflictData) ??
+            'The request conflicts with the current state. Please refresh and try again.';
           break;
         }
         case 404:
