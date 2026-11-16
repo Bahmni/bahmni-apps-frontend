@@ -7,7 +7,7 @@
 
 A React TypeScript monorepo application for Bahmni, built with [Nx](https://nx.dev/), Webpack, and the [Carbon Design System](https://carbondesignsystem.com/). Includes PWA support for offline capabilities.
 
-> **Current version:** 1.1.0 (Bahmni Lite 2.0 release) — version is tracked in `.appversion`; `package.json` intentionally retains the initial monorepo version `0.1.0`.
+> **Current version:** 1.1.0 — tracked in `.appversion` and used by CI to tag the Docker image and Helm chart. The root `package.json` retains the initial monorepo version `0.1.0`.
 
 ## About Bahmni
 
@@ -15,9 +15,9 @@ A React TypeScript monorepo application for Bahmni, built with [Nx](https://nx.d
 
 This repository hosts the **React frontend monorepo** for Bahmni Lite, containing all clinical, administrative, and registration applications under one Nx workspace.
 
-## Bahmni Lite 2.0 Highlights
+## Key Capabilities
 
-Version 1.1.0 marks the **Bahmni Lite 2.0** milestone — a focused iteration that brings:
+This repository is the frontend for the Bahmni Lite 2.0 release. The following capabilities are documented in this repository (see `docs/`):
 
 - **Command Palette** — keyboard-driven global navigation for faster clinical workflows
 - **Consultation Event System** — structured event hooks for real-time consultation data exchange between modules
@@ -47,7 +47,7 @@ For documentation on each feature, see the [Additional Documentation](#additiona
 ## Prerequisites
 
 - **Node.js >= 22.22.0** (enforced via the `engines` field in `package.json`; CI uses Node 22 in `.github/workflows/build-and-publish.yml`)
-- **Yarn v1.22.x or later**
+- **Yarn Classic (v1.22.x)** — the repository uses a Yarn v1 lockfile and pins Yarn 1.22.19 via `.yarnrc` (`yarn-path`); Yarn 2+ is not supported
 
 ## Getting Started
 
@@ -75,7 +75,7 @@ yarn build
 yarn build:affected
 ```
 
-The build artifacts will be stored in the `dist/` directory.
+Each project writes its build output to its own `dist/` directory; the combined distro bundle is written to `distro/dist/`.
 
 ### Development
 
@@ -163,7 +163,7 @@ All scripts in `package.json`:
 | `yarn lint:affected` | Run lint for affected projects only |
 | `yarn typecheck` | Run TypeScript type-check across all projects |
 | `yarn typecheck:affected` | Run type-check for affected projects only |
-| `yarn clean` | Reset Nx cache and remove `dist/` and `coverage/` directories |
+| `yarn clean` | Reset the Nx cache and remove the root `dist/` and `coverage/` directories (does **not** remove `distro/dist/`, where the distro build output is written) |
 | `yarn create:app` | Scaffold a new Bahmni application in the monorepo |
 | `yarn prepare` | Install Husky git hooks (runs automatically after `yarn install`) |
 
@@ -171,7 +171,7 @@ All scripts in `package.json`:
 
 | Technology | Version | Role |
 |---|---|---|
-| [React](https://react.dev/) | ^19.0.0 | UI library |
+| [React](https://react.dev/) | ^19.2.7 | UI library |
 | [TypeScript](https://www.typescriptlang.org/) | ~5.9.2 | Type-safe JavaScript |
 | [Carbon Design System](https://carbondesignsystem.com/) (`@carbon/react`) | ^1.83.0 | IBM's healthcare design system |
 | [Nx](https://nx.dev/) | 22.0.2 | Monorepo build system & task orchestration |
@@ -197,7 +197,7 @@ All scripts in `package.json`:
 
 This project uses a layered approach to state:
 
-- **React Context API** — global app-level state (user session, theme, locale)
+- **React Context API** — shared app-level configuration and state (for example `ClinicalAppContext` and the per-app config contexts)
 - **Zustand v5** — lightweight client-side state stores for UI state that needs to be shared across component trees without prop drilling
 - **TanStack Query v5** — server-state management: data fetching, background refetching, caching, and synchronisation with the backend
 
@@ -206,10 +206,10 @@ This project uses a layered approach to state:
 | Tool | Purpose |
 |---|---|
 | **Husky** | Manages Git hooks: `pre-commit` runs affected lint and test; `pre-push` runs affected lint, test and build |
-| **lint-staged** | Runs `eslint --fix` and `nx format:write` on staged `.ts`/`.tsx` files |
+| **lint-staged** | Configured in `package.json` (`eslint --fix` and `nx format:write` on `.ts`/`.tsx` files) but not invoked by the current Husky hooks |
 | **SonarQube** | Static analysis and code quality gate; configuration in `sonar-project.properties` |
 | **EditorConfig** | Consistent editor settings (indentation, line endings) via `.editorconfig` |
-| **TruffleHog** | Secret scanning on every push (`.github/workflows/trufflehog.yml`) |
+| **TruffleHog** | Secret scanning of verified credentials on pull requests and pushes to `main`/`master`; Dependabot is skipped (`.github/workflows/trufflehog.yml`) |
 | **Semgrep** | Lightweight static analysis for security patterns (`.github/workflows/semgrep.yml`) |
 
 To set up the hooks locally after cloning, run `yarn` (or `yarn install`). The `prepare` script runs `husky` automatically.
@@ -315,7 +315,7 @@ For questions or discussions, open a [GitHub Issue](https://github.com/Bahmni/ba
 
 ## Notice & Legal
 
-This project is Copyright © 2025 Thoughtworks, Inc. and contributors. Third-party dependency attributions are listed in [NOTICE](NOTICE). For a full list of transitive dependency licences, refer to the `package.json` files within each application module.
+This project is Copyright © 2025 Thoughtworks, Inc. and contributors. Third-party dependency attributions are listed in [NOTICE](NOTICE). The `package.json` files list declared dependencies only; they are not a full licence inventory of transitive dependencies.
 
 ## License
 
