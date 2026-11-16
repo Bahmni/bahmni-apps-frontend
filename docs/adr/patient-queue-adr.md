@@ -18,7 +18,7 @@ The clinical React app already has the tab framework: a list page that reads `ex
 ## Decisions
 
 1. **One `patientQueue` widget** in `@bahmni/widgets`, registered in the existing registry. Apps differ only by config; clinical goes first.
-2. **Config is fully equivalent to legacy.** Every key the legacy code reads is supported with the same name and meaning. The only renames are the two keys that pointed at Angular templates (`templateUrl` and `printHtmlLocation`).
+2. **Config is fully equivalent to legacy.** Every key the legacy code reads is supported with the same name and meaning. The only changes are the two keys that pointed at Angular templates: `templateUrl` becomes `customView`, and `showPrint` with `printHtmlLocation` becomes `printOptions`, which reuses the existing print button and template service.
 3. **One `searchHandler` key, as in legacy.** `extensionPointId` decides whether an entry is a tab; `extensionParams` decides the widget. `view: custom` runs a registered custom view. A `searchHandler` that is a registered widget (`defaultSearch`, `commonSearch`, future widgets) runs that widget. Any other value is a SQL query name and runs the queue widget. No `searchHandler` falls back to the default search. A query the backend rejects shows an error in that tab (open point 1).
 4. **`view` supports `table`, `tile` and `custom`.** Table is built first; tile (needs the BAH-5256 design) and custom follow. Config written today keeps working: an unbuilt view renders as a table.
 5. **Columns are declared** in a presentation file (preferred). A legacy-compatible mode derives them from the first row, as legacy did, so legacy configs migrate unchanged.
@@ -36,12 +36,12 @@ Where we looked: the legacy code, `standard-config` and `clinic-config` (38 queu
 | `id` | `id` | Same | Unique per tab |
 | `extensionPointId` | `org.bahmni.<app>.v2.search` | Changed | Clinical's is `org.bahmni.clinical.v2.search` |
 | `type` | - | Not carried | Always `config`; the slot decides the kind of UI |
-| `label`, `display` | `translationKey` | Moved | Legacy fallback text; put it in the locale file |
+| `label`, `display` | `translationKey` | Moved | Legacy fallback text (the wiki's high-risk example uses `display`); put it in the locale file |
 | `translationKey` (in `extensionParams`) | `translationKey` (tab level) | Moved | |
 | `order` | `order` (tab level) | Same | A tab property read by the page, not by the widget |
 | `requiredPrivilege`, `requiredPrivileges` | `requiredPrivileges` (array) | Changed | The user needs at least one; legacy read only the singular key |
 | `searchHandler` | `searchHandler` | Same | A registered widget name selects that widget; any other value is the SQL query; none means default search |
-| `view` | `view` | Same | `table`, `tile`, `custom`; legacy default was `tile` |
+| `view` | `view` | Same | `table`, `tile`, `custom`; legacy default was `tile`; as in legacy, the table needs a `searchHandler` query |
 | `templateUrl` | `customView` | Renamed | Name of a registered React view, with `view: custom` |
 | `forwardUrl` | `forwardUrl` | Same | Absolute path or URL |
 | `links` | `links` | Same | Per-column link; `url` may be a string or a map keyed by the cell value; `newTab` |
@@ -50,9 +50,9 @@ Where we looked: the legacy code, `standard-config` and `clinic-config` (38 queu
 | `searchColumns` | `searchColumns` | Same | Restricts the filter box to these columns; default identifier and name |
 | `refreshTime` | `refreshTime` | Same | Seconds; 0 or absent means no refresh |
 | `additionalParams` | `additionalParams` | Same | A string or an object; an object is sent as JSON, as Angular did |
-| `showPrint` | `showPrint` | Same | Prints the table |
-| `printHtmlLocation` | `printView` | Renamed | A registered print view replaces the Angular template (later) |
-| `extension-<name>.json` | `configName` | New | Tab sets such as Programs; the list page route is open point 4 |
+| `showPrint` | `showPrint` | Same | `false` hides the Print button; it shows when `printOptions` is set |
+| `printHtmlLocation` | `printOptions` | Replaced | A list of `{ translationKey, templateId, privileges }`, rendered by the existing template service (see section 4); the Angular HTML file is ported to a template |
+| `extension-<name>.json` | `configName` | New | Tab sets such as Programs and the wiki's Data Quality Dashboard (`extension-dataintegrity.json`); the list page route is open point 3 |
 | `forwardButtonTitle`, `tabularViewHeadingOrder`, `searchParams` | - | Not carried | Never read by the legacy code |
 | `ignoredTabularViewHeadings` (app.json) | same key, in the presentation file | Same | Row fields hidden when columns are derived from the first row |
 | `identifierHeadings` (app.json) | same key, in the presentation file | Same | Columns shown as links to the patient (default `identifier`) |
@@ -172,6 +172,7 @@ The queue widget lives in `packages/bahmni-widgets/src/search/patientQueue/` and
 - **Filtering:** the filter box matches `searchColumns` (default identifier and name), not every column.
 - **Pagination:** client-side over the full response; `pageSize` default 10.
 - **Built-in behaviour kept from legacy:** tab count `(n)` (the filtered count while typing), Enter with one match opens the patient, the last selected tab is restored, the name cell icons, and a row column named `forwardUrl` overrides the link and opens a new tab.
+- **Print** reuses the existing print button (`DocumentPrintButton` in `@bahmni/widgets`) and the template service, instead of the legacy Angular template. The legacy use is the wiki's Data Quality Dashboard, a tabular queue whose Print button produced a report from the rows on screen. In v2 the tab sets `printOptions: [{ translationKey, templateId, privileges }]`. On click the widget sends the current filtered and sorted rows and the printable columns as `data` (through `getRenderData`), plus the usual `context`, to `POST /openmrs/ws/rest/v1/bahmnicore/template/api/render`. The template service passes `data` to the template's `compute.js`. The template is a new list template under `print-templates/` (for example `patient-queue-list`, extending `_base/landscape.html`) registered in `templates.json`. Custom layouts are written by the implementer as a template, not as an Angular HTML file.
 - **One row per patient** is the SQL query's job. The widget does not de-duplicate.
 - **Links:** `{{placeholders}}` resolve from the row (`patientUuid` is `uuid`, `visitUuid` is `activeVisitUuid`, any other name is a column of that name), then from the page's query string (document upload needs `encounterType`, `topLevelConcept`). `encounterUuid` defaults to `active`. Values are URL-encoded; if one is missing, the cell is plain text. A URL starting with `/bahmni-v2/` navigates inside the app (the router already adds that prefix, so the widget strips it); any other `/...` or `https://...` is a full page load; `#` and `//host` are rejected. This is the router-versus-full-page idea of the existing search results code, adapted to the base path and to legacy Angular links.
 
@@ -204,11 +205,13 @@ Legacy has about 22 extension points read by code. This card uses one, `org.bahm
 |---|---|
 | Queue | `GET /openmrs/ws/rest/v1/bahmnicore/sql?q=<searchHandler>&v=full&location_uuid=..&provider_uuid=..[&additionalParams=..]` |
 | _All_ tab | `GET /openmrs/ws/rest/v1/bahmni/search/patient/lucene?...` (existing `defaultSearch`) |
+| Print | `POST /openmrs/ws/rest/v1/bahmnicore/template/api/render` (existing template service) |
 
 - `q` can name **any** global property whose value is SQL; there is no prefix restriction, and an unknown name fails with "No such query". By convention `emrapi.sqlSearch.*` queries return patient lists and `*.sqlGet.*` queries fetch other data.
 - **Every request parameter becomes a `${placeholder}` in the SQL.** The backend adds `visit_location_uuid` (derived from `location_uuid`) and `user_locale`. `additionalParams` is parsed as JSON (a list of tests) and expands a `${testName}` placeholder, as in the wiki's high-risk patients queue.
 - `location_uuid` (from the `bahmni.user.location` cookie) is required. `provider_uuid` is required by provider-scoped queries, from the active practitioner.
 - An unknown query or a missing required parameter returns **HTTP 500 with an HTML body**; an unauthenticated call returns 401 JSON, which the shared client turns into a redirect to login. The service must show a generic translated error, never the body.
+- A queue query should return `name`, `identifier`, `uuid` (links and the patient image), `activeVisitUuid` and `hasBeenAdmitted` (bed icon), as the wiki documents. `provider_uuid` is always sent, whether or not the query uses it.
 - A column can be shown only if the query returns it. The SQL text is readable at `GET .../bahmnicore/sql/globalproperty?property=<searchHandler>`.
 - Queries differ in what makes a patient appear. _Active_ uses the visit location; _My Patients_ needs an encounter by the current provider; _PatientsByLocation_ needs an encounter at the login location.
 
@@ -223,6 +226,7 @@ Legacy has about 22 extension points read by code. This card uses one, `org.bahm
 | C4 | List page: keep entries without `searchHandler` (they run the default search) and add `configName`; `searchView` falls back to the queue widget for a value that is not a registered widget |
 | C5 | Clinical config in `standard-config` and `clinic-config`: tabs, presentation file, `defaultSearchConfig.json`, locale keys |
 | C6 | Default search parity for the _All_ tab (tracked separately, search is out of scope for BAH-5069): auto-open when exactly one result, `filterOutAttributeForAllSearch`, primary identifier name in the placeholder |
+| C7 | Print: wire `DocumentPrintButton` into the queue widget; add a list template to `print-templates/` and `templates.json` in `standard-config` and `clinic-config` |
 
 ## Consequences and risks
 
@@ -230,6 +234,7 @@ Legacy has about 22 extension points read by code. This card uses one, `org.bahm
 - **Hidden tabs still load.** Carbon mounts every tab panel at start, so each queue tab fetches immediately and refreshes on its own timer, as legacy did. Legacy also re-fetched on tab select; `isActive` lets the widget do the same. Tabs with the same query, location and provider share one request (legacy made 6 calls for 3 distinct queries).
 - **Page resets on refresh.** `DataTable` returns to page 1 when its rows change. React Query keeps the same rows when data is unchanged, so this only happens on real changes.
 - **Value types:** SQL returns `hasBeenAdmitted` as the string `"true"` or `"false"`; the _All_ search returns a boolean. Handle both.
+- **Print needs the template service.** Without it the Print button shows a translated error, as the other print buttons do.
 - The row `Status` that legacy stores on the root scope for ADT is Angular-only and is not carried.
 - **A misspelled widget name** (for example `defaultSerch`) is treated as a SQL query and fails in that tab with an error that names the value, instead of "no widget registered". A real SQL query named like a widget key is very unlikely, since query names are dotted global properties.
 - Links to legacy Angular pages cause a full page load until those apps migrate.
