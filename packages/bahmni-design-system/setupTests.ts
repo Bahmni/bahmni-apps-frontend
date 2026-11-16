@@ -7,7 +7,9 @@ global.ResizeObserver = class ResizeObserver {
     void _callback;
   }
   observe() {}
-  unobserve() {}
+  unobserve() {
+    // Intentionally empty: test stub, resize observation is not needed in jsdom
+  }
   disconnect() {}
 };
 
