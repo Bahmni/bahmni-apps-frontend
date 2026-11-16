@@ -137,7 +137,7 @@ yarn nx run-many --all --target=test --parallel=1
 
 # Run affected lint and test against a specific base branch
 yarn nx affected --target=lint --base=origin/main
-yarn nx affected --target=test --base=origin/main
+yarn nx affected --target=test --base=origin/main --parallel=1
 
 # Reset Nx cache and clean build artifacts
 yarn clean
