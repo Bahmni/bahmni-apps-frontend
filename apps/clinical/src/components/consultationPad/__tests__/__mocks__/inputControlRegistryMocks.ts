@@ -69,5 +69,12 @@ export const mockConsultationPadConfig: ConsultationPad = {
       attributes: [],
       metadata: {},
     },
+    {
+      type: 'disposition',
+      encounterTypes: ['Consultation'],
+      privileges: ['Disposition'],
+      attributes: [],
+      metadata: {},
+    },
   ],
 };
