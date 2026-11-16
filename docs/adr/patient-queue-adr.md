@@ -18,8 +18,8 @@ The clinical React app already has the tab framework: a list page that reads `ex
 ## Decisions
 
 1. **One `patientQueue` widget** in `@bahmni/widgets`, registered in the existing registry. Apps differ only by config; clinical goes first.
-2. **Config is fully equivalent to legacy.** Every key the legacy code reads is supported with the same name. Only the SQL key is renamed (`searchHandler` to `sqlHandler`).
-3. **No `searchHandler`.** `extensionPointId` decides whether an entry is a tab; `extensionParams` decides the widget: `view: custom` runs a registered custom view, otherwise a `sqlHandler` runs the queue widget, and no or an empty `sqlHandler` falls back to the default search. A query the backend rejects shows an error in that tab (open point 1).
+2. **Config is fully equivalent to legacy.** Every key the legacy code reads is supported with the same name and meaning. The only renames are the two keys that pointed at Angular templates (`templateUrl` and `printHtmlLocation`).
+3. **One `searchHandler` key, as in legacy.** `extensionPointId` decides whether an entry is a tab; `extensionParams` decides the widget. `view: custom` runs a registered custom view. A `searchHandler` that is a registered widget (`defaultSearch`, `commonSearch`, future widgets) runs that widget. Any other value is a SQL query name and runs the queue widget. No `searchHandler` falls back to the default search. A query the backend rejects shows an error in that tab (open point 1).
 4. **`view` supports `table`, `tile` and `custom`.** Table is built first; tile (needs the BAH-5256 design) and custom follow. Config written today keeps working: an unbuilt view renders as a table.
 5. **Columns are declared** in a presentation file (preferred). A legacy-compatible mode derives them from the first row, as legacy did, so legacy configs migrate unchanged.
 6. **Sort, filter and pagination run in the browser** with `DataTable`, because the SQL endpoint has no sort or paging. Legacy rules are kept: every column sortable, empty values last, filter on `searchColumns`.
@@ -40,7 +40,7 @@ Where we looked: the legacy code, `standard-config` and `clinic-config` (38 queu
 | `translationKey` (in `extensionParams`) | `translationKey` (tab level) | Moved | |
 | `order` | `order` (tab level) | Same | A tab property read by the page, not by the widget |
 | `requiredPrivilege`, `requiredPrivileges` | `requiredPrivileges` (array) | Changed | The user needs at least one; legacy read only the singular key |
-| `searchHandler` (SQL name) | `sqlHandler` | Renamed | None or empty means default search |
+| `searchHandler` | `searchHandler` | Same | A registered widget name selects that widget; any other value is the SQL query; none means default search |
 | `view` | `view` | Same | `table`, `tile`, `custom`; legacy default was `tile` |
 | `templateUrl` | `customView` | Renamed | Name of a registered React view, with `view: custom` |
 | `forwardUrl` | `forwardUrl` | Same | Absolute path or URL |
@@ -74,7 +74,7 @@ Where we looked: the legacy code, `standard-config` and `clinic-config` (38 queu
     "requiredPrivileges": ["app:clinical"],
     "order": 4,
     "extensionParams": {
-      "sqlHandler": "emrapi.sqlSearch.activePatientsByProvider",
+      "searchHandler": "emrapi.sqlSearch.activePatientsByProvider",
       "forwardUrl": "/bahmni-v2/clinical/{{patientUuid}}",
       "refreshTime": 30,
       "configUrl": "/bahmni_config/openmrs/apps/clinical/v2/extensions/patientQueueConfig.json"
@@ -101,7 +101,7 @@ Where we looked: the legacy code, `standard-config` and `clinic-config` (38 queu
 ]
 ```
 
-All nine legacy clinical tabs and the two Programs tabs convert this way (Programs entries carry `configName: "programs"`). Legacy twins such as _Active - Legacy_ keep their absolute legacy `forwardUrl`.
+A tab for another registered widget names it and points at its own file, for example `{ "searchHandler": "commonSearch", "configUrl": ".../v2/extensions/commonSearchConfig.json" }`; each widget validates its own file. All nine legacy clinical tabs and the two Programs tabs convert as above (Programs entries carry `configName: "programs"`). Legacy twins such as _Active - Legacy_ keep their absolute legacy `forwardUrl`.
 
 **Presentation file** (`configUrl` of a queue tab), holding the settings that legacy kept in `app.json`. A column `key` is the SQL column name:
 
@@ -158,12 +158,12 @@ All nine legacy clinical tabs and the two Programs tabs convert this way (Progra
 
 1. Create the component in `packages/bahmni-widgets/src/search/<name>/`. If it has a config file, validate it with `getConfig(configUrl, schema)`.
 2. Register it in `<name>/index.ts`: `registerSearchWidget({ key: '<name>', component: Widget })`, and import that folder from `search/index.ts` so it loads.
-3. Add an extension to the app's `v2/app.json`. The widget is chosen by the rule in decision 3, so a new widget adds its own discriminating key.
+3. Add an extension to the app's `v2/app.json` with `extensionParams.searchHandler` set to the registered key, and its `configUrl` if it has a config file.
 4. Add the tab label and all widget text keys to `apps/<app>/public/locales/locale_en.json`.
 5. Set `requiredPrivileges` on the extension. Tabs the user cannot access are hidden.
 6. Test it by registering it in a test, as `apps/clinical/src/pages/list/extensions/searchView/__tests__/index.test.tsx` does, and call `clearSearchWidgetRegistry()` afterwards.
 
-The queue widget lives in `packages/bahmni-widgets/src/search/patientQueue/` and calls a new `fetchPatientQueue()` in `@bahmni/services`. `commonSearch` cannot be chosen from config under decision 3; nothing uses it today.
+The queue widget lives in `packages/bahmni-widgets/src/search/patientQueue/` and calls a new `fetchPatientQueue()` in `@bahmni/services`.
 
 ## 4. Table, columns, sorting, pagination, links
 
@@ -202,13 +202,14 @@ Legacy has about 22 extension points read by code. This card uses one, `org.bahm
 <!-- prettier-ignore -->
 | Purpose | Request |
 |---|---|
-| Queue | `GET /openmrs/ws/rest/v1/bahmnicore/sql?q=<sqlHandler>&v=full&location_uuid=..&provider_uuid=..[&additionalParams=..]` |
+| Queue | `GET /openmrs/ws/rest/v1/bahmnicore/sql?q=<searchHandler>&v=full&location_uuid=..&provider_uuid=..[&additionalParams=..]` |
 | _All_ tab | `GET /openmrs/ws/rest/v1/bahmni/search/patient/lucene?...` (existing `defaultSearch`) |
 
-- The SQL lives in the backend as a global property such as `emrapi.sqlSearch.activePatients`. The backend fills placeholders such as `${visit_location_uuid}` and `${provider_uuid}`.
+- `q` can name **any** global property whose value is SQL; there is no prefix restriction, and an unknown name fails with "No such query". By convention `emrapi.sqlSearch.*` queries return patient lists and `*.sqlGet.*` queries fetch other data.
+- **Every request parameter becomes a `${placeholder}` in the SQL.** The backend adds `visit_location_uuid` (derived from `location_uuid`) and `user_locale`. `additionalParams` is parsed as JSON (a list of tests) and expands a `${testName}` placeholder, as in the wiki's high-risk patients queue.
 - `location_uuid` (from the `bahmni.user.location` cookie) is required. `provider_uuid` is required by provider-scoped queries, from the active practitioner.
 - An unknown query or a missing required parameter returns **HTTP 500 with an HTML body**; an unauthenticated call returns 401 JSON, which the shared client turns into a redirect to login. The service must show a generic translated error, never the body.
-- A column can be shown only if the query returns it. The SQL text is readable at `GET .../bahmnicore/sql/globalproperty?property=<sqlHandler>`.
+- A column can be shown only if the query returns it. The SQL text is readable at `GET .../bahmnicore/sql/globalproperty?property=<searchHandler>`.
 - Queries differ in what makes a patient appear. _Active_ uses the visit location; _My Patients_ needs an encounter by the current provider; _PatientsByLocation_ needs an encounter at the login location.
 
 ## Changes needed alongside
@@ -219,7 +220,7 @@ Legacy has about 22 extension points read by code. This card uses one, `org.bahm
 | C1 | `DataTable`: opt-in "empty values last" sorting; per-column global filter for `searchColumns` |
 | C2 | `order` on the shared `Extension` type, the clinical schema, and sorting in the tabs component |
 | C3 | Tabs component: count badge in the tab label; optional `isActive` prop so a tab refetches when selected |
-| C4 | List page: drop the `searchHandler` filter; widget chosen by the rule in decision 3; `configName` |
+| C4 | List page: keep entries without `searchHandler` (they run the default search) and add `configName`; `searchView` falls back to the queue widget for a value that is not a registered widget |
 | C5 | Clinical config in `standard-config` and `clinic-config`: tabs, presentation file, `defaultSearchConfig.json`, locale keys |
 | C6 | Default search parity for the _All_ tab (tracked separately, search is out of scope for BAH-5069): auto-open when exactly one result, `filterOutAttributeForAllSearch`, primary identifier name in the placeholder |
 
@@ -230,16 +231,16 @@ Legacy has about 22 extension points read by code. This card uses one, `org.bahm
 - **Page resets on refresh.** `DataTable` returns to page 1 when its rows change. React Query keeps the same rows when data is unchanged, so this only happens on real changes.
 - **Value types:** SQL returns `hasBeenAdmitted` as the string `"true"` or `"false"`; the _All_ search returns a boolean. Handle both.
 - The row `Status` that legacy stores on the root scope for ADT is Angular-only and is not carried.
+- **A misspelled widget name** (for example `defaultSerch`) is treated as a SQL query and fails in that tab with an error that names the value, instead of "no widget registered". A real SQL query named like a widget key is very unlikely, since query names are dotted global properties.
 - Links to legacy Angular pages cause a full page load until those apps migrate.
 - **ADT _To Acknowledge_** uses `emrapi.sqlSearch.toAcknowledgeNotes`, defined in `standard-config` `gp_ipd.xml`. It is empty on environments that have not loaded the IPD global properties.
 
 ## Open points
 
 1. **Rejected query:** show an error in that tab (proposed), or fall back to the default search? A silent fallback hides misconfiguration.
-2. **`commonSearch`** cannot be chosen from config once `searchHandler` is gone. Acceptable while nothing uses it?
-3. **Tab ids:** keep the legacy ids (`allActivePatients` is really "Active - Legacy") or use readable ids?
-4. **`configName`:** the list page route for tab sets such as Programs.
-5. **Tile design:** BAH-5256 has no content yet.
+2. **Tab ids:** keep the legacy ids (`allActivePatients` is really "Active - Legacy") or use readable ids?
+3. **`configName`:** the list page route for tab sets such as Programs.
+4. **Tile design:** BAH-5256 has no content yet.
 
 ## Alternatives rejected
 
@@ -250,5 +251,7 @@ Legacy has about 22 extension points read by code. This card uses one, `org.bahm
 | Reuse `commonSearch` / `ResultsTable` | JSONata per column is overkill for flat SQL rows; it stores `-` in row data, breaking empty-last sorting |
 | `SortableDataTable` | No filtering, which BAH-5069 requires |
 | Server-side pagination | The SQL endpoint has no paging; needs a backend change |
+| A separate `sqlHandler` key | It renames the legacy key and makes every legacy tab edit its `extensionParams` |
+| Drop `searchHandler` | `commonSearch` and future widgets could no longer be selected from config |
 | Trim legacy keys nobody ships | The code supports them, so implementers may use them |
 | Flatten `extensionParams` into the tab entry | It is the existing contract and the legacy shape; it keeps widget keys apart from page keys |
