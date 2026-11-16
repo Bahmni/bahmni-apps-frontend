@@ -36,12 +36,13 @@
 
 .table {
   table {
-    table-layout: fixed;
+    table-layout: auto;
     width: 100%;
   }
 
   td, th {
     width: auto;
+    overflow-wrap: break-word;
   }
 
   th[data-testid$="-doseSequence"],
