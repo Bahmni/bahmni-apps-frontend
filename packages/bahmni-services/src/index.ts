@@ -333,7 +333,9 @@ export {
 export {
   getEncountersAndVisitsForEOC,
   type EpisodeOfCareDataType,
+  type CancelEpisodeOfCareRequest,
   getEpisodeOfCare,
+  cancelEpisodeOfCare,
 } from './episodeOfCareService';
 
 export {
