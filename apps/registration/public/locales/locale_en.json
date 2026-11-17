@@ -127,6 +127,8 @@
   "DAYS_other": " days",
   "EDIT_ENCOUNTER_MESSAGE": "Edited an encounter for patient",
   "ENTER_VISIT_DETAILS": "Enter Visit Details",
+  "ERROR_CHECKING_DUPLICATES": "Error checking for duplicates",
+  "ERROR_CHECKING_DUPLICATES_MESSAGE": "Something went wrong while trying to check for duplicates. Please retry.",
   "ERROR_CONFIG_GENERIC_MESSAGE": "Unable to load {{config}}. Please try refreshing the page.",
   "ERROR_CONFIG_TITLE": "{{config}} Error",
   "ERROR_DEFAULT_TITLE": "Error",

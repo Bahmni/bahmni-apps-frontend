@@ -476,4 +476,44 @@ describe('useUpdatePatient', () => {
       }),
     );
   });
+
+  describe('checkDuplicates', () => {
+    it('should pass the FHIR payload to checkDuplicates and save when it returns true', async () => {
+      mockUpdateFhirPatient.mockResolvedValue(mockFhirResponse);
+      const checkDuplicates = jest.fn().mockResolvedValue(true);
+
+      const { result } = renderHook(() => useUpdatePatient(), {
+        wrapper: createWrapper(),
+      });
+      result.current.mutate({ ...mockFormData, checkDuplicates });
+
+      await waitFor(() => {
+        expect(result.current.isSuccess).toBe(true);
+      });
+
+      expect(checkDuplicates).toHaveBeenCalledWith(
+        expect.objectContaining({
+          resourceType: 'Patient',
+          id: 'patient-uuid-123',
+        }),
+      );
+      expect(mockUpdateFhirPatient).toHaveBeenCalledTimes(1);
+    });
+
+    it('should not save or notify when checkDuplicates returns false', async () => {
+      const checkDuplicates = jest.fn().mockResolvedValue(false);
+
+      const { result } = renderHook(() => useUpdatePatient(), {
+        wrapper: createWrapper(),
+      });
+      result.current.mutate({ ...mockFormData, checkDuplicates });
+
+      await waitFor(() => {
+        expect(result.current.isError).toBe(true);
+      });
+
+      expect(mockUpdateFhirPatient).not.toHaveBeenCalled();
+      expect(mockAddNotification).not.toHaveBeenCalled();
+    });
+  });
 });

@@ -19,6 +19,7 @@ import {
   PersonAttributesData,
   AdditionalIdentifiersData,
 } from '../models/patient';
+import { DuplicatesFoundError } from '../utils/duplicatesFoundError';
 import { buildFhirPatient } from '../utils/fhirPatientMapper';
 import { buildRelatedPersonPayload } from '../utils/patientDataConverter';
 import { useIdentifierTypes } from './useAdditionalIdentifiers';
@@ -41,6 +42,7 @@ interface UpdatePatientFormData {
   additionalIdentifiers: AdditionalIdentifiersData;
   additionalIdentifiersInitialData?: AdditionalIdentifiersData;
   relationships?: RelationshipData[];
+  checkDuplicates?: (patient: Patient) => Promise<boolean>;
 }
 
 function buildIdentifierTypeNames(
@@ -75,6 +77,14 @@ export const useUpdatePatient = () => {
         personAttributes,
         patientUuid: formData.patientUuid,
       });
+
+      if (
+        formData.checkDuplicates &&
+        !(await formData.checkDuplicates(payload))
+      ) {
+        throw new DuplicatesFoundError();
+      }
+
       const patient = await updateFhirPatient<Patient>(
         formData.patientUuid,
         payload,
@@ -144,6 +154,7 @@ export const useUpdatePatient = () => {
       }
     },
     onError: (error) => {
+      if (error instanceof DuplicatesFoundError) return;
       const message = (
         error instanceof Error ? error.message : String(error)
       ).replace(TRAILING_BRACKETED_SUFFIX, '');

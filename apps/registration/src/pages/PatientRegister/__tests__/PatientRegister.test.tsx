@@ -1,7 +1,13 @@
 import { dispatchAuditEvent, PersonAttributeType } from '@bahmni/services';
 import { usePatientPhoto } from '@bahmni/widgets';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import {
+  act,
+  render,
+  screen,
+  fireEvent,
+  waitFor,
+} from '@testing-library/react';
 import { ReactNode } from 'react';
 import { BrowserRouter } from 'react-router';
 import { useAdditionalIdentifiers } from '../../../hooks/useAdditionalIdentifiers';
@@ -25,6 +31,7 @@ jest.mock('@bahmni/services', () => ({
   dispatchAuditEvent: jest.fn(),
   getPatientProfile: jest.fn(),
   getPatientPhotoDataUrl: jest.fn(),
+  matchFhirPatient: jest.fn(),
   renderAsHtml: jest.fn().mockResolvedValue('<html><body>card</body></html>'),
   useTranslation: () => ({
     t: (key: string) => key,
@@ -927,6 +934,207 @@ describe('PatientRegister', () => {
           message: 'REGISTRATION_PATIENT_MUST_BE_SAVED',
         }),
       );
+    });
+  });
+
+  describe('Duplicate detection', () => {
+    const FEATURE_URL = '/iom/duplicate-resolution';
+    const duplicate = { resourceType: 'Patient', id: 'other-patient' };
+
+    const enableDuplicateDetection = () => {
+      const { useRegistrationConfig } = jest.requireMock(
+        '../../../providers/registrationConfig',
+      );
+      useRegistrationConfig.mockReturnValue({
+        registrationConfig: {
+          registrationForm: { sections: [] },
+          duplicateDetection: { match: true, featureURL: FEATURE_URL },
+        },
+      });
+    };
+
+    const mockMatches = (...patients: object[]) => {
+      const { matchFhirPatient } = jest.requireMock('@bahmni/services');
+      matchFhirPatient.mockResolvedValue({
+        resourceType: 'Bundle',
+        entry: patients.map((resource) => ({ resource })),
+      });
+    };
+
+    const mockMutateAsyncRunsCheck = (payload: object = {}) => {
+      mockMutateAsync.mockImplementation(async ({ checkDuplicates }) => {
+        if (
+          checkDuplicates &&
+          !(await checkDuplicates({ resourceType: 'Patient', ...payload }))
+        ) {
+          throw new Error('duplicates found');
+        }
+        return { id: 'new-patient-id' };
+      });
+    };
+
+    beforeEach(() => {
+      mockMutateAsyncRunsCheck();
+    });
+
+    it('should show the iframe with the configured URL, without an error notification, when Save finds other patients', async () => {
+      enableDuplicateDetection();
+      mockMatches(duplicate);
+      renderComponent();
+
+      fireEvent.click(screen.getByText('CREATE_PATIENT_SAVE'));
+
+      const frame = await screen.findByTestId('duplicate-patient-frame');
+      expect(frame).toHaveAttribute('src', FEATURE_URL);
+      expect(mockAddNotification).not.toHaveBeenCalled();
+    });
+
+    it('should show the iframe when Next finds other patients', async () => {
+      enableDuplicateDetection();
+      mockMatches(duplicate);
+      renderComponent();
+
+      fireEvent.click(screen.getByTestId('extension-action-button'));
+
+      expect(
+        await screen.findByTestId('duplicate-patient-frame'),
+      ).toBeInTheDocument();
+    });
+
+    it('should close the iframe when it posts a CLOSE message', async () => {
+      enableDuplicateDetection();
+      mockMatches(duplicate);
+      renderComponent();
+      fireEvent.click(screen.getByText('CREATE_PATIENT_SAVE'));
+      const frame = (await screen.findByTestId(
+        'duplicate-patient-frame',
+      )) as HTMLIFrameElement;
+
+      act(() => {
+        window.dispatchEvent(
+          new MessageEvent('message', {
+            data: { type: 'CLOSE' },
+            origin: window.location.origin,
+            source: frame.contentWindow,
+          }),
+        );
+      });
+
+      expect(
+        screen.queryByTestId('duplicate-patient-frame'),
+      ).not.toBeInTheDocument();
+    });
+
+    it('should send the saved primary identifier first for the current applicant when editing', async () => {
+      enableDuplicateDetection();
+      mockMatches(duplicate);
+      mockRouteParams.patientUuid = 'patient-uuid-1';
+      (usePatientDetails as jest.Mock).mockReturnValue({
+        patientDetails: {
+          resourceType: 'Patient',
+          id: 'patient-uuid-1',
+          identifier: [
+            { value: 'AB0001' },
+            { type: { text: 'Passport' }, value: 'P123' },
+          ],
+        },
+        metadata: {
+          patientUuid: 'patient-uuid-1',
+          patientIdentifier: 'AB0001',
+          patientName: 'Naman Shukla',
+          registerDate: '',
+        },
+        isLoading: false,
+      });
+      mockMutateAsyncRunsCheck({
+        id: 'patient-uuid-1',
+        identifier: [{ value: 'NEW1' }],
+      });
+      renderComponent();
+
+      fireEvent.click(screen.getByText('CREATE_PATIENT_SAVE'));
+      const frame = (await screen.findByTestId(
+        'duplicate-patient-frame',
+      )) as HTMLIFrameElement;
+      const postMessage = jest.fn();
+      const contentWindow = { postMessage };
+      Object.defineProperty(frame, 'contentWindow', {
+        value: contentWindow,
+        configurable: true,
+      });
+      act(() => {
+        window.dispatchEvent(
+          new MessageEvent('message', {
+            data: { type: 'READY' },
+            origin: window.location.origin,
+            source: contentWindow as unknown as MessageEventSource,
+          }),
+        );
+      });
+
+      expect(postMessage).toHaveBeenCalledWith(
+        expect.objectContaining({
+          type: 'DUPLICATE_PATIENTS',
+          currentPatient: expect.objectContaining({
+            identifier: [
+              { value: 'AB0001' },
+              { type: { text: 'Passport' }, value: 'P123' },
+              { value: 'NEW1' },
+            ],
+          }),
+        }),
+        window.location.origin,
+      );
+    });
+
+    it('should block the save with an error notification and no iframe when the duplicate check fails', async () => {
+      enableDuplicateDetection();
+      const { matchFhirPatient } = jest.requireMock('@bahmni/services');
+      matchFhirPatient.mockRejectedValue(new Error('boom'));
+      renderComponent();
+
+      fireEvent.click(screen.getByText('CREATE_PATIENT_SAVE'));
+
+      await waitFor(() => {
+        expect(mockAddNotification).toHaveBeenCalledWith({
+          type: 'error',
+          title: 'ERROR_CHECKING_DUPLICATES',
+          message: 'ERROR_CHECKING_DUPLICATES_MESSAGE',
+        });
+      });
+      expect(
+        screen.queryByTestId('duplicate-patient-frame'),
+      ).not.toBeInTheDocument();
+      await expect(mockMutateAsync.mock.results[0].value).rejects.toThrow();
+    });
+
+    it('should not show the iframe when no other patients match', async () => {
+      enableDuplicateDetection();
+      mockMatches();
+      renderComponent();
+
+      fireEvent.click(screen.getByText('CREATE_PATIENT_SAVE'));
+
+      await waitFor(() => {
+        expect(mockMutateAsync).toHaveBeenCalled();
+      });
+      expect(
+        screen.queryByTestId('duplicate-patient-frame'),
+      ).not.toBeInTheDocument();
+    });
+
+    it('should not run the check when duplicate detection is not configured', async () => {
+      renderComponent();
+
+      fireEvent.click(screen.getByText('CREATE_PATIENT_SAVE'));
+
+      await waitFor(() => {
+        expect(mockMutateAsync).toHaveBeenCalled();
+      });
+      expect(mockMutateAsync.mock.calls[0][0].checkDuplicates).toBeUndefined();
+      expect(
+        jest.requireMock('@bahmni/services').matchFhirPatient,
+      ).not.toHaveBeenCalled();
     });
   });
 

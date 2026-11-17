@@ -2,6 +2,7 @@ import {
   createFhirPatient,
   createRelatedPerson,
   dispatchAuditEvent,
+  generateIdentifier,
   PersonAttributeType,
 } from '@bahmni/services';
 import { useNotification } from '@bahmni/widgets';
@@ -417,5 +418,54 @@ describe('useCreatePatient', () => {
     expect(mockAddNotification).toHaveBeenCalledWith(
       expect.objectContaining({ type: 'error' }),
     );
+  });
+
+  describe('checkDuplicates', () => {
+    const formDataWithSource = {
+      ...mockFormData,
+      profile: {
+        ...mockFormData.profile,
+        patientIdentifier: {
+          ...mockFormData.profile.patientIdentifier,
+          identifierSourceUuid: 'source-uuid',
+        },
+      },
+    };
+
+    it('should pass the FHIR payload to checkDuplicates and save when it returns true', async () => {
+      mockCreateFhirPatient.mockResolvedValue(mockFhirResponse);
+      const checkDuplicates = jest.fn().mockResolvedValue(true);
+
+      const { result } = renderHook(() => useCreatePatient(), {
+        wrapper: createWrapper(),
+      });
+      result.current.mutate({ ...mockFormData, checkDuplicates });
+
+      await waitFor(() => {
+        expect(result.current.isSuccess).toBe(true);
+      });
+
+      expect(checkDuplicates).toHaveBeenCalledWith(
+        expect.objectContaining({ resourceType: 'Patient', gender: 'male' }),
+      );
+      expect(mockCreateFhirPatient).toHaveBeenCalledTimes(1);
+    });
+
+    it('should not save, generate an identifier or notify when checkDuplicates returns false', async () => {
+      const checkDuplicates = jest.fn().mockResolvedValue(false);
+
+      const { result } = renderHook(() => useCreatePatient(), {
+        wrapper: createWrapper(),
+      });
+      result.current.mutate({ ...formDataWithSource, checkDuplicates });
+
+      await waitFor(() => {
+        expect(result.current.isError).toBe(true);
+      });
+
+      expect(generateIdentifier).not.toHaveBeenCalled();
+      expect(mockCreateFhirPatient).not.toHaveBeenCalled();
+      expect(mockAddNotification).not.toHaveBeenCalled();
+    });
   });
 });

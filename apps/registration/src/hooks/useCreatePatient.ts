@@ -20,6 +20,7 @@ import {
   PersonAttributesData,
   AdditionalIdentifiersData,
 } from '../models/patient';
+import { DuplicatesFoundError } from '../utils/duplicatesFoundError';
 import { buildFhirPatient } from '../utils/fhirPatientMapper';
 import { buildRelatedPersonPayload } from '../utils/patientDataConverter';
 import { useIdentifierTypes } from './useAdditionalIdentifiers';
@@ -38,6 +39,7 @@ interface CreatePatientFormData {
   additional: PersonAttributesData;
   additionalIdentifiers: AdditionalIdentifiersData;
   relationships: RelationshipData[];
+  checkDuplicates?: (patient: Patient) => Promise<boolean>;
 }
 
 function buildIdentifierTypeNames(
@@ -60,6 +62,26 @@ export const useCreatePatient = () => {
   const mutation = useMutation({
     mutationFn: async (formData: CreatePatientFormData) => {
       const { identifierSourceUuid } = formData.profile.patientIdentifier;
+
+      const buildPayload = (profile: CreatePatientFormData['profile']) =>
+        buildFhirPatient({
+          profile,
+          address: formData.address,
+          contact: formData.contact,
+          additional: formData.additional,
+          additionalIdentifiers: formData.additionalIdentifiers,
+          identifierTypeNames: buildIdentifierTypeNames(identifierTypes),
+          loginLocationUuid: getUserLoginLocation()?.uuid,
+          personAttributes,
+        });
+
+      if (formData.checkDuplicates) {
+        const hasNoDuplicates = await formData.checkDuplicates(
+          buildPayload(formData.profile),
+        );
+        if (!hasNoDuplicates) throw new DuplicatesFoundError();
+      }
+
       let identifierValue: string | undefined;
 
       if (identifierSourceUuid) {
@@ -67,23 +89,12 @@ export const useCreatePatient = () => {
         identifierValue = result.identifier;
       }
 
-      const profile = {
+      const payload = buildPayload({
         ...formData.profile,
         patientIdentifier: {
           ...formData.profile.patientIdentifier,
           ...(identifierValue && { identifier: identifierValue }),
         },
-      };
-
-      const payload = buildFhirPatient({
-        profile,
-        address: formData.address,
-        contact: formData.contact,
-        additional: formData.additional,
-        additionalIdentifiers: formData.additionalIdentifiers,
-        identifierTypeNames: buildIdentifierTypeNames(identifierTypes),
-        loginLocationUuid: getUserLoginLocation()?.uuid,
-        personAttributes,
       });
       const patient = await createFhirPatient<Patient>(payload);
 
@@ -136,6 +147,7 @@ export const useCreatePatient = () => {
       }
     },
     onError: (error) => {
+      if (error instanceof DuplicatesFoundError) return;
       addNotification({
         type: 'error',
         title: t(

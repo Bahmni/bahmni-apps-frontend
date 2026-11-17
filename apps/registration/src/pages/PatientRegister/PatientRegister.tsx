@@ -15,8 +15,10 @@ import {
   type PrintOption,
 } from '@bahmni/widgets';
 import { usePatientPhoto } from '@bahmni/widgets';
-import { useRef, useState, useEffect, useMemo } from 'react';
+import type { Patient } from 'fhir/r4';
+import { useCallback, useRef, useState, useEffect, useMemo } from 'react';
 import { useNavigate, useParams } from 'react-router';
+import { DuplicatePatientFrame } from '../../components/duplicatePatientFrame';
 import { AdditionalIdentifiersRef } from '../../components/forms/additionalIdentifiers/AdditionalIdentifiers';
 import { AdditionalInfoRef } from '../../components/forms/additionalInfo/AdditionalInfo';
 import { AddressInfoRef } from '../../components/forms/addressInfo/AddressInfo';
@@ -28,11 +30,13 @@ import { BAHMNI_REGISTRATION_SEARCH, getPatientUrl } from '../../constants/app';
 
 import { useAdditionalIdentifiers } from '../../hooks/useAdditionalIdentifiers';
 import { useCreatePatient } from '../../hooks/useCreatePatient';
+import { useDuplicateCheck } from '../../hooks/useDuplicateCheck';
 import { usePatientDetails } from '../../hooks/usePatientDetails';
 import { useRelationshipValidation } from '../../hooks/useRelationshipValidation';
 import { useUpdatePatient } from '../../hooks/useUpdatePatient';
 import { useRegistrationConfig } from '../../providers/registrationConfig';
 import { RegistrationFormSection } from '../../providers/registrationConfig/models';
+import { withSavedIdentifiers } from '../../utils/duplicatePatientView';
 import { FormControlRefs, FormControlData, FormControlGuards } from './models';
 import { validateAllSections, collectFormData } from './patientFormService';
 import PatientRegisterSection from './PatientRegisterSection';
@@ -132,6 +136,17 @@ const PatientRegister = () => {
 
   const isSaving =
     createPatientMutation.isPending || updatePatientMutation.isPending;
+
+  const {
+    isEnabled: isDuplicateCheckEnabled,
+    featureURL: duplicateFeatureURL,
+    findDuplicates,
+  } = useDuplicateCheck();
+  const [duplicateMatch, setDuplicateMatch] = useState<{
+    patients: Patient[];
+    currentPatient: Patient;
+  } | null>(null);
+  const closeDuplicateFrame = useCallback(() => setDuplicateMatch(null), []);
 
   const [expandedSections, setExpandedSections] = useState<Set<string>>(
     new Set(),
@@ -239,12 +254,38 @@ const PatientRegister = () => {
       return null;
     }
 
+    const checkDuplicates = isDuplicateCheckEnabled
+      ? async (payload: Patient) => {
+          let duplicates: Patient[];
+          try {
+            duplicates = await findDuplicates(payload);
+          } catch {
+            addNotification({
+              type: 'error',
+              title: t('ERROR_CHECKING_DUPLICATES'),
+              message: t('ERROR_CHECKING_DUPLICATES_MESSAGE'),
+            });
+            return false;
+          }
+          if (duplicates.length === 0) return true;
+          setDuplicateMatch({
+            patients: duplicates,
+            currentPatient: withSavedIdentifiers(
+              payload,
+              patientDetails?.identifier,
+            ),
+          });
+          return false;
+        }
+      : undefined;
+
     try {
       if (patientUuid) {
         const response = await updatePatientMutation.mutateAsync({
           patientUuid,
           ...formData,
           additionalIdentifiersInitialData,
+          checkDuplicates,
         });
         if (response?.id) {
           const displayName =
@@ -258,7 +299,10 @@ const PatientRegister = () => {
           return response.id;
         }
       } else {
-        const response = await createPatientMutation.mutateAsync(formData);
+        const response = await createPatientMutation.mutateAsync({
+          ...formData,
+          checkDuplicates,
+        });
         if (response?.id) {
           setSavedPatientUuid(response.id);
           navigate(getPatientUrl(response.id));
@@ -422,6 +466,14 @@ const PatientRegister = () => {
                 />
               </div>
             </div>
+          )}
+          {duplicateMatch && duplicateFeatureURL && (
+            <DuplicatePatientFrame
+              featureURL={duplicateFeatureURL}
+              patients={duplicateMatch.patients}
+              currentPatient={duplicateMatch.currentPatient}
+              onClose={closeDuplicateFrame}
+            />
           )}
         </div>
       }
