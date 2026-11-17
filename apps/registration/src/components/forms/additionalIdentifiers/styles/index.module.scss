@@ -12,10 +12,11 @@
 
 
 .identifierField {
-  width: $spacing-13 + $spacing-13 + $spacing-07;
+  width: 100%;
+  max-width: $spacing-13 + $spacing-13 + $spacing-07;
   padding-bottom: $spacing-03 + $spacing-03;
   padding-top: $spacing-03 + $spacing-01;
-  
+
   :global(.cds--text-input) {
     background-color: $field-01 !important;  
   }
@@ -55,8 +56,9 @@
     }
 
     td:first-child {
-      width: $spacing-13 + $spacing-06;
-      white-space: nowrap;
+      width: $spacing-13 + $spacing-13 + $spacing-07;
+      white-space: normal;
+      overflow-wrap: break-word;
       padding-inline-start: 0 !important;
       @include type-style("heading-compact-01");
       align-content: center;

@@ -78,7 +78,15 @@
     border-block: 1px solid $border-subtle !important;
   }
 
-  td, th {
+  :global(.cds--table-header-label) {
+    overflow: visible;
+    text-overflow: unset;
+    white-space: normal;
+    overflow-wrap: break-word;
+  }
+
+  td,
+  th {
     width: auto;
   }
 }
@@ -236,11 +244,10 @@
   min-width: calc($spacing-12 + $spacing-05);
 }
 
-.dateRangeFilter{
+.dateRangeFilter {
   div:first-child {
-    display:flex;
+    display: flex;
     flex-direction: column !important;
-    gap: $spacing-02
+    gap: $spacing-02;
   }
 }
-

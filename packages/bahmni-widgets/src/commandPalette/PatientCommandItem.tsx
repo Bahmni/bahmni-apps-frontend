@@ -74,7 +74,9 @@ export const PatientCommandItem: React.FC<PatientCommandItemProps> = ({
       </span>
 
       <span className={styles.itemContent}>
-        <span className={styles.itemLabel}>{primaryText}</span>
+        <span className={styles.itemLabel} title={primaryText}>
+          {primaryText}
+        </span>
         {isExpanded && hasAdditional && (
           <span className={styles.additionalFields}>
             {additionalFields.map((f) => (
