@@ -26,12 +26,12 @@
   }
 
   table {
-    table-layout: fixed;
+    table-layout: auto;
   }
 
   td {
     width: 25%;
-    overflow-wrap: anywhere;
+    overflow-wrap: break-word;
   }
   td:nth-child(4) {
     padding-inline: 0 !important;
