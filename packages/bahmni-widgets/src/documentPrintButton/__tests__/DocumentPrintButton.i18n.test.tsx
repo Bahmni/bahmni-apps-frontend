@@ -1,8 +1,8 @@
 import { notificationService, renderAsHtml } from '@bahmni/services';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import i18next from 'i18next';
-import { initReactI18next } from 'react-i18next';
+import { createInstance, type i18n } from 'i18next';
+import { initReactI18next, setI18n } from 'react-i18next';
 import { DocumentPrintButton } from '../DocumentPrintButton';
 
 // Unlike the other suites, i18n is NOT mocked: labels go through a real i18next
@@ -13,6 +13,9 @@ jest.mock('@bahmni/services', () => ({
   getUserPreferredLocale: jest.fn().mockReturnValue('es'),
   notificationService: { showError: jest.fn() },
   useTranslation: jest.requireActual('react-i18next').useTranslation,
+  translate: jest.requireActual('@bahmni/services').translate,
+  getValidationMessage:
+    jest.requireActual('@bahmni/services').getValidationMessage,
   getUserLoginLocation: jest.fn(() => {
     throw new Error('no login location cookie');
   }),
@@ -37,8 +40,13 @@ const options = [
   { translationKey: 'FACILITY_UNDEFINED_KEY', templateId: 'd' },
 ];
 
+// An isolated instance bound to react-i18next for this file only; the shared default
+// `i18next` export is never touched.
+let appI18n: i18n;
+
 beforeAll(async () => {
-  await i18next.use(initReactI18next).init({
+  appI18n = createInstance();
+  await appI18n.use(initReactI18next).init({
     lng: 'es',
     fallbackLng: 'en',
     defaultNS: 'registration',
@@ -66,7 +74,12 @@ beforeAll(async () => {
   });
 });
 
-beforeEach(() => jest.clearAllMocks());
+beforeEach(() => {
+  jest.clearAllMocks();
+  setI18n(appI18n);
+});
+
+afterAll(() => setI18n(null as unknown as i18n));
 
 describe('DocumentPrintButton translations (real i18n, locale es)', () => {
   it('shows the primary label and every dropdown label translated, with English fallback', async () => {

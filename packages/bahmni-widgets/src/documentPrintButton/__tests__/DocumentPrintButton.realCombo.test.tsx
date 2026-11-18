@@ -11,14 +11,11 @@ jest.mock('@bahmni/services', () => ({
   getUserPreferredLocale: jest.fn().mockReturnValue('en'),
   notificationService: { showError: jest.fn() },
   useTranslation: () => ({ t: (key: string) => key }),
+  translate: (key: string) => key,
+  getValidationMessage: jest.fn(),
   getUserLoginLocation: jest.fn(() => {
     throw new Error('no login location cookie');
   }),
-}));
-
-jest.mock('i18next', () => ({
-  __esModule: true,
-  default: { t: (key: string) => key },
 }));
 
 jest.mock('../../activePractitioner', () => ({

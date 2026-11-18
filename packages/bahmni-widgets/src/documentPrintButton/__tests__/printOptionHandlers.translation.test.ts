@@ -12,6 +12,10 @@ jest.mock('@bahmni/services', () => ({
   renderAsHtml: jest.fn(),
   getUserPreferredLocale: jest.fn().mockReturnValue('es'),
   notificationService: { showError: jest.fn() },
+  // the real shared helpers, so this exercises the production translation path
+  getValidationMessage:
+    jest.requireActual('@bahmni/services').getValidationMessage,
+  translate: jest.requireActual('@bahmni/services').translate,
 }));
 
 jest.mock('../printViaIframe', () => ({
@@ -60,6 +64,31 @@ describe('print failure notification text', () => {
       'No se pudo preparar el documento.',
     );
   });
+
+  it.each([
+    [
+      'empty',
+      { PRINT_DOCUMENT_ERROR_TITLE: '', PRINT_DOCUMENT_ERROR_MESSAGE: '' },
+    ],
+    ['missing', {}],
+  ])(
+    'falls back to the translation keys when the translations are %s',
+    async (_label, translation) => {
+      const sparse = createInstance();
+      await sparse.use(initReactI18next).init({
+        lng: 'es',
+        resources: { es: { translation } },
+      });
+      setI18n(sparse);
+
+      await printTemplate(option, {}, { setIsPrinting: jest.fn() });
+
+      expect(notificationService.showError).toHaveBeenCalledWith(
+        'PRINT_DOCUMENT_ERROR_TITLE',
+        'PRINT_DOCUMENT_ERROR_MESSAGE',
+      );
+    },
+  );
 
   it('falls back to the translation keys when no i18n instance has been set up', async () => {
     setI18n(null as unknown as i18n);

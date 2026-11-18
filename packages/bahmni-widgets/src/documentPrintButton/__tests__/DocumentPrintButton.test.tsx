@@ -39,16 +39,13 @@ jest.mock('@bahmni/services', () => ({
   getUserPreferredLocale: jest.fn().mockReturnValue('en'),
   notificationService: { showError: jest.fn() },
   useTranslation: () => ({ t: (key: string) => key }),
+  translate: (key: string) => key,
+  getValidationMessage: jest.fn(),
   getUserLoginLocation: jest.fn(() => {
     throw new Error('no login location cookie');
   }),
   getRecentVisitEncounters: jest.fn(),
   formatDateTime: jest.fn().mockReturnValue({ formattedResult: '01-Jan-2024' }),
-}));
-
-jest.mock('i18next', () => ({
-  __esModule: true,
-  default: { t: (key: string) => key },
 }));
 
 jest.mock('../../activePractitioner', () => ({
@@ -391,6 +388,41 @@ describe('DocumentPrintButton', () => {
       expect(screen.getByTestId('first-name')).toBe(input);
       expect(input.value).toBe('Jane');
       expect(mockPrintViaIframe).not.toHaveBeenCalled();
+    });
+
+    it('shows the error and restores the print control when the print call itself fails', async () => {
+      mockPrintViaIframe.mockRejectedValueOnce(new Error('iframe failed'));
+      const consoleError = jest
+        .spyOn(console, 'error')
+        .mockImplementation(() => undefined);
+
+      render(
+        <DocumentPrintButton
+          printOptions={singleOption}
+          renderContext={renderContext}
+        />,
+      );
+
+      await userEvent.click(screen.getByText('PRINT_SUMMARY'));
+
+      await waitFor(() =>
+        expect(notificationService.showError).toHaveBeenCalledWith(
+          'PRINT_DOCUMENT_ERROR_TITLE',
+          'PRINT_DOCUMENT_ERROR_MESSAGE',
+        ),
+      );
+      expect(mockPrintViaIframe).toHaveBeenCalledTimes(1);
+      // Printing state is reset: the button is back and no preparing indicator remains.
+      expect(await screen.findByText('PRINT_SUMMARY')).toBeInTheDocument();
+      expect(
+        screen.queryByText('PRINT_MODAL_PREPARING_DOCUMENT'),
+      ).not.toBeInTheDocument();
+      expect(consoleError).toHaveBeenCalledWith(
+        'Failed to print document for template %s',
+        'summary',
+        expect.any(Error),
+      );
+      consoleError.mockRestore();
     });
 
     it('prints once when the button is double-clicked', async () => {
