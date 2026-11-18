@@ -152,6 +152,80 @@ describe('directPrintHandler.trigger / printTemplate', () => {
     consoleError.mockRestore();
   });
 
+  describe('explanation from the template service', () => {
+    const failWith = (message: string, status?: number) =>
+      new Error(message, {
+        cause: status === undefined ? undefined : { response: { status } },
+      });
+
+    let consoleError: jest.SpyInstance;
+
+    beforeEach(() => {
+      consoleError = jest
+        .spyOn(console, 'error')
+        .mockImplementation(() => undefined);
+    });
+
+    afterEach(() => {
+      consoleError.mockRestore();
+    });
+
+    it('shows the explanation when the service rejects the request with a 400', async () => {
+      mockRenderAsHtml.mockRejectedValue(
+        failWith('No medications prescribed for this visit', 400),
+      );
+
+      await printTemplate(option, {}, { setIsPrinting });
+
+      expect(notificationService.showError).toHaveBeenCalledWith(
+        'PRINT_DOCUMENT_ERROR_TITLE',
+        'No medications prescribed for this visit',
+      );
+      expect(mockPrintViaIframe).not.toHaveBeenCalled();
+      expect(setIsPrinting).toHaveBeenLastCalledWith(false);
+    });
+
+    it.each([404, 500, 503])(
+      'keeps the generic message for a %s response',
+      async (status) => {
+        mockRenderAsHtml.mockRejectedValue(
+          failWith('The server encountered an error.', status),
+        );
+
+        await printTemplate(option, {}, { setIsPrinting });
+
+        expect(notificationService.showError).toHaveBeenCalledWith(
+          'PRINT_DOCUMENT_ERROR_TITLE',
+          'PRINT_DOCUMENT_ERROR_MESSAGE',
+        );
+      },
+    );
+
+    it('keeps the generic message when the service cannot be reached', async () => {
+      mockRenderAsHtml.mockRejectedValue(
+        failWith('Unable to connect to the server.'),
+      );
+
+      await printTemplate(option, {}, { setIsPrinting });
+
+      expect(notificationService.showError).toHaveBeenCalledWith(
+        'PRINT_DOCUMENT_ERROR_TITLE',
+        'PRINT_DOCUMENT_ERROR_MESSAGE',
+      );
+    });
+
+    it('keeps the generic message when a 400 carries no explanation', async () => {
+      mockRenderAsHtml.mockRejectedValue(failWith('   ', 400));
+
+      await printTemplate(option, {}, { setIsPrinting });
+
+      expect(notificationService.showError).toHaveBeenCalledWith(
+        'PRINT_DOCUMENT_ERROR_TITLE',
+        'PRINT_DOCUMENT_ERROR_MESSAGE',
+      );
+    });
+  });
+
   it('does not open the print dialog when rendering fails', async () => {
     mockRenderAsHtml.mockRejectedValue(new Error('template missing'));
 

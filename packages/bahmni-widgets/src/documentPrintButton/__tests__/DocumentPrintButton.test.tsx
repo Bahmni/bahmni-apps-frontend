@@ -1,5 +1,5 @@
 import { notificationService, renderAsHtml } from '@bahmni/services';
-import { render, screen, waitFor, within } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import type { Encounter } from 'fhir/r4';
 import React from 'react';
@@ -168,71 +168,6 @@ describe('DocumentPrintButton', () => {
         />,
       );
       expect(screen.getByTestId('print-btn')).toBeDisabled();
-    });
-  });
-
-  describe('multiple options', () => {
-    it('lists the remaining options in configured order after the primary', () => {
-      const three = [
-        { translationKey: 'PRINT_A', templateId: 'a' },
-        { translationKey: 'PRINT_B', templateId: 'b' },
-        { translationKey: 'PRINT_C', templateId: 'c' },
-      ];
-      render(
-        <DocumentPrintButton
-          printOptions={three}
-          renderContext={renderContext}
-          data-testid="print-btn"
-        />,
-      );
-
-      const labels = within(screen.getByTestId('print-btn'))
-        .getAllByRole('button')
-        .map((b) => b.textContent);
-      expect(labels).toEqual(['PRINT_A', 'PRINT_B', 'PRINT_C']);
-    });
-
-    it('renders the single-option button without a dropdown', () => {
-      render(
-        <DocumentPrintButton
-          printOptions={singleOption}
-          renderContext={renderContext}
-          data-testid="print-btn"
-        />,
-      );
-
-      expect(screen.getAllByRole('button')).toHaveLength(1);
-    });
-
-    it('disables the primary action and menu items when disabled=true', () => {
-      render(
-        <DocumentPrintButton
-          printOptions={multipleOptions}
-          renderContext={renderContext}
-          data-testid="print-btn"
-          disabled
-        />,
-      );
-
-      expect(screen.getByText('PRINT_SUMMARY')).toBeDisabled();
-    });
-
-    it('prints the selected non-primary option template', async () => {
-      render(
-        <DocumentPrintButton
-          printOptions={multipleOptions}
-          renderContext={renderContext}
-        />,
-      );
-
-      await userEvent.click(screen.getByText('PRINT_PRESCRIPTION'));
-
-      await waitFor(() =>
-        expect(mockRenderAsHtml).toHaveBeenCalledWith(
-          expect.objectContaining({ templateId: 'prescription' }),
-        ),
-      );
-      expect(mockPrintViaIframe).toHaveBeenCalledTimes(1);
     });
   });
 
@@ -430,6 +365,47 @@ describe('DocumentPrintButton', () => {
         ),
       );
       expect(mockPrintViaIframe).not.toHaveBeenCalled();
+    });
+
+    it('leaves data entered beside the button untouched when printing fails', async () => {
+      mockRenderAsHtml.mockRejectedValue(new Error('template missing'));
+
+      render(
+        <>
+          <input data-testid="first-name" defaultValue="" />
+          <DocumentPrintButton
+            printOptions={singleOption}
+            renderContext={renderContext}
+          />
+        </>,
+      );
+      const input = screen.getByTestId('first-name') as HTMLInputElement;
+      await userEvent.type(input, 'Jane');
+
+      await userEvent.click(screen.getByText('PRINT_SUMMARY'));
+      await waitFor(() =>
+        expect(notificationService.showError).toHaveBeenCalledTimes(1),
+      );
+
+      // Same node (never remounted) and the typed value survived the failure.
+      expect(screen.getByTestId('first-name')).toBe(input);
+      expect(input.value).toBe('Jane');
+      expect(mockPrintViaIframe).not.toHaveBeenCalled();
+    });
+
+    it('prints once when the button is double-clicked', async () => {
+      render(
+        <DocumentPrintButton
+          printOptions={singleOption}
+          renderContext={renderContext}
+        />,
+      );
+
+      await userEvent.dblClick(screen.getByText('PRINT_SUMMARY'));
+
+      await waitFor(() => expect(mockPrintViaIframe).toHaveBeenCalled());
+      expect(mockRenderAsHtml).toHaveBeenCalledTimes(1);
+      expect(mockPrintViaIframe).toHaveBeenCalledTimes(1);
     });
 
     it('restores the print control after a render failure', async () => {

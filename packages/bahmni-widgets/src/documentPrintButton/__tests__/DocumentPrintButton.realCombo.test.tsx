@@ -70,4 +70,39 @@ describe('DocumentPrintButton with the real ComboButton', () => {
       ),
     );
   });
+
+  it('renders one button and no dropdown for a single option', () => {
+    render(
+      <DocumentPrintButton
+        printOptions={options.slice(0, 1)}
+        renderContext={{}}
+      />,
+    );
+
+    expect(screen.getAllByRole('button')).toHaveLength(1);
+    expect(screen.getByRole('button', { name: 'PRINT_A' })).toBeInTheDocument();
+    expect(
+      screen.queryByRole('button', { name: /additional actions/i }),
+    ).not.toBeInTheDocument();
+  });
+
+  it('disables the primary action and the dropdown trigger when disabled', async () => {
+    render(
+      <DocumentPrintButton
+        printOptions={options}
+        renderContext={{}}
+        disabled
+      />,
+    );
+
+    const primary = screen.getByRole('button', { name: 'PRINT_A' });
+    const trigger = screen.getByRole('button', { name: /additional actions/i });
+    expect(primary).toBeDisabled();
+    expect(trigger).toBeDisabled();
+
+    // Clicking either disabled control must not start a print.
+    await userEvent.click(primary);
+    await userEvent.click(trigger);
+    expect(renderAsHtml).not.toHaveBeenCalled();
+  });
 });
