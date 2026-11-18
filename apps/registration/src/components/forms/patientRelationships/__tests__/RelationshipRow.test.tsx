@@ -431,6 +431,7 @@ describe('RelationshipRow', () => {
       expect(link).toBeInTheDocument();
       expect(link).toHaveAttribute('target', '_blank');
       expect(link).toHaveAttribute('rel', 'noopener noreferrer');
+      expect(link).toHaveAttribute('title', 'Jane Smith');
     });
 
     it('should display fallback dash when relationship type label is missing', () => {

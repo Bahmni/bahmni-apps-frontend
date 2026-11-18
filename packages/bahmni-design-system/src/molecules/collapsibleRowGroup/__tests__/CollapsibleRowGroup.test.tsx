@@ -27,6 +27,7 @@ describe('CollapsibleRowGroup Component', () => {
     );
 
     expect(screen.getByText('Patient Information')).toBeInTheDocument();
+    expect(screen.getByTitle('Patient Information')).toBeInTheDocument();
     expect(
       screen.getByTestId('test-group-test-id-row-0-header'),
     ).toHaveTextContent('Name');
