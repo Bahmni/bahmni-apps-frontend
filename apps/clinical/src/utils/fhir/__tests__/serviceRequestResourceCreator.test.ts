@@ -302,5 +302,33 @@ describe('serviceRequestResourceCreator', () => {
 
       expect(result.note).toBeUndefined();
     });
+
+    it('should include occurrenceDateTime when occurrenceDate is provided', () => {
+      const occurrenceDate = new Date('2026-10-08T00:00:00.000Z');
+
+      const result = createServiceRequestResource(
+        serviceConceptUUID,
+        subjectReference,
+        encounterReference,
+        requesterReference,
+        'routine',
+        undefined,
+        occurrenceDate,
+      );
+
+      expect(result.occurrenceDateTime).toBe(occurrenceDate.toISOString());
+    });
+
+    it('should not include occurrenceDateTime when occurrenceDate is not provided', () => {
+      const result = createServiceRequestResource(
+        serviceConceptUUID,
+        subjectReference,
+        encounterReference,
+        requesterReference,
+        'routine',
+      );
+
+      expect(result.occurrenceDateTime).toBeUndefined();
+    });
   });
 });
