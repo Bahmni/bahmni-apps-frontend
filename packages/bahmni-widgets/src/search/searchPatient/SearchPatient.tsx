@@ -170,7 +170,7 @@ const SearchPatient = ({ extensionParams }: SearchWidgetProps) => {
     if (isPhoneSearch()) {
       setAdvanceSearchInput(inputValue);
       setSearchInput('');
-      const hasPlusAtStart = inputValue.length > 0 && inputValue[0] === '+';
+      const hasPlusAtStart = inputValue.startsWith('+');
       const numericValue = inputValue.replace(/[^0-9]/g, '');
       const formattedValue = hasPlusAtStart ? '+' + numericValue : numericValue;
       setValidationError(
