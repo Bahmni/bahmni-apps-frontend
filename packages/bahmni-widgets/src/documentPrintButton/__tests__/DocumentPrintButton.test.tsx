@@ -39,14 +39,16 @@ jest.mock('@bahmni/services', () => ({
   getUserPreferredLocale: jest.fn().mockReturnValue('en'),
   notificationService: { showError: jest.fn() },
   useTranslation: () => ({ t: (key: string) => key }),
-  getFormattedError: jest
-    .fn()
-    .mockReturnValue({ title: 'Print Error', message: 'Failed to print' }),
   getUserLoginLocation: jest.fn(() => {
     throw new Error('no login location cookie');
   }),
   getRecentVisitEncounters: jest.fn(),
   formatDateTime: jest.fn().mockReturnValue({ formattedResult: '01-Jan-2024' }),
+}));
+
+jest.mock('i18next', () => ({
+  __esModule: true,
+  default: { t: (key: string) => key },
 }));
 
 jest.mock('../../activePractitioner', () => ({
@@ -358,10 +360,70 @@ describe('DocumentPrintButton', () => {
 
       await waitFor(() =>
         expect(notificationService.showError).toHaveBeenCalledWith(
-          'Print Error',
-          'Failed to print',
+          'PRINT_DOCUMENT_ERROR_TITLE',
+          'PRINT_DOCUMENT_ERROR_MESSAGE',
         ),
       );
+      expect(mockPrintViaIframe).not.toHaveBeenCalled();
+    });
+
+    it('leaves data entered beside the button untouched when printing fails', async () => {
+      mockRenderAsHtml.mockRejectedValue(new Error('template missing'));
+
+      render(
+        <>
+          <input data-testid="first-name" defaultValue="" />
+          <DocumentPrintButton
+            printOptions={singleOption}
+            renderContext={renderContext}
+          />
+        </>,
+      );
+      const input = screen.getByTestId('first-name') as HTMLInputElement;
+      await userEvent.type(input, 'Jane');
+
+      await userEvent.click(screen.getByText('PRINT_SUMMARY'));
+      await waitFor(() =>
+        expect(notificationService.showError).toHaveBeenCalledTimes(1),
+      );
+
+      // Same node (never remounted) and the typed value survived the failure.
+      expect(screen.getByTestId('first-name')).toBe(input);
+      expect(input.value).toBe('Jane');
+      expect(mockPrintViaIframe).not.toHaveBeenCalled();
+    });
+
+    it('prints once when the button is double-clicked', async () => {
+      render(
+        <DocumentPrintButton
+          printOptions={singleOption}
+          renderContext={renderContext}
+        />,
+      );
+
+      await userEvent.dblClick(screen.getByText('PRINT_SUMMARY'));
+
+      await waitFor(() => expect(mockPrintViaIframe).toHaveBeenCalled());
+      expect(mockRenderAsHtml).toHaveBeenCalledTimes(1);
+      expect(mockPrintViaIframe).toHaveBeenCalledTimes(1);
+    });
+
+    it('restores the print control after a render failure', async () => {
+      mockRenderAsHtml.mockRejectedValue(new Error('Network error'));
+
+      render(
+        <DocumentPrintButton
+          printOptions={singleOption}
+          renderContext={renderContext}
+        />,
+      );
+
+      await userEvent.click(screen.getByText('PRINT_SUMMARY'));
+
+      expect(await screen.findByText('PRINT_SUMMARY')).toBeInTheDocument();
+      expect(
+        screen.queryByText('PRINT_MODAL_PREPARING_DOCUMENT'),
+      ).not.toBeInTheDocument();
     });
   });
 

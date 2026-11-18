@@ -1,8 +1,4 @@
-import {
-  getFormattedError,
-  notificationService,
-  renderAsHtml,
-} from '@bahmni/services';
+import { notificationService, renderAsHtml } from '@bahmni/services';
 import { categoryPickers } from '../categoryPickers/types';
 import type { PrintOption } from '../categoryPickers/types';
 import {
@@ -17,9 +13,11 @@ jest.mock('@bahmni/services', () => ({
   renderAsHtml: jest.fn(),
   getUserPreferredLocale: jest.fn().mockReturnValue('en'),
   notificationService: { showError: jest.fn() },
-  getFormattedError: jest
-    .fn()
-    .mockReturnValue({ title: 'Print Error', message: 'Failed to print' }),
+}));
+
+jest.mock('i18next', () => ({
+  __esModule: true,
+  default: { t: (key: string) => key },
 }));
 
 jest.mock('../printViaIframe', () => ({
@@ -125,15 +123,127 @@ describe('directPrintHandler.trigger / printTemplate', () => {
     );
   });
 
-  it('shows an error notification and still resets setIsPrinting on failure', async () => {
+  it('shows a translated error notification and still resets setIsPrinting on failure', async () => {
     mockRenderAsHtml.mockRejectedValue(new Error('boom'));
 
     await printTemplate(option, {}, { setIsPrinting });
 
-    expect(getFormattedError).toHaveBeenCalled();
     expect(notificationService.showError).toHaveBeenCalledWith(
-      'Print Error',
-      'Failed to print',
+      'PRINT_DOCUMENT_ERROR_TITLE',
+      'PRINT_DOCUMENT_ERROR_MESSAGE',
+    );
+    expect(setIsPrinting).toHaveBeenLastCalledWith(false);
+  });
+
+  it('logs the original error for debugging without showing it to the user', async () => {
+    const error = new Error('template missing');
+    mockRenderAsHtml.mockRejectedValue(error);
+    const consoleError = jest
+      .spyOn(console, 'error')
+      .mockImplementation(() => undefined);
+
+    await printTemplate(option, {}, { setIsPrinting });
+
+    expect(consoleError).toHaveBeenCalledWith(expect.any(String), error);
+    expect(notificationService.showError).toHaveBeenCalledWith(
+      'PRINT_DOCUMENT_ERROR_TITLE',
+      'PRINT_DOCUMENT_ERROR_MESSAGE',
+    );
+    consoleError.mockRestore();
+  });
+
+  describe('explanation from the template service', () => {
+    const failWith = (message: string, status?: number) =>
+      new Error(message, {
+        cause: status === undefined ? undefined : { response: { status } },
+      });
+
+    let consoleError: jest.SpyInstance;
+
+    beforeEach(() => {
+      consoleError = jest
+        .spyOn(console, 'error')
+        .mockImplementation(() => undefined);
+    });
+
+    afterEach(() => {
+      consoleError.mockRestore();
+    });
+
+    it('shows the explanation when the service rejects the request with a 400', async () => {
+      mockRenderAsHtml.mockRejectedValue(
+        failWith('No medications prescribed for this visit', 400),
+      );
+
+      await printTemplate(option, {}, { setIsPrinting });
+
+      expect(notificationService.showError).toHaveBeenCalledWith(
+        'PRINT_DOCUMENT_ERROR_TITLE',
+        'No medications prescribed for this visit',
+      );
+      expect(mockPrintViaIframe).not.toHaveBeenCalled();
+      expect(setIsPrinting).toHaveBeenLastCalledWith(false);
+    });
+
+    it.each([404, 500, 503])(
+      'keeps the generic message for a %s response',
+      async (status) => {
+        mockRenderAsHtml.mockRejectedValue(
+          failWith('The server encountered an error.', status),
+        );
+
+        await printTemplate(option, {}, { setIsPrinting });
+
+        expect(notificationService.showError).toHaveBeenCalledWith(
+          'PRINT_DOCUMENT_ERROR_TITLE',
+          'PRINT_DOCUMENT_ERROR_MESSAGE',
+        );
+      },
+    );
+
+    it('keeps the generic message when the service cannot be reached', async () => {
+      mockRenderAsHtml.mockRejectedValue(
+        failWith('Unable to connect to the server.'),
+      );
+
+      await printTemplate(option, {}, { setIsPrinting });
+
+      expect(notificationService.showError).toHaveBeenCalledWith(
+        'PRINT_DOCUMENT_ERROR_TITLE',
+        'PRINT_DOCUMENT_ERROR_MESSAGE',
+      );
+    });
+
+    it('keeps the generic message when a 400 carries no explanation', async () => {
+      mockRenderAsHtml.mockRejectedValue(failWith('   ', 400));
+
+      await printTemplate(option, {}, { setIsPrinting });
+
+      expect(notificationService.showError).toHaveBeenCalledWith(
+        'PRINT_DOCUMENT_ERROR_TITLE',
+        'PRINT_DOCUMENT_ERROR_MESSAGE',
+      );
+    });
+  });
+
+  it('does not open the print dialog when rendering fails', async () => {
+    mockRenderAsHtml.mockRejectedValue(new Error('template missing'));
+
+    await printTemplate(option, {}, { setIsPrinting });
+
+    expect(mockPrintViaIframe).not.toHaveBeenCalled();
+  });
+
+  it('shows the error, skips rendering and resets setIsPrinting when getRenderData rejects', async () => {
+    const getRenderData = jest.fn().mockRejectedValue(new Error('data failed'));
+
+    await printTemplate(option, {}, { setIsPrinting, getRenderData });
+
+    expect(mockRenderAsHtml).not.toHaveBeenCalled();
+    expect(mockPrintViaIframe).not.toHaveBeenCalled();
+    expect(notificationService.showError).toHaveBeenCalledWith(
+      'PRINT_DOCUMENT_ERROR_TITLE',
+      'PRINT_DOCUMENT_ERROR_MESSAGE',
     );
     expect(setIsPrinting).toHaveBeenLastCalledWith(false);
   });

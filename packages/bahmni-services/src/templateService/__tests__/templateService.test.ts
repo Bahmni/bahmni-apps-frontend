@@ -68,4 +68,20 @@ describe('renderAsHtml', () => {
       'Template not found',
     );
   });
+
+  it.each([
+    ['has no html field', {}],
+    ['has an empty html string', { html: '' }],
+    ['has a whitespace-only html string', { html: '   \n ' }],
+    ['has a non-string html value', { html: 42 }],
+    ['has a null html value', { html: null }],
+    ['is null', null],
+    ['is undefined', undefined],
+  ])('rejects when the response %s', async (_description, response) => {
+    mockPost.mockResolvedValueOnce(response);
+
+    await expect(renderAsHtml(renderRequest)).rejects.toThrow(
+      'Template render response did not contain HTML',
+    );
+  });
 });

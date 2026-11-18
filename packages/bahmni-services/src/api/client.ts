@@ -53,7 +53,9 @@ client.interceptors.response.use(
       }
     }
     const { message } = getFormattedError(error);
-    throw new Error(message);
+    // Keep the original error so callers that need the HTTP status (for
+    // example to tell a validation failure from an outage) can still read it.
+    throw new Error(message, { cause: error });
   },
 );
 
