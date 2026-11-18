@@ -383,7 +383,7 @@ describe('useAllergyStore', () => {
       const { errors } = result.current.selectedAllergies[0];
       expect(errors.severity).toBe('DROPDOWN_VALUE_REQUIRED');
       expect(errors.reactions).toBe('DROPDOWN_VALUE_REQUIRED');
-      expect(errors.nonCodedAllergen).toBeUndefined();
+      expect(errors).not.toHaveProperty('nonCodedAllergen');
     });
 
     test('does not set a nonCodedAllergen error on coded allergies either', () => {
@@ -394,9 +394,9 @@ describe('useAllergyStore', () => {
       act(() => {
         result.current.validateAllAllergies();
       });
-      expect(
-        result.current.selectedAllergies[0].errors.nonCodedAllergen,
-      ).toBeUndefined();
+      expect(result.current.selectedAllergies[0].errors).not.toHaveProperty(
+        'nonCodedAllergen',
+      );
     });
   });
 

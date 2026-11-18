@@ -130,11 +130,6 @@ export const useAllergyStore = create<AllergyState>((set, get) => ({
           isModified: true,
         };
 
-        if (allergy.hasBeenValidated && name.trim()) {
-          updatedAllergy.errors = { ...allergy.errors };
-          delete updatedAllergy.errors.nonCodedAllergen;
-        }
-
         return updatedAllergy;
       }),
     }));
@@ -180,9 +175,7 @@ export const useAllergyStore = create<AllergyState>((set, get) => ({
         }
 
         // The free-text name is optional: submission defaults it (see
-        // resolveNonCodedAllergenName) so OpenMRS's
-        // allergyapi.allergen.nonCodedAllergen.required rule is still met.
-        delete errors.nonCodedAllergen;
+        // resolveNonCodedAllergenName), so there is nothing to validate here.
 
         return {
           ...allergy,
