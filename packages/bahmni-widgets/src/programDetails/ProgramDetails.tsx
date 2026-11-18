@@ -8,6 +8,7 @@ import {
   Button,
   MenuButton,
   MenuItem,
+  MenuItemDivider,
   Loading,
 } from '@bahmni/design-system';
 import {
@@ -213,11 +214,13 @@ const ProgramDetails: React.FC<ProgramDetailsProps> = ({
           disabled={isUpdatingState}
         >
           {renderStateMenuItems(allowedStates)}
+          {allowedStates.length > 0 && <MenuItemDivider />}
           <MenuItem
             id="patient-programs-cancel-action"
             data-testid="patient-programs-cancel-action-test-id"
             aria-label="patient-programs-cancel-action-aria-label"
             kind="danger"
+            className={styles.cancelMenuItem}
             label={t(cancelAction.translationKey)}
             onClick={() => setIsCancelModalOpen(true)}
           />
