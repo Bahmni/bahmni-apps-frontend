@@ -263,6 +263,7 @@ export {
   getUserLoginLocation,
   getAvailableLocations,
   getDefaultDateFormat,
+  getAllowedDomains,
   saveUserLocation,
   updateSessionLocation,
   encodeSearchCriteria,

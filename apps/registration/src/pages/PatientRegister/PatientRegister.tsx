@@ -140,6 +140,7 @@ const PatientRegister = () => {
   const {
     isEnabled: isDuplicateCheckEnabled,
     featureURL: duplicateFeatureURL,
+    isTrustedOrigin: isTrustedDuplicateOrigin,
     findDuplicates,
   } = useDuplicateCheck();
   const [duplicateMatch, setDuplicateMatch] = useState<{
@@ -472,6 +473,7 @@ const PatientRegister = () => {
               featureURL={duplicateFeatureURL}
               patients={duplicateMatch.patients}
               currentPatient={duplicateMatch.currentPatient}
+              isTrustedOrigin={isTrustedDuplicateOrigin}
               onClose={closeDuplicateFrame}
             />
           )}

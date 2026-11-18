@@ -12,6 +12,7 @@ interface DuplicatePatientFrameProps {
   featureURL: string;
   patients: Patient[];
   currentPatient: Patient;
+  isTrustedOrigin: (origin: string) => boolean;
   onClose: () => void;
 }
 
@@ -19,6 +20,7 @@ export const DuplicatePatientFrame = ({
   featureURL,
   patients,
   currentPatient,
+  isTrustedOrigin,
   onClose,
 }: DuplicatePatientFrameProps) => {
   const iframeRef = useRef<HTMLIFrameElement>(null);
@@ -37,9 +39,12 @@ export const DuplicatePatientFrame = ({
 
   useEffect(() => {
     const handleMessage = (event: MessageEvent) => {
+      const frameWindow = iframeRef.current?.contentWindow;
       if (
+        !frameWindow ||
+        event.source !== frameWindow ||
         event.origin !== frameOrigin ||
-        event.source !== iframeRef.current?.contentWindow
+        !isTrustedOrigin(event.origin)
       ) {
         return;
       }
@@ -49,13 +54,13 @@ export const DuplicatePatientFrame = ({
     };
     window.addEventListener('message', handleMessage);
     return () => window.removeEventListener('message', handleMessage);
-  }, [onClose, frameOrigin, postDuplicates]);
+  }, [onClose, frameOrigin, isTrustedOrigin, postDuplicates]);
 
   return (
     <iframe
       ref={iframeRef}
       src={featureURL}
-      sandbox="allow-scripts allow-same-origin"
+      sandbox="allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox"
       title="Duplicate patients"
       className={styles.frame}
       data-testid="duplicate-patient-frame"

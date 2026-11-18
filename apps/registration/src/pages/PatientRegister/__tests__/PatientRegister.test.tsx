@@ -32,6 +32,7 @@ jest.mock('@bahmni/services', () => ({
   getPatientProfile: jest.fn(),
   getPatientPhotoDataUrl: jest.fn(),
   matchFhirPatient: jest.fn(),
+  getAllowedDomains: jest.fn(),
   renderAsHtml: jest.fn().mockResolvedValue('<html><body>card</body></html>'),
   useTranslation: () => ({
     t: (key: string) => key,
@@ -938,7 +939,7 @@ describe('PatientRegister', () => {
   });
 
   describe('Duplicate detection', () => {
-    const FEATURE_URL = '/iom/duplicate-resolution';
+    const FEATURE_URL = '/extn/duplicate-resolution';
     const duplicate = { resourceType: 'Patient', id: 'other-patient' };
 
     const enableDuplicateDetection = () => {
