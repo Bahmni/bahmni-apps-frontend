@@ -8,4 +8,4 @@ export const EOC_BY_UUID_URL = (episodeUuid: string) =>
   OPENMRS_FHIR_R4 + `/EpisodeOfCare/${episodeUuid}`;
 
 export const EOC_CANCEL_URL = (episodeUuid: string) =>
-  OPENMRS_REST_V1 + `/mihealth/episode/${episodeUuid}/cancel`;
+  OPENMRS_REST_V1 + `/eoc/${episodeUuid}/cancel`;
