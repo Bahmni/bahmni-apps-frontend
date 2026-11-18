@@ -24,6 +24,7 @@ import React, { useMemo, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useNotification } from '../notification';
 import { useUserPrivilege } from '../userPrivileges/useUserPrivilege';
+import CancelEpisodeOfCareModal from './CancelEpisodeOfCareModal';
 import {
   EDIT_PATIENT_PROGRAMS_PRIVILEGE,
   EPISODE_OF_CARE_FIELDS,
@@ -74,6 +75,7 @@ const ProgramDetails: React.FC<ProgramDetailsProps> = ({
   const { t } = useTranslation();
   const { addNotification } = useNotification();
   const [isUpdatingState, setIsUpdatingState] = useState(false);
+  const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
   const { userPrivileges } = useUserPrivilege();
   const hasEditPatientProgramsPrivilege = hasPrivilege(
     userPrivileges,
@@ -173,9 +175,56 @@ const ProgramDetails: React.FC<ProgramDetailsProps> = ({
     );
   }
 
+  const cancelAction = (config?.actions ?? []).find(
+    (action) =>
+      action.type === 'cancel' &&
+      !!data.episodeUuid &&
+      action.visibleInStates.includes(data.currentStateName ?? '') &&
+      action.requiredPrivileges.every((privilege) =>
+        hasPrivilege(userPrivileges, privilege),
+      ),
+  );
+
+  const renderStateMenuItems = (
+    allowedStates: { uuid: string; display: string }[],
+  ) =>
+    allowedStates.map((state) => (
+      <MenuItem
+        id={`patient-programs-${state.uuid}-button`}
+        data-testid={`patient-programs-${state.uuid}-button-test-id`}
+        aria-label={`patient-programs-${state.uuid}-button-aria-label`}
+        key={state.uuid}
+        label={t(
+          `PROGRAMS_STATE_BUTTON_${camelToScreamingSnakeCase(state.display)}`,
+          state.display,
+        )}
+        onClick={() => handleButtonClick(state.uuid)}
+      />
+    ));
+
   const renderButtons = (
     allowedStates: { uuid: string; display: string }[],
   ) => {
+    if (cancelAction) {
+      return (
+        <MenuButton
+          label={t('PROGRAM_ACTIONS_BUTTON')}
+          kind="primary"
+          disabled={isUpdatingState}
+        >
+          {renderStateMenuItems(allowedStates)}
+          <MenuItem
+            id="patient-programs-cancel-action"
+            data-testid="patient-programs-cancel-action-test-id"
+            aria-label="patient-programs-cancel-action-aria-label"
+            kind="danger"
+            label={t(cancelAction.translationKey)}
+            onClick={() => setIsCancelModalOpen(true)}
+          />
+        </MenuButton>
+      );
+    }
+
     if (allowedStates.length < 3) {
       return allowedStates.map((state) => (
         <Button
@@ -201,19 +250,7 @@ const ProgramDetails: React.FC<ProgramDetailsProps> = ({
         kind="ghost"
         disabled={isUpdatingState}
       >
-        {allowedStates.map((state) => (
-          <MenuItem
-            id={`patient-programs-${state.uuid}-button`}
-            data-testid={`patient-programs-${state.uuid}-button-test-id`}
-            aria-label={`patient-programs-${state.uuid}-button-aria-label`}
-            key={state.uuid}
-            label={t(
-              `PROGRAMS_STATE_BUTTON_${camelToScreamingSnakeCase(state.display)}`,
-              state.display,
-            )}
-            onClick={() => handleButtonClick(state.uuid)}
-          />
-        ))}
+        {renderStateMenuItems(allowedStates)}
       </MenuButton>
     );
   };
@@ -288,7 +325,7 @@ const ProgramDetails: React.FC<ProgramDetailsProps> = ({
             {data.currentStateName}
           </Tag>
         </Tile>
-        {enableButtons && (
+        {(enableButtons || cancelAction) && (
           <div
             id="patient-programs-state-change-button-group"
             data-testid="patient-programs-state-change-button-group-test-id"
@@ -296,7 +333,7 @@ const ProgramDetails: React.FC<ProgramDetailsProps> = ({
             role="group"
             className={styles.buttons}
           >
-            {renderButtons(data.allowedStates)}
+            {renderButtons(enableButtons ? data.allowedStates : [])}
           </div>
         )}
       </div>
@@ -315,6 +352,17 @@ const ProgramDetails: React.FC<ProgramDetailsProps> = ({
           </Column>
         ))}
       </Grid>
+      {isCancelModalOpen && cancelAction && (
+        <CancelEpisodeOfCareModal
+          episodeUuid={data.episodeUuid}
+          action={cancelAction}
+          onClose={() => setIsCancelModalOpen(false)}
+          onSuccess={() => {
+            setIsCancelModalOpen(false);
+            refetch();
+          }}
+        />
+      )}
       {isUpdatingState &&
         createPortal(
           <div
