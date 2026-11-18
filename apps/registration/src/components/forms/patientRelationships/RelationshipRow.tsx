@@ -80,6 +80,7 @@ export const RelationshipRow = ({
           className={styles.patientLink}
           target="_blank"
           rel="noopener noreferrer"
+          title={relationship.patientName}
           data-testid="existing-relationship-patient-link"
         >
           {relationship.patientName}
