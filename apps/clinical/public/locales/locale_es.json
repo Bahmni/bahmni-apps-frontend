@@ -16,6 +16,7 @@
   "ALLERGY_LIST_STATUS": "Estado",
   "ALLERGY_OTHER_ALLERGEN_LABEL": "Especifique el alérgeno",
   "ALLERGY_OTHER_ALLERGEN_PLACEHOLDER": "Introduzca el nombre del alérgeno",
+  "ALLERGY_OTHER_ALLERGEN_HELPER": "Opcional. Si se deja vacío, se guardará el nombre del alérgeno seleccionado.",
   "ALLERGY_REACTIONS_LABEL": "Reacciones",
   "ALLERGY_SELECT_REACTIONS": "Seleccionar Reacciones",
   "ALLERGY_SELECT_SEVERITY": "Seleccionar Gravedad",

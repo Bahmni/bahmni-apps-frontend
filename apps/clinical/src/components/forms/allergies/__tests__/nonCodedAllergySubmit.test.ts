@@ -167,6 +167,36 @@ describe('allergies control - REST save path', () => {
         }
       });
 
+      it('saves the concept\'s full multi-word display name, not just "Other"', async () => {
+        useAllergyStore.setState({
+          selectedAllergies: [
+            makeNonCodedAllergy({
+              display: 'Other, Non-Coded',
+              nonCodedAllergen: '',
+            }),
+          ],
+        });
+
+        await allergiesControl().onDirectSubmit!();
+
+        expect(
+          (saveAllergy as jest.Mock).mock.calls[0][1].allergen.nonCodedAllergen,
+        ).toBe('Other, Non-Coded');
+      });
+
+      it('registered control validate() passes with an empty Specify allergen', () => {
+        useAllergyStore.setState({
+          selectedAllergies: [
+            makeNonCodedAllergy({
+              nonCodedAllergen: '',
+              hasBeenValidated: false,
+            }),
+          ],
+        });
+
+        expect(allergiesControl().validate!()).toBe(true);
+      });
+
       it('falls back to "Other" when the concept display is also blank', async () => {
         useAllergyStore.setState({
           selectedAllergies: [
