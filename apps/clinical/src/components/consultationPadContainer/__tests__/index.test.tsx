@@ -1,6 +1,8 @@
 import {
   createVisitWithFhirR4,
   dispatchAuditEvent,
+  dispatchConsultationStart,
+  dispatchEocLocked,
   getVisitLocationUUID,
   getUserLoginLocation,
   useTranslation,
@@ -11,7 +13,7 @@ import {
   usePatientUUID,
 } from '@bahmni/widgets';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { render, screen, waitFor } from '@testing-library/react';
+import { act, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import React, { StrictMode } from 'react';
 import { useClinicalAppData } from '../../../hooks/useClinicalAppData';
@@ -441,6 +443,59 @@ describe('ConsultationPadContainer', () => {
       expect(mockAddNotification).toHaveBeenCalledWith(
         expect.objectContaining({ type: 'error' }),
       );
+    });
+  });
+
+  describe('when the EoC is locked', () => {
+    const withActiveVisit = () =>
+      jest.mocked(useQuery).mockReturnValue({
+        data: { id: 'visit-1' },
+        error: null,
+        isLoading: false,
+      } as any);
+
+    it('shows the error page instead of the consultation pad when EoC is in terminal state', () => {
+      withActiveVisit();
+      renderComponent();
+      expect(screen.getByTestId('consultation-pad')).toBeInTheDocument();
+
+      act(() => dispatchEocLocked());
+
+      expect(screen.getByTestId('consultation-pad-lock')).toBeInTheDocument();
+      expect(screen.queryByTestId('consultation-pad')).not.toBeInTheDocument();
+    });
+
+    it('closes the pad from the error page', async () => {
+      withActiveVisit();
+      const onClose = jest.fn();
+      renderComponent({ onClose });
+      act(() => dispatchEocLocked());
+
+      await userEvent.click(screen.getByTestId('primary-button'));
+
+      expect(onClose).toHaveBeenCalledTimes(1);
+    });
+
+    it('shows the consultation pad when a new consultation is started', () => {
+      withActiveVisit();
+      renderComponent();
+      act(() => dispatchEocLocked());
+
+      act(() => dispatchConsultationStart());
+
+      expect(screen.getByTestId('consultation-pad')).toBeInTheDocument();
+      expect(mockInvalidateQueries).toHaveBeenCalledWith({
+        queryKey: ['activeVisitAtLoginLocation', PATIENT_UUID],
+      });
+    });
+
+    it('does not refetch the visit on a consultation start when the EoC was not locked', () => {
+      withActiveVisit();
+      renderComponent();
+
+      act(() => dispatchConsultationStart());
+
+      expect(mockInvalidateQueries).not.toHaveBeenCalled();
     });
   });
 
