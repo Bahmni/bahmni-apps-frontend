@@ -136,6 +136,50 @@
                   }
                 }
               }
+            },
+            "actions": {
+              "type": "array",
+              "description": "Actions available on the program details (e.g. cancel the episode of care)",
+              "items": {
+                "type": "object",
+                "required": [
+                  "type",
+                  "translationKey",
+                  "requiredPrivileges",
+                  "visibleInStates",
+                  "reasonConceptSetUuid"
+                ],
+                "additionalProperties": false,
+                "properties": {
+                  "type": {
+                    "type": "string",
+                    "description": "Type of the action, e.g. cancel"
+                  },
+                  "translationKey": {
+                    "type": "string",
+                    "description": "Translation key of the label shown in the actions menu"
+                  },
+                  "requiredPrivileges": {
+                    "type": "array",
+                    "description": "Privileges the user must have to see the action",
+                    "items": { "type": "string" }
+                  },
+                  "visibleInStates": {
+                    "type": "array",
+                    "description": "Program state names in which the action is shown",
+                    "items": { "type": "string" }
+                  },
+                  "reasonConceptSetUuid": {
+                    "type": "string",
+                    "description": "UUID of the concept set whose members are the selectable reasons"
+                  },
+                  "noteRequiredReasonUuids": {
+                    "type": "array",
+                    "description": "UUIDs of reasons for which a note is mandatory",
+                    "items": { "type": "string" }
+                  }
+                }
+              }
             }
           }
         }
@@ -213,7 +257,7 @@
               "properties": {
                 "translationKey": { "type": "string" },
                 "templateId": { "type": "string" },
-                "category": { "type": "string"},
+                "category": { "type": "string" },
                 "privileges": {
                   "type": "array",
                   "items": { "type": "string" }

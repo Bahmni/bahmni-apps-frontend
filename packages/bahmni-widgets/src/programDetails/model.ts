@@ -18,3 +18,12 @@ export interface ProgramField {
   name: string;
   enableTranslation?: boolean;
 }
+
+export interface ProgramAction {
+  type: string;
+  translationKey: string;
+  requiredPrivileges: string[];
+  visibleInStates: string[];
+  reasonConceptSetUuid: string;
+  noteRequiredReasonUuids?: string[];
+}

@@ -47,7 +47,7 @@ export { GenericServiceRequestTable } from './genericServiceRequest';
 export { TaskList } from './tasks';
 export { PatientProgramsTable } from './patientPrograms';
 export { ImmunizationHistory } from './immunizationHistory';
-export { ProgramDetails } from './programDetails';
+export { ProgramDetails, type ProgramAction } from './programDetails';
 export { VisitsTable } from './visits';
 export { extractFormName } from './observations';
 

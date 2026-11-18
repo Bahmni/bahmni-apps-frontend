@@ -29,7 +29,7 @@ import {
   EPISODE_OF_CARE_FIELDS,
   KNOWN_FIELDS,
 } from './constants';
-import { ProgramDetailsViewModel, ProgramField } from './model';
+import { ProgramAction, ProgramDetailsViewModel, ProgramField } from './model';
 import styles from './styles/ProgramDetails.module.scss';
 import {
   createProgramDetailsViewModel,
@@ -60,6 +60,7 @@ interface ProgramDetailsProps {
   programUUID: string;
   config: {
     fields: ProgramField[];
+    actions?: ProgramAction[];
   };
 }
 
