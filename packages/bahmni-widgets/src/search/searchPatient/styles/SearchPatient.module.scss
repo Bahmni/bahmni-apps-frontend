@@ -76,7 +76,9 @@
 }
 
 .searchTypeDropdown {
-  width: 10rem;
+  width: auto;
+  min-width: 10rem;
+  max-width: 16rem;
 }
 
 @include breakpoint-down(lg) {

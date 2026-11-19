@@ -134,6 +134,7 @@ describe('CommandPalette', () => {
       'COMMAND_PALETTE_GROUP_NAVIGATION',
     );
     expect(screen.getByText('Go to Registration')).toBeInTheDocument();
+    expect(screen.getByTitle('Go to Registration')).toBeInTheDocument();
   });
 
   it('shows the annotation filter chip when selectedAnnotation is set via typing prefix', async () => {

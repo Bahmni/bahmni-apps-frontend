@@ -10,6 +10,7 @@
     "setupTests.ts",
     "setupTests.i18n.ts",
     "./public/locales/locale_en.json",
+    "./public/locales/locale_es.json",
     "src/**/*.test.ts",
     "src/**/*.spec.ts",
     "src/**/*.test.tsx",
