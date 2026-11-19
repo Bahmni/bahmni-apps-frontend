@@ -24,6 +24,7 @@ export interface RelationshipData {
   tillDate: string;
   isExisting?: boolean;
   isDeleted?: boolean;
+  isDefaultPlaceholder?: boolean;
 }
 
 export interface PatientRelationshipsRef {
@@ -52,6 +53,7 @@ export const PatientRelationships = ({
     relationships,
     relationshipTypes,
     validationErrors,
+    generalError,
     getPatientSuggestions,
     updateRelationship,
     handlePatientSearch,
@@ -118,6 +120,15 @@ export const PatientRelationships = ({
       className={styles.relationshipSection}
       data-testid="patient-relationships-section"
     >
+      {generalError && (
+        <div
+          className={`cds--form-requirement ${styles.generalError}`}
+          data-testid="patient-relationships-general-error"
+        >
+          {generalError}
+        </div>
+      )}
+
       <div
         className={styles.tableContainer}
         data-testid="patient-relationships-table-container"
