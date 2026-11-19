@@ -107,5 +107,8 @@ export interface FormResponseData {
   visitStartDateTime: number;
   encounterUuid: string;
   encounterDateTime: number;
+  /** Actual server-side save time for this specific form (obs.dateCreated from backend).
+   *  Absent for older backends that don't expose it — fall back to encounterDateTime. */
+  formSavedDateTime?: number;
   providers: FormProvider[];
 }
