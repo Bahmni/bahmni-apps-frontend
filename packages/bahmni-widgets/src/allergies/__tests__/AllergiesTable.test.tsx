@@ -46,11 +46,18 @@ jest.mock('@bahmni/design-system', () => ({
   TooltipIcon: ({
     content,
     ariaLabel,
+    align,
   }: {
     content: string;
     ariaLabel: string;
+    align?: string;
   }) => (
-    <div data-testid="tooltip-icon" title={content} aria-label={ariaLabel}>
+    <div
+      data-testid="tooltip-icon"
+      title={content}
+      aria-label={ariaLabel}
+      data-align={align}
+    >
       <span role="img" aria-label="notes">
         ℹ️
       </span>
@@ -283,6 +290,7 @@ describe('AllergiesTable', () => {
         'title',
         'Patient reports severe reaction',
       );
+      expect(tooltip).toHaveAttribute('data-align', 'bottom-start');
     });
 
     it('displays multiple reaction manifestations', () => {

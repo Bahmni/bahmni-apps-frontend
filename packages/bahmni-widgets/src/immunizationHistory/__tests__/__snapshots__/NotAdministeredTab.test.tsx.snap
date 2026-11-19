@@ -7,7 +7,7 @@ exports[`NotAdministeredTab matches snapshot 1`] = `
     id="immunization-not-administered-tab"
   >
     <div
-      class="table notAdministeredTable _sortableDataTableBody_my1j8_1"
+      class="table _sortableDataTableBody_my1j8_1"
       data-testid="not-administered-immunizations-table"
     >
       <div
@@ -26,12 +26,12 @@ exports[`NotAdministeredTab matches snapshot 1`] = `
               >
                 <div
                   class="cds--table-sort__description"
-                  id="table-sort-_r_2i_"
+                  id="table-sort-_r_2b_"
                 >
                   Click to sort rows by IMMUNIZATION_HISTORY_WIDGET_COL_TYPE header in ascending order
                 </div>
                 <button
-                  aria-describedby="table-sort-_r_2i_"
+                  aria-describedby="table-sort-_r_2b_"
                   class="cds--table-sort"
                   data-testid="table-header-code"
                   type="button"
@@ -100,12 +100,12 @@ exports[`NotAdministeredTab matches snapshot 1`] = `
               >
                 <div
                   class="cds--table-sort__description"
-                  id="table-sort-_r_2k_"
+                  id="table-sort-_r_2d_"
                 >
                   Click to sort rows by IMMUNIZATION_HISTORY_WIDGET_COL_DATE header in ascending order
                 </div>
                 <button
-                  aria-describedby="table-sort-_r_2k_"
+                  aria-describedby="table-sort-_r_2d_"
                   class="cds--table-sort"
                   data-testid="table-header-date"
                   type="button"
@@ -161,12 +161,12 @@ exports[`NotAdministeredTab matches snapshot 1`] = `
               >
                 <div
                   class="cds--table-sort__description"
-                  id="table-sort-_r_2l_"
+                  id="table-sort-_r_2e_"
                 >
                   Click to sort rows by IMMUNIZATION_HISTORY_WIDGET_COL_RECORDED_ON header in ascending order
                 </div>
                 <button
-                  aria-describedby="table-sort-_r_2l_"
+                  aria-describedby="table-sort-_r_2e_"
                   class="cds--table-sort"
                   data-testid="table-header-recordedOn"
                   type="button"
@@ -222,12 +222,12 @@ exports[`NotAdministeredTab matches snapshot 1`] = `
               >
                 <div
                   class="cds--table-sort__description"
-                  id="table-sort-_r_2m_"
+                  id="table-sort-_r_2f_"
                 >
                   Click to sort rows by IMMUNIZATION_HISTORY_WIDGET_COL_RECORDED_BY header in ascending order
                 </div>
                 <button
-                  aria-describedby="table-sort-_r_2m_"
+                  aria-describedby="table-sort-_r_2f_"
                   class="cds--table-sort"
                   data-testid="table-header-recordedBy"
                   type="button"
@@ -297,7 +297,7 @@ exports[`NotAdministeredTab matches snapshot 1`] = `
                     class="cds--popover-container cds--popover--caret cds--popover--high-contrast cds--popover--auto-align cds--autoalign cds--popover--bottom cds--toggletip _tooltipIcon_d1wk8_1 cds--autoalign"
                   >
                     <button
-                      aria-controls="id-_r_2n_"
+                      aria-controls="id-_r_2g_"
                       aria-expanded="false"
                       aria-label="Show information"
                       class="cds--toggletip-button"
@@ -329,7 +329,7 @@ exports[`NotAdministeredTab matches snapshot 1`] = `
                     </button>
                     <span
                       class="cds--popover"
-                      id="id-_r_2n_"
+                      id="id-_r_2g_"
                     >
                       <span
                         class="cds--popover-content"
