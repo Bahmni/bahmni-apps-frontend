@@ -5,6 +5,7 @@ export {
   useTranslation,
   normalizeTranslationKey,
   getUserPreferredLocale,
+  translate,
 } from './i18n';
 export { useCamera } from './cameraService';
 export {
@@ -116,6 +117,7 @@ export {
 export {
   getFormattedError,
   getErrorKind,
+  getValidationMessage,
   PATIENT_NOT_FOUND_ERROR_KEY,
 } from './errorHandling';
 export type { ErrorKind } from './errorHandling';
