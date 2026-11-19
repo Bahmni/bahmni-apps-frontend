@@ -1,4 +1,8 @@
-import { cancelEpisodeOfCare, searchFHIRConcepts } from '@bahmni/services';
+import {
+  cancelEpisodeOfCare,
+  dispatchAuditEvent,
+  searchFHIRConcepts,
+} from '@bahmni/services';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
@@ -9,9 +13,13 @@ import { ProgramAction } from '../model';
 jest.mock('@bahmni/services', () => ({
   ...jest.requireActual('@bahmni/services'),
   cancelEpisodeOfCare: jest.fn(),
+  dispatchAuditEvent: jest.fn(),
   searchFHIRConcepts: jest.fn(),
 }));
 jest.mock('../../notification');
+jest.mock('../../hooks/usePatientUUID', () => ({
+  usePatientUUID: () => 'patient-uuid',
+}));
 
 const OTHER_UUID = 'other-uuid';
 const action: ProgramAction = {
@@ -128,6 +136,27 @@ describe('CancelEpisodeOfCareModal', () => {
     );
   });
 
+  it('should record an audit event for the cancellation', async () => {
+    const user = userEvent.setup();
+    renderModal();
+    await chooseReason(user, 'Other');
+    await user.type(screen.getByRole('textbox'), 'Entered twice by mistake');
+
+    await clickCancel(user);
+
+    await waitFor(() =>
+      expect(dispatchAuditEvent).toHaveBeenCalledWith({
+        eventType: 'CANCEL_EOC',
+        patientUuid: 'patient-uuid',
+        messageParams: {
+          episodeUuid: 'episode-uuid',
+          reason: 'Other',
+          note: 'Entered twice by mistake',
+        },
+      }),
+    );
+  });
+
   it('should not call the API when the note required for the reason is missing', async () => {
     const user = userEvent.setup();
     renderModal();
@@ -157,6 +186,7 @@ describe('CancelEpisodeOfCareModal', () => {
       ),
     );
     expect(onSuccess).not.toHaveBeenCalled();
+    expect(dispatchAuditEvent).not.toHaveBeenCalled();
   });
 
   it('should show an error when the reasons cannot be loaded', async () => {

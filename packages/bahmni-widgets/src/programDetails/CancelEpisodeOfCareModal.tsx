@@ -1,5 +1,8 @@
 import {
+  AUDIT_LOG_EVENT_DETAILS,
+  AuditEventType,
   cancelEpisodeOfCare,
+  dispatchAuditEvent,
   searchFHIRConcepts,
   useTranslation,
 } from '@bahmni/services';
@@ -9,6 +12,7 @@ import CancellationModal, {
   CancellationReason,
   CancellationValues,
 } from '../cancellationModal/CancellationModal';
+import { usePatientUUID } from '../hooks/usePatientUUID';
 import { useNotification } from '../notification';
 import { ProgramAction } from './model';
 
@@ -49,6 +53,7 @@ const CancelEpisodeOfCareModal: React.FC<CancelEpisodeOfCareModalProps> = ({
 }) => {
   const { t } = useTranslation();
   const { addNotification } = useNotification();
+  const patientUuid = usePatientUUID();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const { data: fetchedReasons = [], isError: isReasonsError } = useQuery({
@@ -82,6 +87,18 @@ const CancelEpisodeOfCareModal: React.FC<CancelEpisodeOfCareModalProps> = ({
         reason: reason.uuid,
         note: note || undefined,
       });
+      if (patientUuid) {
+        dispatchAuditEvent({
+          eventType: AUDIT_LOG_EVENT_DETAILS.CANCEL_EOC
+            .eventType as AuditEventType,
+          patientUuid,
+          messageParams: {
+            episodeUuid,
+            reason: reason.display,
+            note: note || undefined,
+          },
+        });
+      }
       addNotification({
         type: 'success',
         title: t('PROGRAM_CANCEL_EOC_SUCCESS_TITLE'),

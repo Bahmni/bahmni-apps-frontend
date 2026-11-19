@@ -75,6 +75,7 @@
   "CLINICAL_DATA_RECORDED_BY": "Grabado Por",
   "CLINICAL_LABEL": "Clínico",
   "CLOSE_BUTTON": "Cerrar",
+  "CANCEL_EOC_MESSAGE": "Canceló un episodio de atención del paciente",
   "CANCEL_VACCINATION_ADD_NOTE": "Agregar nota",
   "CANCEL_VACCINATION_DATE_LABEL": "Fecha de cancelación",
   "CANCEL_VACCINATION_DATE_REQUIRED": "La fecha de cancelación es obligatoria",
