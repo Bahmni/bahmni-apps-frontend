@@ -12,5 +12,6 @@ export const USER_PROPERTIES_URL = (userUuid: string) =>
 export const APP_SETTINGS_URL = (module: string) =>
   OPENMRS_REST_V1 + `/bahmni/app/setting?module=${module}`;
 export const DEFAULT_DATE_FORMAT_PROPERTY = 'default_dateFormat';
-export const ALLOWED_DOMAINS_PROPERTY = 'bahmni.allowedDomains';
+export const ALLOWED_DOMAINS_PROPERTY =
+  'bahmni.duplicateCheckExtensions.allowedDomains';
 export const UPDATE_SESSION_LOCATION_URL = SESSION_URL;

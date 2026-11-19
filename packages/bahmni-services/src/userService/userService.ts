@@ -85,7 +85,7 @@ export const getDefaultDateFormat = async (): Promise<string | null> => {
 
 /**
  * Get the hostnames allowed to be embedded or to exchange messages with Bahmni,
- * from the `bahmni.allowedDomains` core app setting (comma separated)
+ * from the `bahmni.duplicateCheckExtensions.allowedDomains` core app setting (comma separated)
  * @returns Promise<string[]> - Trimmed, lower-cased hostnames; empty when the setting is absent
  */
 export const getAllowedDomains = async (): Promise<string[]> => {

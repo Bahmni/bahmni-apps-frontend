@@ -291,7 +291,7 @@ describe('getAllowedDomains', () => {
     (get as jest.Mock).mockResolvedValue([
       { property: 'other.property', value: 'x' },
       {
-        property: 'bahmni.allowedDomains',
+        property: 'bahmni.duplicateCheckExtensions.allowedDomains',
         value: ' Dev.Example.org, qa.example.org ,,',
       },
     ]);
