@@ -150,6 +150,8 @@
   "PATIENT_UPDATED_SUCCESSFULLY": "Patient updated successfully",
   "PHONE_NUMBER": "Phone Number",
   "PHONE_NUMBER_VALIDATION_ERROR": "Please enter only numbers.",
+  "PRINT_DOCUMENT_ERROR_MESSAGE": "Unable to prepare the document. Please try again or contact your administrator.",
+  "PRINT_DOCUMENT_ERROR_TITLE": "Unable to print",
   "PRINT_MODAL_PREPARING_DOCUMENT": "Preparing document…",
   "REGISTRATION_ADDRESS_CITY_VILLAGE": "City/Village",
   "REGISTRATION_ADDRESS_COUNTRY": "Country",

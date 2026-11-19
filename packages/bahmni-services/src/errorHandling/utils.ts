@@ -142,6 +142,30 @@ export const getErrorKind = (error: unknown): ErrorKind => {
   return 'unknown';
 };
 
+export const HTTP_BAD_REQUEST = 400;
+
+/**
+ * Returns the explanation the backend gave for rejecting a request as invalid
+ * (HTTP 400), or undefined for any other kind of failure.
+ *
+ * Accepts either an Axios error or an error the API client rethrew with the
+ * original Axios error as its `cause`. The text comes from `getFormattedError`,
+ * so 400 handling (backend message extraction, FHIR outcomes) stays in one
+ * place. Callers use it to tell "this request cannot succeed, here is why" from
+ * an outage, where a generic retry message is more appropriate. Never throws,
+ * whatever shape `error` or its `cause` has.
+ */
+export const getValidationMessage = (error: unknown): string | undefined => {
+  const source = axios.isAxiosError(error)
+    ? error
+    : error instanceof Error && axios.isAxiosError(error.cause)
+      ? error.cause
+      : undefined;
+  if (source?.response?.status !== HTTP_BAD_REQUEST) return undefined;
+  const message = getFormattedError(source).message.trim();
+  return message || undefined;
+};
+
 export const PATIENT_NOT_FOUND_ERROR_KEY = 'ERROR_PATIENT_NOT_FOUND';
 
 // A GET of a single FHIR patient resource, e.g. /ws/fhir2/R4/Patient/{uuid}.

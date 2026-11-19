@@ -54,10 +54,12 @@ client.interceptors.response.use(
       }
     }
     const { message } = getFormattedError(error);
+    // Keep the original error so callers that need the HTTP status (for
+    // example to tell a validation failure from an outage) can still read it.
     if (message === EOC_LOCKED_ERROR_KEY) {
       dispatchEocLocked();
     }
-    throw new Error(message);
+    throw new Error(message, { cause: error });
   },
 );
 

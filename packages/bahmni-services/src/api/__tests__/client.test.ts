@@ -310,6 +310,28 @@ describe('Axios Client', () => {
         expect(getFormattedError).toHaveBeenCalledWith(mockError);
       });
 
+      it('should keep the original error as the cause of the error it throws', async () => {
+        const mockError = {
+          response: { status: 400 },
+          isAxiosError: true,
+        };
+
+        (axios.isAxiosError as unknown as jest.Mock) = jest
+          .fn()
+          .mockReturnValue(true);
+
+        const responseInterceptor = (client.interceptors.response as any)
+          .handlers[0];
+
+        const thrown = await responseInterceptor
+          .rejected(mockError)
+          .catch((e: Error) => e);
+
+        expect(thrown).toBeInstanceOf(Error);
+        expect(thrown.message).toBe('Test error message');
+        expect(thrown.cause).toBe(mockError);
+      });
+
       it('should handle non-Axios errors', async () => {
         const mockError = new Error('Network error');
 

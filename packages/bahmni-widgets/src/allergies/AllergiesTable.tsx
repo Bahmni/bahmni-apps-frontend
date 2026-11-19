@@ -161,6 +161,7 @@ const AllergiesTable: React.FC<WidgetProps> = ({
                   iconName="fa-file-lines"
                   content={allergy.note}
                   ariaLabel={allergy.note}
+                  align="bottom-start"
                 />
               )}
             </div>
