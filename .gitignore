@@ -110,3 +110,6 @@ docs/memory-bank/*
 
 vite.config.*.timestamp*
 vitest.config.*.timestamp*
+
+# CLI local config
+.bahmni-cli.conf
