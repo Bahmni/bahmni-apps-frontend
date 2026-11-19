@@ -14,6 +14,7 @@ export interface CommandPaletteContextType {
   patientActions: PatientAction[];
   patientFieldsConfig: PatientFieldsConfig;
   searchAnnotations: SearchAnnotation[];
+  portalContainer?: Element | DocumentFragment;
 }
 
 export const CommandPaletteContext =
