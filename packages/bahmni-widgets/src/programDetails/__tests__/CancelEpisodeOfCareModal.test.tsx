@@ -21,24 +21,19 @@ jest.mock('../../hooks/usePatientUUID', () => ({
   usePatientUUID: () => 'patient-uuid',
 }));
 
-const OTHER_UUID = 'other-uuid';
 const action: ProgramAction = {
   type: 'cancel',
   translationKey: 'PROGRAM_ACTION_CANCEL_EOC',
   requiredPrivileges: ['app:eoc:cancel'],
   visibleInStates: ['Assessment in progress'],
   reasonConceptSetUuid: 'reason-set-uuid',
-  noteRequiredReasonUuids: [OTHER_UUID],
 };
 const valueSet = {
   resourceType: 'ValueSet',
   status: 'active',
   expansion: {
     timestamp: '2026-01-01',
-    contains: [
-      { code: 'declined-uuid', display: 'Patient declines' },
-      { code: OTHER_UUID, display: 'Other' },
-    ],
+    contains: [{ code: 'declined-uuid', display: 'Patient declines' }],
   },
 };
 
@@ -86,7 +81,6 @@ describe('CancelEpisodeOfCareModal', () => {
 
     expect(searchFHIRConcepts).toHaveBeenCalledWith('reason-set-uuid');
     expect(await screen.findByText('Patient declines')).toBeInTheDocument();
-    expect(screen.getByText('Other')).toBeInTheDocument();
   });
 
   it('should reuse the cached reasons when the dialog is opened again', async () => {
@@ -101,7 +95,7 @@ describe('CancelEpisodeOfCareModal', () => {
     expect(searchFHIRConcepts).toHaveBeenCalledTimes(1);
   });
 
-  it('should cancel the episode with the reason and no note when none is entered', async () => {
+  it('should cancel the episode with the selected reason and report success', async () => {
     const user = userEvent.setup();
     renderModal();
     await chooseReason(user, 'Patient declines');
@@ -111,23 +105,6 @@ describe('CancelEpisodeOfCareModal', () => {
     await waitFor(() =>
       expect(cancelEpisodeOfCare).toHaveBeenCalledWith('episode-uuid', {
         reason: 'declined-uuid',
-        note: undefined,
-      }),
-    );
-  });
-
-  it('should cancel the episode with the note and report success', async () => {
-    const user = userEvent.setup();
-    renderModal();
-    await chooseReason(user, 'Other');
-    await user.type(screen.getByRole('textbox'), 'Entered twice by mistake');
-
-    await clickCancel(user);
-
-    await waitFor(() =>
-      expect(cancelEpisodeOfCare).toHaveBeenCalledWith('episode-uuid', {
-        reason: OTHER_UUID,
-        note: 'Entered twice by mistake',
       }),
     );
     expect(onSuccess).toHaveBeenCalled();
@@ -139,8 +116,7 @@ describe('CancelEpisodeOfCareModal', () => {
   it('should record an audit event for the cancellation', async () => {
     const user = userEvent.setup();
     renderModal();
-    await chooseReason(user, 'Other');
-    await user.type(screen.getByRole('textbox'), 'Entered twice by mistake');
+    await chooseReason(user, 'Patient declines');
 
     await clickCancel(user);
 
@@ -150,21 +126,17 @@ describe('CancelEpisodeOfCareModal', () => {
         patientUuid: 'patient-uuid',
         messageParams: {
           episodeUuid: 'episode-uuid',
-          reason: 'Other',
-          note: 'Entered twice by mistake',
+          reason: 'Patient declines',
         },
       }),
     );
   });
 
-  it('should not call the API when the note required for the reason is missing', async () => {
-    const user = userEvent.setup();
+  it('should not offer a note field', async () => {
     renderModal();
-    await chooseReason(user, 'Other');
+    await screen.findByRole('combobox');
 
-    await clickCancel(user);
-
-    expect(cancelEpisodeOfCare).not.toHaveBeenCalled();
+    expect(screen.queryByRole('textbox')).not.toBeInTheDocument();
   });
 
   it('should show the backend message and not report success when the cancellation fails', async () => {

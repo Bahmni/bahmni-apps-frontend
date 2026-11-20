@@ -172,11 +172,6 @@
                   "reasonConceptSetUuid": {
                     "type": "string",
                     "description": "UUID of the concept set whose members are the selectable reasons"
-                  },
-                  "noteRequiredReasonUuids": {
-                    "type": "array",
-                    "description": "UUIDs of reasons for which a note is mandatory",
-                    "items": { "type": "string" }
                   }
                 }
               }

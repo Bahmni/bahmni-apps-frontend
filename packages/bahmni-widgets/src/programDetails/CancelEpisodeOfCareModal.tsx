@@ -7,7 +7,7 @@ import {
   useTranslation,
 } from '@bahmni/services';
 import { useQuery } from '@tanstack/react-query';
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import CancellationModal, {
   CancellationReason,
   CancellationValues,
@@ -36,15 +36,6 @@ const fetchCancelReasons = async (
   }));
 };
 
-const addRequiredNoteToReasons = (
-  reasons: CancellationReason[],
-  noteRequiredReasonUuids: string[] = [],
-): CancellationReason[] =>
-  reasons.map((reason) => ({
-    ...reason,
-    isNoteRequired: noteRequiredReasonUuids.includes(reason.uuid),
-  }));
-
 const CancelEpisodeOfCareModal: React.FC<CancelEpisodeOfCareModalProps> = ({
   episodeUuid,
   action,
@@ -56,17 +47,11 @@ const CancelEpisodeOfCareModal: React.FC<CancelEpisodeOfCareModalProps> = ({
   const patientUuid = usePatientUUID();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const { data: fetchedReasons = [], isError: isReasonsError } = useQuery({
+  const { data: reasons = [], isError: isReasonsError } = useQuery({
     queryKey: cancelReasonsQueryKey(action.reasonConceptSetUuid),
     queryFn: () => fetchCancelReasons(action.reasonConceptSetUuid),
     staleTime: Infinity,
   });
-
-  const reasons = useMemo(
-    () =>
-      addRequiredNoteToReasons(fetchedReasons, action.noteRequiredReasonUuids),
-    [fetchedReasons, action.noteRequiredReasonUuids],
-  );
 
   useEffect(() => {
     if (isReasonsError) {
@@ -79,14 +64,11 @@ const CancelEpisodeOfCareModal: React.FC<CancelEpisodeOfCareModalProps> = ({
     }
   }, [isReasonsError, addNotification, t]);
 
-  const handleSubmit = async ({ reason, note }: CancellationValues) => {
+  const handleSubmit = async ({ reason }: CancellationValues) => {
     if (!reason) return;
     setIsSubmitting(true);
     try {
-      await cancelEpisodeOfCare(episodeUuid, {
-        reason: reason.uuid,
-        note: note || undefined,
-      });
+      await cancelEpisodeOfCare(episodeUuid, { reason: reason.uuid });
       if (patientUuid) {
         dispatchAuditEvent({
           eventType: AUDIT_LOG_EVENT_DETAILS.CANCEL_EOC
@@ -95,7 +77,6 @@ const CancelEpisodeOfCareModal: React.FC<CancelEpisodeOfCareModalProps> = ({
           messageParams: {
             episodeUuid,
             reason: reason.display,
-            note: note || undefined,
           },
         });
       }
@@ -130,6 +111,7 @@ const CancelEpisodeOfCareModal: React.FC<CancelEpisodeOfCareModalProps> = ({
         message: t('PROGRAM_CANCEL_EOC_WARNING_MESSAGE'),
       }}
       reasons={reasons}
+      showNote={false}
       isSubmitting={isSubmitting}
       onSubmit={handleSubmit}
       onClose={onClose}

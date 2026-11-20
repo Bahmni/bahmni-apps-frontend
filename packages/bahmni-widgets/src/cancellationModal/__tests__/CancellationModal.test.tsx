@@ -155,6 +155,17 @@ describe('CancellationModal', () => {
     ).toHaveTextContent('10/10');
   });
 
+  it('should not show the note field and should submit an empty note when showNote is false', async () => {
+    const user = userEvent.setup();
+    renderModal({ showNote: false });
+    expect(screen.queryByRole('textbox')).not.toBeInTheDocument();
+    await chooseReason(user, 'Other');
+
+    await clickSubmit(user);
+
+    expect(onSubmit).toHaveBeenCalledWith({ reason: reasons[1], note: '' });
+  });
+
   it('should show a loader instead of the fields while submitting', () => {
     renderModal({ isSubmitting: true });
 

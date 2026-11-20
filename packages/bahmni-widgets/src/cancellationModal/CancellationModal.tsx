@@ -28,6 +28,7 @@ export interface CancellationModalProps {
   warning?: { title: string; message: string };
   reasons: CancellationReason[];
   isReasonRequired?: boolean;
+  showNote?: boolean;
   noteMaxLength?: number;
   isSubmitting?: boolean;
   onSubmit: (values: CancellationValues) => void;
@@ -40,6 +41,7 @@ const CancellationModal: React.FC<CancellationModalProps> = ({
   warning,
   reasons,
   isReasonRequired = true,
+  showNote = true,
   noteMaxLength = DEFAULT_NOTE_MAX_LENGTH,
   isSubmitting = false,
   onSubmit,
@@ -71,7 +73,7 @@ const CancellationModal: React.FC<CancellationModalProps> = ({
       return;
     }
     const trimmedNote = note.trim();
-    if (isNoteRequired && !trimmedNote) {
+    if (showNote && isNoteRequired && !trimmedNote) {
       setShowNoteError(true);
       return;
     }
@@ -133,35 +135,37 @@ const CancellationModal: React.FC<CancellationModalProps> = ({
                 invalidText={t('CANCELLATION_MODAL_REASON_REQUIRED')}
               />
             </div>
-            <div className={styles.noteField}>
-              <div className={styles.noteHeader}>
-                <label
-                  htmlFor={`${idPrefix}-note`}
-                  className={styles.noteLabel}
-                >
-                  {t('CANCELLATION_MODAL_NOTE_LABEL')}
-                </label>
-                <span
-                  data-testid={`${idPrefix}-note-counter-test-id`}
-                  className={styles.noteCounter}
-                >
-                  {note.length}/{noteMaxLength}
-                </span>
+            {showNote && (
+              <div className={styles.noteField}>
+                <div className={styles.noteHeader}>
+                  <label
+                    htmlFor={`${idPrefix}-note`}
+                    className={styles.noteLabel}
+                  >
+                    {t('CANCELLATION_MODAL_NOTE_LABEL')}
+                  </label>
+                  <span
+                    data-testid={`${idPrefix}-note-counter-test-id`}
+                    className={styles.noteCounter}
+                  >
+                    {note.length}/{noteMaxLength}
+                  </span>
+                </div>
+                <TextArea
+                  id={`${idPrefix}-note`}
+                  testId={`${idPrefix}-note-test-id`}
+                  labelText={t('CANCELLATION_MODAL_NOTE_LABEL')}
+                  hideLabel
+                  value={note}
+                  maxLength={noteMaxLength}
+                  invalid={showNoteError}
+                  invalidText={t('CANCELLATION_MODAL_NOTE_REQUIRED')}
+                  onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
+                    handleNoteChange(e.target.value)
+                  }
+                />
               </div>
-              <TextArea
-                id={`${idPrefix}-note`}
-                testId={`${idPrefix}-note-test-id`}
-                labelText={t('CANCELLATION_MODAL_NOTE_LABEL')}
-                hideLabel
-                value={note}
-                maxLength={noteMaxLength}
-                invalid={showNoteError}
-                invalidText={t('CANCELLATION_MODAL_NOTE_REQUIRED')}
-                onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
-                  handleNoteChange(e.target.value)
-                }
-              />
-            </div>
+            )}
           </>
         )}
       </div>

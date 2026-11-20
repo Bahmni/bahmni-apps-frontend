@@ -192,14 +192,14 @@ describe('episodeOfCareService', () => {
     const episodeUuid = 'episode-uuid-1';
     const reason = 'reason-uuid-1';
 
-    it('should post the reason and note to the episode cancel endpoint', async () => {
+    it('should post the reason to the episode cancel endpoint', async () => {
       mockedPost.mockResolvedValueOnce('');
-      const request = { reason, note: 'Applicant moved abroad' };
+      const request = { reason };
 
       await cancelEpisodeOfCare(episodeUuid, request);
 
       expect(mockedPost).toHaveBeenCalledWith(
-        '/openmrs/ws/rest/v1/mihealth/episode/episode-uuid-1/cancel',
+        '/openmrs/ws/rest/v1/eoc/episode-uuid-1/cancel',
         request,
       );
     });

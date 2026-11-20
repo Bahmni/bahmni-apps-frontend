@@ -26,5 +26,4 @@ export interface ProgramAction {
   requiredPrivileges: string[];
   visibleInStates: string[];
   reasonConceptSetUuid: string;
-  noteRequiredReasonUuids?: string[];
 }

@@ -5,5 +5,4 @@ export interface EpisodeOfCareDataType {
 
 export interface CancelEpisodeOfCareRequest {
   reason: string;
-  note?: string;
 }
