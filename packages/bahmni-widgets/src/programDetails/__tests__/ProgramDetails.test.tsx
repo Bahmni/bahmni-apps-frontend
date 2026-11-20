@@ -428,6 +428,77 @@ describe('ProgramDetails', () => {
     ).not.toBeInTheDocument();
   });
 
+  describe('Cancel action', () => {
+    const cancelAction = {
+      type: 'cancel',
+      translationKey: 'PROGRAM_ACTION_CANCEL_EOC',
+      requiredPrivileges: ['app:eoc:cancel'],
+      visibleInStates: ['Completed'],
+      reasonConceptSetUuid: 'reason-set-uuid',
+    };
+
+    const renderWithCancelAction = (currentStateName: string) => {
+      (useUserPrivilege as jest.Mock).mockReturnValue({
+        userPrivileges: [
+          { uuid: 'privilege-uuid-1', name: 'Edit Patient Programs' },
+          { uuid: 'privilege-uuid-2', name: 'app:eoc:cancel' },
+        ],
+      });
+      (useQuery as jest.Mock).mockReturnValue({
+        data: {
+          id: 'program-1',
+          uuid: 'program-uuid-1',
+          programName: 'HA Program',
+          dateEnrolled: '2023-01-15T10:30:00.000+00:00',
+          dateCompleted: null,
+          outcomeName: null,
+          outcomeDetails: null,
+          currentStateName,
+          episodeUuid: 'episode-uuid-1',
+          attributes: {},
+          allowedStates: [{ uuid: 'state-uuid-1', display: 'Finalised' }],
+        },
+        error: null,
+        isError: false,
+        isLoading: false,
+      });
+
+      render(
+        <QueryClientProvider client={queryClient}>
+          <ProgramDetails
+            programUUID="test-program-uuid"
+            config={{
+              fields: [{ name: 'programName' }],
+              actions: [cancelAction],
+            }}
+          />
+        </QueryClientProvider>,
+      );
+    };
+
+    it('should show the allowed states and Cancel in an Actions dropdown when the program is in a configured state', async () => {
+      renderWithCancelAction('Completed');
+
+      await userEvent.click(screen.getByText('PROGRAM_ACTIONS_BUTTON'));
+
+      const items = screen.getAllByRole('menuitem');
+      expect(items).toHaveLength(2);
+      expect(items[0]).toHaveTextContent('Finalised');
+      expect(items[1]).toHaveTextContent('PROGRAM_ACTION_CANCEL_EOC');
+    });
+
+    it('should keep the existing buttons when the program is not in a configured state', () => {
+      renderWithCancelAction('Finalized');
+
+      expect(
+        screen.queryByText('PROGRAM_ACTIONS_BUTTON'),
+      ).not.toBeInTheDocument();
+      expect(
+        screen.getByTestId('patient-programs-state-uuid-1-button-test-id'),
+      ).toBeInTheDocument();
+    });
+  });
+
   it('should update state when update button is clicked', async () => {
     const mockRefetch = jest.fn();
     (useQuery as jest.Mock).mockReturnValue({

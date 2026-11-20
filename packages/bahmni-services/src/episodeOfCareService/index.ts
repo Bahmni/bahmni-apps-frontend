@@ -1,5 +1,9 @@
 export {
   getEncountersAndVisitsForEOC,
   getEpisodeOfCare,
+  cancelEpisodeOfCare,
 } from './episodeOfCareService';
-export type { EpisodeOfCareDataType } from './models';
+export type {
+  EpisodeOfCareDataType,
+  CancelEpisodeOfCareRequest,
+} from './models';

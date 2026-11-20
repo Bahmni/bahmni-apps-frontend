@@ -7,6 +7,7 @@ export interface ProgramDetailsViewModel {
   readonly outcomeName: string | null;
   readonly outcomeDetails: string | null;
   readonly currentStateName: string | null;
+  readonly episodeUuid: string;
   readonly attributes: Record<string, string | Date | null>;
   readonly careManagerDisplay?: string | null;
   readonly allowedStates: {
@@ -17,4 +18,12 @@ export interface ProgramDetailsViewModel {
 export interface ProgramField {
   name: string;
   enableTranslation?: boolean;
+}
+
+export interface ProgramAction {
+  type: string;
+  translationKey: string;
+  requiredPrivileges: string[];
+  visibleInStates: string[];
+  reasonConceptSetUuid: string;
 }

@@ -1,13 +1,15 @@
-import { get } from '../../api';
+import { get, post } from '../../api';
 import { mockEOCBundle } from '../__mocks__/episodeOfCareMocks';
 import { EOC_BY_UUID_URL, EOC_ENCOUNTERS_URL } from '../constants';
 import {
+  cancelEpisodeOfCare,
   getEncountersAndVisitsForEOC,
   getEpisodeOfCare,
 } from '../episodeOfCareService';
 
 jest.mock('../../api');
 const mockedGet = get as jest.MockedFunction<typeof get>;
+const mockedPost = post as jest.MockedFunction<typeof post>;
 
 describe('episodeOfCareService', () => {
   beforeEach(() => {
@@ -183,6 +185,40 @@ describe('episodeOfCareService', () => {
       mockedGet.mockResolvedValueOnce(mockEOCBundle);
       await getEpisodeOfCare(episodeUUID);
       expect(mockedGet).toHaveBeenCalledWith(EOC_BY_UUID_URL(episodeUUID));
+    });
+  });
+
+  describe('cancelEpisodeOfCare', () => {
+    const episodeUuid = 'episode-uuid-1';
+    const reason = 'reason-uuid-1';
+
+    it('should post the reason to the episode cancel endpoint', async () => {
+      mockedPost.mockResolvedValueOnce('');
+      const request = { reason };
+
+      await cancelEpisodeOfCare(episodeUuid, request);
+
+      expect(mockedPost).toHaveBeenCalledWith(
+        '/openmrs/ws/rest/v1/eoc/episode-uuid-1/cancel',
+        request,
+      );
+    });
+
+    it('should resolve with no value since the backend returns an empty body', async () => {
+      mockedPost.mockResolvedValueOnce('');
+
+      await expect(
+        cancelEpisodeOfCare(episodeUuid, { reason }),
+      ).resolves.toBeUndefined();
+    });
+
+    it('should propagate errors so callers can read the backend message', async () => {
+      const error = { response: { data: { message: 'No visit started' } } };
+      mockedPost.mockRejectedValueOnce(error);
+
+      await expect(cancelEpisodeOfCare(episodeUuid, { reason })).rejects.toBe(
+        error,
+      );
     });
   });
 });
