@@ -10,6 +10,10 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { renderHook, waitFor } from '@testing-library/react';
 import { ReactNode } from 'react';
 import { PersonAttributesProvider } from '../../providers/PersonAttributesProvider';
+import {
+  DuplicateCheckFailedError,
+  DuplicatesFoundError,
+} from '../../utils/duplicatesFoundError';
 import { useCreatePatient } from '../useCreatePatient';
 
 const mockUseRegistrationEncounterTypeUuid = jest.fn();
@@ -432,9 +436,9 @@ describe('useCreatePatient', () => {
       },
     };
 
-    it('should pass the FHIR payload to checkDuplicates and save when it returns true', async () => {
+    it('should pass the FHIR payload to checkDuplicates and save when it returns no duplicates', async () => {
       mockCreateFhirPatient.mockResolvedValue(mockFhirResponse);
-      const checkDuplicates = jest.fn().mockResolvedValue(true);
+      const checkDuplicates = jest.fn().mockResolvedValue([]);
 
       const { result } = renderHook(() => useCreatePatient(), {
         wrapper: createWrapper(),
@@ -451,8 +455,9 @@ describe('useCreatePatient', () => {
       expect(mockCreateFhirPatient).toHaveBeenCalledTimes(1);
     });
 
-    it('should not save, generate an identifier or notify when checkDuplicates returns false', async () => {
-      const checkDuplicates = jest.fn().mockResolvedValue(false);
+    it('should not save, generate an identifier or notify when checkDuplicates returns patients', async () => {
+      const duplicate = { resourceType: 'Patient', id: 'other-patient' };
+      const checkDuplicates = jest.fn().mockResolvedValue([duplicate]);
 
       const { result } = renderHook(() => useCreatePatient(), {
         wrapper: createWrapper(),
@@ -463,7 +468,26 @@ describe('useCreatePatient', () => {
         expect(result.current.isError).toBe(true);
       });
 
+      expect(result.current.error).toBeInstanceOf(DuplicatesFoundError);
       expect(generateIdentifier).not.toHaveBeenCalled();
+      expect(mockCreateFhirPatient).not.toHaveBeenCalled();
+      expect(mockAddNotification).not.toHaveBeenCalled();
+    });
+
+    it('should not notify when the duplicate check itself failed', async () => {
+      const checkDuplicates = jest
+        .fn()
+        .mockRejectedValue(new DuplicateCheckFailedError());
+
+      const { result } = renderHook(() => useCreatePatient(), {
+        wrapper: createWrapper(),
+      });
+      result.current.mutate({ ...mockFormData, checkDuplicates });
+
+      await waitFor(() => {
+        expect(result.current.isError).toBe(true);
+      });
+
       expect(mockCreateFhirPatient).not.toHaveBeenCalled();
       expect(mockAddNotification).not.toHaveBeenCalled();
     });

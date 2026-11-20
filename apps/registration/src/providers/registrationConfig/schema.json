@@ -426,7 +426,7 @@
     "duplicateDetection": {
       "type": "object",
       "description": "Optional duplicate patient detection run before Save/Next on the registration page",
-      "required": ["match", "featureURL"],
+      "required": ["match", "featureURL", "requiredPrivileges"],
       "additionalProperties": false,
       "properties": {
         "match": {

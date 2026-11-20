@@ -20,7 +20,10 @@ import {
   PersonAttributesData,
   AdditionalIdentifiersData,
 } from '../models/patient';
-import { DuplicatesFoundError } from '../utils/duplicatesFoundError';
+import {
+  DuplicateCheckFailedError,
+  DuplicatesFoundError,
+} from '../utils/duplicatesFoundError';
 import { buildFhirPatient } from '../utils/fhirPatientMapper';
 import { buildRelatedPersonPayload } from '../utils/patientDataConverter';
 import { useIdentifierTypes } from './useAdditionalIdentifiers';
@@ -39,7 +42,7 @@ interface CreatePatientFormData {
   additional: PersonAttributesData;
   additionalIdentifiers: AdditionalIdentifiersData;
   relationships: RelationshipData[];
-  checkDuplicates?: (patient: Patient) => Promise<boolean>;
+  checkDuplicates?: (patient: Patient) => Promise<Patient[]>;
 }
 
 function buildIdentifierTypeNames(
@@ -76,10 +79,10 @@ export const useCreatePatient = () => {
         });
 
       if (formData.checkDuplicates) {
-        const hasNoDuplicates = await formData.checkDuplicates(
+        const duplicates = await formData.checkDuplicates(
           buildPayload(formData.profile),
         );
-        if (!hasNoDuplicates) throw new DuplicatesFoundError();
+        if (duplicates.length > 0) throw new DuplicatesFoundError();
       }
 
       let identifierValue: string | undefined;
@@ -147,7 +150,11 @@ export const useCreatePatient = () => {
       }
     },
     onError: (error) => {
-      if (error instanceof DuplicatesFoundError) return;
+      if (
+        error instanceof DuplicatesFoundError ||
+        error instanceof DuplicateCheckFailedError
+      )
+        return;
       addNotification({
         type: 'error',
         title: t(

@@ -19,7 +19,10 @@ import {
   PersonAttributesData,
   AdditionalIdentifiersData,
 } from '../models/patient';
-import { DuplicatesFoundError } from '../utils/duplicatesFoundError';
+import {
+  DuplicateCheckFailedError,
+  DuplicatesFoundError,
+} from '../utils/duplicatesFoundError';
 import { buildFhirPatient } from '../utils/fhirPatientMapper';
 import { buildRelatedPersonPayload } from '../utils/patientDataConverter';
 import { useIdentifierTypes } from './useAdditionalIdentifiers';
@@ -42,7 +45,7 @@ interface UpdatePatientFormData {
   additionalIdentifiers: AdditionalIdentifiersData;
   additionalIdentifiersInitialData?: AdditionalIdentifiersData;
   relationships?: RelationshipData[];
-  checkDuplicates?: (patient: Patient) => Promise<boolean>;
+  checkDuplicates?: (patient: Patient) => Promise<Patient[]>;
 }
 
 function buildIdentifierTypeNames(
@@ -78,11 +81,9 @@ export const useUpdatePatient = () => {
         patientUuid: formData.patientUuid,
       });
 
-      if (
-        formData.checkDuplicates &&
-        !(await formData.checkDuplicates(payload))
-      ) {
-        throw new DuplicatesFoundError();
+      if (formData.checkDuplicates) {
+        const duplicates = await formData.checkDuplicates(payload);
+        if (duplicates.length > 0) throw new DuplicatesFoundError();
       }
 
       const patient = await updateFhirPatient<Patient>(
@@ -154,7 +155,11 @@ export const useUpdatePatient = () => {
       }
     },
     onError: (error) => {
-      if (error instanceof DuplicatesFoundError) return;
+      if (
+        error instanceof DuplicatesFoundError ||
+        error instanceof DuplicateCheckFailedError
+      )
+        return;
       const message = (
         error instanceof Error ? error.message : String(error)
       ).replace(TRAILING_BRACKETED_SUFFIX, '');

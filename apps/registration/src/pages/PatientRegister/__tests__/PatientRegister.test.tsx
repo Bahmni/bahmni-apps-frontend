@@ -15,6 +15,7 @@ import { useCreatePatient } from '../../../hooks/useCreatePatient';
 import { usePatientDetails } from '../../../hooks/usePatientDetails';
 import { useUpdatePatient } from '../../../hooks/useUpdatePatient';
 import { PersonAttributesProvider } from '../../../providers/PersonAttributesProvider';
+import { DuplicatesFoundError } from '../../../utils/duplicatesFoundError';
 import { validateAllSections, collectFormData } from '../patientFormService';
 import PatientRegister from '../PatientRegister';
 
@@ -964,11 +965,12 @@ describe('PatientRegister', () => {
 
     const mockMutateAsyncRunsCheck = (payload: object = {}) => {
       mockMutateAsync.mockImplementation(async ({ checkDuplicates }) => {
-        if (
-          checkDuplicates &&
-          !(await checkDuplicates({ resourceType: 'Patient', ...payload }))
-        ) {
-          throw new Error('duplicates found');
+        if (checkDuplicates) {
+          const duplicates = await checkDuplicates({
+            resourceType: 'Patient',
+            ...payload,
+          });
+          if (duplicates.length > 0) throw new DuplicatesFoundError();
         }
         return { id: 'new-patient-id' };
       });

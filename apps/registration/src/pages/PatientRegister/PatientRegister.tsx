@@ -37,6 +37,7 @@ import { useUpdatePatient } from '../../hooks/useUpdatePatient';
 import { useRegistrationConfig } from '../../providers/registrationConfig';
 import { RegistrationFormSection } from '../../providers/registrationConfig/models';
 import { withSavedIdentifiers } from '../../utils/duplicatePatientView';
+import { DuplicateCheckFailedError } from '../../utils/duplicatesFoundError';
 import { FormControlRefs, FormControlData, FormControlGuards } from './models';
 import { validateAllSections, collectFormData } from './patientFormService';
 import PatientRegisterSection from './PatientRegisterSection';
@@ -266,17 +267,18 @@ const PatientRegister = () => {
               title: t('ERROR_CHECKING_DUPLICATES'),
               message: t('ERROR_CHECKING_DUPLICATES_MESSAGE'),
             });
-            return false;
+            throw new DuplicateCheckFailedError();
           }
-          if (duplicates.length === 0) return true;
-          setDuplicateMatch({
-            patients: duplicates,
-            currentPatient: withSavedIdentifiers(
-              payload,
-              patientDetails?.identifier,
-            ),
-          });
-          return false;
+          if (duplicates.length > 0) {
+            setDuplicateMatch({
+              patients: duplicates,
+              currentPatient: withSavedIdentifiers(
+                payload,
+                patientDetails?.identifier,
+              ),
+            });
+          }
+          return duplicates;
         }
       : undefined;
 
