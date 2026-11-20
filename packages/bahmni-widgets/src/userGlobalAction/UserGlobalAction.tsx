@@ -184,9 +184,6 @@ export const UserGlobalAction = ({ locationName }: UserGlobalActionProps) => {
         aria-haspopup="menu"
         aria-expanded={isOpen}
         aria-controls={MENU_ID}
-        aria-describedby={
-          isOpen && locationName ? `${MENU_ID}-location` : undefined
-        }
         isActive={isOpen}
         onClick={() => setIsOpen((open) => !open)}
         className={styles.userAction}
@@ -205,20 +202,21 @@ export const UserGlobalAction = ({ locationName }: UserGlobalActionProps) => {
         data-testid="user-global-action-menu-test-id"
         open={isOpen}
         className={styles.menu}
-        label={t('USER_GLOBAL_ACTION_MENU')}
+        label={
+          locationName
+            ? `${t('USER_GLOBAL_ACTION_MENU')}. ${t('LOGIN_LOCATION_LABEL', { name: locationName })}`
+            : t('USER_GLOBAL_ACTION_MENU')
+        }
         onClose={() => setIsOpen(false)}
       >
         {locationName && (
-          // As the outer carbon menu is <ul> its direct children should be <li>
-          <li role="presentation">
-            <div
-              role="group"
-              id={`${MENU_ID}-location`}
-              aria-label={t('LOGIN_LOCATION_LABEL', { name: locationName })}
-              title={locationName}
-              className={styles.locationInfo}
-            >
-              <Location aria-hidden="true" />
+          // Carbon's Menu renders a <ul> and moves focus straight to the first
+          // menuitem on open, so a non-focusable row inside the menu is skipped
+          // by screen readers in menu mode. Hide the decorative row from AT and
+          // announce the location via the Menus label instead.
+          <li role="presentation" aria-hidden="true">
+            <div title={locationName} className={styles.locationInfo}>
+              <Location />
               <span className={styles.locationText}>{locationName}</span>
             </div>
           </li>
