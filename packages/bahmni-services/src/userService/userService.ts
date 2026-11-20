@@ -14,6 +14,7 @@ import {
   USER_RESOURCE_URL,
   APP_SETTINGS_URL,
   DEFAULT_DATE_FORMAT_PROPERTY,
+  ALLOWED_DOMAINS_PROPERTY,
   AVAILABLE_LOCATIONS_URL,
   SAVE_USER_LOCATION_URL,
   USER_PROPERTIES_URL,
@@ -80,6 +81,22 @@ export const getDefaultDateFormat = async (): Promise<string | null> => {
     (setting) => setting.property === DEFAULT_DATE_FORMAT_PROPERTY,
   );
   return dateFormatSetting?.value ?? null;
+};
+
+/**
+ * Get the hostnames allowed to be embedded or to exchange messages with Bahmni,
+ * from the `bahmni.duplicateCheckExtensions.allowedDomains` core app setting (comma separated)
+ * @returns Promise<string[]> - Trimmed, lower-cased hostnames; empty when the setting is absent
+ */
+export const getAllowedDomains = async (): Promise<string[]> => {
+  const settings = await get<AppSettingsResponse>(APP_SETTINGS_URL('core'));
+  const value =
+    settings.find((setting) => setting.property === ALLOWED_DOMAINS_PROPERTY)
+      ?.value ?? '';
+  return value
+    .split(',')
+    .map((domain) => domain.trim().toLowerCase())
+    .filter(Boolean);
 };
 
 /**

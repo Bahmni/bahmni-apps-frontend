@@ -13,6 +13,7 @@ export {
   Edit,
   TrashCan,
   Printer,
+  User,
 } from '@carbon/icons-react';
 
 export { ArrowRight, type ArrowRightProps } from './atoms/arrowRight';

@@ -17,6 +17,7 @@ import {
   RELATED_PERSON_URL,
   RELATED_PERSONS_BY_PATIENT_URL,
   RELATED_PERSON_BY_ID_URL,
+  FHIR_PATIENT_MATCH_URL,
 } from '../constants';
 import {
   getPatientById,
@@ -39,6 +40,7 @@ import {
   getRelatedPersonsByPatient,
   createRelatedPerson,
   deleteRelatedPerson,
+  matchFhirPatient,
 } from '../patientService';
 
 jest.mock('../../api');
@@ -1705,6 +1707,30 @@ describe('Patient Service', () => {
       const result = await createRelatedPerson(mockPayload);
 
       expect(result).toEqual(mockResponse);
+    });
+  });
+
+  describe('matchFhirPatient', () => {
+    const patient: Patient = {
+      resourceType: 'Patient',
+      name: [{ family: 'Doe', given: ['John'] }],
+    };
+
+    it('posts the patient wrapped in a Parameters resource to $match and returns the bundle', async () => {
+      const bundle = {
+        resourceType: 'Bundle',
+        type: 'searchset',
+        entry: [{ resource: { resourceType: 'Patient', id: 'p-1' } }],
+      };
+      mockedPost.mockResolvedValueOnce(bundle as any);
+
+      const result = await matchFhirPatient(patient);
+
+      expect(mockedPost).toHaveBeenCalledWith(FHIR_PATIENT_MATCH_URL, {
+        resourceType: 'Parameters',
+        parameter: [{ name: 'resource', resource: patient }],
+      });
+      expect(result).toEqual(bundle);
     });
   });
 

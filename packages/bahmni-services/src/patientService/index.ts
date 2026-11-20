@@ -10,6 +10,7 @@ export {
   updatePatient,
   createFhirPatient,
   updateFhirPatient,
+  matchFhirPatient,
   generateIdentifier,
   getIdentifierData,
   getGenders,
