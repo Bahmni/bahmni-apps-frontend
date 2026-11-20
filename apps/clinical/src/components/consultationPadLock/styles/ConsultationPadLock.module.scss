@@ -1,0 +1,34 @@
+@use "@carbon/react/scss/spacing" as *;
+@use "@carbon/react/scss/theme" as *;
+@use "@carbon/react/scss/type" as *;
+
+.blockedContent {
+  display: flex;
+}
+
+.blockedWrapper {
+  display: flex;
+  height: 100%;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  padding: $spacing-12 $spacing-06;
+}
+
+.blockedIcon {
+  margin-bottom: $spacing-05;
+  color: $icon-primary;
+}
+
+.blockedTitle {
+  @include type-style("heading-04");
+  margin: 0 0 $spacing-05;
+  font-size: 1.25rem;
+}
+
+.blockedMessage {
+  @include type-style("body-02");
+  margin: 0;
+  font-size: 0.875rem;
+  white-space: pre-line;
+}

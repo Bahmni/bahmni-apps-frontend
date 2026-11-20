@@ -119,6 +119,7 @@ export {
   getErrorKind,
   getValidationMessage,
   PATIENT_NOT_FOUND_ERROR_KEY,
+  EOC_LOCKED_ERROR_KEY,
 } from './errorHandling';
 export type { ErrorKind } from './errorHandling';
 export {
@@ -452,6 +453,9 @@ export {
   useSubscribeConsultationSaved,
   CONSULTATION_SAVED_EVENT,
   type ConsultationSavedEventPayload,
+  dispatchEocLocked,
+  useSubscribeEocLocked,
+  EOC_LOCKED_EVENT,
   dispatchConsultationStart,
   useSubscribeConsultationStart,
   CONSULTATION_START_EVENT,
