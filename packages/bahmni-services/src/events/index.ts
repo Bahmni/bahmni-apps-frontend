@@ -6,6 +6,12 @@ export {
 } from './consultationEvents';
 
 export {
+  dispatchEocLocked,
+  useSubscribeEocLocked,
+  EOC_LOCKED_EVENT,
+} from './eocLockedEvent';
+
+export {
   dispatchConsultationStart,
   useSubscribeConsultationStart,
   CONSULTATION_START_EVENT,

@@ -282,6 +282,8 @@
   "ENCOUNTER_MATCH_REASON_PROVIDER_MISMATCH": "Otro proveedor inició una consulta - esto creará una nueva",
   "ENCOUNTER_MATCH_REASON_SESSION_EXPIRED": "Su sesión anterior ha expirado - iniciando una nueva consulta",
   "ENCOUNTER_TYPE": "Tipo de Encuentro",
+  "EOC_LOCKED_MESSAGE": "El Episodio de Atención está en un estado que no permite el ingreso de datos.\nDebe reabrir el Episodio de Atención para agregar o modificar datos",
+  "EOC_LOCKED_TITLE": "Acción no disponible",
   "ERROR_ALLERGY_CONCEPT_MAP_NOT_FOUND": "No se encontró la configuración del mapa de conceptos de alergias",
   "ERROR_CLINICAL_CONFIG_NOT_FOUND": "No se encontró la configuración clínica",
   "ERROR_CONDITION_MISSING_DISPLAY_INFORMATION": "Falta información de visualización de la condición",

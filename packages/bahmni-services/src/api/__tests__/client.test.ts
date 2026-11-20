@@ -1,7 +1,9 @@
 import axios from 'axios';
+import { EOC_LOCKED_EVENT } from '../../events/eocLockedEvent';
 import client from '../client';
 
 jest.mock('../../errorHandling', () => ({
+  EOC_LOCKED_ERROR_KEY: 'ERROR_EOC_LOCKED',
   getFormattedError: jest.fn(() => ({
     title: 'Error',
     message: 'Test error message',
@@ -184,6 +186,46 @@ describe('Axios Client', () => {
     });
 
     describe('Error Handling', () => {
+      it('should dispatch EOC lock event and reject with the message', async () => {
+        const mockError = { response: { status: 409 }, isAxiosError: true };
+        (axios.isAxiosError as unknown as jest.Mock) = jest
+          .fn()
+          .mockReturnValue(true);
+        getFormattedError.mockReturnValueOnce({
+          title: 'Conflict',
+          message: 'ERROR_EOC_LOCKED',
+        });
+        const listener = jest.fn();
+        globalThis.addEventListener(EOC_LOCKED_EVENT, listener);
+
+        const responseInterceptor = (client.interceptors.response as any)
+          .handlers[0];
+
+        await expect(responseInterceptor.rejected(mockError)).rejects.toThrow(
+          'ERROR_EOC_LOCKED',
+        );
+        expect(listener).toHaveBeenCalledTimes(1);
+        globalThis.removeEventListener(EOC_LOCKED_EVENT, listener);
+      });
+
+      it('should not dispatch EOC lock event for other errors', async () => {
+        const mockError = { response: { status: 500 }, isAxiosError: true };
+        (axios.isAxiosError as unknown as jest.Mock) = jest
+          .fn()
+          .mockReturnValue(true);
+        const listener = jest.fn();
+        globalThis.addEventListener(EOC_LOCKED_EVENT, listener);
+
+        const responseInterceptor = (client.interceptors.response as any)
+          .handlers[0];
+
+        await expect(responseInterceptor.rejected(mockError)).rejects.toThrow(
+          'Test error message',
+        );
+        expect(listener).not.toHaveBeenCalled();
+        globalThis.removeEventListener(EOC_LOCKED_EVENT, listener);
+      });
+
       it('should handle 401 errors by redirecting to login', async () => {
         const mockError = {
           response: { status: 401 },

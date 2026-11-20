@@ -1,5 +1,6 @@
 import axios, { AxiosInstance } from 'axios';
-import { getFormattedError } from '../errorHandling';
+import { EOC_LOCKED_ERROR_KEY, getFormattedError } from '../errorHandling';
+import { dispatchEocLocked } from '../events/eocLockedEvent';
 import { BINARY_RESPONSE_TYPES, LOGIN_PATH } from './constants';
 import {
   decodeHtmlEntities,
@@ -55,6 +56,9 @@ client.interceptors.response.use(
     const { message } = getFormattedError(error);
     // Keep the original error so callers that need the HTTP status (for
     // example to tell a validation failure from an outage) can still read it.
+    if (message === EOC_LOCKED_ERROR_KEY) {
+      dispatchEocLocked();
+    }
     throw new Error(message, { cause: error });
   },
 );
