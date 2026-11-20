@@ -122,7 +122,7 @@ const NotAdministeredTab: React.FC<NotAdministeredTabProps> = ({
         )}
         renderCell={renderCell}
         dataTestId="not-administered-immunizations-table"
-        className={`${styles.table} ${styles.notAdministeredTable}`}
+        className={styles.table}
       />
     </div>
   );

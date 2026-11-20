@@ -1,8 +1,9 @@
 import {
-  getFormattedError,
   getUserPreferredLocale,
+  getValidationMessage,
   notificationService,
   renderAsHtml,
+  translate,
 } from '@bahmni/services';
 import { categoryPickers } from './categoryPickers/types';
 import type { CategoryPicker, PrintOption } from './categoryPickers/types';
@@ -31,12 +32,12 @@ export async function printTemplate(
 ): Promise<void> {
   ctx.setIsPrinting(true);
 
-  const baseData = ctx.getRenderData
-    ? await ctx.getRenderData(option.templateId)
-    : ctx.renderData;
-  const data = extraData ? { ...baseData, ...extraData } : baseData;
-
   try {
+    const baseData = ctx.getRenderData
+      ? await ctx.getRenderData(option.templateId)
+      : ctx.renderData;
+    const data = extraData ? { ...baseData, ...extraData } : baseData;
+
     const html = await renderAsHtml({
       templateId: option.templateId,
       format: 'html',
@@ -46,8 +47,21 @@ export async function printTemplate(
     });
     await printViaIframe(html);
   } catch (error) {
-    const { title, message } = getFormattedError(error);
-    notificationService.showError(title, message);
+    // Constant format string; the template id is passed as an argument so it can never be
+    // interpreted as a format specifier (log forging).
+    // eslint-disable-next-line no-console
+    console.error(
+      'Failed to print document for template %s',
+      option.templateId,
+      error,
+    );
+    // A 400 from the template service carries an explanation (e.g. "No medications prescribed
+    // for this visit") that is shown instead of the generic retry text; any other failure keeps
+    // the translated generic message.
+    notificationService.showError(
+      translate('PRINT_DOCUMENT_ERROR_TITLE'),
+      getValidationMessage(error) ?? translate('PRINT_DOCUMENT_ERROR_MESSAGE'),
+    );
   } finally {
     ctx.setIsPrinting(false);
   }

@@ -15,6 +15,7 @@ export interface ActionAreaProps {
   primaryButtonText: string; // Text for the primary button
   onPrimaryButtonClick: () => void; // Function to be called when primary button is clicked
   isPrimaryButtonDisabled?: boolean; // Whether the primary button should be disabled
+  primaryButtonKind?: 'primary' | 'secondary' | 'tertiary'; // Visual style of the main button (default 'primary')
   secondaryButtonText?: string; // Text for the secondary button
   onSecondaryButtonClick?: () => void; // Function to be called when secondary button is clicked
   isSecondaryButtonDisabled?: boolean; // Whether the secondary button should be disabled
@@ -23,6 +24,7 @@ export interface ActionAreaProps {
   isTertiaryButtonDisabled?: boolean; // Whether the tertiary button should be disabled
   content: ReactNode; // Content to be rendered inside the ActionArea
   className?: string; // Optional CSS class
+  contentClassName?: string; // Optional CSS class for the content section (e.g. to centre the content)
   ariaLabel?: string; // Accessible label for the component
   buttonGroupAriaLabel?: string; // Aria label for the button group
   hidden?: boolean;
@@ -45,6 +47,7 @@ export const ActionArea: React.FC<ActionAreaProps> = ({
   primaryButtonText,
   onPrimaryButtonClick,
   isPrimaryButtonDisabled = false,
+  primaryButtonKind = 'primary',
   secondaryButtonText,
   onSecondaryButtonClick,
   isSecondaryButtonDisabled = false,
@@ -53,6 +56,7 @@ export const ActionArea: React.FC<ActionAreaProps> = ({
   isTertiaryButtonDisabled = false,
   content,
   className,
+  contentClassName,
   ariaLabel,
   buttonGroupAriaLabel = 'Action buttons',
   hidden = false,
@@ -131,7 +135,10 @@ export const ActionArea: React.FC<ActionAreaProps> = ({
           </div>
         )}
       </div>
-      <section className={styles.content} aria-labelledby={titleId}>
+      <section
+        className={classNames(styles.content, contentClassName)}
+        aria-labelledby={titleId}
+      >
         <div className={classNames(isExpanded && styles.cappedWidth)}>
           {content}
         </div>
@@ -171,7 +178,7 @@ export const ActionArea: React.FC<ActionAreaProps> = ({
         )}
 
         <Button
-          kind="primary"
+          kind={primaryButtonKind}
           onClick={onPrimaryButtonClick}
           disabled={isPrimaryButtonDisabled}
           className={buttonCountClass}
