@@ -5,7 +5,7 @@ import {
   hasPrivilege,
   useTranslation,
 } from '@bahmni/services';
-import { UserAvatar } from '@carbon/icons-react';
+import { UserAvatar, Location } from '@carbon/icons-react';
 import { HeaderGlobalAction, HeaderGlobalActionProps } from '@carbon/react';
 import {
   AriaAttributes,
@@ -51,7 +51,12 @@ const HeaderGlobalActionWithHtmlAttrs = HeaderGlobalAction as ComponentType<
   }
 >;
 
-export const UserGlobalAction = () => {
+interface UserGlobalActionProps {
+  /** The logged-in user's location, shown as a read-only row at the top of the menu when present. */
+  locationName?: string;
+}
+
+export const UserGlobalAction = ({ locationName }: UserGlobalActionProps) => {
   const { t } = useTranslation();
   const { userPrivileges } = useUserPrivilege();
   const { addNotification } = useNotification();
@@ -197,9 +202,26 @@ export const UserGlobalAction = () => {
         data-testid="user-global-action-menu-test-id"
         open={isOpen}
         className={styles.menu}
-        label={t('USER_GLOBAL_ACTION_MENU')}
+        label={
+          locationName
+            ? `${t('USER_GLOBAL_ACTION_MENU')}. ${t('LOGIN_LOCATION_LABEL', { name: locationName })}`
+            : t('USER_GLOBAL_ACTION_MENU')
+        }
         onClose={() => setIsOpen(false)}
       >
+        {locationName && (
+          // Carbon's Menu renders a <ul> and moves focus straight to the first
+          // menuitem on open, so a non-focusable row inside the menu is skipped
+          // by screen readers in menu mode. Hide the decorative row from AT and
+          // announce the location via the Menus label instead.
+          <li role="presentation" aria-hidden="true">
+            <div title={locationName} className={styles.locationInfo}>
+              <Location />
+              <span className={styles.locationText}>{locationName}</span>
+            </div>
+          </li>
+        )}
+
         {filteredActions.map((action) => (
           <MenuItem
             id={`user-global-action-${action.id}`}

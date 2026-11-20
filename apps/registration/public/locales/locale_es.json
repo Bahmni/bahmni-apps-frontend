@@ -141,6 +141,7 @@
   "GENDER_F": "Femenino",
   "HOME_LABEL": "Inicio",
   "LOADING_PATIENT_DETAILS": "Navegando a los detalles del paciente...",
+  "LOGIN_LOCATION_LABEL": "Ubicación de inicio de sesión: {{name}}",
   "MONTHS_one": " mes",
   "MONTHS_other": " meses",
   "NO_EXTENSIONS_CONFIGURED": "No hay extensiones configuradas",

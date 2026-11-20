@@ -41,12 +41,13 @@ const mockAddNotification = jest.fn();
 
 const renderWithProviders = (
   activePractitionerValue: ActivePractitionerContextType = buildActivePractitionerValue(),
+  props?: { locationName?: string },
 ) => {
   (useActivePractitioner as jest.Mock).mockReturnValue(activePractitionerValue);
 
   return render(
     <UserActionProvider>
-      <UserGlobalAction />
+      <UserGlobalAction {...props} />
     </UserActionProvider>,
   );
 };
@@ -493,7 +494,9 @@ describe('UserGlobalAction', () => {
 
     it('should have no accessibility violations when the menu is open', async () => {
       registerChangePasswordAndLogout();
-      renderWithProviders(buildActivePractitionerValue());
+      renderWithProviders(buildActivePractitionerValue(), {
+        locationName: 'Bahmni Clinic',
+      });
       await userEvent.click(
         screen.getByTestId('user-global-action-button-test-id'),
       );
@@ -533,6 +536,61 @@ describe('UserGlobalAction', () => {
         buildActivePractitionerValue({ loading: true }),
       );
       expect(container.firstChild).toMatchSnapshot();
+    });
+  });
+
+  describe('Location display', () => {
+    it('should render the location row and include it in the menu accessible name when locationName is provided', async () => {
+      renderWithProviders(buildActivePractitionerValue(), {
+        locationName: 'Bahmni Clinic',
+      });
+
+      await userEvent.click(
+        screen.getByTestId('user-global-action-button-test-id'),
+      );
+
+      const menu = await screen.findByRole('menu', {
+        name: 'USER_GLOBAL_ACTION_MENU. LOGIN_LOCATION_LABEL Bahmni Clinic',
+      });
+      expect(menu).toBeInTheDocument();
+      expect(screen.getByText('Bahmni Clinic')).toBeInTheDocument();
+      expect(screen.getByTitle('Bahmni Clinic')).toBeInTheDocument();
+    });
+
+    it('should not render the location row when locationName is omitted', async () => {
+      renderWithProviders(buildActivePractitionerValue());
+
+      await userEvent.click(
+        screen.getByTestId('user-global-action-button-test-id'),
+      );
+
+      const menu = await screen.findByRole('menu', {
+        name: 'USER_GLOBAL_ACTION_MENU',
+      });
+      expect(menu).toBeInTheDocument();
+      expect(screen.queryByTitle('Bahmni Clinic')).not.toBeInTheDocument();
+    });
+
+    it('should ensure arrow-key navigation skips the location row', async () => {
+      registerChangePasswordAndLogout();
+      renderWithProviders(buildActivePractitionerValue(), {
+        locationName: 'Bahmni Clinic',
+      });
+
+      await userEvent.click(
+        screen.getByTestId('user-global-action-button-test-id'),
+      );
+
+      const items = await screen.findAllByRole('menuitem');
+      await waitFor(() => expect(items[0]).toHaveFocus());
+      expect(items[0]).toHaveTextContent('USER_CHANGE_PASSWORD_GLOBAL_ACTION');
+
+      await userEvent.keyboard('{ArrowDown}');
+      expect(items[1]).toHaveFocus();
+
+      // Wrapping past the last item should land back on the first menuitem, not the location row
+      await userEvent.keyboard('{ArrowDown}');
+      expect(items[0]).toHaveFocus();
     });
   });
 });
