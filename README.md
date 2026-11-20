@@ -103,7 +103,7 @@ yarn lint:affected
 
 A Storybook configuration (`.storybook/`) is present for isolated component development and visual exploration. Stories live under each package's `src/**/*.stories.tsx` files.
 
-> **Note:** The Storybook runtime (`@nx/storybook` / `storybook`) is not yet listed as a project dependency and no Nx `storybook` target is currently wired up. The `.storybook/` configuration and story files are in place; installing `@nx/storybook` and adding a project target are the follow-up steps required before Storybook can be run locally.
+> **Note:** Storybook cannot be run locally out of the box yet. The `.storybook/main.ts` configuration is a legacy single-app setup: its story globs (`../src/**/*.stories.*`), `staticDirs` (`../public`) and path aliases point at a root-level `src/` directory that does not exist in this monorepo, where stories live under `packages/*/src/`. In addition, the Storybook framework and addon packages that the configuration imports (`@storybook/react-webpack5`, `@storybook/addon-essentials`, `@storybook/addon-interactions`, `@storybook/addon-onboarding`, `@storybook/addon-webpack5-compiler-swc`, `@chromatic-com/storybook`) are not listed in `package.json`, and no Nx `storybook` target is wired up. Making Storybook runnable requires installing those dependencies, updating the story globs to cover the package directories, and adding a project target.
 
 ## Nx Workspace Commands
 
