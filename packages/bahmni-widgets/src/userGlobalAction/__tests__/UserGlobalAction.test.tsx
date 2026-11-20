@@ -540,36 +540,34 @@ describe('UserGlobalAction', () => {
   });
 
   describe('Location display', () => {
-    it('should render the read-only location row with title truncation when locationName is provided', async () => {
+    it('should render the location row and include it in the menu accessible name when locationName is provided', async () => {
       renderWithProviders(buildActivePractitionerValue(), {
         locationName: 'Bahmni Clinic',
       });
 
-      const button = screen.getByTestId('user-global-action-button-test-id');
-      await userEvent.click(button);
+      await userEvent.click(
+        screen.getByTestId('user-global-action-button-test-id'),
+      );
 
-      await waitFor(() => {
-        // Query by the title attribute instead of the aria-label
-        const locationRow = screen.getByTitle('Bahmni Clinic');
-        expect(locationRow).toBeInTheDocument();
-        // Assert that the i18n mock output successfully attached to the ARIA label
-        expect(locationRow).toHaveAttribute(
-          'aria-label',
-          'LOGIN_LOCATION_LABEL Bahmni Clinic',
-        );
+      const menu = await screen.findByRole('menu', {
+        name: 'USER_GLOBAL_ACTION_MENU. LOGIN_LOCATION_LABEL Bahmni Clinic',
       });
+      expect(menu).toBeInTheDocument();
+      expect(screen.getByText('Bahmni Clinic')).toBeInTheDocument();
+      expect(screen.getByTitle('Bahmni Clinic')).toBeInTheDocument();
     });
 
     it('should not render the location row when locationName is omitted', async () => {
       renderWithProviders(buildActivePractitionerValue());
 
-      const button = screen.getByTestId('user-global-action-button-test-id');
-      await userEvent.click(button);
+      await userEvent.click(
+        screen.getByTestId('user-global-action-button-test-id'),
+      );
 
-      await waitFor(() => {
-        expect(screen.getByRole('menu')).toBeInTheDocument();
+      const menu = await screen.findByRole('menu', {
+        name: 'USER_GLOBAL_ACTION_MENU',
       });
-
+      expect(menu).toBeInTheDocument();
       expect(screen.queryByTitle('Bahmni Clinic')).not.toBeInTheDocument();
     });
 
@@ -583,12 +581,16 @@ describe('UserGlobalAction', () => {
         screen.getByTestId('user-global-action-button-test-id'),
       );
 
-      //simulate pressing the down arrow key
-      await userEvent.keyboard('{ArrowDown}');
-
       const items = await screen.findAllByRole('menuitem');
-      expect(items[0]).toHaveFocus();
+      await waitFor(() => expect(items[0]).toHaveFocus());
       expect(items[0]).toHaveTextContent('USER_CHANGE_PASSWORD_GLOBAL_ACTION');
+
+      await userEvent.keyboard('{ArrowDown}');
+      expect(items[1]).toHaveFocus();
+
+      // Wrapping past the last item should land back on the first menuitem, not the location row
+      await userEvent.keyboard('{ArrowDown}');
+      expect(items[0]).toHaveFocus();
     });
   });
 });
