@@ -1,6 +1,6 @@
 import type { VisitType } from '@bahmni/services';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { renderHook, waitFor } from '@testing-library/react';
+import { act, renderHook, waitFor } from '@testing-library/react';
 import { MemoryRouter } from 'react-router';
 import {
   useActiveVisit,
@@ -259,6 +259,57 @@ describe('useVisit', () => {
       await result.current.createVisit(patientUuid, mockVisitType);
 
       expect(mockCreateVisitForPatient).not.toHaveBeenCalled();
+    });
+
+    it('should not let a stale in-flight hasActiveVisit=false response overwrite the cache after the visit is created', async () => {
+      let resolveStale: (value: boolean) => void = () => {};
+      const stale = new Promise<boolean>((resolve) => {
+        resolveStale = resolve;
+      });
+      // 1st call: the useActiveVisit fetch started on remount (stays in flight)
+      // 2nd call: the server-side duplicate check inside createVisit
+      mockCheckIfActiveVisitExists
+        .mockReturnValueOnce(stale)
+        .mockResolvedValueOnce(false);
+
+      renderHook(() => useActiveVisit(patientUuid), { wrapper });
+      const { result } = renderHook(() => useCreateVisit(), { wrapper });
+
+      await act(async () => {
+        await result.current.createVisit(patientUuid, mockVisitType);
+      });
+      expect(queryClient.getQueryData(['hasActiveVisit', patientUuid])).toBe(
+        true,
+      );
+
+      await act(async () => {
+        resolveStale(false);
+        await new Promise((resolve) => setTimeout(resolve, 0));
+      });
+
+      expect(queryClient.getQueryData(['hasActiveVisit', patientUuid])).toBe(
+        true,
+      );
+      expect(mockCreateVisitForPatient).toHaveBeenCalledTimes(1);
+
+      await act(async () => {
+        await result.current.createVisit(patientUuid, mockVisitType);
+      });
+      expect(mockCreateVisitForPatient).toHaveBeenCalledTimes(1);
+    });
+
+    it('should skip creation and mark the cache as active when the server already reports an active visit', async () => {
+      mockCheckIfActiveVisitExists.mockResolvedValue(true);
+
+      const { result } = renderHook(() => useCreateVisit(), { wrapper });
+
+      await result.current.createVisit(patientUuid, mockVisitType);
+
+      expect(mockCheckIfActiveVisitExists).toHaveBeenCalledWith(patientUuid);
+      expect(mockCreateVisitForPatient).not.toHaveBeenCalled();
+      expect(queryClient.getQueryData(['hasActiveVisit', patientUuid])).toBe(
+        true,
+      );
     });
   });
 

@@ -64,7 +64,20 @@ export const useCreateVisit = () => {
     }
 
     try {
+      // The cache can be stale (e.g. a hasActiveVisit fetch started on remount
+      // before the visit existed), so confirm with the server before creating.
+      const alreadyActive = await checkIfActiveVisitExists(patientUuid);
+      if (alreadyActive) {
+        queryClient.setQueryData(['hasActiveVisit', patientUuid], true);
+        return;
+      }
+
       const createdVisit = await createVisitForPatient(patientUuid, visitType);
+      // Cancel any in-flight hasActiveVisit fetch so its stale `false` result
+      // cannot overwrite the value set below and re-enable the start button.
+      await queryClient.cancelQueries({
+        queryKey: ['hasActiveVisit', patientUuid],
+      });
       queryClient.setQueryData(['hasActiveVisit', patientUuid], true);
 
       if (encounterTypeUuid) {
