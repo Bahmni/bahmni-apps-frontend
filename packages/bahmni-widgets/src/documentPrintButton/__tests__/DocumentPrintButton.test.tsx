@@ -39,9 +39,8 @@ jest.mock('@bahmni/services', () => ({
   getUserPreferredLocale: jest.fn().mockReturnValue('en'),
   notificationService: { showError: jest.fn() },
   useTranslation: () => ({ t: (key: string) => key }),
-  getFormattedError: jest
-    .fn()
-    .mockReturnValue({ title: 'Print Error', message: 'Failed to print' }),
+  translate: (key: string) => key,
+  getValidationMessage: jest.fn(),
   getUserLoginLocation: jest.fn(() => {
     throw new Error('no login location cookie');
   }),
@@ -358,10 +357,105 @@ describe('DocumentPrintButton', () => {
 
       await waitFor(() =>
         expect(notificationService.showError).toHaveBeenCalledWith(
-          'Print Error',
-          'Failed to print',
+          'PRINT_DOCUMENT_ERROR_TITLE',
+          'PRINT_DOCUMENT_ERROR_MESSAGE',
         ),
       );
+      expect(mockPrintViaIframe).not.toHaveBeenCalled();
+    });
+
+    it('leaves data entered beside the button untouched when printing fails', async () => {
+      mockRenderAsHtml.mockRejectedValue(new Error('template missing'));
+
+      render(
+        <>
+          <input data-testid="first-name" defaultValue="" />
+          <DocumentPrintButton
+            printOptions={singleOption}
+            renderContext={renderContext}
+          />
+        </>,
+      );
+      const input = screen.getByTestId('first-name') as HTMLInputElement;
+      await userEvent.type(input, 'Jane');
+
+      await userEvent.click(screen.getByText('PRINT_SUMMARY'));
+      await waitFor(() =>
+        expect(notificationService.showError).toHaveBeenCalledTimes(1),
+      );
+
+      // Same node (never remounted) and the typed value survived the failure.
+      expect(screen.getByTestId('first-name')).toBe(input);
+      expect(input.value).toBe('Jane');
+      expect(mockPrintViaIframe).not.toHaveBeenCalled();
+    });
+
+    it('shows the error and restores the print control when the print call itself fails', async () => {
+      mockPrintViaIframe.mockRejectedValueOnce(new Error('iframe failed'));
+      const consoleError = jest
+        .spyOn(console, 'error')
+        .mockImplementation(() => undefined);
+
+      render(
+        <DocumentPrintButton
+          printOptions={singleOption}
+          renderContext={renderContext}
+        />,
+      );
+
+      await userEvent.click(screen.getByText('PRINT_SUMMARY'));
+
+      await waitFor(() =>
+        expect(notificationService.showError).toHaveBeenCalledWith(
+          'PRINT_DOCUMENT_ERROR_TITLE',
+          'PRINT_DOCUMENT_ERROR_MESSAGE',
+        ),
+      );
+      expect(mockPrintViaIframe).toHaveBeenCalledTimes(1);
+      // Printing state is reset: the button is back and no preparing indicator remains.
+      expect(await screen.findByText('PRINT_SUMMARY')).toBeInTheDocument();
+      expect(
+        screen.queryByText('PRINT_MODAL_PREPARING_DOCUMENT'),
+      ).not.toBeInTheDocument();
+      expect(consoleError).toHaveBeenCalledWith(
+        'Failed to print document for template %s',
+        'summary',
+        expect.any(Error),
+      );
+      consoleError.mockRestore();
+    });
+
+    it('prints once when the button is double-clicked', async () => {
+      render(
+        <DocumentPrintButton
+          printOptions={singleOption}
+          renderContext={renderContext}
+        />,
+      );
+
+      await userEvent.dblClick(screen.getByText('PRINT_SUMMARY'));
+
+      await waitFor(() => expect(mockPrintViaIframe).toHaveBeenCalled());
+      expect(mockRenderAsHtml).toHaveBeenCalledTimes(1);
+      expect(mockPrintViaIframe).toHaveBeenCalledTimes(1);
+    });
+
+    it('restores the print control after a render failure', async () => {
+      mockRenderAsHtml.mockRejectedValue(new Error('Network error'));
+
+      render(
+        <DocumentPrintButton
+          printOptions={singleOption}
+          renderContext={renderContext}
+        />,
+      );
+
+      await userEvent.click(screen.getByText('PRINT_SUMMARY'));
+
+      expect(await screen.findByText('PRINT_SUMMARY')).toBeInTheDocument();
+      expect(
+        screen.queryByText('PRINT_MODAL_PREPARING_DOCUMENT'),
+      ).not.toBeInTheDocument();
     });
   });
 

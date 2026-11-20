@@ -101,6 +101,35 @@ describe('TooltipIcon', () => {
     expect(screen.getByText(defaultProps.content)).toBeInTheDocument();
   });
 
+  it('passes align to the toggletip when provided', () => {
+    render(
+      <TooltipIcon
+        {...defaultProps}
+        autoAlign={false}
+        align="bottom-start"
+        testId="align-test"
+      />,
+    );
+
+    expect(screen.getByTestId('align-test')).toHaveClass(
+      'cds--popover--bottom-start',
+    );
+  });
+
+  it('uses the default placement when align is not provided', () => {
+    render(
+      <TooltipIcon
+        {...defaultProps}
+        autoAlign={false}
+        testId="default-align"
+      />,
+    );
+
+    expect(screen.getByTestId('default-align')).not.toHaveClass(
+      'cds--popover--bottom-start',
+    );
+  });
+
   it('passes icon props correctly', () => {
     render(
       <TooltipIcon

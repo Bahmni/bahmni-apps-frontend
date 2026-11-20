@@ -290,15 +290,6 @@ describe('NotAdministeredTab', () => {
     ).not.toBeInTheDocument();
   });
 
-  it('applies the notAdministeredTable layout class to the table', () => {
-    render(
-      <NotAdministeredTab patientUUID="patient-uuid" config={defaultConfig} />,
-    );
-    expect(
-      screen.getByTestId('not-administered-immunizations-table'),
-    ).toHaveClass('notAdministeredTable');
-  });
-
   it('passes accessibility tests', async () => {
     const { container } = render(
       <NotAdministeredTab patientUUID="patient-uuid" config={defaultConfig} />,

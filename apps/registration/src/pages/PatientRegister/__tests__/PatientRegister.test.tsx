@@ -1,5 +1,5 @@
 import { dispatchAuditEvent, PersonAttributeType } from '@bahmni/services';
-import { usePatientPhoto } from '@bahmni/widgets';
+import { ActivePractitionerContext, usePatientPhoto } from '@bahmni/widgets';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { ReactNode } from 'react';
@@ -1564,6 +1564,216 @@ describe('PatientRegister', () => {
       expect(
         await screen.findByTestId('print-registration-card'),
       ).toBeInTheDocument();
+    });
+
+    it('should pass multiple options through in configured order', async () => {
+      const options = [
+        { translationKey: 'CARD_B', templateId: 'B_V1' },
+        { translationKey: 'CARD_A', templateId: 'A_V1' },
+        { translationKey: 'CARD_C', templateId: 'C_V1' },
+      ];
+      mockConfig(options);
+      mockPrivileges([]);
+      mockSavedPatient();
+
+      renderComponent();
+      await screen.findByTestId('print-registration-card');
+
+      expect(lastPrintProps().printOptions).toEqual(options);
+    });
+
+    it('should not render the print button when printOptions is an empty list', () => {
+      mockConfig([]);
+      mockPrivileges([]);
+      mockSavedPatient();
+
+      renderComponent();
+
+      expect(
+        screen.queryByTestId('print-registration-card'),
+      ).not.toBeInTheDocument();
+    });
+
+    it('should keep unrestricted options and hide restricted ones for a user with no privileges', async () => {
+      const open = { ...PRINT_OPTION, templateId: 'OPEN_V1' };
+      const restricted = {
+        translationKey: 'RESTRICTED_CARD',
+        templateId: 'RESTRICTED_V1',
+        privileges: ['app:registration:printcard'],
+      };
+      mockConfig([restricted, open]);
+      mockPrivileges([]);
+      mockSavedPatient();
+
+      renderComponent();
+      await screen.findByTestId('print-registration-card');
+
+      expect(lastPrintProps().printOptions).toEqual([open]);
+    });
+
+    it('should disable the print button while a create is in flight', async () => {
+      (useCreatePatient as jest.Mock).mockReturnValue({
+        mutateAsync: mockMutateAsync,
+        isPending: true,
+      });
+      mockConfig([PRINT_OPTION]);
+      mockPrivileges([{ name: 'View Patients' }]);
+      mockSavedPatient();
+
+      renderComponent();
+
+      expect(
+        await screen.findByTestId('print-registration-card'),
+      ).toBeDisabled();
+    });
+
+    it('should enable the print button once the save has completed', async () => {
+      (useUpdatePatient as jest.Mock).mockReturnValue({
+        mutateAsync: mockMutateAsync,
+        isPending: true,
+      });
+      mockConfig([PRINT_OPTION]);
+      mockPrivileges([{ name: 'View Patients' }]);
+      mockSavedPatient();
+
+      const { rerender } = renderComponent();
+      expect(
+        await screen.findByTestId('print-registration-card'),
+      ).toBeDisabled();
+
+      (useUpdatePatient as jest.Mock).mockReturnValue({
+        mutateAsync: mockMutateAsync,
+        isPending: false,
+      });
+      rerender(<PatientRegister />);
+
+      expect(screen.getByTestId('print-registration-card')).toBeEnabled();
+    });
+
+    describe('with the real DocumentPrintButton', () => {
+      // The suite stubs DocumentPrintButton so the tests above can focus on the
+      // props contract. These swap the real widget (and its real Carbon
+      // ComboButton) in, to verify what the user can actually see and click.
+      let restorePrintButton: (() => void) | undefined;
+
+      const useRealPrintButton = () => {
+        const mock = printButtonMock();
+        const stub = mock.getMockImplementation();
+        mock.mockImplementation(
+          jest.requireActual('@bahmni/widgets').DocumentPrintButton,
+        );
+        restorePrintButton = () => mock.mockImplementation(stub);
+      };
+
+      afterEach(() => restorePrintButton?.());
+
+      const page = () => (
+        <ActivePractitionerContext.Provider
+          value={{
+            practitioner: null,
+            user: null,
+            loading: false,
+            error: null,
+            refetch: jest.fn(),
+          }}
+        >
+          <PatientRegister />
+        </ActivePractitionerContext.Provider>
+      );
+
+      // The real widget resolves labels through real i18n, so the shipped
+      // English text is what the user sees; unknown keys fall back to the key.
+      const PRINT_LABEL = 'Print Registration Card';
+
+      const SECOND_OPTION = {
+        translationKey: 'SECOND_CARD',
+        templateId: 'SECOND_V1',
+      };
+
+      it('should disable the primary action and the dropdown while saving, then enable both', async () => {
+        useRealPrintButton();
+        (useUpdatePatient as jest.Mock).mockReturnValue({
+          mutateAsync: mockMutateAsync,
+          isPending: true,
+        });
+        mockConfig([PRINT_OPTION, SECOND_OPTION]);
+        mockPrivileges([{ name: 'View Patients' }]);
+        mockSavedPatient();
+
+        const { rerender } = render(page(), { wrapper: Wrapper });
+
+        expect(
+          await screen.findByRole('button', {
+            name: PRINT_LABEL,
+          }),
+        ).toBeDisabled();
+        expect(
+          screen.getByRole('button', { name: /additional actions/i }),
+        ).toBeDisabled();
+
+        (useUpdatePatient as jest.Mock).mockReturnValue({
+          mutateAsync: mockMutateAsync,
+          isPending: false,
+        });
+        rerender(page());
+
+        expect(screen.getByRole('button', { name: PRINT_LABEL })).toBeEnabled();
+        expect(
+          screen.getByRole('button', { name: /additional actions/i }),
+        ).toBeEnabled();
+      });
+
+      it('should show a single button with no dropdown when filtering leaves one option', async () => {
+        useRealPrintButton();
+        const restricted = {
+          ...SECOND_OPTION,
+          privileges: ['app:registration:printcard'],
+        };
+        mockConfig([restricted, PRINT_OPTION]);
+        mockPrivileges([]);
+        mockSavedPatient();
+
+        render(page(), { wrapper: Wrapper });
+
+        expect(
+          await screen.findByRole('button', {
+            name: PRINT_LABEL,
+          }),
+        ).toBeInTheDocument();
+        expect(
+          screen.queryByRole('button', { name: /additional actions/i }),
+        ).not.toBeInTheDocument();
+      });
+    });
+
+    it('should preserve configured order after dropping a restricted option', async () => {
+      const first = { translationKey: 'A', templateId: 'A_V1' };
+      const restricted = {
+        translationKey: 'B',
+        templateId: 'B_V1',
+        privileges: ['app:registration:printcard'],
+      };
+      const last = { translationKey: 'C', templateId: 'C_V1' };
+      mockConfig([first, restricted, last]);
+      mockPrivileges([]);
+      mockSavedPatient();
+
+      renderComponent();
+      await screen.findByTestId('print-registration-card');
+
+      expect(lastPrintProps().printOptions).toEqual([first, last]);
+    });
+
+    it('should treat an empty privileges list as unrestricted', async () => {
+      const option = { ...PRINT_OPTION, privileges: [] };
+      mockConfig([option]);
+      mockPrivileges([]);
+      mockSavedPatient();
+
+      renderComponent();
+      await screen.findByTestId('print-registration-card');
+
+      expect(lastPrintProps().printOptions).toEqual([option]);
     });
 
     it('should not print the previous patient after navigating to another patient', async () => {

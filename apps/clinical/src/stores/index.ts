@@ -4,3 +4,4 @@ export { default as useEncounterDetailsStore } from './encounterDetailsStore';
 export { default as useServiceRequestStore } from './serviceRequestStore';
 export { default as useStopMedicationStore } from './stopMedicationsStore';
 export { default as useObservationFormsStore } from './observationFormsStore';
+export { default as useDispositionStore } from './dispositionStore';

@@ -33,6 +33,12 @@ export interface TooltipIconProps {
   autoAlign?: boolean;
 
   /**
+   * Preferred placement of the tooltip relative to the icon, e.g. "bottom-start"
+   * to grow to the right of the icon. Uses Carbon's default when not set.
+   */
+  align?: React.ComponentProps<typeof Toggletip>['align'];
+
+  /**
    * Additional CSS class name for custom styling
    */
   className?: string;
@@ -67,6 +73,7 @@ export const TooltipIcon: React.FC<TooltipIconProps> = ({
   iconSize = ICON_SIZE.LG,
   iconPadding = ICON_PADDING.NONE,
   autoAlign = true,
+  align,
   className,
   testId,
   ariaLabel,
@@ -82,6 +89,7 @@ export const TooltipIcon: React.FC<TooltipIconProps> = ({
   return (
     <Toggletip
       autoAlign={autoAlign}
+      align={align}
       className={combinedClassName}
       data-testid={testId}
     >

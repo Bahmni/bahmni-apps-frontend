@@ -29,6 +29,12 @@ const mockT = (key: string, options?: { count?: number }) => {
       return count === 1 ? ' month' : ' months';
     case 'YEARS':
       return count === 1 ? ' year' : ' years';
+    case 'DATE_DISTANCE_YEAR_SHORT':
+      return 'y';
+    case 'DATE_DISTANCE_MONTH_SHORT':
+      return 'm';
+    case 'DATE_DISTANCE_DAY_SHORT':
+      return 'd';
     case 'DATE_ERROR_PARSE':
       return 'Parse Error';
     case 'DATE_ERROR_FORMAT':
@@ -474,57 +480,42 @@ describe('formatDateDistance', () => {
     jest.useRealTimers();
   });
 
-  it('should format different time periods correctly', () => {
+  it('should format a compound duration with all three units', () => {
     expect(
-      formatDateDistance('2025-06-17T07:02:38.000Z', mockT).formattedResult,
-    ).toBe('1 day');
-    expect(
-      formatDateDistance('2025-06-16T07:02:38.000Z', mockT).formattedResult,
-    ).toBe('2 days');
-    expect(
-      formatDateDistance('2025-05-18T07:02:38.000Z', mockT).formattedResult,
-    ).toBe('1 month');
-    expect(
-      formatDateDistance('2025-03-18T07:02:38.000Z', mockT).formattedResult,
-    ).toBe('3 months');
-    expect(
-      formatDateDistance('2024-06-18T07:02:38.000Z', mockT).formattedResult,
-    ).toBe('1 year');
+      formatDateDistance('2023-12-08T07:02:38.000Z', mockT).formattedResult,
+    ).toBe('1 y 6 m 10 d');
+  });
+
+  it('should omit zero-valued components', () => {
     expect(
       formatDateDistance('2023-06-18T07:02:38.000Z', mockT).formattedResult,
-    ).toBe('2 years');
+    ).toBe('2 y');
+    expect(
+      formatDateDistance('2025-05-18T07:02:38.000Z', mockT).formattedResult,
+    ).toBe('1 m');
+    expect(
+      formatDateDistance('2025-06-17T07:02:38.000Z', mockT).formattedResult,
+    ).toBe('1 d');
   });
 
-  it('should round up small time periods to 1 day', () => {
+  it('should keep non-adjacent non-zero components when the middle one is zero', () => {
+    expect(
+      formatDateDistance('2024-06-08T07:02:38.000Z', mockT).formattedResult,
+    ).toBe('1 y 10 d');
+  });
+
+  it('should show "0 d" for a same-day onset', () => {
     expect(
       formatDateDistance('2025-06-18T03:02:38.000Z', mockT).formattedResult,
-    ).toBe('1 day');
+    ).toBe('0 d');
     expect(
       formatDateDistance('2025-06-18T06:32:38.000Z', mockT).formattedResult,
-    ).toBe('1 day');
+    ).toBe('0 d');
   });
 
-  it('should handle fractional years correctly', () => {
-    expect(
-      formatDateDistance('2023-12-18T07:02:38.000Z', mockT).formattedResult,
-    ).toBe('1.5 years');
-    expect(
-      formatDateDistance('2020-07-18T07:02:38.000Z', mockT).formattedResult,
-    ).toBe('5 years');
-  });
-
-  it('should format 11 months as 1 year', () => {
-    expect(
-      formatDateDistance('2024-07-18T07:02:38.000Z', mockT).formattedResult,
-    ).toBe('1 year');
-  });
-
-  it('should handle month rounding', () => {
-    expect(formatDateDistance('2025-05-01', mockT).formattedResult).toBe(
-      '2 months',
-    );
-    expect(formatDateDistance('2025-05-10', mockT).formattedResult).toBe(
-      '1 month',
+  it('should format a date-only (legacy/external) onset the same way', () => {
+    expect(formatDateDistance('2024-01-15', mockT).formattedResult).toBe(
+      '1 y 5 m 3 d',
     );
   });
 

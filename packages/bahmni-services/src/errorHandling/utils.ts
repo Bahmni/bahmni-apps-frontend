@@ -9,6 +9,7 @@ interface FHIROperationOutcome {
     severity: string;
     code: string;
     diagnostics?: string;
+    details?: { coding?: Array<{ system?: string; code?: string }> };
   }>;
 }
 
@@ -23,6 +24,52 @@ const isFHIROperationOutcome = (
   );
 };
 
+// Backend (ServiceRequestValidatorImpl) duplicate-disposition message is
+// "An active <disposition concept name> order already exists for this visit",
+// where the name is the OpenMRS concept name (e.g. "Admit Patient", "Undo Discharge")
+const DISPOSITION_ACTIVE_ORDER_ERRORS: Array<{ pattern: RegExp; key: string }> =
+  [
+    {
+      pattern: /active undo discharge\b.*order already exists/i,
+      key: 'DISPOSITION_ACTIVE_UNDO_DISCHARGE_ORDER_EXISTS',
+    },
+    {
+      pattern: /active admit\b.*order already exists/i,
+      key: 'DISPOSITION_ACTIVE_ADMIT_ORDER_EXISTS',
+    },
+    {
+      pattern: /active discharge\b.*order already exists/i,
+      key: 'DISPOSITION_ACTIVE_DISCHARGE_ORDER_EXISTS',
+    },
+    {
+      pattern: /active transfer\b.*order already exists/i,
+      key: 'DISPOSITION_ACTIVE_TRANSFER_ORDER_EXISTS',
+    },
+  ];
+
+export const EOC_LOCKED_ERROR_CODE = 'EOC_LOCKED';
+export const EOC_LOCKED_ERROR_KEY = 'ERROR_EOC_LOCKED';
+
+const isEocLockedOutcome = (outcome: FHIROperationOutcome): boolean =>
+  Array.isArray(outcome.issue) &&
+  outcome.issue.some((issue) =>
+    issue.details?.coding?.some(
+      (coding) => coding.code === EOC_LOCKED_ERROR_CODE,
+    ),
+  );
+
+const isEocLockedBody = (data: unknown): boolean => {
+  if (!data || typeof data !== 'object') return false;
+  const body = data as Record<string, unknown>;
+  const error = body.error;
+  return (
+    error === EOC_LOCKED_ERROR_CODE ||
+    (typeof error === 'object' &&
+      error !== null &&
+      (error as Record<string, unknown>).code === EOC_LOCKED_ERROR_CODE)
+  );
+};
+
 /**
  * Extracts error message from FHIR OperationOutcome
  */
@@ -31,10 +78,19 @@ const parseFHIRError = (outcome: FHIROperationOutcome): string | null => {
     return null;
   }
 
-  // Check for duplicate medication error
+  if (isEocLockedOutcome(outcome)) {
+    return EOC_LOCKED_ERROR_KEY;
+  }
+
   for (const issue of outcome.issue) {
     if (issue.diagnostics?.includes('Order.cannot.have.more.than.one')) {
       return 'ERROR_DUPLICATE_ACTIVE_MEDICATION';
+    }
+    const dispositionError = DISPOSITION_ACTIVE_ORDER_ERRORS.find(
+      ({ pattern }) => pattern.test(issue.diagnostics ?? ''),
+    );
+    if (dispositionError) {
+      return dispositionError.key;
     }
   }
 
@@ -84,6 +140,30 @@ export const getErrorKind = (error: unknown): ErrorKind => {
     return 'network';
   }
   return 'unknown';
+};
+
+export const HTTP_BAD_REQUEST = 400;
+
+/**
+ * Returns the explanation the backend gave for rejecting a request as invalid
+ * (HTTP 400), or undefined for any other kind of failure.
+ *
+ * Accepts either an Axios error or an error the API client rethrew with the
+ * original Axios error as its `cause`. The text comes from `getFormattedError`,
+ * so 400 handling (backend message extraction, FHIR outcomes) stays in one
+ * place. Callers use it to tell "this request cannot succeed, here is why" from
+ * an outage, where a generic retry message is more appropriate. Never throws,
+ * whatever shape `error` or its `cause` has.
+ */
+export const getValidationMessage = (error: unknown): string | undefined => {
+  const source = axios.isAxiosError(error)
+    ? error
+    : error instanceof Error && axios.isAxiosError(error.cause)
+      ? error.cause
+      : undefined;
+  if (source?.response?.status !== HTTP_BAD_REQUEST) return undefined;
+  const message = getFormattedError(source).message.trim();
+  return message || undefined;
 };
 
 export const PATIENT_NOT_FOUND_ERROR_KEY = 'ERROR_PATIENT_NOT_FOUND';
@@ -177,6 +257,22 @@ export const getFormattedError = (
           message =
             forbiddenMessage ??
             'You are not authorized to perform this action.';
+          break;
+        }
+        case 409: {
+          title = 'Conflict';
+          const conflictData: unknown = axiosError.response.data;
+          if (
+            (isFHIROperationOutcome(conflictData) &&
+              isEocLockedOutcome(conflictData)) ||
+            isEocLockedBody(conflictData)
+          ) {
+            message = EOC_LOCKED_ERROR_KEY;
+            break;
+          }
+          message =
+            extractBackendMessage(conflictData) ??
+            'The request conflicts with the current state. Please refresh and try again.';
           break;
         }
         case 404:
