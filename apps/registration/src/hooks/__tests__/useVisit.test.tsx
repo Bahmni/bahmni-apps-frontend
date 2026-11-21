@@ -260,6 +260,84 @@ describe('useVisit', () => {
 
       expect(mockCreateVisitForPatient).not.toHaveBeenCalled();
     });
+
+    describe('duplicate visit protection', () => {
+      const createDeferred = () => {
+        let resolve!: (value: boolean) => void;
+        const promise = new Promise<boolean>((res) => {
+          resolve = res;
+        });
+        return { promise, resolve };
+      };
+
+      it('should not let a stale in-flight hasActiveVisit=false response overwrite the cache after a visit is created', async () => {
+        const staleCheck = createDeferred();
+        // First call: the useActiveVisit query that is still in flight.
+        // Subsequent calls: the server re-check done by createVisit.
+        mockCheckIfActiveVisitExists
+          .mockImplementationOnce(() => staleCheck.promise)
+          .mockResolvedValue(false);
+
+        renderHook(() => useActiveVisit(patientUuid), { wrapper });
+        const { result } = renderHook(() => useCreateVisit(), { wrapper });
+
+        await result.current.createVisit(patientUuid, mockVisitType);
+        expect(queryClient.getQueryData(['hasActiveVisit', patientUuid])).toBe(
+          true,
+        );
+
+        // The earlier request resolves late with a stale "no active visit".
+        staleCheck.resolve(false);
+        await new Promise((resolve) => setTimeout(resolve, 0));
+
+        expect(queryClient.getQueryData(['hasActiveVisit', patientUuid])).toBe(
+          true,
+        );
+
+        // A second click must not create another visit.
+        await result.current.createVisit(patientUuid, mockVisitType);
+        expect(mockCreateVisitForPatient).toHaveBeenCalledTimes(1);
+      });
+
+      it('should skip visit creation and mark the cache active when the server already reports an active visit', async () => {
+        mockCheckIfActiveVisitExists.mockResolvedValue(true);
+
+        const { result } = renderHook(() => useCreateVisit(), { wrapper });
+
+        await result.current.createVisit(patientUuid, mockVisitType);
+
+        expect(mockCreateVisitForPatient).not.toHaveBeenCalled();
+        expect(
+          mockCreateRegistrationEncounterForPatient,
+        ).not.toHaveBeenCalled();
+        expect(queryClient.getQueryData(['hasActiveVisit', patientUuid])).toBe(
+          true,
+        );
+      });
+
+      it('should not let a stale in-flight hasActiveVisit=false response overwrite the cache when the server already reports an active visit', async () => {
+        const staleCheck = createDeferred();
+        mockCheckIfActiveVisitExists
+          .mockImplementationOnce(() => staleCheck.promise)
+          .mockResolvedValue(true);
+
+        renderHook(() => useActiveVisit(patientUuid), { wrapper });
+        const { result } = renderHook(() => useCreateVisit(), { wrapper });
+
+        await result.current.createVisit(patientUuid, mockVisitType);
+        expect(queryClient.getQueryData(['hasActiveVisit', patientUuid])).toBe(
+          true,
+        );
+
+        staleCheck.resolve(false);
+        await new Promise((resolve) => setTimeout(resolve, 0));
+
+        expect(queryClient.getQueryData(['hasActiveVisit', patientUuid])).toBe(
+          true,
+        );
+        expect(mockCreateVisitForPatient).not.toHaveBeenCalled();
+      });
+    });
   });
 
   describe('useIsCreatingVisit', () => {
