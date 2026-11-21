@@ -6,7 +6,9 @@ global.ResizeObserver = class ResizeObserver {
   constructor(_callback: ResizeObserverCallback) {
     void _callback;
   }
-  observe() {}
+  observe() {
+    // intentionally empty: no-op stub, jsdom does not implement ResizeObserver
+  }
   unobserve() {}
   disconnect() {}
 };
