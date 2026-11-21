@@ -6,6 +6,10 @@ export interface User {
   username: string;
   uuid: string;
   userProperties?: Record<string, string>;
+  person?: {
+    uuid: string;
+    display: string;
+  };
 }
 
 export interface RecentSearchCriteria<TCriteria = unknown> {
