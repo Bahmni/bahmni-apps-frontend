@@ -58,14 +58,32 @@ export const useCreateVisit = () => {
   const queryClient = useQueryClient();
   const encounterTypeUuid = useRegistrationEncounterTypeUuid();
 
+  // Marks the patient as having an active visit. In-flight hasActiveVisit
+  // queries are cancelled first so a stale `false` response that resolves
+  // later cannot overwrite the `true` and re-enable the Start Visit button.
+  const markVisitActive = async (patientUuid: string) => {
+    await queryClient.cancelQueries({
+      queryKey: ['hasActiveVisit', patientUuid],
+    });
+    queryClient.setQueryData(['hasActiveVisit', patientUuid], true);
+  };
+
   const createVisit = async (patientUuid: string, visitType: VisitType) => {
     if (queryClient.getQueryData(['hasActiveVisit', patientUuid])) {
       return;
     }
 
     try {
+      // Re-check the server: the cache may hold a stale/absent value while the
+      // visit already exists (e.g. a rapid second click after navigation).
+      const alreadyActive = await checkIfActiveVisitExists(patientUuid);
+      if (alreadyActive) {
+        await markVisitActive(patientUuid);
+        return;
+      }
+
       const createdVisit = await createVisitForPatient(patientUuid, visitType);
-      queryClient.setQueryData(['hasActiveVisit', patientUuid], true);
+      await markVisitActive(patientUuid);
 
       if (encounterTypeUuid) {
         try {
