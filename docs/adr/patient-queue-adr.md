@@ -82,6 +82,28 @@ Where we looked: the legacy code, `standard-config` and `clinic-config` (38 queu
     }
   },
   {
+    "id": "bahmni.clinical.v2.search.opd1",
+    "extensionPointId": "org.bahmni.clinical.v2.search",
+    "translationKey": "PATIENT_QUEUE_TAB_OPD_1",
+    "requiredPrivileges": ["app:clinical"],
+    "order": 5,
+    "extensionParams": {
+      "searchHandler": "sqlSearch",
+      "configUrl": "/bahmni_config/openmrs/apps/clinical/v2/extensions/patientQueue.json"
+    }
+  },
+  {
+    "id": "bahmni.clinical.v2.search.commonSearch",
+    "extensionPointId": "org.bahmni.clinical.v2.search",
+    "translationKey": "ADVANCED_SEARCH_LABEL",
+    "requiredPrivileges": ["app:clinical"],
+    "order": 6,
+    "extensionParams": {
+      "searchHandler": "commonSearch",
+      "configUrl": "/bahmni_config/openmrs/apps/clinical/v2/extensions/patientQueue.json"
+    }
+  },
+  {
     "id": "bahmni.clinical.v2.search.notifications",
     "extensionPointId": "org.bahmni.clinical.v2.search",
     "translationKey": "PATIENT_QUEUE_TAB_NOTIFICATIONS",
@@ -106,7 +128,7 @@ Where we looked: the legacy code, `standard-config` and `clinic-config` (38 queu
 ]
 ```
 
-A tab for `commonSearch` looks the same with `"searchHandler": "commonSearch"`. Registration's schema rejects extra keys in `extensionParams`, so the query and every other setting live in the shared file, never in `extensionParams`. All nine legacy clinical tabs and the two Programs tabs convert as above (Programs entries carry `configName: "programs"`). Legacy twins such as _Active - Legacy_ keep their absolute legacy `forwardUrl`.
+Registration's schema rejects extra keys in `extensionParams`, so the query and every other setting live in the shared file, never in `extensionParams`. All nine legacy clinical tabs and the two Programs tabs convert as above (Programs entries carry `configName: "programs"`). Legacy twins such as _Active - Legacy_ keep their absolute legacy `forwardUrl`.
 
 **Tab config file** (`clinical/v2/extensions/patientQueue.json`, the `configUrl` of every tab). It has two parts: `defaults.sqlSearch`, shared by all SQL tabs, and `tabs`, a list where each entry has `ids` (one or more tab ids that share the config) and `config`. A column `key` is the SQL column name:
 
@@ -140,6 +162,119 @@ A tab for `commonSearch` looks the same with `"searchHandler": "commonSearch"`. 
         "query": "emrapi.sqlSearch.activePatientsByProvider",
         "refreshTime": 30
       }
+    },
+    {
+      "ids": ["bahmni.clinical.v2.search.commonSearch"],
+      "config": [
+        {
+          "context": "patient",
+          "translationKey": "ADVANCED_SEARCH_LABEL",
+          "requiredPrivileges": ["app:clinical"],
+          "url": "/openmrs/ws/rest/v1/patient/search",
+          "pageSize": 10,
+          "batchSize": 50,
+          "criteria": [
+            {
+              "id": "given-name",
+              "field": { "key": "names.givenName" },
+              "translationKey": "PATIENT_QUEUE_CRITERION_GIVEN_NAME",
+              "default": true,
+              "input": {
+                "kind": "text",
+                "placeholderTranslationKey": "PATIENT_QUEUE_CRITERION_GIVEN_NAME_PLACEHOLDER"
+              }
+            },
+            {
+              "id": "family-name",
+              "field": { "key": "names.familyName" },
+              "translationKey": "PATIENT_QUEUE_CRITERION_FAMILY_NAME",
+              "input": {
+                "kind": "text",
+                "placeholderTranslationKey": "PATIENT_QUEUE_CRITERION_FAMILY_NAME_PLACEHOLDER"
+              }
+            },
+            {
+              "id": "identifier",
+              "field": {
+                "key": "identifiers",
+                "keyType": "d3153eb0-5e07-11ef-8f7c-0242ac120002"
+              },
+              "translationKey": "PATIENT_QUEUE_CRITERION_IDENTIFIER",
+              "input": {
+                "kind": "text",
+                "placeholderTranslationKey": "PATIENT_QUEUE_CRITERION_IDENTIFIER_PLACEHOLDER"
+              }
+            },
+            {
+              "id": "phone",
+              "field": {
+                "key": "attributes",
+                "keyType": "a384873b-847a-4a86-b869-28fb601162dd"
+              },
+              "translationKey": "PATIENT_QUEUE_CRITERION_PHONE",
+              "input": {
+                "kind": "text",
+                "placeholderTranslationKey": "PATIENT_QUEUE_CRITERION_PHONE_PLACEHOLDER"
+              }
+            },
+            {
+              "id": "gender",
+              "field": { "key": "gender" },
+              "translationKey": "PATIENT_QUEUE_CRITERION_GENDER",
+              "input": {
+                "kind": "options",
+                "placeholderTranslationKey": "PATIENT_QUEUE_CRITERION_GENDER_PLACEHOLDER",
+                "options": [
+                  { "translationKey": "GENDER_F", "value": "F" },
+                  { "translationKey": "GENDER_M", "value": "M" }
+                ]
+              }
+            },
+            {
+              "id": "birthdate",
+              "field": { "key": "birthdate" },
+              "translationKey": "PATIENT_QUEUE_CRITERION_BIRTHDATE",
+              "input": {
+                "kind": "date",
+                "placeholderTranslationKey": "PATIENT_QUEUE_CRITERION_BIRTHDATE_PLACEHOLDER",
+                "rangeAllowed": true
+              }
+            }
+          ],
+          "resultFields": [
+            {
+              "translationKey": "PATIENT_QUEUE_COLUMN_IDENTIFIER",
+              "expression": "identifiers[preferred = true][0].identifier",
+              "enableSort": true,
+              "action": "openPatient"
+            },
+            {
+              "translationKey": "PATIENT_QUEUE_COLUMN_NAME",
+              "expression": "name.givenName & \" \" & name.familyName",
+              "enableSort": true
+            },
+            {
+              "translationKey": "PATIENT_QUEUE_COLUMN_GENDER",
+              "expression": "gender",
+              "transform": "formatGender"
+            },
+            {
+              "translationKey": "PATIENT_QUEUE_COLUMN_BIRTH_DATE",
+              "expression": "birthdate",
+              "transform": "formatDate",
+              "enableSort": true
+            }
+          ],
+          "actions": [
+            {
+              "key": "openPatient",
+              "type": "navigate",
+              "requiredPrivileges": ["app:clinical"],
+              "navigationURL": "/bahmni-v2/clinical/{uuid}"
+            }
+          ]
+        }
+      ]
     },
     {
       "ids": ["bahmni.clinical.v2.search.notifications"],
@@ -284,7 +419,7 @@ Legacy has about 22 extension points read by code. This card uses one, `org.bahm
 - **A misspelled widget name** (for example `defaultSerch`) shows "widget not registered" in that tab, because `searchHandler` only ever names a widget.
 - **A tab id missing from `patientQueue.json`**, or listed in two entries, is a config error shown in that tab only.
 - **Shared file:** one `patientQueue.json` is fetched by every tab. React Query caches by URL, so it is one request. Each widget validates only its own slice, so one bad entry does not break the others.
-- **`commonSearch` is unverified end to end.** No shipped config uses it, and its backend endpoint was not found in the Bahmni repos checked. Its tab entry is validated against its own schema (an array of contexts), but real field keys and the URL must come from its implementer.
+- **`commonSearch` backend contract.** The tab posts `{ entity, criteria, meta }` to `/openmrs/ws/rest/v1/patient/search`, which supports only the `patient` entity. Fields: `names.givenName`, `names.familyName`, `gender`, `birthdate` and `dateCreated` (`ge` and `le` for dates), plus `identifiers` and `attributes` with a `keyType` (the identifier type or person attribute type uuid) that the widget turns into `.kind` and `.value` conditions. Matching is exact (`eq`), and the name check is case-insensitive. The identifier type uuid in the example is the standard environment's `Patient Identifier`, and the phone uuid is its `phoneNumber` attribute type; both differ per installation.
 - Links to legacy Angular pages cause a full page load until those apps migrate.
 - **ADT _To Acknowledge_** uses `emrapi.sqlSearch.toAcknowledgeNotes`, defined in `standard-config` `gp_ipd.xml`. It is empty on environments that have not loaded the IPD global properties.
 
