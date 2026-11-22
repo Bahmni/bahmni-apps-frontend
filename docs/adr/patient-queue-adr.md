@@ -136,6 +136,7 @@ Registration's schema rejects extra keys in `extensionParams`, so the query and 
 {
   "defaults": {
     "sqlSearch": {
+      "view": "table",
       "pageSize": 10,
       "forwardUrl": "/bahmni-v2/clinical/{{patientUuid}}",
       "columns": [
