@@ -299,6 +299,39 @@ Registration's schema rejects extra keys in `extensionParams`, so the query and 
                 "translationKey": "REGISTRATION_PATIENT_SEARCH_HEADER_ALTERNATE_PHONE_NUMBER"
               }
             ]
+          },
+          {
+            "translationKey": "REGISTRATION_PATIENT_SEARCH_DROPDOWN_EMAIL",
+            "type": "person",
+            "fields": ["email"],
+            "expectedFields": [
+              {
+                "field": "email",
+                "translationKey": "REGISTRATION_PATIENT_SEARCH_HEADER_EMAIL"
+              }
+            ]
+          },
+          {
+            "translationKey": "REGISTRATION_PATIENT_SEARCH_DROPDOWN_VILLAGE",
+            "type": "address",
+            "fields": ["city_village"],
+            "expectedFields": [
+              {
+                "field": "city_village",
+                "translationKey": "REGISTRATION_PATIENT_SEARCH_HEADER_VILLAGE"
+              }
+            ]
+          },
+          {
+            "translationKey": "REGISTRATION_PATIENT_SEARCH_DROPDOWN_LOCALITY",
+            "type": "address",
+            "fields": ["address2"],
+            "expectedFields": [
+              {
+                "field": "address2",
+                "translationKey": "REGISTRATION_PATIENT_SEARCH_HEADER_LOCALITY"
+              }
+            ]
           }
         ]
       }
@@ -419,6 +452,7 @@ Legacy has about 22 extension points read by code. This card uses one, `org.bahm
 - **A misspelled widget name** (for example `defaultSerch`) shows "widget not registered" in that tab, because `searchHandler` only ever names a widget.
 - **A tab id missing from `patientQueue.json`**, or listed in two entries, is a config error shown in that tab only.
 - **Shared file:** one `patientQueue.json` is fetched by every tab. React Query caches by URL, so it is one request. Each widget validates only its own slice, so one bad entry does not break the others.
+- **`defaultSearch` backend contract.** Each `customAttributes` entry adds one option to the attribute dropdown. A `person` entry searches the `fields` as person attributes and an `address` entry searches them as address fields, through `GET /openmrs/ws/rest/v1/bahmni/search/patient`. A column in `expectedFields` shows a value only if its `field` is also listed in that entry's `fields`. The name and ID box uses the same endpoint, and the `Locality` and `Village` fields are `address2` and `city_village`. The clinical app does not bundle the `REGISTRATION_PATIENT_SEARCH_*` labels used here, so they are added to the clinical translations (change C5).
 - **`commonSearch` backend contract.** The tab posts `{ entity, criteria, meta }` to `/openmrs/ws/rest/v1/patient/search`, which supports only the `patient` entity. Fields: `names.givenName`, `names.familyName`, `gender`, `birthdate` and `dateCreated` (`ge` and `le` for dates), plus `identifiers` and `attributes` with a `keyType` (the identifier type or person attribute type uuid) that the widget turns into `.kind` and `.value` conditions. Matching is exact (`eq`), and the name check is case-insensitive. Leave `locationAware` unset: the widget would add a `location.uuid` condition, which this endpoint rejects as an unknown field. The identifier type uuid in the example is the standard environment's `Patient Identifier`, and the phone uuid is its `phoneNumber` attribute type; both differ per installation.
 - Links to legacy Angular pages cause a full page load until those apps migrate.
 - **ADT _To Acknowledge_** uses `emrapi.sqlSearch.toAcknowledgeNotes`, defined in `standard-config` `gp_ipd.xml`. It is empty on environments that have not loaded the IPD global properties.
