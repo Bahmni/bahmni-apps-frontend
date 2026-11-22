@@ -542,7 +542,6 @@ describe('UserGlobalAction', () => {
     });
   });
 
-  
   it('should not show the username or uuid in the greeting when the person name is missing', () => {
     renderWithProviders(
       buildActivePractitionerValue({
