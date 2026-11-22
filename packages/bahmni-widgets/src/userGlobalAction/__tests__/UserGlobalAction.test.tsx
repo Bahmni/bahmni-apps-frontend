@@ -119,24 +119,6 @@ describe('UserGlobalAction', () => {
     ).toHaveAttribute('title', 'Jane Elizabeth Doe');
   });
 
-  it('should not show the username or uuid in the greeting when the person name is missing', () => {
-    renderWithProviders(
-      buildActivePractitionerValue({
-        user: {
-          display: 'd0835ca5-a642-46b3-8c7d-bc983c0620cf',
-          username: 'd0835ca5-a642-46b3-8c7d-bc983c0620cf',
-        } as ActivePractitionerContextType['user'],
-      }),
-    );
-
-    expect(
-      screen.queryByText(/USER_GLOBAL_ACTION_GREETING/),
-    ).not.toBeInTheDocument();
-    expect(
-      screen.queryByText(/d0835ca5-a642-46b3-8c7d-bc983c0620cf/),
-    ).not.toBeInTheDocument();
-  });
-
   it('should render a skeleton while the active practitioner is loading', () => {
     renderWithProviders(buildActivePractitionerValue({ loading: true }));
 
@@ -558,5 +540,24 @@ describe('UserGlobalAction', () => {
       );
       expect(container.firstChild).toMatchSnapshot();
     });
+  });
+
+  
+  it('should not show the username or uuid in the greeting when the person name is missing', () => {
+    renderWithProviders(
+      buildActivePractitionerValue({
+        user: {
+          display: 'd0835ca5-a642-46b3-8c7d-bc983c0620cf',
+          username: 'd0835ca5-a642-46b3-8c7d-bc983c0620cf',
+        } as ActivePractitionerContextType['user'],
+      }),
+    );
+
+    expect(
+      screen.queryByText(/USER_GLOBAL_ACTION_GREETING/),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByText(/d0835ca5-a642-46b3-8c7d-bc983c0620cf/),
+    ).not.toBeInTheDocument();
   });
 });
