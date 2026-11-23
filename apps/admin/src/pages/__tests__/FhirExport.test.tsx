@@ -53,7 +53,7 @@ jest.mock('@bahmni/design-system', () => {
       children,
     }: {
       onChange: (dates: Date[]) => void;
-      children: React.ReactElement;
+      children: React.ReactElement<{ id: string }>;
     }) => (
       <div>
         <button
