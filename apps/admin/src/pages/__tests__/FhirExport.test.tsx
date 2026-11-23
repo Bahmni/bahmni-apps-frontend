@@ -1,9 +1,13 @@
 import { FhirExportTask, submitFhirExport } from '@bahmni/services';
 import { useNotification, useUserPrivilege } from '@bahmni/widgets';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import { axe, toHaveNoViolations } from 'jest-axe';
 import { useFhirExportTasks } from '../../hooks/useFhirExportTasks';
 import { FhirExport } from '../FhirExport';
+
+expect.extend(toHaveNoViolations);
 
 jest.mock('../../components/AdminLayout', () => ({
   AdminLayout: ({
@@ -76,6 +80,7 @@ const mockUseFhirExportTasks = useFhirExportTasks as jest.Mock;
 const mockSubmit = submitFhirExport as jest.Mock;
 const mockUseUserPrivilege = useUserPrivilege as jest.Mock;
 const mockAddNotification = jest.fn();
+let user: ReturnType<typeof userEvent.setup>;
 
 const privileges = (...names: string[]) => ({
   userPrivileges: names.map((name, i) => ({ uuid: `p-${i}`, name })),
@@ -103,16 +108,16 @@ const renderPage = () => {
     defaultOptions: { queries: { retry: false } },
   });
   const invalidate = jest.spyOn(queryClient, 'invalidateQueries');
-  render(
+  const { container } = render(
     <QueryClientProvider client={queryClient}>
       <FhirExport />
     </QueryClientProvider>,
   );
-  return { invalidate };
+  return { invalidate, container };
 };
 
 const clickExport = () =>
-  fireEvent.click(screen.getByTestId('fhir-export-button-test-id'));
+  user.click(screen.getByTestId('fhir-export-button-test-id'));
 
 const anonymiseInput = () =>
   screen
@@ -122,6 +127,7 @@ const anonymiseInput = () =>
 describe('FhirExport', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    user = userEvent.setup();
     (useNotification as jest.Mock).mockReturnValue({
       addNotification: mockAddNotification,
     });
@@ -137,7 +143,7 @@ describe('FhirExport', () => {
   });
 
   describe('page load', () => {
-    it('renders the date pickers, export button and tasks table in the admin layout', () => {
+    it('renders the date pickers, export button and tasks table in the admin layout', async () => {
       mockUseFhirExportTasks.mockReturnValue(tasksState([task()]));
 
       renderPage();
@@ -160,7 +166,7 @@ describe('FhirExport', () => {
       ).toHaveTextContent('ADMIN_FHIR_EXPORT_STATUS_REQUESTED');
     });
 
-    it('shows the empty state when there are no tasks', () => {
+    it('shows the empty state when there are no tasks', async () => {
       renderPage();
 
       expect(
@@ -168,7 +174,7 @@ describe('FhirExport', () => {
       ).toBeInTheDocument();
     });
 
-    it('shows an error message when the tasks cannot be loaded', () => {
+    it('shows an error message when the tasks cannot be loaded', async () => {
       mockUseFhirExportTasks.mockReturnValue(tasksState([], { isError: true }));
 
       renderPage();
@@ -178,19 +184,21 @@ describe('FhirExport', () => {
       ).toBeInTheDocument();
     });
 
-    it('refreshes the table on demand', () => {
+    it('refreshes the table on demand', async () => {
       const refetch = jest.fn();
       mockUseFhirExportTasks.mockReturnValue(tasksState([], { refetch }));
 
       renderPage();
-      fireEvent.click(screen.getByTestId('fhir-export-refresh-button-test-id'));
+      await user.click(
+        screen.getByTestId('fhir-export-refresh-button-test-id'),
+      );
 
       expect(refetch).toHaveBeenCalledTimes(1);
     });
   });
 
   describe('anonymisation', () => {
-    it('locks the checkbox ON when the user lacks the non-anonymised privilege', () => {
+    it('locks the checkbox ON when the user lacks the non-anonymised privilege', async () => {
       mockUseUserPrivilege.mockReturnValue(privileges('Export Patient Data'));
 
       renderPage();
@@ -202,20 +210,20 @@ describe('FhirExport', () => {
       ).toBeInTheDocument();
     });
 
-    it('lets a user with the non-anonymised privilege toggle the checkbox', () => {
+    it('lets a user with the non-anonymised privilege toggle the checkbox', async () => {
       renderPage();
 
       expect(anonymiseInput()).toBeEnabled();
       expect(anonymiseInput()).toBeChecked();
 
-      fireEvent.click(anonymiseInput());
+      await user.click(anonymiseInput());
 
       expect(anonymiseInput()).not.toBeChecked();
     });
   });
 
   describe('privileges', () => {
-    it('blocks the form and does not load tasks without any export privilege', () => {
+    it('blocks the form and does not load tasks without any export privilege', async () => {
       mockUseUserPrivilege.mockReturnValue(privileges('app:admin'));
 
       renderPage();
@@ -227,7 +235,7 @@ describe('FhirExport', () => {
       ).toHaveTextContent('ADMIN_FHIR_EXPORT_NO_PRIVILEGE');
     });
 
-    it('allows a user holding only the plain export privilege to export', () => {
+    it('allows a user holding only the plain export privilege to export', async () => {
       mockUseUserPrivilege.mockReturnValue(privileges('Export Patient Data'));
 
       renderPage();
@@ -241,7 +249,7 @@ describe('FhirExport', () => {
     it('POSTs the default 30 day range, notifies and refreshes the table', async () => {
       const { invalidate } = renderPage();
 
-      clickExport();
+      await clickExport();
 
       await waitFor(() => expect(mockSubmit).toHaveBeenCalledTimes(1));
       const request = mockSubmit.mock.calls[0][0];
@@ -265,9 +273,9 @@ describe('FhirExport', () => {
     it('sends the selected dates formatted as yyyy-MM-dd', async () => {
       renderPage();
 
-      fireEvent.click(screen.getByTestId('set-fhir-export-start-date'));
-      fireEvent.click(screen.getByTestId('set-fhir-export-end-date'));
-      clickExport();
+      await user.click(screen.getByTestId('set-fhir-export-start-date'));
+      await user.click(screen.getByTestId('set-fhir-export-end-date'));
+      await clickExport();
 
       await waitFor(() =>
         expect(mockSubmit).toHaveBeenCalledWith({
@@ -281,8 +289,8 @@ describe('FhirExport', () => {
     it('sends anonymise=false when the privileged user unticks the checkbox', async () => {
       renderPage();
 
-      fireEvent.click(anonymiseInput());
-      clickExport();
+      await user.click(anonymiseInput());
+      await clickExport();
 
       await waitFor(() =>
         expect(mockSubmit).toHaveBeenCalledWith(
@@ -295,7 +303,7 @@ describe('FhirExport', () => {
       mockUseUserPrivilege.mockReturnValue(privileges('Export Patient Data'));
       renderPage();
 
-      clickExport();
+      await clickExport();
 
       await waitFor(() =>
         expect(mockSubmit).toHaveBeenCalledWith(
@@ -308,7 +316,7 @@ describe('FhirExport', () => {
       mockSubmit.mockRejectedValue(new Error('Server error'));
       renderPage();
 
-      clickExport();
+      await clickExport();
 
       await waitFor(() =>
         expect(mockAddNotification).toHaveBeenCalledWith(
@@ -323,12 +331,12 @@ describe('FhirExport', () => {
   });
 
   describe('date validation', () => {
-    it('blocks submission and flags both date fields when no dates are set', () => {
+    it('blocks submission and flags both date fields when no dates are set', async () => {
       renderPage();
 
-      fireEvent.click(screen.getByTestId('clear-fhir-export-start-date'));
-      fireEvent.click(screen.getByTestId('clear-fhir-export-end-date'));
-      clickExport();
+      await user.click(screen.getByTestId('clear-fhir-export-start-date'));
+      await user.click(screen.getByTestId('clear-fhir-export-end-date'));
+      await clickExport();
 
       expect(mockSubmit).not.toHaveBeenCalled();
       expect(
@@ -336,22 +344,22 @@ describe('FhirExport', () => {
       ).toHaveLength(2);
     });
 
-    it('does not show required errors before the first submit attempt', () => {
+    it('does not show required errors before the first submit attempt', async () => {
       renderPage();
 
-      fireEvent.click(screen.getByTestId('clear-fhir-export-start-date'));
+      await user.click(screen.getByTestId('clear-fhir-export-start-date'));
 
       expect(
         screen.queryByText('ADMIN_FHIR_EXPORT_DATE_REQUIRED'),
       ).not.toBeInTheDocument();
     });
 
-    it('blocks submission when the end date is before the start date', () => {
+    it('blocks submission when the end date is before the start date', async () => {
       renderPage();
 
       // Picking 2024-05-20 as the end date puts it before the default start (today - 30d)
-      fireEvent.click(screen.getByTestId('set-fhir-export-end-date'));
-      clickExport();
+      await user.click(screen.getByTestId('set-fhir-export-end-date'));
+      await clickExport();
 
       expect(
         screen.getByText('ADMIN_FHIR_EXPORT_DATE_RANGE_INVALID'),
@@ -366,7 +374,7 @@ describe('FhirExport', () => {
       ['completed', 'ADMIN_FHIR_EXPORT_STATUS_COMPLETED'],
       ['failed', 'ADMIN_FHIR_EXPORT_STATUS_FAILED'],
       ['rejected', 'ADMIN_FHIR_EXPORT_STATUS_FAILED'],
-    ])('renders a %s task as %s', (status, label) => {
+    ])('renders a %s task as %s', async (status, label) => {
       mockUseFhirExportTasks.mockReturnValue(tasksState([task({ status })]));
 
       renderPage();
@@ -376,7 +384,7 @@ describe('FhirExport', () => {
       ).toHaveTextContent(label);
     });
 
-    it('shows the error message of a failed task', () => {
+    it('shows the error message of a failed task', async () => {
       mockUseFhirExportTasks.mockReturnValue(
         tasksState([task({ status: 'failed', errorMessage: 'Disk full' })]),
       );
@@ -386,7 +394,7 @@ describe('FhirExport', () => {
       expect(screen.getByText('Disk full')).toBeInTheDocument();
     });
 
-    it('offers a download link only for completed tasks', () => {
+    it('offers a download link only for completed tasks', async () => {
       mockUseFhirExportTasks.mockReturnValue(
         tasksState([
           task({
@@ -406,6 +414,31 @@ describe('FhirExport', () => {
       expect(
         screen.queryByTestId('fhir-export-download-running-test-id'),
       ).not.toBeInTheDocument();
+    });
+  });
+
+  describe('accessibility', () => {
+    it('has no accessibility violations for a user who can export', async () => {
+      mockUseFhirExportTasks.mockReturnValue(
+        tasksState([
+          task({
+            id: 'done',
+            status: 'completed',
+            downloadUrl: 'http://host/export?file=done',
+          }),
+          task({ id: 'bad', status: 'failed', errorMessage: 'Disk full' }),
+        ]),
+      );
+      const { container } = renderPage();
+
+      expect(await axe(container)).toHaveNoViolations();
+    });
+
+    it('has no accessibility violations when the user lacks the privilege', async () => {
+      mockUseUserPrivilege.mockReturnValue(privileges('app:admin'));
+      const { container } = renderPage();
+
+      expect(await axe(container)).toHaveNoViolations();
     });
   });
 });
