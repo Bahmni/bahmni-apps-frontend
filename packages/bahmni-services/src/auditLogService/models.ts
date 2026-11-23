@@ -21,7 +21,8 @@ export type AuditEventType =
   | 'STOP_MEDICATION'
   | 'UPLOAD_PATIENT_DOCUMENT'
   | 'START_VISIT'
-  | 'RUN_REPORT';
+  | 'RUN_REPORT'
+  | 'PATIENT_DATA_BULK_EXPORT';
 
 // Query params accepted by the audit log list (GET) endpoint.
 // Mirrors the legacy `auditLogController`/`auditLogService` request shape.

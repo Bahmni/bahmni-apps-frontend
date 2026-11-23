@@ -5,6 +5,7 @@ export const MODULE_LABELS = {
   CLINICAL: 'MODULE_LABEL_CLINICAL_KEY',
   REGISTRATION: 'MODULE_LABEL_REGISTRATION_KEY',
   REPORTS: 'MODULE_LABEL_REPORTS_KEY',
+  EXPORT: 'MODULE_LABEL_EXPORT_KEY',
 } as const;
 
 // Audit log event details mapping
@@ -75,6 +76,11 @@ export const AUDIT_LOG_EVENT_DETAILS = {
     eventType: 'RUN_REPORT',
     message: 'RUN_REPORT_MESSAGE',
     module: MODULE_LABELS.REPORTS,
+  },
+  PATIENT_DATA_BULK_EXPORT: {
+    eventType: 'PATIENT_DATA_BULK_EXPORT',
+    message: 'PATIENT_DATA_BULK_EXPORT_MESSAGE',
+    module: MODULE_LABELS.EXPORT,
   },
 };
 

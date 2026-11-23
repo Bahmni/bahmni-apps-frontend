@@ -1,0 +1,36 @@
+@use '@carbon/react/scss/spacing' as *;
+
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-06;
+  padding-block: $spacing-05;
+}
+
+.tile {
+  background-color: #fff !important;
+  padding: $spacing-06;
+}
+
+.title {
+  margin-block-end: $spacing-05;
+}
+
+.warning {
+  margin-block-end: $spacing-05;
+}
+
+.form {
+  display: flex;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: $spacing-05;
+}
+
+.checkbox {
+  align-self: center;
+}
+
+.submit {
+  align-self: flex-end;
+}
