@@ -71,7 +71,10 @@ describe('UserGlobalAction', () => {
   it('should render the grouped trigger with avatar and greeting when a user is available', () => {
     renderWithProviders(
       buildActivePractitionerValue({
-        user: { display: 'Jane Doe' } as ActivePractitionerContextType['user'],
+        user: {
+          display: 'jane-uuid',
+          person: { uuid: 'person-uuid', display: 'Jane Doe' },
+        } as ActivePractitionerContextType['user'],
       }),
     );
 
@@ -86,11 +89,12 @@ describe('UserGlobalAction', () => {
     ).toBeInTheDocument();
   });
 
-  it('should greet with only the first name when the display name has multiple words', () => {
+  it('should greet with only the first name when the person name has multiple words', () => {
     renderWithProviders(
       buildActivePractitionerValue({
         user: {
-          display: 'Jane Elizabeth Doe',
+          display: 'jane-uuid',
+          person: { uuid: 'person-uuid', display: 'Jane Elizabeth Doe' },
         } as ActivePractitionerContextType['user'],
       }),
     );
@@ -100,11 +104,12 @@ describe('UserGlobalAction', () => {
     ).toBeInTheDocument();
   });
 
-  it('should show the full display name as a hover tooltip on the greeting', () => {
+  it('should show the full person name as a hover tooltip on the greeting', () => {
     renderWithProviders(
       buildActivePractitionerValue({
         user: {
-          display: 'Jane Elizabeth Doe',
+          display: 'jane-uuid',
+          person: { uuid: 'person-uuid', display: 'Jane Elizabeth Doe' },
         } as ActivePractitionerContextType['user'],
       }),
     );
@@ -514,7 +519,8 @@ describe('UserGlobalAction', () => {
       const { container } = renderWithProviders(
         buildActivePractitionerValue({
           user: {
-            display: 'Jane Doe',
+            display: 'jane-uuid',
+            person: { uuid: 'person-uuid', display: 'Jane Doe' },
           } as ActivePractitionerContextType['user'],
         }),
       );
@@ -534,5 +540,23 @@ describe('UserGlobalAction', () => {
       );
       expect(container.firstChild).toMatchSnapshot();
     });
+  });
+
+  it('should not show the username or uuid in the greeting when the person name is missing', () => {
+    renderWithProviders(
+      buildActivePractitionerValue({
+        user: {
+          display: 'd0835ca5-a642-46b3-8c7d-bc983c0620cf',
+          username: 'd0835ca5-a642-46b3-8c7d-bc983c0620cf',
+        } as ActivePractitionerContextType['user'],
+      }),
+    );
+
+    expect(
+      screen.queryByText(/USER_GLOBAL_ACTION_GREETING/),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByText(/d0835ca5-a642-46b3-8c7d-bc983c0620cf/),
+    ).not.toBeInTheDocument();
   });
 });
