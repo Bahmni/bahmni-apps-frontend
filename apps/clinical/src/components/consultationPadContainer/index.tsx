@@ -6,6 +6,8 @@ import {
   getActiveVisitAtLoginLocation,
   getVisitLocationUUID,
   getUserLoginLocation,
+  useSubscribeConsultationStart,
+  useSubscribeEocLocked,
   useTranslation,
   type ConsultationEventPayload,
 } from '@bahmni/services';
@@ -31,6 +33,7 @@ import { InputControl } from '../../providers/clinicalConfig/models';
 import { useEncounterDetailsStore } from '../../stores/encounterDetailsStore';
 import ConsultationPad from '../consultationPad';
 import { ENCOUNTER_DETAILS_INPUT_CONTROL_KEY } from '../consultationPad/constants';
+import ConsultationPadLock from '../consultationPadLock/ConsultationPadLock';
 import EncounterDetails from '../forms/encounterDetails/EncounterDetails';
 import styles from './styles/ConsultationPadContainer.module.scss';
 
@@ -68,6 +71,7 @@ const ConsultationPadContainer: React.FC<ConsultationPadContainerProps> = ({
   const [visitCreated, setVisitCreated] = useState(false);
   const [creating, setCreating] = useState(false);
   const [creationError, setCreationError] = useState<Error | null>(null);
+  const [isEocLocked, setIsEocLocked] = useState(false);
 
   const {
     data: activeVisit,
@@ -79,6 +83,22 @@ const ConsultationPadContainer: React.FC<ConsultationPadContainerProps> = ({
     enabled: !!patientUuid,
     retry: false,
   });
+
+  useSubscribeEocLocked(
+    useCallback(() => {
+      setIsEocLocked(true);
+    }, []),
+  );
+
+  useSubscribeConsultationStart(
+    useCallback(() => {
+      if (!isEocLocked) return;
+      setIsEocLocked(false);
+      queryClient.invalidateQueries({
+        queryKey: ['activeVisitAtLoginLocation', patientUuid],
+      });
+    }, [isEocLocked, queryClient, patientUuid]),
+  );
 
   const allowedVisitTypes = useMemo<string[]>(
     () => clinicalConfig?.consultationPad?.allowedVisitTypes ?? [],
@@ -184,6 +204,7 @@ const ConsultationPadContainer: React.FC<ConsultationPadContainerProps> = ({
 
   useEffect(() => {
     if (!creationError && !queryError) return;
+    if (isEocLocked) return;
     addNotification({
       type: 'error',
       title: t('START_VISIT_ERROR_TITLE'),
@@ -202,11 +223,20 @@ const ConsultationPadContainer: React.FC<ConsultationPadContainerProps> = ({
     useEncounterDetailsStore.getState().reset();
     onClose();
   }, [onClose]);
-
   const handleStart = useCallback(() => {
     if (!selectedVisitType || !selectedEncounterType) return;
     createVisitAndProceed(selectedVisitType.uuid, selectedVisitType.name);
   }, [selectedVisitType, selectedEncounterType, createVisitAndProceed]);
+
+  if (isEocLocked) {
+    return (
+      <ConsultationPadLock
+        onClose={onClose}
+        isActionAreaExpanded={isActionAreaExpanded}
+        onToggleActionAreaExpand={onToggleActionAreaExpand}
+      />
+    );
+  }
 
   if (activeVisit || visitCreated) {
     return (

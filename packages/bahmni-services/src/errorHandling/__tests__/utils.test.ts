@@ -1,5 +1,9 @@
 import axios, { AxiosError } from 'axios';
-import { getFormattedError, getErrorKind } from '../utils';
+import {
+  getFormattedError,
+  getErrorKind,
+  getValidationMessage,
+} from '../utils';
 
 describe('getFormattedError', () => {
   // Mock axios.isAxiosError to properly detect our mock errors
@@ -319,6 +323,74 @@ describe('getFormattedError', () => {
     });
   });
 
+  describe('EoC lock error', () => {
+    const lockedOutcome = (status: number) =>
+      ({
+        response: {
+          status,
+          data: {
+            resourceType: 'OperationOutcome',
+            issue: [
+              {
+                severity: 'error',
+                code: 'conflict',
+                diagnostics:
+                  'EoC is locked. To perform any action, please reopen it.',
+                details: {
+                  coding: [
+                    {
+                      system: 'http://iom.org/fhir/CodeSystem/error-code',
+                      code: 'EOC_LOCKED',
+                    },
+                  ],
+                },
+              },
+            ],
+          },
+        },
+      }) as AxiosError;
+
+    it('should map a FHIR 409 carrying the EOC_LOCKED code to the translation key', () => {
+      expect(getFormattedError(lockedOutcome(409))).toEqual({
+        title: 'Conflict',
+        message: 'ERROR_EOC_LOCKED',
+      });
+    });
+
+    it('should map a REST 409 body with error EOC_LOCKED to the translation key', () => {
+      const error = {
+        response: {
+          status: 409,
+          data: { error: 'EOC_LOCKED', message: 'EoC is locked.' },
+        },
+      } as AxiosError;
+
+      expect(getFormattedError(error).message).toBe('ERROR_EOC_LOCKED');
+    });
+
+    it('should show the backend message for a 409 without the EOC_LOCKED code', () => {
+      const error = {
+        response: {
+          status: 409,
+          data: { error: 'Identifier already exists' },
+        },
+      } as AxiosError;
+
+      expect(getFormattedError(error)).toEqual({
+        title: 'Conflict',
+        message: 'Identifier already exists',
+      });
+    });
+
+    it('should fall back to a generic message for a 409 with no body', () => {
+      const error = { response: { status: 409, data: {} } } as AxiosError;
+
+      expect(getFormattedError(error).message).toBe(
+        'The request conflicts with the current state. Please refresh and try again.',
+      );
+    });
+  });
+
   describe('HTTP status errors', () => {
     it('should handle 401 Unauthorized error', () => {
       const error = {
@@ -606,4 +678,81 @@ describe('getErrorKind', () => {
     expect(getErrorKind('some string')).toBe('unknown');
     expect(getErrorKind(null)).toBe('unknown');
   });
+});
+
+describe('getValidationMessage', () => {
+  const axiosError = (status: number, data?: unknown) =>
+    new AxiosError('Request failed', undefined, undefined, undefined, {
+      status,
+      data,
+      statusText: '',
+      headers: {},
+      config: {} as never,
+    });
+
+  const wrapped = (message: string, cause: unknown) =>
+    new Error(message, { cause });
+
+  it('returns the backend explanation for an Axios 400', () => {
+    expect(
+      getValidationMessage(
+        axiosError(400, {
+          message: 'No medications prescribed for this visit',
+        }),
+      ),
+    ).toBe('No medications prescribed for this visit');
+  });
+
+  it('returns the explanation from an error wrapping an Axios 400 as its cause', () => {
+    expect(
+      getValidationMessage(
+        wrapped(
+          'ignored wrapper text',
+          axiosError(400, { error: { message: 'Visit has no orders' } }),
+        ),
+      ),
+    ).toBe('Visit has no orders');
+  });
+
+  it('reuses the getFormattedError text, including its default for a 400 with no body', () => {
+    const error = axiosError(400);
+    expect(getValidationMessage(error)).toBe(getFormattedError(error).message);
+  });
+
+  it.each([401, 403, 404, 500, 503])(
+    'returns undefined for an Axios %s',
+    (status) => {
+      expect(getValidationMessage(axiosError(status))).toBeUndefined();
+      expect(
+        getValidationMessage(wrapped('wrapped', axiosError(status))),
+      ).toBeUndefined();
+    },
+  );
+
+  it('returns undefined for an Axios error without a response', () => {
+    expect(
+      getValidationMessage(new AxiosError('Network Error')),
+    ).toBeUndefined();
+  });
+
+  it.each([
+    ['a string cause', 'some string'],
+    ['a null cause', null],
+    ['an undefined cause', undefined],
+    ['a number cause', 42],
+    ['a plain object resembling a response', { response: { status: 400 } }],
+  ])('never throws and returns undefined for %s', (_label, cause) => {
+    expect(getValidationMessage(wrapped('boom', cause))).toBeUndefined();
+  });
+
+  it('returns undefined for an error with no cause', () => {
+    expect(getValidationMessage(new Error('boom'))).toBeUndefined();
+  });
+
+  it.each([null, undefined, 'a string', 400, {}])(
+    'returns undefined for the non-error value %p',
+    (value) => {
+      expect(getValidationMessage(value)).toBeUndefined();
+    },
+  );
 });

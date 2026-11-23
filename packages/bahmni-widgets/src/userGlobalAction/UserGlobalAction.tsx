@@ -24,7 +24,7 @@ import styles from './styles/UserGlobalAction.module.scss';
 
 const MENU_ID = 'user-global-action-menu';
 
-// `User.display` (the OpenMRS user resource) is the full name, e.g. "Jane Doe".
+// `User.display` is the username/UUID, so the human name comes from `person.display`.
 // The header greeting only has room for one word before truncating, so use
 // just the first name rather than letting CSS ellipsis cut the full name.
 const getFirstName = (display: string) => display.split(' ')[0];
@@ -62,6 +62,7 @@ export const UserGlobalAction = () => {
   const hasRegistered = useRef(false);
 
   const { user, loading } = useActivePractitioner();
+  const fullName = user?.person?.display;
 
   useEffect(() => {
     if (!hasRegistered.current) {
@@ -184,10 +185,10 @@ export const UserGlobalAction = () => {
         className={styles.userAction}
       >
         <UserAvatar id="user-icon" data-testid="user-icon-button-test-id" />
-        {user?.display && (
-          <span className={styles.greeting} title={user.display}>
+        {fullName && (
+          <span className={styles.greeting} title={fullName}>
             {t('USER_GLOBAL_ACTION_GREETING', {
-              name: getFirstName(user.display),
+              name: getFirstName(fullName),
             })}
           </span>
         )}
