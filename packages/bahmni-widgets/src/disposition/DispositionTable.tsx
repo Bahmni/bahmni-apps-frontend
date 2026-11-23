@@ -81,7 +81,8 @@ const DispositionTable: React.FC<WidgetProps> = ({
     (payload) => {
       if (
         payload.patientUUID === patientUUID &&
-        payload.updatedResources.serviceRequests?.[orderType.toLowerCase()]
+        (payload.updatedResources.disposition ||
+          payload.updatedResources.serviceRequests?.[orderType.toLowerCase()])
       ) {
         refetch();
       }

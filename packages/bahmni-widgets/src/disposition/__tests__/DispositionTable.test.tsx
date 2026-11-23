@@ -5,7 +5,7 @@ import {
   useSubscribeConsultationSaved,
 } from '@bahmni/services';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { render, screen, waitFor } from '@testing-library/react';
+import { act, render, screen, waitFor } from '@testing-library/react';
 import type { Bundle, ServiceRequest } from 'fhir/r4';
 import { usePatientUUID } from '../../hooks/usePatientUUID';
 import { useNotification } from '../../notification';
@@ -169,5 +169,58 @@ describe('DispositionTable', () => {
     (getServiceRequests as jest.Mock).mockResolvedValue(bundleOf());
     renderWidget();
     expect(useSubscribeConsultationSaved).toHaveBeenCalled();
+  });
+
+  describe('refetch on consultation saved', () => {
+    const emit = async (payload: {
+      patientUUID: string;
+      updatedResources: Record<string, unknown>;
+    }) => {
+      const handler = (useSubscribeConsultationSaved as jest.Mock).mock
+        .calls[0][0];
+      await act(async () => handler(payload));
+    };
+
+    const setup = async () => {
+      (getServiceRequests as jest.Mock).mockResolvedValue(bundleOf());
+      renderWidget();
+      await waitFor(() => expect(getServiceRequests).toHaveBeenCalledTimes(1));
+    };
+
+    it('refetches when a disposition was saved for the patient', async () => {
+      await setup();
+      await emit({
+        patientUUID: 'patient-1',
+        updatedResources: { disposition: true, serviceRequests: {} },
+      });
+      await waitFor(() => expect(getServiceRequests).toHaveBeenCalledTimes(2));
+    });
+
+    it('refetches when the configured order type was saved', async () => {
+      await setup();
+      await emit({
+        patientUUID: 'patient-1',
+        updatedResources: { serviceRequests: { 'adt order': true } },
+      });
+      await waitFor(() => expect(getServiceRequests).toHaveBeenCalledTimes(2));
+    });
+
+    it('does not refetch for a different patient', async () => {
+      await setup();
+      await emit({
+        patientUUID: 'other-patient',
+        updatedResources: { disposition: true, serviceRequests: {} },
+      });
+      expect(getServiceRequests).toHaveBeenCalledTimes(1);
+    });
+
+    it('does not refetch when disposition was not saved', async () => {
+      await setup();
+      await emit({
+        patientUUID: 'patient-1',
+        updatedResources: { disposition: false, serviceRequests: {} },
+      });
+      expect(getServiceRequests).toHaveBeenCalledTimes(1);
+    });
   });
 });
