@@ -218,6 +218,12 @@ export {
 } from './conceptService';
 export { exportConceptSet } from './conceptSetExportService';
 export {
+  submitFhirExport,
+  getFhirExportTasks,
+  type FhirExportParams,
+  type FhirExportTask,
+} from './fhirExportService';
+export {
   getPatientMedications,
   getPatientMedicationBundle,
   fetchMedicationOrdersMetadata,
