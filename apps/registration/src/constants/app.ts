@@ -1,5 +1,4 @@
 import { BAHMNI_APP_BASE_PATH } from '@bahmni/services';
-import { PATIENT_ATTRIBUTE_PREFIX } from '../utils/fhirUtils';
 
 export const REGISTRATION_NAMESPACE = 'registration';
 export const BAHMNI_REGISTRATION_SEARCH = `${BAHMNI_APP_BASE_PATH}/registration/search`;
@@ -20,6 +19,3 @@ export const DEFAULT_PHOTO_MAX_FILE_SIZE_KB = 500;
 export const DUPLICATE_PATIENTS_MESSAGE = 'DUPLICATE_PATIENTS';
 export const CLOSE_MESSAGE = 'CLOSE';
 export const READY_MESSAGE = 'READY';
-
-export const PHONE_NUMBER_EXT_URL = `${PATIENT_ATTRIBUTE_PREFIX}phonenumber`;
-export const EMAIL_EXT_URL = `${PATIENT_ATTRIBUTE_PREFIX}email`;

@@ -5,7 +5,6 @@ import {
   DUPLICATE_PATIENTS_MESSAGE,
   READY_MESSAGE,
 } from '../../constants/app';
-import { toDuplicatePatientView } from '../../utils/duplicatePatientView';
 import styles from './styles.module.scss';
 
 interface DuplicatePatientFrameProps {
@@ -30,8 +29,8 @@ export const DuplicatePatientFrame = ({
     iframeRef.current?.contentWindow?.postMessage(
       {
         type: DUPLICATE_PATIENTS_MESSAGE,
-        patients: patients.map(toDuplicatePatientView),
-        currentPatient: toDuplicatePatientView(currentPatient),
+        patients,
+        currentPatient,
       },
       frameOrigin,
     );
