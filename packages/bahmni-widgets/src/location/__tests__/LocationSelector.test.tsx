@@ -138,4 +138,9 @@ describe('LocationSelector', () => {
     const { container } = renderWithContext();
     expect(await axe(container)).toHaveNoViolations();
   });
+
+  it('has no accessibility violations when no location is selected', async () => {
+    const { container } = renderWithContext({ location: null });
+    expect(await axe(container)).toHaveNoViolations();
+  });
 });
