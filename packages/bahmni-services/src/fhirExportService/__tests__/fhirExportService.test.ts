@@ -171,6 +171,51 @@ describe('fhirExportService', () => {
       expect(await getFhirExportTasks()).toEqual([]);
     });
 
+    it('follows continuation links until export tasks are found', async () => {
+      mockGet
+        .mockResolvedValueOnce({
+          ...bundleOf(
+            buildTask({ id: 'other', basedOn: [{ reference: 'something' }] }),
+          ),
+          link: [
+            {
+              relation: 'next',
+              url: 'http://host/openmrs/ws/fhir2/R4?_getpages=abc&_getpagesoffset=50',
+            },
+          ],
+        })
+        .mockResolvedValueOnce(bundleOf(buildTask({ id: 'export' })));
+
+      const tasks = await getFhirExportTasks();
+
+      expect(mockGet).toHaveBeenCalledTimes(2);
+      expect(mockGet).toHaveBeenLastCalledWith(
+        '/openmrs/ws/fhir2/R4?_getpages=abc&_getpagesoffset=50',
+      );
+      expect(tasks.map((task) => task.id)).toEqual(['export']);
+    });
+
+    it('does not request another page when no continuation link exists', async () => {
+      mockGet.mockResolvedValueOnce(bundleOf(buildTask()));
+
+      await getFhirExportTasks();
+
+      expect(mockGet).toHaveBeenCalledTimes(1);
+    });
+
+    it('stops following links once the page cap is reached', async () => {
+      const pageWithNext = {
+        ...bundleOf(
+          buildTask({ id: 'other', basedOn: [{ reference: 'something' }] }),
+        ),
+        link: [{ relation: 'next', url: '/openmrs/ws/fhir2/R4?page=n' }],
+      };
+      mockGet.mockResolvedValue(pageWithNext);
+
+      expect(await getFhirExportTasks()).toEqual([]);
+      expect(mockGet).toHaveBeenCalledTimes(10);
+    });
+
     it('returns an empty list when the bundle has no entries', async () => {
       mockGet.mockResolvedValueOnce({
         resourceType: 'Bundle',

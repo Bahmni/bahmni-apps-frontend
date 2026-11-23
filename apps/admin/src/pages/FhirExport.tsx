@@ -211,6 +211,8 @@ export const FhirExport: React.FC = () => {
               maxDate={new Date()}
               value={startDate ?? undefined}
               onChange={(dates: Date[]) => setStartDate(dates?.[0] ?? null)}
+              // Clearing the text input only emits a close event, not a change.
+              onClose={(dates: Date[]) => setStartDate(dates?.[0] ?? null)}
             >
               <DatePickerInput
                 id="fhir-export-start-date"
@@ -226,6 +228,8 @@ export const FhirExport: React.FC = () => {
               maxDate={new Date()}
               value={endDate ?? undefined}
               onChange={(dates: Date[]) => setEndDate(dates?.[0] ?? null)}
+              // Clearing the text input only emits a close event, not a change.
+              onClose={(dates: Date[]) => setEndDate(dates?.[0] ?? null)}
             >
               <DatePickerInput
                 id="fhir-export-end-date"
