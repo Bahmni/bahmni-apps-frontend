@@ -219,6 +219,15 @@ export {
 } from './conceptService';
 export { exportConceptSet } from './conceptSetExportService';
 export {
+  buildFhirExportUrl,
+  fetchFhirExportTasks,
+  isFhirExportTaskTerminal,
+  submitFhirExport,
+  type FhirExportRequest,
+  type FhirExportSubmitResponse,
+  type FhirExportTask,
+} from './fhirExportService';
+export {
   getPatientMedications,
   getPatientMedicationBundle,
   fetchMedicationOrdersMetadata,
@@ -574,4 +583,4 @@ export {
   type ImportedItem,
   type ImportType,
   type UploadProgress,
-} from './adminImportService';
+  } from './adminImportService';
