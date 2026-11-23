@@ -7,6 +7,8 @@ import {
   FHIR_EXPORT_INPUT_END_DATE,
   FHIR_EXPORT_INPUT_START_DATE,
   FHIR_EXPORT_INPUT_USER_NAME,
+  FHIR_EXPORT_TASKS_LIMIT,
+  FHIR_EXPORT_TASKS_MAX_PAGES,
   FHIR_EXPORT_TASKS_URL,
   FHIR_EXPORT_URL,
 } from './constants';
@@ -45,23 +47,47 @@ const toFhirExportTask = (task: Task): FhirExportTask => ({
   statusReason: task.statusReason?.text,
 });
 
+const getNextPageUrl = (bundle: Bundle): string | undefined => {
+  const next = bundle.link?.find((link) => link.relation === 'next')?.url;
+  if (!next) return undefined;
+  const { pathname, search } = new URL(next, 'https://placeholder');
+  return `${pathname}${search}`;
+};
+
 /**
  * Fetches the most recent bulk FHIR export tasks.
  * The Task endpoint returns every kind of task, so only those based on the
  * "FHIR Export Anonymise Flag" concept (as in the legacy admin page) are kept.
+ * `_count` only limits the page size, so continuation links are followed until
+ * enough export tasks are collected (or the page cap is reached); when the
+ * first page already has them no further request is made.
  */
 export const getFhirExportTasks = async (): Promise<FhirExportTask[]> => {
-  const [concept, bundle] = await Promise.all([
+  const [concept, firstPage] = await Promise.all([
     searchConceptByName(FHIR_EXPORT_ANONYMISE_CONCEPT_NAME),
     get<Bundle<Task>>(FHIR_EXPORT_TASKS_URL),
   ]);
   if (!concept) return [];
 
-  return (bundle.entry ?? [])
-    .map((entry) => entry.resource)
-    .filter(
-      (task): task is Task =>
-        !!task?.basedOn?.some((ref) => ref.reference === concept.uuid),
-    )
-    .map(toFhirExportTask);
+  const exportTasks: Task[] = [];
+  let page: Bundle<Task> = firstPage;
+  for (let pageCount = 1; ; pageCount++) {
+    for (const entry of page.entry ?? []) {
+      const task = entry.resource;
+      if (task?.basedOn?.some((ref) => ref.reference === concept.uuid)) {
+        exportTasks.push(task);
+      }
+    }
+    const nextUrl = getNextPageUrl(page);
+    if (
+      !nextUrl ||
+      exportTasks.length >= FHIR_EXPORT_TASKS_LIMIT ||
+      pageCount >= FHIR_EXPORT_TASKS_MAX_PAGES
+    ) {
+      break;
+    }
+    page = await get<Bundle<Task>>(nextUrl);
+  }
+
+  return exportTasks.slice(0, FHIR_EXPORT_TASKS_LIMIT).map(toFhirExportTask);
 };
