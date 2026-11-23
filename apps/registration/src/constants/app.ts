@@ -15,3 +15,7 @@ export const getPatientUrlExternal = (patientUuid: string): string =>
 export const DEFAULT_PHOTO_WIDTH_PX = 600;
 export const DEFAULT_PHOTO_HEIGHT_PX = 600;
 export const DEFAULT_PHOTO_MAX_FILE_SIZE_KB = 500;
+
+export const DUPLICATE_PATIENTS_MESSAGE = 'DUPLICATE_PATIENTS';
+export const CLOSE_MESSAGE = 'CLOSE';
+export const READY_MESSAGE = 'READY';

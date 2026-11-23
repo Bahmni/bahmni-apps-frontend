@@ -127,6 +127,8 @@
   "DAYS_other": " días",
   "EDIT_ENCOUNTER_MESSAGE": "Editó un encuentro para el paciente",
   "ENTER_VISIT_DETAILS": "Ingrese los Detalles de la Visita",
+  "ERROR_CHECKING_DUPLICATES": "Error al comprobar duplicados",
+  "ERROR_CHECKING_DUPLICATES_MESSAGE": "Algo salió mal al intentar comprobar si hay duplicados. Por favor, inténtelo de nuevo.",
   "ERROR_CONFIG_GENERIC_MESSAGE": "No se pudo cargar {{config}}. Por favor, intente actualizar la página.",
   "ERROR_CONFIG_TITLE": "Error de {{config}}",
   "ERROR_DEFAULT_TITLE": "Error",

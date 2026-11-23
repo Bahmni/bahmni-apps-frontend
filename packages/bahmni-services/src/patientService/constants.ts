@@ -120,6 +120,8 @@ export const UPDATE_PATIENT_URL = (patientUuid: string) =>
 
 export const FHIR_PATIENT_URL = OPENMRS_FHIR_R4 + '/Patient';
 
+export const FHIR_PATIENT_MATCH_URL = FHIR_PATIENT_URL + '/$match';
+
 export const GENERATE_IDENTIFIER_URL = (sourceUuid: string) =>
   OPENMRS_REST_V1 + `/idgen/identifiersource/${sourceUuid}/identifier`;
 

@@ -423,6 +423,27 @@
         }
       }
     },
+    "duplicateDetection": {
+      "type": "object",
+      "description": "Optional duplicate patient detection run before Save/Next on the registration page",
+      "required": ["match", "featureURL", "requiredPrivileges"],
+      "additionalProperties": false,
+      "properties": {
+        "match": {
+          "type": "boolean",
+          "description": "Enable duplicate detection via FHIR Patient/$match"
+        },
+        "featureURL": {
+          "type": "string",
+          "description": "URL of the page loaded in the iframe to resolve duplicates"
+        },
+        "requiredPrivileges": {
+          "type": "array",
+          "description": "If non-empty, duplicate detection runs only for users with one of these privileges",
+          "items": { "type": "string" }
+        }
+      }
+    },
     "printOptions": {
       "type": "array",
       "description": "Print options shown in the print button on the registration page",

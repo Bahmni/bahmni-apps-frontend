@@ -79,6 +79,12 @@ export interface RegistrationFormConfig {
   sections: RegistrationFormSection[];
 }
 
+export interface DuplicateDetectionConfig {
+  match: boolean;
+  featureURL: string;
+  requiredPrivileges?: string[];
+}
+
 export interface RegistrationConfig {
   defaultVisitType?: string;
   registrationEncounterType?: string;
@@ -87,6 +93,7 @@ export interface RegistrationConfig {
   registrationForm?: RegistrationFormConfig;
   printOptions?: PrintOption[];
   extensions?: Extension[];
+  duplicateDetection?: DuplicateDetectionConfig;
 }
 
 export interface RegistrationConfigContextType {
