@@ -31,8 +31,14 @@ export const LocationProvider: React.FC<LocationProviderProps> = ({
     const initializeLocation = async () => {
       try {
         setError(null);
-        const currentLocation = getUserLoginLocation();
-        setLocationState(currentLocation);
+        // A missing/invalid login-location cookie (e.g. user logged in via
+        // OpenMRS first) is not an error: leave location unset so the user
+        // can pick one from the available locations.
+        try {
+          setLocationState(getUserLoginLocation());
+        } catch {
+          setLocationState(null);
+        }
         const locations = await getAvailableLocations();
         setAvailableLocations(locations);
         const user = await getCurrentUser();
