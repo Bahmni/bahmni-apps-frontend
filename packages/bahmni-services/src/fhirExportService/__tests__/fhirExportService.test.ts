@@ -1,8 +1,9 @@
 import { Bundle, Task } from 'fhir/r4';
 import * as api from '../../api';
 import { searchConceptByName } from '../../conceptService';
-import { FHIR_EXPORT_TASKS_URL, FHIR_EXPORT_URL } from '../constants';
+import { FHIR_EXPORT_URL } from '../constants';
 import {
+  buildFhirExportTasksUrl,
   buildFhirExportUrl,
   fetchFhirExportTasks,
   isFhirExportTaskTerminal,
@@ -120,9 +121,9 @@ describe('fhirExportService', () => {
         'custom:(uuid)',
       );
       expect(api.get).toHaveBeenCalledWith(
-        FHIR_EXPORT_TASKS_URL(ANONYMISE_CONCEPT_UUID),
+        buildFhirExportTasksUrl(ANONYMISE_CONCEPT_UUID),
       );
-      expect(FHIR_EXPORT_TASKS_URL(ANONYMISE_CONCEPT_UUID)).toBe(
+      expect(buildFhirExportTasksUrl(ANONYMISE_CONCEPT_UUID)).toBe(
         `/openmrs/ws/fhir2/R4/Task?based-on=ServiceRequest/${ANONYMISE_CONCEPT_UUID}&_sort:desc=_lastUpdated&_count=50`,
       );
     });
@@ -132,6 +133,12 @@ describe('fhirExportService', () => {
 
       expect(await fetchFhirExportTasks()).toEqual([]);
       expect(api.get).not.toHaveBeenCalled();
+    });
+
+    it('returns no tasks when the task request resolves to an empty response', async () => {
+      (api.get as jest.Mock).mockResolvedValue(undefined);
+
+      expect(await fetchFhirExportTasks()).toEqual([]);
     });
 
     it('propagates failures of the task request', async () => {

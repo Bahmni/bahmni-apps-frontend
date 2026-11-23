@@ -1,4 +1,5 @@
 export {
+  buildFhirExportTasksUrl,
   buildFhirExportUrl,
   fetchFhirExportTasks,
   isFhirExportTaskTerminal,

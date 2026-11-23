@@ -3,10 +3,12 @@ import { get, post } from '../api';
 import { searchConceptByName } from '../conceptService';
 import {
   FHIR_EXPORT_ANONYMISE_INPUT,
+  FHIR_EXPORT_BASED_ON_TYPE,
   FHIR_EXPORT_DOWNLOAD_OUTPUT,
   FHIR_EXPORT_END_DATE_INPUT,
   FHIR_EXPORT_START_DATE_INPUT,
-  FHIR_EXPORT_TASKS_URL,
+  FHIR_EXPORT_TASKS_COUNT,
+  FHIR_EXPORT_TASKS_ENDPOINT,
   FHIR_EXPORT_TERMINAL_STATUSES,
   FHIR_EXPORT_URL,
   FHIR_EXPORT_USER_NAME_INPUT,
@@ -66,6 +68,16 @@ export const buildFhirExportUrl = ({
 };
 
 /**
+ * Builds the URL listing the most recent tasks based on the "FHIR Export
+ * Anonymise Flag" concept, which the backend stamps on every export task.
+ * Filtering on the server keeps the `_count` window from being filled by
+ * unrelated tasks.
+ */
+export const buildFhirExportTasksUrl = (anonymiseConceptUuid: string): string =>
+  `${FHIR_EXPORT_TASKS_ENDPOINT}?based-on=${FHIR_EXPORT_BASED_ON_TYPE}/${encodeURIComponent(anonymiseConceptUuid)}` +
+  `&_sort:desc=_lastUpdated&_count=${FHIR_EXPORT_TASKS_COUNT}`;
+
+/**
  * Requests an asynchronous bulk FHIR R4 export of patient data
  * @param request - date range (`yyyy-MM-dd`) and whether to anonymise the data
  * @returns the newly created export task reference
@@ -91,9 +103,9 @@ export const fetchFhirExportTasks = async (): Promise<FhirExportTask[]> => {
   if (!anonymiseConcept) return [];
 
   const bundle = await get<Bundle<Task>>(
-    FHIR_EXPORT_TASKS_URL(anonymiseConcept.uuid),
+    buildFhirExportTasksUrl(anonymiseConcept.uuid),
   );
-  return (bundle.entry ?? [])
+  return (bundle?.entry ?? [])
     .flatMap((entry) => (entry.resource ? [entry.resource] : []))
     .filter((task) => hasInput(task, FHIR_EXPORT_ANONYMISE_INPUT))
     .map(toFhirExportTask);

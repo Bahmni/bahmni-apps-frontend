@@ -8,15 +8,8 @@ export const FHIR_EXPORT_TASKS_COUNT = 50;
 /** FHIR resource type the backend uses in the export task's `basedOn` reference. */
 export const FHIR_EXPORT_BASED_ON_TYPE = 'ServiceRequest';
 
-/**
- * Lists the most recent tasks based on the "FHIR Export Anonymise Flag" concept,
- * which the backend stamps on every export task. Filtering on the server keeps
- * the `_count` window from being filled by unrelated tasks.
- */
-export const FHIR_EXPORT_TASKS_URL = (anonymiseConceptUuid: string) =>
-  OPENMRS_FHIR_R4 +
-  `/Task?based-on=${FHIR_EXPORT_BASED_ON_TYPE}/${encodeURIComponent(anonymiseConceptUuid)}` +
-  `&_sort:desc=_lastUpdated&_count=${FHIR_EXPORT_TASKS_COUNT}`;
+/** FHIR Task search endpoint used to list export tasks. */
+export const FHIR_EXPORT_TASKS_ENDPOINT = OPENMRS_FHIR_R4 + '/Task';
 
 /**
  * Names of the task inputs written by the backend export task
