@@ -224,7 +224,6 @@ export const FhirExport: React.FC = () => {
           <form className={styles.form} onSubmit={handleSubmit} noValidate>
             <DatePicker
               datePickerType="single"
-              dateFormat="d/m/Y"
               maxDate={new Date()}
               value={startDate ?? undefined}
               onChange={(dates: Date[]) => setStartDate(dates?.[0] ?? null)}
@@ -240,7 +239,6 @@ export const FhirExport: React.FC = () => {
             </DatePicker>
             <DatePicker
               datePickerType="single"
-              dateFormat="d/m/Y"
               maxDate={new Date()}
               value={endDate ?? undefined}
               onChange={(dates: Date[]) => setEndDate(dates?.[0] ?? null)}

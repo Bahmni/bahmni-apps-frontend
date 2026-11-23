@@ -1,5 +1,6 @@
 import { Bundle, Task } from 'fhir/r4';
 import * as api from '../../api';
+import { searchConceptByName } from '../../conceptService';
 import { FHIR_EXPORT_TASKS_URL, FHIR_EXPORT_URL } from '../constants';
 import {
   buildFhirExportUrl,
@@ -10,6 +11,9 @@ import {
 import { FhirExportTask } from '../models';
 
 jest.mock('../../api');
+jest.mock('../../conceptService');
+
+const ANONYMISE_CONCEPT_UUID = '8741c3e7-a250-4808-977c-a89459bb6c9d';
 
 const exportTask = (overrides: Partial<Task> = {}): Task => ({
   resourceType: 'Task',
@@ -53,6 +57,9 @@ const bundleOf = (...tasks: Task[]): Bundle<Task> => ({
 describe('fhirExportService', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    (searchConceptByName as jest.Mock).mockResolvedValue({
+      uuid: ANONYMISE_CONCEPT_UUID,
+    });
   });
 
   describe('buildFhirExportUrl', () => {
@@ -103,12 +110,34 @@ describe('fhirExportService', () => {
   });
 
   describe('fetchFhirExportTasks', () => {
-    it('requests the most recent tasks', async () => {
+    it('asks the server only for tasks based on the anonymise-flag concept', async () => {
       (api.get as jest.Mock).mockResolvedValue(bundleOf());
 
       await fetchFhirExportTasks();
 
-      expect(api.get).toHaveBeenCalledWith(FHIR_EXPORT_TASKS_URL);
+      expect(searchConceptByName).toHaveBeenCalledWith(
+        'FHIR Export Anonymise Flag',
+        'custom:(uuid)',
+      );
+      expect(api.get).toHaveBeenCalledWith(
+        FHIR_EXPORT_TASKS_URL(ANONYMISE_CONCEPT_UUID),
+      );
+      expect(FHIR_EXPORT_TASKS_URL(ANONYMISE_CONCEPT_UUID)).toBe(
+        `/openmrs/ws/fhir2/R4/Task?based-on=ServiceRequest/${ANONYMISE_CONCEPT_UUID}&_sort:desc=_lastUpdated&_count=50`,
+      );
+    });
+
+    it('returns no tasks, without querying them, when the anonymise-flag concept does not exist', async () => {
+      (searchConceptByName as jest.Mock).mockResolvedValue(null);
+
+      expect(await fetchFhirExportTasks()).toEqual([]);
+      expect(api.get).not.toHaveBeenCalled();
+    });
+
+    it('propagates failures of the task request', async () => {
+      (api.get as jest.Mock).mockRejectedValue(new Error('Boom'));
+
+      await expect(fetchFhirExportTasks()).rejects.toThrow('Boom');
     });
 
     it('maps a completed export task to a row', async () => {

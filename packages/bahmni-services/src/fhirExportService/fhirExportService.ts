@@ -1,5 +1,6 @@
 import { Bundle, Task } from 'fhir/r4';
 import { get, post } from '../api';
+import { searchConceptByName } from '../conceptService';
 import {
   FHIR_EXPORT_ANONYMISE_INPUT,
   FHIR_EXPORT_DOWNLOAD_OUTPUT,
@@ -76,12 +77,22 @@ export const submitFhirExport = async (
 
 /**
  * Fetches the most recent FHIR export tasks, newest first.
- * The FHIR Task endpoint returns every kind of task, so only those carrying the
- * export's anonymise-flag input are kept. (The legacy admin screen matches on
- * the task's `basedOn` concept instead; every export task carries both.)
+ * Tasks are selected on the server by their `basedOn` reference to the
+ * "FHIR Export Anonymise Flag" concept (the same marker the legacy admin screen
+ * matches), so unrelated newer tasks cannot push exports out of the page. The
+ * anonymise-flag input is still checked as a cheap safeguard.
  */
 export const fetchFhirExportTasks = async (): Promise<FhirExportTask[]> => {
-  const bundle = await get<Bundle<Task>>(FHIR_EXPORT_TASKS_URL);
+  const anonymiseConcept = await searchConceptByName(
+    FHIR_EXPORT_ANONYMISE_INPUT,
+    'custom:(uuid)',
+  );
+  // Export tasks reference this concept, so none can exist without it
+  if (!anonymiseConcept) return [];
+
+  const bundle = await get<Bundle<Task>>(
+    FHIR_EXPORT_TASKS_URL(anonymiseConcept.uuid),
+  );
   return (bundle.entry ?? [])
     .flatMap((entry) => (entry.resource ? [entry.resource] : []))
     .filter((task) => hasInput(task, FHIR_EXPORT_ANONYMISE_INPUT))
