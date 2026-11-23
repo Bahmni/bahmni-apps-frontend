@@ -70,6 +70,82 @@ describe('LocationProvider - Persistence', () => {
     mockSetCookie.mockImplementation(() => {});
   });
 
+  it('loads available locations with null location and no error when login location cookie is missing', async () => {
+    mockGetUserLoginLocation.mockImplementation(() => {
+      throw new Error('User location not found');
+    });
+
+    const wrapper = ({ children }: any) => (
+      <LocationProvider>{children}</LocationProvider>
+    );
+    const { result } = renderHook(() => useLocation(), { wrapper });
+
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 0));
+    });
+
+    expect(result.current.location).toBeNull();
+    expect(result.current.availableLocations).toEqual(mockLocations);
+    expect(result.current.error).toBeNull();
+    expect(result.current.loading).toBe(false);
+    expect(mockGetCurrentUser).toHaveBeenCalled();
+  });
+
+  it('allows selecting a location when the login location cookie is missing', async () => {
+    mockGetUserLoginLocation.mockImplementation(() => {
+      throw new Error('User location not found');
+    });
+
+    const wrapper = ({ children }: any) => (
+      <LocationProvider>{children}</LocationProvider>
+    );
+    const { result } = renderHook(() => useLocation(), { wrapper });
+
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 0));
+    });
+
+    act(() => {
+      result.current.setLocation(newLocation);
+    });
+
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 10));
+    });
+
+    expect(result.current.location).toEqual(newLocation);
+    expect(mockSetCookie).toHaveBeenCalledWith(
+      'bahmni.user.location',
+      encodeURIComponent(JSON.stringify(newLocation)),
+    );
+    expect(mockUpdateSessionLocation).toHaveBeenCalledWith(newLocation.uuid);
+    expect(mockSaveUserLocation).toHaveBeenCalledWith(
+      mockUser.uuid,
+      newLocation,
+    );
+  });
+
+  it('sets error when getAvailableLocations fails', async () => {
+    const consoleErrorSpy = jest
+      .spyOn(console, 'error')
+      .mockImplementation(() => {});
+    mockGetAvailableLocations.mockRejectedValue(new Error('Locations failed'));
+
+    const wrapper = ({ children }: any) => (
+      <LocationProvider>{children}</LocationProvider>
+    );
+    const { result } = renderHook(() => useLocation(), { wrapper });
+
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 0));
+    });
+
+    expect(result.current.error).toBe('Locations failed');
+    expect(result.current.location).toBeNull();
+
+    consoleErrorSpy.mockRestore();
+  });
+
   it('writes cookie when location is changed', async () => {
     const wrapper = ({ children }: any) => (
       <LocationProvider>{children}</LocationProvider>

@@ -114,10 +114,7 @@ describe('LocationContext', () => {
     consoleErrorSpy.mockRestore();
   });
 
-  it('handles getUserLoginLocation error gracefully', async () => {
-    const consoleErrorSpy = jest
-      .spyOn(console, 'error')
-      .mockImplementation(() => {});
+  it('treats a getUserLoginLocation error as no location without setting an error', async () => {
     mockGetUserLoginLocation.mockImplementation(() => {
       throw new Error('Location fetch failed');
     });
@@ -133,9 +130,8 @@ describe('LocationContext', () => {
 
     expect(result.current.loading).toBe(false);
     expect(result.current.location).toBeNull();
-    expect(result.current.error).toBeTruthy();
-
-    consoleErrorSpy.mockRestore();
+    expect(result.current.error).toBeNull();
+    expect(result.current.availableLocations).toEqual(mockLocations);
   });
 
   it('fetches available locations on mount', async () => {
@@ -156,9 +152,7 @@ describe('LocationContext', () => {
     const consoleErrorSpy = jest
       .spyOn(console, 'error')
       .mockImplementation(() => {});
-    mockGetUserLoginLocation.mockImplementation(() => {
-      throw new Error('Server error');
-    });
+    mockGetAvailableLocations.mockRejectedValue(new Error('Server error'));
 
     const wrapper = ({ children }: any) => (
       <LocationProvider>{children}</LocationProvider>

@@ -86,12 +86,32 @@ describe('LocationSelector', () => {
     );
   });
 
-  it('renders no-location state when location is null', () => {
-    renderWithContext({ location: null });
+  it('renders no-location state when location is null and no locations are available', () => {
+    renderWithContext({ location: null, availableLocations: [] });
 
     expect(screen.getByRole('status')).toHaveTextContent(
       'No location selected',
     );
+  });
+
+  it('renders dropdown with select-location label when location is null but locations are available', () => {
+    renderWithContext({ location: null });
+
+    expect(screen.getByTestId('location-selector')).toBeInTheDocument();
+    expect(screen.getByTestId('dropdown-label')).toHaveTextContent(
+      'HOME_SELECT_LOCATION',
+    );
+    expect(screen.queryByText('No location selected')).not.toBeInTheDocument();
+  });
+
+  it('calls setLocation when a location is chosen while none is selected', async () => {
+    const { context } = renderWithContext({ location: null });
+
+    await act(async () => {
+      fireEvent.click(screen.getByTestId('location-option-location-uuid-456'));
+    });
+
+    expect(context.setLocation).toHaveBeenCalledWith(mockLocations[1]);
   });
 
   it('calls setLocation when a different location is selected', async () => {
