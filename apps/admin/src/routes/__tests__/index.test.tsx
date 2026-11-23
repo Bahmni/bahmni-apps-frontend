@@ -25,6 +25,10 @@ jest.mock('../../pages/CsvExport', () => ({
   CsvExport: () => <div data-testid="admin-csv-export-page-test-id" />,
 }));
 
+jest.mock('../../pages/FhirExport', () => ({
+  FhirExport: () => <div data-testid="admin-fhir-export-page-test-id" />,
+}));
+
 // Routing only needs to know the right page resolved; the AuditLog page's own
 // data fetching/filtering behaviour is covered by its own tests.
 jest.mock('../../hooks/useAuditLogs', () => ({
@@ -82,6 +86,14 @@ describe('routes', () => {
 
     expect(
       await screen.findByTestId('admin-audit-log-page-test-id'),
+    ).toBeInTheDocument();
+  });
+
+  it('resolves /fhirExport to the FHIR export page', async () => {
+    renderAt('/fhirExport');
+
+    expect(
+      await screen.findByTestId('admin-fhir-export-page-test-id'),
     ).toBeInTheDocument();
   });
 
