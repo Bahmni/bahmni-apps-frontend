@@ -11,6 +11,7 @@ import { axe, toHaveNoViolations } from 'jest-axe';
 import React from 'react';
 import { useEncounterSession } from '../../../hooks/useEncounterSession';
 import { usePatientVisit } from '../../../hooks/usePatientVisit';
+import { useClinicalConfig } from '../../../providers/clinicalConfig';
 import PatientHeader from '../PatientHeader';
 import '@testing-library/jest-dom';
 
@@ -23,13 +24,18 @@ jest.mock('@bahmni/services', () => ({
   // Let the real store functions through so we can assert on them
 }));
 
+const mockDocumentPrintButton = jest.fn();
+
 // Mock the PatientDetails component
 jest.mock('@bahmni/widgets', () => ({
   ...jest.requireActual('@bahmni/widgets'),
   PatientDetails: () => (
     <div data-testid="patient-details-mock">PatientDetails Mock</div>
   ),
-  DocumentPrintButton: () => <div data-testid="document-print-button-mock" />,
+  DocumentPrintButton: (props: unknown) => {
+    mockDocumentPrintButton(props);
+    return <div data-testid="document-print-button-mock" />;
+  },
   useActivePractitioner: jest.fn(() => ({
     uuid: 'active-practitioner-uuid',
     practitioner: { uuid: 'active-practitioner-uuid' },
@@ -94,6 +100,10 @@ const mockedUseEncounterSession = useEncounterSession as jest.MockedFunction<
   typeof useEncounterSession
 >;
 
+const mockedUseClinicalConfig = useClinicalConfig as jest.MockedFunction<
+  typeof useClinicalConfig
+>;
+
 const mockedUseTranslation = useTranslation as jest.MockedFunction<
   typeof useTranslation
 >;
@@ -105,6 +115,20 @@ const mockDispatchConsultationStart =
   dispatchConsultationStart as jest.MockedFunction<
     typeof dispatchConsultationStart
   >;
+
+const baseClinicalConfig = {
+  consultationPad: {
+    inputControls: [
+      {
+        type: 'encounterDetails',
+        metadata: { defaultEncounterType: 'Consultation' },
+      },
+    ],
+  },
+};
+
+const getRenderContext = () =>
+  mockDocumentPrintButton.mock.calls.at(-1)?.[0].renderContext;
 
 describe('PatientHeader Component', () => {
   const defaultProps = {
@@ -130,6 +154,11 @@ describe('PatientHeader Component', () => {
     // Reset shared store so each test starts from a clean slate
     resetEncounterSession();
     mockedUseTranslation.mockReturnValue({ t: mockTranslate } as any);
+    mockedUseClinicalConfig.mockReturnValue({
+      clinicalConfig: baseClinicalConfig,
+      isLoading: false,
+      error: null,
+    } as any);
     mockedUseEncounterSession.mockReturnValue({
       hasActiveSession: false,
       activeEncounter: null,
@@ -175,6 +204,61 @@ describe('PatientHeader Component', () => {
       expect(
         screen.getByTestId('document-print-button-mock'),
       ).toBeInTheDocument();
+    });
+  });
+
+  describe('Print renderContext practitioner identifier config (BAH-4850)', () => {
+    test('includes practitionerIdentifierSystem and practitionerIdentifierLabel when configured', () => {
+      mockedUseClinicalConfig.mockReturnValue({
+        clinicalConfig: {
+          ...baseClinicalConfig,
+          practitionerIdentifierConfig: {
+            system: 'http://fhir.bahmni.org/identifier/provider-license',
+            displayLabel: 'PROVIDER_LICENSE_NUMBER',
+          },
+        },
+        isLoading: false,
+        error: null,
+      } as any);
+
+      renderComponent();
+
+      expect(getRenderContext()).toEqual(
+        expect.objectContaining({
+          practitionerIdentifierSystem:
+            'http://fhir.bahmni.org/identifier/provider-license',
+          practitionerIdentifierLabel: 'PROVIDER_LICENSE_NUMBER',
+        }),
+      );
+    });
+
+    test('includes only practitionerIdentifierSystem when displayLabel is not configured', () => {
+      mockedUseClinicalConfig.mockReturnValue({
+        clinicalConfig: {
+          ...baseClinicalConfig,
+          practitionerIdentifierConfig: { system: 'http://example.org/lic' },
+        },
+        isLoading: false,
+        error: null,
+      } as any);
+
+      renderComponent();
+
+      const renderContext = getRenderContext();
+      expect(renderContext).toHaveProperty(
+        'practitionerIdentifierSystem',
+        'http://example.org/lic',
+      );
+      expect(renderContext).not.toHaveProperty('practitionerIdentifierLabel');
+    });
+
+    test('omits both practitioner identifier keys when config is absent', () => {
+      renderComponent();
+
+      const renderContext = getRenderContext();
+      expect(renderContext).not.toHaveProperty('practitionerIdentifierSystem');
+      expect(renderContext).not.toHaveProperty('practitionerIdentifierLabel');
+      expect(renderContext).toHaveProperty('patientUUID', 'patient-uuid');
     });
   });
 

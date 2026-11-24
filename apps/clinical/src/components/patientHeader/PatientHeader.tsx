@@ -109,13 +109,25 @@ const PatientHeader: React.FC<PatientHeaderProps> = ({
 
   const visitUuid = activeVisit?.id ?? lastVisit?.id;
 
+  const practitionerIdentifierSystem =
+    clinicalConfig?.practitionerIdentifierConfig?.system;
+  const practitionerIdentifierLabel =
+    clinicalConfig?.practitionerIdentifierConfig?.displayLabel;
+
   const renderContext = useMemo(
     () => ({
       ...(patientUUID && { patientUUID }),
       ...(visitUuid && { visitUuid }),
+      ...(practitionerIdentifierSystem && { practitionerIdentifierSystem }),
+      ...(practitionerIdentifierLabel && { practitionerIdentifierLabel }),
       timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
     }),
-    [patientUUID, visitUuid],
+    [
+      patientUUID,
+      visitUuid,
+      practitionerIdentifierSystem,
+      practitionerIdentifierLabel,
+    ],
   );
 
   return (

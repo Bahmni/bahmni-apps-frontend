@@ -65,10 +65,16 @@ export interface PatientSearchConfig {
   displayFields?: PatientSearchDisplayField[];
 }
 
+export interface PractitionerIdentifierConfig {
+  system: string;
+  displayLabel?: string;
+}
+
 export interface ClinicalConfig {
   patientInformation: Record<string, unknown>;
   contextInformation?: ContextInformation;
   patientSearch?: PatientSearchConfig;
+  practitionerIdentifierConfig?: PractitionerIdentifierConfig;
   actions: Array<unknown>;
   dashboards: Array<Dashboard>;
   consultationPad: ConsultationPad;
