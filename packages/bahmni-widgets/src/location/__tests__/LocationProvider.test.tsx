@@ -327,4 +327,94 @@ describe('LocationProvider - Persistence', () => {
 
     consoleWarnSpy.mockRestore();
   });
+
+  describe('when no login location cookie is present', () => {
+    beforeEach(() => {
+      mockGetUserLoginLocation.mockImplementation(() => {
+        throw new Error('No location cookie');
+      });
+    });
+
+    it('sets location to null, loads available locations and reports no error', async () => {
+      const consoleWarnSpy = jest
+        .spyOn(console, 'warn')
+        .mockImplementation(() => {});
+      const wrapper = ({ children }: any) => (
+        <LocationProvider>{children}</LocationProvider>
+      );
+      const { result } = renderHook(() => useLocation(), { wrapper });
+
+      await act(async () => {
+        await new Promise((resolve) => setTimeout(resolve, 0));
+      });
+
+      expect(result.current.location).toBeNull();
+      expect(result.current.error).toBeNull();
+      expect(result.current.loading).toBe(false);
+      expect(result.current.availableLocations).toEqual(mockLocations);
+      expect(mockGetCurrentUser).toHaveBeenCalled();
+
+      consoleWarnSpy.mockRestore();
+    });
+
+    it('persists the location chosen afterwards via cookie, session and user preference', async () => {
+      const consoleWarnSpy = jest
+        .spyOn(console, 'warn')
+        .mockImplementation(() => {});
+      const wrapper = ({ children }: any) => (
+        <LocationProvider>{children}</LocationProvider>
+      );
+      const { result } = renderHook(() => useLocation(), { wrapper });
+
+      await act(async () => {
+        await new Promise((resolve) => setTimeout(resolve, 0));
+      });
+
+      act(() => {
+        result.current.setLocation(newLocation);
+      });
+
+      await act(async () => {
+        await new Promise((resolve) => setTimeout(resolve, 10));
+      });
+
+      expect(result.current.location).toEqual(newLocation);
+      expect(mockSetCookie).toHaveBeenCalledWith(
+        'bahmni.user.location',
+        encodeURIComponent(JSON.stringify(newLocation)),
+      );
+      expect(mockUpdateSessionLocation).toHaveBeenCalledWith(newLocation.uuid);
+      expect(mockSaveUserLocation).toHaveBeenCalledWith(
+        mockUser.uuid,
+        newLocation,
+      );
+
+      consoleWarnSpy.mockRestore();
+    });
+
+    it('still sets an error when fetching available locations fails', async () => {
+      const consoleWarnSpy = jest
+        .spyOn(console, 'warn')
+        .mockImplementation(() => {});
+      const consoleErrorSpy = jest
+        .spyOn(console, 'error')
+        .mockImplementation(() => {});
+      mockGetAvailableLocations.mockRejectedValue(new Error('Server error'));
+
+      const wrapper = ({ children }: any) => (
+        <LocationProvider>{children}</LocationProvider>
+      );
+      const { result } = renderHook(() => useLocation(), { wrapper });
+
+      await act(async () => {
+        await new Promise((resolve) => setTimeout(resolve, 0));
+      });
+
+      expect(result.current.error).toBe('Server error');
+      expect(result.current.location).toBeNull();
+
+      consoleWarnSpy.mockRestore();
+      consoleErrorSpy.mockRestore();
+    });
+  });
 });
