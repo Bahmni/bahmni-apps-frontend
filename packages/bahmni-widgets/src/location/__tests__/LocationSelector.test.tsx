@@ -12,6 +12,7 @@ jest.mock('@bahmni/services', () => ({
       const translations: Record<string, string> = {
         HOME_LOADING: 'Loading',
         HOME_NO_LOCATION_SELECTED: 'No location selected',
+        HOME_SELECT_LOCATION: 'Select Location',
       };
       return translations[key] ?? key;
     },
@@ -99,7 +100,7 @@ describe('LocationSelector', () => {
 
     expect(screen.getByTestId('location-selector')).toBeInTheDocument();
     expect(screen.getByTestId('dropdown-label')).toHaveTextContent(
-      'HOME_SELECT_LOCATION',
+      'Select Location',
     );
     expect(screen.queryByText('No location selected')).not.toBeInTheDocument();
   });
