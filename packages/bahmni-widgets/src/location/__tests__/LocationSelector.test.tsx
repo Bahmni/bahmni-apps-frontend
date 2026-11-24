@@ -12,6 +12,7 @@ jest.mock('@bahmni/services', () => ({
       const translations: Record<string, string> = {
         HOME_LOADING: 'Loading',
         HOME_NO_LOCATION_SELECTED: 'No location selected',
+        HOME_SELECT_LOCATION: 'Select Location',
       };
       return translations[key] ?? key;
     },
@@ -86,8 +87,28 @@ describe('LocationSelector', () => {
     );
   });
 
-  it('renders no-location state when location is null', () => {
+  it('renders select-location dropdown when location is null but locations are available', () => {
     renderWithContext({ location: null });
+
+    expect(screen.getByTestId('location-selector')).toBeInTheDocument();
+    expect(screen.getByTestId('dropdown-label')).toHaveTextContent(
+      'Select Location',
+    );
+    expect(screen.queryByText('No location selected')).not.toBeInTheDocument();
+  });
+
+  it('calls setLocation when a location is chosen while none is selected', async () => {
+    const { context } = renderWithContext({ location: null });
+
+    await act(async () => {
+      fireEvent.click(screen.getByTestId('location-option-location-uuid-123'));
+    });
+
+    expect(context.setLocation).toHaveBeenCalledWith(mockLocations[0]);
+  });
+
+  it('renders no-location state when location is null and no locations are available', () => {
+    renderWithContext({ location: null, availableLocations: [] });
 
     expect(screen.getByRole('status')).toHaveTextContent(
       'No location selected',
@@ -116,6 +137,11 @@ describe('LocationSelector', () => {
 
   it('has no accessibility violations', async () => {
     const { container } = renderWithContext();
+    expect(await axe(container)).toHaveNoViolations();
+  });
+
+  it('has no accessibility violations when no location is selected', async () => {
+    const { container } = renderWithContext({ location: null });
     expect(await axe(container)).toHaveNoViolations();
   });
 });
