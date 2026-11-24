@@ -17,6 +17,7 @@ import {
   getCurrentUser,
   getUserLoginLocation,
   getDefaultDateFormat,
+  getAllowedDomains,
   getAvailableLocations,
   saveUserLocation,
   updateSessionLocation,
@@ -277,6 +278,34 @@ describe('getUserLocation', () => {
     const result = await getUserLoginLocation();
     expect(getCookieByName).toHaveBeenCalledWith(BAHMNI_USER_LOCATION_COOKIE);
     expect(result).toEqual(userLocation);
+  });
+});
+
+describe('getAllowedDomains', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    (get as jest.Mock).mockReset();
+  });
+
+  it('should return trimmed, lower-cased hostnames from the core setting', async () => {
+    (get as jest.Mock).mockResolvedValue([
+      { property: 'other.property', value: 'x' },
+      {
+        property: 'bahmni.duplicateCheckExtensions.allowedDomains',
+        value: ' Dev.Example.org, qa.example.org ,,',
+      },
+    ]);
+
+    const result = await getAllowedDomains();
+
+    expect(get).toHaveBeenCalledWith(APP_SETTINGS_URL('core'));
+    expect(result).toEqual(['dev.example.org', 'qa.example.org']);
+  });
+
+  it('should return an empty list when the setting is absent', async () => {
+    (get as jest.Mock).mockResolvedValue([{ property: 'other', value: 'x' }]);
+
+    await expect(getAllowedDomains()).resolves.toEqual([]);
   });
 });
 

@@ -77,7 +77,6 @@ export interface AllergyInputEntry {
   errors: {
     severity?: string;
     reactions?: string;
-    nonCodedAllergen?: string;
   };
   hasBeenValidated: boolean;
 }

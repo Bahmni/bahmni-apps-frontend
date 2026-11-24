@@ -1,4 +1,4 @@
-import { Patient } from 'fhir/r4';
+import { Bundle, Patient } from 'fhir/r4';
 import { del, get, post, put } from '../api';
 import { APP_PROPERTY_URL } from '../applicationConfigService/constants';
 import { BIRTH_TIME_EXT_URL } from '../constants/fhir';
@@ -15,6 +15,7 @@ import {
   CREATE_PATIENT_URL,
   UPDATE_PATIENT_URL,
   FHIR_PATIENT_URL,
+  FHIR_PATIENT_MATCH_URL,
   GENERATE_IDENTIFIER_URL,
   ADDRESS_HIERARCHY_URL,
   ADDRESS_HIERARCHY_DEFAULT_LIMIT,
@@ -396,6 +397,12 @@ export const updatePatient = async (
 
 export const createFhirPatient = <TReq>(payload: TReq): Promise<Patient> =>
   post<Patient>(FHIR_PATIENT_URL, payload);
+
+export const matchFhirPatient = (patient: Patient): Promise<Bundle<Patient>> =>
+  post<Bundle<Patient>>(FHIR_PATIENT_MATCH_URL, {
+    resourceType: 'Parameters',
+    parameter: [{ name: 'resource', resource: patient }],
+  });
 
 export const generateIdentifier = (
   sourceUuid: string,

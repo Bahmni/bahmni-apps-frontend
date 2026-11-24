@@ -1,0 +1,1 @@
+export { DuplicatePatientFrame } from './DuplicatePatientFrame';
