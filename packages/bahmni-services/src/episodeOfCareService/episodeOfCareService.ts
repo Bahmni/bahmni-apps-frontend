@@ -1,11 +1,7 @@
 import { Bundle, Encounter, EpisodeOfCare } from 'fhir/r4';
-import { get, post } from '../api';
-import {
-  EOC_BY_UUID_URL,
-  EOC_CANCEL_URL,
-  EOC_ENCOUNTERS_URL,
-} from './constants';
-import { CancelEpisodeOfCareRequest, EpisodeOfCareDataType } from './models';
+import { get } from '../api';
+import { EOC_BY_UUID_URL, EOC_ENCOUNTERS_URL } from './constants';
+import { EpisodeOfCareDataType } from './models';
 
 /**
  * Fetches encounters for Episode-of-Care UUIDs and extracts visit and encounter UUIDs
@@ -52,14 +48,4 @@ export async function getEpisodeOfCare(
   episodeUUID: string,
 ): Promise<EpisodeOfCare> {
   return await get<EpisodeOfCare>(`${EOC_BY_UUID_URL(episodeUUID)}`);
-}
-
-export async function cancelEpisodeOfCare(
-  episodeUuid: string,
-  request: CancelEpisodeOfCareRequest,
-): Promise<void> {
-  await post<unknown, CancelEpisodeOfCareRequest>(
-    EOC_CANCEL_URL(episodeUuid),
-    request,
-  );
 }

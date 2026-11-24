@@ -1,7 +1,7 @@
 import {
-  cancelEpisodeOfCare,
   dispatchAuditEvent,
   searchFHIRConcepts,
+  updateProgramState,
 } from '@bahmni/services';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, screen, waitFor } from '@testing-library/react';
@@ -12,9 +12,9 @@ import { ProgramAction } from '../model';
 
 jest.mock('@bahmni/services', () => ({
   ...jest.requireActual('@bahmni/services'),
-  cancelEpisodeOfCare: jest.fn(),
   dispatchAuditEvent: jest.fn(),
   searchFHIRConcepts: jest.fn(),
+  updateProgramState: jest.fn(),
 }));
 jest.mock('../../notification');
 jest.mock('../../hooks/usePatientUUID', () => ({
@@ -23,10 +23,10 @@ jest.mock('../../hooks/usePatientUUID', () => ({
 
 const action: ProgramAction = {
   type: 'cancel',
-  translationKey: 'PROGRAM_ACTION_CANCEL_EOC',
+  label: 'PROGRAM_ACTION_CANCEL_EOC',
+  stateConceptUuid: 'cancelled-concept-uuid',
   requiredPrivileges: ['app:eoc:cancel'],
-  visibleInStates: ['Assessment in progress'],
-  reasonConceptSetUuid: 'reason-set-uuid',
+  metadata: { reasonConceptSetUuid: 'reason-set-uuid' },
 };
 const valueSet = {
   resourceType: 'ValueSet',
@@ -47,7 +47,8 @@ const renderModal = (queryClient = new QueryClient()) =>
   render(
     <QueryClientProvider client={queryClient}>
       <CancelEpisodeOfCareModal
-        episodeUuid="episode-uuid"
+        programUuid="program-uuid"
+        stateUuid="cancelled-state-uuid"
         action={action}
         onClose={onClose}
         onSuccess={onSuccess}
@@ -70,7 +71,7 @@ describe('CancelEpisodeOfCareModal', () => {
       addNotification: mockAddNotification,
     });
     (searchFHIRConcepts as jest.Mock).mockResolvedValue(valueSet);
-    (cancelEpisodeOfCare as jest.Mock).mockResolvedValue('');
+    (updateProgramState as jest.Mock).mockResolvedValue('');
   });
 
   it('should offer the members of the configured concept set as reasons', async () => {
@@ -95,7 +96,7 @@ describe('CancelEpisodeOfCareModal', () => {
     expect(searchFHIRConcepts).toHaveBeenCalledTimes(1);
   });
 
-  it('should cancel the episode with the selected reason and report success', async () => {
+  it('should move the program to the cancelled state with the selected reason as outcome and report success', async () => {
     const user = userEvent.setup();
     renderModal();
     await chooseReason(user, 'Patient declines');
@@ -103,9 +104,11 @@ describe('CancelEpisodeOfCareModal', () => {
     await clickCancel(user);
 
     await waitFor(() =>
-      expect(cancelEpisodeOfCare).toHaveBeenCalledWith('episode-uuid', {
-        reason: 'declined-uuid',
-      }),
+      expect(updateProgramState).toHaveBeenCalledWith(
+        'program-uuid',
+        'cancelled-state-uuid',
+        'declined-uuid',
+      ),
     );
     expect(onSuccess).toHaveBeenCalled();
     expect(mockAddNotification).toHaveBeenCalledWith(
@@ -125,7 +128,7 @@ describe('CancelEpisodeOfCareModal', () => {
         eventType: 'CANCEL_EOC',
         patientUuid: 'patient-uuid',
         messageParams: {
-          episodeUuid: 'episode-uuid',
+          programUuid: 'program-uuid',
           reason: 'Patient declines',
         },
       }),
@@ -140,7 +143,7 @@ describe('CancelEpisodeOfCareModal', () => {
   });
 
   it('should show the backend message and not report success when the cancellation fails', async () => {
-    (cancelEpisodeOfCare as jest.Mock).mockRejectedValue(
+    (updateProgramState as jest.Mock).mockRejectedValue(
       new Error('EOC cannot be cancelled as it is cancelled'),
     );
     const user = userEvent.setup();

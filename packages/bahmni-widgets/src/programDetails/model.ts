@@ -1,3 +1,9 @@
+export interface AllowedState {
+  uuid: string;
+  display: string;
+  conceptUuid: string;
+}
+
 export interface ProgramDetailsViewModel {
   readonly id: string;
   readonly uuid: string;
@@ -7,23 +13,23 @@ export interface ProgramDetailsViewModel {
   readonly outcomeName: string | null;
   readonly outcomeDetails: string | null;
   readonly currentStateName: string | null;
-  readonly episodeUuid: string;
   readonly attributes: Record<string, string | Date | null>;
   readonly careManagerDisplay?: string | null;
-  readonly allowedStates: {
-    uuid: string;
-    display: string;
-  }[];
+  readonly allowedStates: AllowedState[];
 }
 export interface ProgramField {
   name: string;
   enableTranslation?: boolean;
 }
 
+export interface ProgramActionMetadata {
+  reasonConceptSetUuid: string;
+}
+
 export interface ProgramAction {
   type: string;
-  translationKey: string;
+  label: string;
+  stateConceptUuid: string;
   requiredPrivileges: string[];
-  visibleInStates: string[];
-  reasonConceptSetUuid: string;
+  metadata: ProgramActionMetadata;
 }

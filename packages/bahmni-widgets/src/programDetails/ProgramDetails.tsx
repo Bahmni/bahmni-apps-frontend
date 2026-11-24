@@ -5,7 +5,6 @@ import {
   Grid,
   Tag,
   Tile,
-  Button,
   MenuButton,
   MenuItem,
   MenuItemDivider,
@@ -31,7 +30,12 @@ import {
   EPISODE_OF_CARE_FIELDS,
   KNOWN_FIELDS,
 } from './constants';
-import { ProgramAction, ProgramDetailsViewModel, ProgramField } from './model';
+import {
+  AllowedState,
+  ProgramAction,
+  ProgramDetailsViewModel,
+  ProgramField,
+} from './model';
 import styles from './styles/ProgramDetails.module.scss';
 import {
   createProgramDetailsViewModel,
@@ -176,23 +180,32 @@ const ProgramDetails: React.FC<ProgramDetailsProps> = ({
     );
   }
 
-  const cancelAction = (config?.actions ?? []).find(
+  const actions = config?.actions ?? [];
+  const isActionState = (state: AllowedState) =>
+    actions.some((action) => action.stateConceptUuid === state.conceptUuid);
+  const transitionStates = data.allowedStates.filter(
+    (state) => !isActionState(state),
+  );
+
+  const cancelAction = actions.find(
     (action) =>
       action.type === 'cancel' &&
-      !!data.episodeUuid &&
-      action.visibleInStates.includes(data.currentStateName ?? '') &&
+      data.allowedStates.some(
+        (state) => state.conceptUuid === action.stateConceptUuid,
+      ) &&
       action.requiredPrivileges.every((privilege) =>
         hasPrivilege(userPrivileges, privilege),
       ),
   );
+  const cancelState = data.allowedStates.find(
+    (state) => state.conceptUuid === cancelAction?.stateConceptUuid,
+  );
 
-  const renderStateMenuItems = (
-    allowedStates: { uuid: string; display: string }[],
-  ) =>
+  const renderStateMenuItems = (allowedStates: AllowedState[]) =>
     allowedStates.map((state) => (
       <MenuItem
         id={`patient-programs-${state.uuid}-button`}
-        data-testid={`patient-programs-${state.uuid}-button-test-id`}
+        testId={`patient-programs-${state.uuid}-button-test-id`}
         aria-label={`patient-programs-${state.uuid}-button-aria-label`}
         key={state.uuid}
         label={t(
@@ -203,65 +216,33 @@ const ProgramDetails: React.FC<ProgramDetailsProps> = ({
       />
     ));
 
-  const renderButtons = (
-    allowedStates: { uuid: string; display: string }[],
-  ) => {
-    if (cancelAction) {
-      return (
-        <MenuButton
-          label={t('PROGRAM_ACTIONS_BUTTON')}
-          kind="primary"
-          disabled={isUpdatingState}
-        >
-          {renderStateMenuItems(allowedStates)}
-          {allowedStates.length > 0 && <MenuItemDivider />}
-          <MenuItem
-            id="patient-programs-cancel-action"
-            data-testid="patient-programs-cancel-action-test-id"
-            aria-label="patient-programs-cancel-action-aria-label"
-            kind="danger"
-            className={styles.cancelMenuItem}
-            label={t(cancelAction.translationKey)}
-            onClick={() => setIsCancelModalOpen(true)}
-          />
-        </MenuButton>
-      );
-    }
-
-    if (allowedStates.length < 3) {
-      return allowedStates.map((state) => (
-        <Button
-          id={`patient-programs-${state.uuid}-button`}
-          data-testid={`patient-programs-${state.uuid}-button-test-id`}
-          aria-label={`patient-programs-${state.uuid}-button-aria-label`}
-          kind="ghost"
-          key={state.uuid}
-          disabled={isUpdatingState}
-          onClick={() => handleButtonClick(state.uuid)}
-        >
-          {t(
-            `PROGRAMS_STATE_BUTTON_${camelToScreamingSnakeCase(state.display)}`,
-            state.display,
-          )}
-        </Button>
-      ));
-    }
-
-    return (
-      <MenuButton
-        label={t('UPDATE_PROGRAM_STATE_BUTTON')}
-        kind="ghost"
-        disabled={isUpdatingState}
-      >
-        {renderStateMenuItems(allowedStates)}
-      </MenuButton>
-    );
-  };
+  const renderButtons = (allowedStates: AllowedState[]) => (
+    <MenuButton
+      label={t('PROGRAM_ACTIONS_BUTTON')}
+      kind="primary"
+      disabled={isUpdatingState}
+    >
+      {renderStateMenuItems(allowedStates)}
+      {allowedStates.length > 0 && cancelAction && <MenuItemDivider />}
+      {cancelAction && (
+        <MenuItem
+          id="patient-programs-cancel-action"
+          testId="patient-programs-cancel-action-test-id"
+          aria-label="patient-programs-cancel-action-aria-label"
+          kind="danger"
+          className={styles.cancelMenuItem}
+          label={t(cancelAction.label)}
+          onClick={() => setIsCancelModalOpen(true)}
+        />
+      )}
+    </MenuButton>
+  );
 
   const enableButtons =
     data.allowedStates &&
     data.allowedStates.length > 0 &&
-    hasEditPatientProgramsPrivilege;
+    hasEditPatientProgramsPrivilege &&
+    (transitionStates.length > 0 || !!cancelAction);
 
   const renderAttributeValue = (field: string) => {
     const raw = data?.attributes?.[field];
@@ -328,7 +309,7 @@ const ProgramDetails: React.FC<ProgramDetailsProps> = ({
             {data.currentStateName}
           </Tag>
         </Tile>
-        {(enableButtons || cancelAction) && (
+        {enableButtons && (
           <div
             id="patient-programs-state-change-button-group"
             data-testid="patient-programs-state-change-button-group-test-id"
@@ -336,7 +317,7 @@ const ProgramDetails: React.FC<ProgramDetailsProps> = ({
             role="group"
             className={styles.buttons}
           >
-            {renderButtons(enableButtons ? data.allowedStates : [])}
+            {renderButtons(transitionStates)}
           </div>
         )}
       </div>
@@ -355,9 +336,10 @@ const ProgramDetails: React.FC<ProgramDetailsProps> = ({
           </Column>
         ))}
       </Grid>
-      {isCancelModalOpen && cancelAction && (
+      {isCancelModalOpen && cancelAction && cancelState && (
         <CancelEpisodeOfCareModal
-          episodeUuid={data.episodeUuid}
+          programUuid={programUUID}
+          stateUuid={cancelState.uuid}
           action={cancelAction}
           onClose={() => setIsCancelModalOpen(false)}
           onSuccess={() => {

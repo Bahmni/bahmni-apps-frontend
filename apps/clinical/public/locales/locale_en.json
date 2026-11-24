@@ -682,7 +682,6 @@
   "TASK_STATUS_UNKNOWN": "Unknown",
   "UNEXPECTED_ERROR": "An unexpected error occurred",
   "UNKNOWN_STATUS": "Cancelled",
-  "UPDATE_PROGRAM_STATE_BUTTON": "Update State",
   "USER_CHANGE_PASSWORD_GLOBAL_ACTION": "Change Password",
   "USER_GLOBAL_ACTION_BUTTON": "User menu",
   "USER_GLOBAL_ACTION_ERROR": "Something went wrong. Please try again.",

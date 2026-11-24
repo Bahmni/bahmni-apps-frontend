@@ -235,7 +235,7 @@ describe('ProgramDetails Integration', () => {
       'Treatment Phase',
     );
 
-    const menuButton = screen.getByText('UPDATE_PROGRAM_STATE_BUTTON');
+    const menuButton = screen.getByText('PROGRAM_ACTIONS_BUTTON');
     await userEvent.click(menuButton);
 
     const menuItem = await screen.findByText('Follow-up Phase');
@@ -280,7 +280,7 @@ describe('ProgramDetails Integration', () => {
       ).toBeInTheDocument();
     });
 
-    const menuButton = screen.getByText('UPDATE_PROGRAM_STATE_BUTTON');
+    const menuButton = screen.getByText('PROGRAM_ACTIONS_BUTTON');
     await userEvent.click(menuButton);
 
     const menuItem = await screen.findByText('Follow-up Phase');
@@ -322,7 +322,7 @@ describe('ProgramDetails Integration', () => {
       ).toBeInTheDocument();
     });
 
-    const menuButton = screen.getByText('UPDATE_PROGRAM_STATE_BUTTON');
+    const menuButton = screen.getByText('PROGRAM_ACTIONS_BUTTON');
     await userEvent.click(menuButton);
 
     const menuItem = await screen.findByText('Follow-up Phase');

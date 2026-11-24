@@ -61,7 +61,6 @@ describe('Utils', () => {
         states: [],
         attributes: [],
         allowedStates: [],
-        episodeUuid: 'episode-1',
         ...overrides,
       }) as ProgramEnrollment;
 
@@ -78,7 +77,6 @@ describe('Utils', () => {
         outcomeName: null,
         outcomeDetails: null,
         currentStateName: null,
-        episodeUuid: 'episode-1',
         careManagerDisplay: null,
         attributes: {},
         allowedStates: [],

@@ -1,9 +1,9 @@
 import {
   AUDIT_LOG_EVENT_DETAILS,
   AuditEventType,
-  cancelEpisodeOfCare,
   dispatchAuditEvent,
   searchFHIRConcepts,
+  updateProgramState,
   useTranslation,
 } from '@bahmni/services';
 import { useQuery } from '@tanstack/react-query';
@@ -17,13 +17,14 @@ import { useNotification } from '../notification';
 import { ProgramAction } from './model';
 
 interface CancelEpisodeOfCareModalProps {
-  episodeUuid: string;
+  programUuid: string;
+  stateUuid: string;
   action: ProgramAction;
   onClose: () => void;
   onSuccess: () => void;
 }
 
-export const cancelReasonsQueryKey = (reasonConceptSetUuid: string) =>
+const cancelReasonsQueryKey = (reasonConceptSetUuid: string) =>
   ['eocCancelReasons', reasonConceptSetUuid] as const;
 
 const fetchCancelReasons = async (
@@ -37,7 +38,8 @@ const fetchCancelReasons = async (
 };
 
 const CancelEpisodeOfCareModal: React.FC<CancelEpisodeOfCareModalProps> = ({
-  episodeUuid,
+  programUuid,
+  stateUuid,
   action,
   onClose,
   onSuccess,
@@ -48,8 +50,8 @@ const CancelEpisodeOfCareModal: React.FC<CancelEpisodeOfCareModalProps> = ({
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const { data: reasons = [], isError: isReasonsError } = useQuery({
-    queryKey: cancelReasonsQueryKey(action.reasonConceptSetUuid),
-    queryFn: () => fetchCancelReasons(action.reasonConceptSetUuid),
+    queryKey: cancelReasonsQueryKey(action.metadata.reasonConceptSetUuid),
+    queryFn: () => fetchCancelReasons(action.metadata.reasonConceptSetUuid),
     staleTime: Infinity,
   });
 
@@ -68,14 +70,14 @@ const CancelEpisodeOfCareModal: React.FC<CancelEpisodeOfCareModalProps> = ({
     if (!reason) return;
     setIsSubmitting(true);
     try {
-      await cancelEpisodeOfCare(episodeUuid, { reason: reason.uuid });
+      await updateProgramState(programUuid, stateUuid, reason.uuid);
       if (patientUuid) {
         dispatchAuditEvent({
           eventType: AUDIT_LOG_EVENT_DETAILS.CANCEL_EOC
             .eventType as AuditEventType,
           patientUuid,
           messageParams: {
-            episodeUuid,
+            programUuid,
             reason: reason.display,
           },
         });
