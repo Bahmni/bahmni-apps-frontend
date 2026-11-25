@@ -7,7 +7,7 @@
   flex-direction: column;
   gap: $spacing-05;
   padding: 0;
-  min-height: 16rem;
+  min-height: $spacing-12 * 2;
 }
 
 .warningBanner {
@@ -19,12 +19,12 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  min-height: 12rem;
+  min-height: $spacing-12;
 }
 
 .reasonField {
   max-width: 45%;
-  min-width: 14rem;
+  min-width: $spacing-12;
 }
 
 .noteField {
