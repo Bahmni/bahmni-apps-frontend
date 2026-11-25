@@ -31,7 +31,9 @@ export const LocationSelector: React.FC = () => {
     );
   }
 
-  if (!location && availableLocations.length === 0) {
+  const locations = availableLocations ?? [];
+
+  if (!location && locations.length === 0) {
     return (
       <div className={styles.noLocation} role="status">
         {t('HOME_NO_LOCATION_SELECTED')}
@@ -40,7 +42,7 @@ export const LocationSelector: React.FC = () => {
   }
 
   const selectedItem = location
-    ? (availableLocations.find((loc) => loc.uuid === location.uuid) ?? null)
+    ? (locations.find((loc) => loc.uuid === location.uuid) ?? null)
     : null;
 
   return (
@@ -50,7 +52,7 @@ export const LocationSelector: React.FC = () => {
         titleText=""
         hideLabel
         label={location?.name ?? t('HOME_SELECT_LOCATION')}
-        items={availableLocations}
+        items={locations}
         itemToString={(item: UserLocation) => item?.display ?? item?.name ?? ''}
         selectedItem={selectedItem}
         onChange={({ selectedItem }: { selectedItem: UserLocation }) =>

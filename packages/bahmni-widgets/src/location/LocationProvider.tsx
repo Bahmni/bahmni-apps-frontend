@@ -115,7 +115,7 @@ export const LocationProvider: React.FC<LocationProviderProps> = ({
       loading,
       error,
     }),
-    [location, handleSetLocation, availableLocations, loading, error],
+    [handleSetLocation, availableLocations, loading, error],
   );
 
   return (
