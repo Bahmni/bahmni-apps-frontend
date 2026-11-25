@@ -109,7 +109,7 @@ describe('ActionModal', () => {
 
   it('should highlight the note and not submit when the reason needs a note', async () => {
     const user = userEvent.setup();
-    renderModal();
+    renderModal({ showNote: true });
     await chooseReason(user, 'Other');
 
     await clickSubmit(user);
@@ -122,7 +122,7 @@ describe('ActionModal', () => {
 
   it('should not accept a whitespace-only note for a reason that needs one', async () => {
     const user = userEvent.setup();
-    renderModal();
+    renderModal({ showNote: true });
     await chooseReason(user, 'Other');
     await user.type(screen.getByRole('textbox'), '   ');
 
@@ -136,7 +136,7 @@ describe('ActionModal', () => {
 
   it('should submit with an empty note when the note is optional', async () => {
     const user = userEvent.setup();
-    renderModal();
+    renderModal({ showNote: true });
     await chooseReason(user, 'Patient declines');
 
     await clickSubmit(user);
@@ -149,7 +149,7 @@ describe('ActionModal', () => {
 
   it('should submit the trimmed note', async () => {
     const user = userEvent.setup();
-    renderModal();
+    renderModal({ showNote: true });
     await chooseReason(user, 'Other');
     await user.type(
       screen.getByRole('textbox'),
@@ -166,7 +166,7 @@ describe('ActionModal', () => {
 
   it('should limit the note to the max length and show the counter', async () => {
     const user = userEvent.setup();
-    renderModal({ noteMaxLength: 10 });
+    renderModal({ showNote: true, noteMaxLength: 10 });
 
     await user.type(screen.getByRole('textbox'), 'a'.repeat(15));
 
@@ -176,9 +176,9 @@ describe('ActionModal', () => {
     );
   });
 
-  it('should not show the note field and should submit an empty note when showNote is false', async () => {
+  it('should not show the note field by default and should submit an empty note', async () => {
     const user = userEvent.setup();
-    renderModal({ showNote: false });
+    renderModal();
     expect(screen.queryByRole('textbox')).not.toBeInTheDocument();
     await chooseReason(user, 'Other');
 

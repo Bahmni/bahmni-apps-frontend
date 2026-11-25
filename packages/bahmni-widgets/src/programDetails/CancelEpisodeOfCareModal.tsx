@@ -8,10 +8,9 @@ import {
 } from '@bahmni/services';
 import { useQuery } from '@tanstack/react-query';
 import React, { useEffect, useState } from 'react';
-import ActionModal, {
-  ActionReason,
-  ActionValues,
-} from '../actionModal/ActionModal';
+
+import { ActionModal } from '../actionModal';
+import { ActionReason, ActionValues } from '../actionModal/models';
 import { usePatientUUID } from '../hooks/usePatientUUID';
 import { useNotification } from '../notification';
 import { ProgramAction } from './model';
@@ -115,7 +114,6 @@ const CancelEpisodeOfCareModal: React.FC<CancelEpisodeOfCareModalProps> = ({
         message: t('PROGRAM_CANCEL_EOC_WARNING_MESSAGE'),
       }}
       reasons={reasons}
-      showNote={false}
       isSubmitting={isSubmitting}
       onSubmit={handleSubmit}
       onClose={onClose}

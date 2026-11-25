@@ -7,20 +7,9 @@ import {
 } from '@bahmni/design-system';
 import { useTranslation } from '@bahmni/services';
 import React, { useState } from 'react';
+import { DEFAULT_NOTE_MAX_LENGTH } from './constants';
+import { ActionReason, ActionValues } from './models';
 import styles from './styles/ActionModal.module.scss';
-
-const DEFAULT_NOTE_MAX_LENGTH = 100;
-
-export interface ActionReason {
-  uuid: string;
-  display: string;
-  isNoteRequired?: boolean;
-}
-
-export interface ActionValues {
-  reason: ActionReason | null;
-  note: string;
-}
 
 export interface ActionModalProps {
   idPrefix?: string;
@@ -45,7 +34,7 @@ const ActionModal: React.FC<ActionModalProps> = ({
   warning,
   reasons,
   isReasonRequired = true,
-  showNote = true,
+  showNote = false,
   noteMaxLength = DEFAULT_NOTE_MAX_LENGTH,
   isSubmitting = false,
   onSubmit,
