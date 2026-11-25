@@ -1,8 +1,6 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import CancellationModal, {
-  CancellationModalProps,
-} from '../CancellationModal';
+import ActionModal, { ActionModalProps } from '../ActionModal';
 
 const reasons = [
   { uuid: 'declined-uuid', display: 'Patient declines' },
@@ -14,11 +12,12 @@ const onClose = jest.fn();
 
 type User = ReturnType<typeof userEvent.setup>;
 
-const renderModal = (props: Partial<CancellationModalProps> = {}) =>
+const renderModal = (props: Partial<ActionModalProps> = {}) =>
   render(
-    <CancellationModal
-      heading="Cancel episode of care"
-      warning={{ title: 'Cancel active orders', message: 'All orders cancel' }}
+    <ActionModal
+      heading="Review request"
+      submitLabel="Confirm"
+      warning={{ title: 'Heads up', message: 'This affects all orders' }}
       reasons={reasons}
       onSubmit={onSubmit}
       onClose={onClose}
@@ -31,10 +30,9 @@ const chooseReason = async (user: User, name: string) => {
   await user.click(await screen.findByText(name));
 };
 
-const clickSubmit = (user: User) =>
-  user.click(screen.getByText('CANCELLATION_MODAL_SUBMIT'));
+const clickSubmit = (user: User) => user.click(screen.getByText('Confirm'));
 
-describe('CancellationModal', () => {
+describe('ActionModal', () => {
   beforeEach(() => {
     jest.clearAllMocks();
   });
@@ -43,11 +41,34 @@ describe('CancellationModal', () => {
     const user = userEvent.setup();
     renderModal();
 
-    expect(screen.getByText('Cancel episode of care')).toBeInTheDocument();
-    expect(screen.getByText('Cancel active orders')).toBeInTheDocument();
+    expect(screen.getByText('Review request')).toBeInTheDocument();
+    expect(screen.getByText('Heads up')).toBeInTheDocument();
     await user.click(screen.getByRole('combobox'));
     expect(await screen.findByText('Patient declines')).toBeInTheDocument();
     expect(screen.getByText('Other')).toBeInTheDocument();
+  });
+
+  it('should use the given submit label', () => {
+    renderModal({ submitLabel: 'Finalise' });
+
+    expect(screen.getByText('Finalise')).toBeInTheDocument();
+    expect(screen.queryByText('Confirm')).not.toBeInTheDocument();
+  });
+
+  it('should not use the red danger styling by default', () => {
+    renderModal();
+
+    expect(screen.getByTestId('action-modal-test-id')).not.toHaveClass(
+      'cds--modal--danger',
+    );
+  });
+
+  it('should use the red danger styling when asked to', () => {
+    renderModal({ danger: true });
+
+    expect(screen.getByTestId('action-modal-test-id')).toHaveClass(
+      'cds--modal--danger',
+    );
   });
 
   it('should highlight the reason and not submit when no reason is selected', async () => {
@@ -57,7 +78,7 @@ describe('CancellationModal', () => {
     await clickSubmit(user);
 
     expect(
-      await screen.findByText('CANCELLATION_MODAL_REASON_REQUIRED'),
+      await screen.findByText('ACTION_MODAL_REASON_REQUIRED'),
     ).toBeInTheDocument();
     expect(onSubmit).not.toHaveBeenCalled();
   });
@@ -67,13 +88,13 @@ describe('CancellationModal', () => {
     renderModal();
     await clickSubmit(user);
     expect(
-      await screen.findByText('CANCELLATION_MODAL_REASON_REQUIRED'),
+      await screen.findByText('ACTION_MODAL_REASON_REQUIRED'),
     ).toBeInTheDocument();
 
     await chooseReason(user, 'Patient declines');
 
     expect(
-      screen.queryByText('CANCELLATION_MODAL_REASON_REQUIRED'),
+      screen.queryByText('ACTION_MODAL_REASON_REQUIRED'),
     ).not.toBeInTheDocument();
   });
 
@@ -94,7 +115,7 @@ describe('CancellationModal', () => {
     await clickSubmit(user);
 
     expect(
-      await screen.findByText('CANCELLATION_MODAL_NOTE_REQUIRED'),
+      await screen.findByText('ACTION_MODAL_NOTE_REQUIRED'),
     ).toBeInTheDocument();
     expect(onSubmit).not.toHaveBeenCalled();
   });
@@ -108,7 +129,7 @@ describe('CancellationModal', () => {
     await clickSubmit(user);
 
     expect(
-      await screen.findByText('CANCELLATION_MODAL_NOTE_REQUIRED'),
+      await screen.findByText('ACTION_MODAL_NOTE_REQUIRED'),
     ).toBeInTheDocument();
     expect(onSubmit).not.toHaveBeenCalled();
   });
@@ -150,9 +171,9 @@ describe('CancellationModal', () => {
     await user.type(screen.getByRole('textbox'), 'a'.repeat(15));
 
     expect(screen.getByRole('textbox')).toHaveValue('a'.repeat(10));
-    expect(
-      screen.getByTestId('cancellation-note-counter-test-id'),
-    ).toHaveTextContent('10/10');
+    expect(screen.getByTestId('action-note-counter-test-id')).toHaveTextContent(
+      '10/10',
+    );
   });
 
   it('should not show the note field and should submit an empty note when showNote is false', async () => {
@@ -169,9 +190,7 @@ describe('CancellationModal', () => {
   it('should show a loader instead of the fields while submitting', () => {
     renderModal({ isSubmitting: true });
 
-    expect(
-      screen.getByTestId('cancellation-loading-test-id'),
-    ).toBeInTheDocument();
+    expect(screen.getByTestId('action-loading-test-id')).toBeInTheDocument();
     expect(screen.queryByRole('combobox')).not.toBeInTheDocument();
   });
 });

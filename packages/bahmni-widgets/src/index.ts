@@ -5,10 +5,7 @@ export {
   type ConfirmationModalProps,
 } from './confirmationModal/ConfirmationModal';
 
-export {
-  CancellationModal,
-  type CancellationModalProps,
-} from './cancellationModal';
+export { ActionModal, type ActionModalProps } from './actionModal';
 
 // Widget Components
 export { DocumentPrintButton } from './documentPrintButton';

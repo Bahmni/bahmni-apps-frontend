@@ -7,37 +7,41 @@ import {
 } from '@bahmni/design-system';
 import { useTranslation } from '@bahmni/services';
 import React, { useState } from 'react';
-import styles from './styles/CancellationModal.module.scss';
+import styles from './styles/ActionModal.module.scss';
 
 const DEFAULT_NOTE_MAX_LENGTH = 100;
 
-export interface CancellationReason {
+export interface ActionReason {
   uuid: string;
   display: string;
   isNoteRequired?: boolean;
 }
 
-export interface CancellationValues {
-  reason: CancellationReason | null;
+export interface ActionValues {
+  reason: ActionReason | null;
   note: string;
 }
 
-export interface CancellationModalProps {
+export interface ActionModalProps {
   idPrefix?: string;
   heading: string;
+  submitLabel: string;
+  danger?: boolean;
   warning?: { title: string; message: string };
-  reasons: CancellationReason[];
+  reasons: ActionReason[];
   isReasonRequired?: boolean;
   showNote?: boolean;
   noteMaxLength?: number;
   isSubmitting?: boolean;
-  onSubmit: (values: CancellationValues) => void;
+  onSubmit: (values: ActionValues) => void;
   onClose: () => void;
 }
 
-const CancellationModal: React.FC<CancellationModalProps> = ({
-  idPrefix = 'cancellation',
+const ActionModal: React.FC<ActionModalProps> = ({
+  idPrefix = 'action',
   heading,
+  submitLabel,
+  danger = false,
   warning,
   reasons,
   isReasonRequired = true,
@@ -48,15 +52,16 @@ const CancellationModal: React.FC<CancellationModalProps> = ({
   onClose,
 }) => {
   const { t } = useTranslation();
-  const [selectedReason, setSelectedReason] =
-    useState<CancellationReason | null>(null);
+  const [selectedReason, setSelectedReason] = useState<ActionReason | null>(
+    null,
+  );
   const [note, setNote] = useState('');
   const [showReasonError, setShowReasonError] = useState(false);
   const [showNoteError, setShowNoteError] = useState(false);
 
   const isNoteRequired = selectedReason?.isNoteRequired ?? false;
 
-  const handleReasonChange = (reason: CancellationReason | null) => {
+  const handleReasonChange = (reason: ActionReason | null) => {
     setSelectedReason(reason);
     setShowReasonError(false);
     setShowNoteError(false);
@@ -85,10 +90,10 @@ const CancellationModal: React.FC<CancellationModalProps> = ({
       id={`${idPrefix}-modal`}
       testId={`${idPrefix}-modal-test-id`}
       open
-      danger
+      danger={danger}
       size="sm"
       modalHeading={heading}
-      primaryButtonText={t('CANCELLATION_MODAL_SUBMIT')}
+      primaryButtonText={submitLabel}
       primaryButtonDisabled={isSubmitting}
       onRequestClose={onClose}
       onRequestSubmit={handleSubmit}
@@ -120,11 +125,11 @@ const CancellationModal: React.FC<CancellationModalProps> = ({
               />
             )}
             <div className={styles.reasonField}>
-              <Dropdown<CancellationReason>
+              <Dropdown<ActionReason>
                 id={`${idPrefix}-reason`}
                 testId={`${idPrefix}-reason-test-id`}
-                titleText={t('CANCELLATION_MODAL_REASON_LABEL')}
-                label={t('CANCELLATION_MODAL_REASON_PLACEHOLDER')}
+                titleText={t('ACTION_MODAL_REASON_LABEL')}
+                label={t('ACTION_MODAL_REASON_PLACEHOLDER')}
                 items={reasons}
                 selectedItem={selectedReason ?? undefined}
                 itemToString={(item) => item?.display ?? ''}
@@ -132,7 +137,7 @@ const CancellationModal: React.FC<CancellationModalProps> = ({
                   handleReasonChange(selectedItem ?? null)
                 }
                 invalid={showReasonError}
-                invalidText={t('CANCELLATION_MODAL_REASON_REQUIRED')}
+                invalidText={t('ACTION_MODAL_REASON_REQUIRED')}
               />
             </div>
             {showNote && (
@@ -142,7 +147,7 @@ const CancellationModal: React.FC<CancellationModalProps> = ({
                     htmlFor={`${idPrefix}-note`}
                     className={styles.noteLabel}
                   >
-                    {t('CANCELLATION_MODAL_NOTE_LABEL')}
+                    {t('ACTION_MODAL_NOTE_LABEL')}
                   </label>
                   <span
                     data-testid={`${idPrefix}-note-counter-test-id`}
@@ -154,12 +159,12 @@ const CancellationModal: React.FC<CancellationModalProps> = ({
                 <TextArea
                   id={`${idPrefix}-note`}
                   testId={`${idPrefix}-note-test-id`}
-                  labelText={t('CANCELLATION_MODAL_NOTE_LABEL')}
+                  labelText={t('ACTION_MODAL_NOTE_LABEL')}
                   hideLabel
                   value={note}
                   maxLength={noteMaxLength}
                   invalid={showNoteError}
-                  invalidText={t('CANCELLATION_MODAL_NOTE_REQUIRED')}
+                  invalidText={t('ACTION_MODAL_NOTE_REQUIRED')}
                   onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
                     handleNoteChange(e.target.value)
                   }
@@ -173,4 +178,4 @@ const CancellationModal: React.FC<CancellationModalProps> = ({
   );
 };
 
-export default CancellationModal;
+export default ActionModal;

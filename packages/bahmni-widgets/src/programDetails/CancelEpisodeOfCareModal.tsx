@@ -8,10 +8,10 @@ import {
 } from '@bahmni/services';
 import { useQuery } from '@tanstack/react-query';
 import React, { useEffect, useState } from 'react';
-import CancellationModal, {
-  CancellationReason,
-  CancellationValues,
-} from '../cancellationModal/CancellationModal';
+import ActionModal, {
+  ActionReason,
+  ActionValues,
+} from '../actionModal/ActionModal';
 import { usePatientUUID } from '../hooks/usePatientUUID';
 import { useNotification } from '../notification';
 import { ProgramAction } from './model';
@@ -29,7 +29,7 @@ const cancelReasonsQueryKey = (reasonConceptSetUuid: string) =>
 
 const fetchCancelReasons = async (
   reasonConceptSetUuid: string,
-): Promise<CancellationReason[]> => {
+): Promise<ActionReason[]> => {
   const valueSet = await searchFHIRConcepts(reasonConceptSetUuid);
   return (valueSet.expansion?.contains ?? []).map((concept) => ({
     uuid: concept.code ?? '',
@@ -66,7 +66,7 @@ const CancelEpisodeOfCareModal: React.FC<CancelEpisodeOfCareModalProps> = ({
     }
   }, [isReasonsError, addNotification, t]);
 
-  const handleSubmit = async ({ reason }: CancellationValues) => {
+  const handleSubmit = async ({ reason }: ActionValues) => {
     if (!reason) return;
     setIsSubmitting(true);
     try {
@@ -105,9 +105,11 @@ const CancelEpisodeOfCareModal: React.FC<CancelEpisodeOfCareModalProps> = ({
   };
 
   return (
-    <CancellationModal
+    <ActionModal
       idPrefix="cancel-eoc"
       heading={t('PROGRAM_CANCEL_EOC_MODAL_HEADING')}
+      submitLabel={t('PROGRAM_CANCEL_EOC_SUBMIT')}
+      danger
       warning={{
         title: t('PROGRAM_CANCEL_EOC_WARNING_TITLE'),
         message: t('PROGRAM_CANCEL_EOC_WARNING_MESSAGE'),

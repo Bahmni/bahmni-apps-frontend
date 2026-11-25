@@ -62,7 +62,7 @@ const chooseReason = async (user: User, name: string) => {
 };
 
 const clickCancel = (user: User) =>
-  user.click(screen.getByText('CANCELLATION_MODAL_SUBMIT'));
+  user.click(screen.getByText('PROGRAM_CANCEL_EOC_SUBMIT'));
 
 describe('CancelEpisodeOfCareModal', () => {
   beforeEach(() => {
