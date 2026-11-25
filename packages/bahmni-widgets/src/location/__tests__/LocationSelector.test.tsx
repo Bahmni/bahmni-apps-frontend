@@ -115,6 +115,14 @@ describe('LocationSelector', () => {
     );
   });
 
+  it('renders no-location state without crashing when availableLocations is null', () => {
+    renderWithContext({ location: null, availableLocations: null });
+
+    expect(screen.getByRole('status')).toHaveTextContent(
+      'No location selected',
+    );
+  });
+
   it('calls setLocation when a different location is selected', async () => {
     const { context } = renderWithContext();
 
