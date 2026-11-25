@@ -50,6 +50,10 @@ export const AUDIT_LOG_EVENT_DETAILS = {
     eventType: 'STOP_MEDICATION',
     message: 'STOP_MEDICATION_MESSAGE',
   },
+  CANCEL_EOC: {
+    eventType: 'CANCEL_EOC',
+    message: 'CANCEL_EOC_MESSAGE',
+  },
   UPLOAD_PATIENT_DOCUMENT: {
     eventType: 'UPLOAD_PATIENT_DOCUMENT',
     message: 'UPLOAD_PATIENT_DOCUMENT_MESSAGE',

@@ -54,3 +54,13 @@
   padding-bottom: $spacing-05;
   padding-inline: $spacing-03;
 }
+
+.cancelMenuItem.cancelMenuItem {
+  color: $text-error;
+
+  &:hover,
+  &:focus {
+    background-color: $layer-hover;
+    color: $text-error;
+  }
+}

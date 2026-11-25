@@ -44,6 +44,7 @@ export function createProgramDetailsViewModel(
     allowedStates: enrollment.allowedStates.map((state) => ({
       uuid: state.uuid,
       display: state.concept.display,
+      conceptUuid: state.concept.uuid,
     })),
   };
 }

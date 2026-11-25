@@ -215,6 +215,39 @@ describe('programService', () => {
       );
     });
 
+    it('should send the outcome with the new state when one is given', async () => {
+      (post as jest.Mock).mockResolvedValue(mockEnrollments[0]);
+
+      await updateProgramState(
+        'enrollment-1',
+        'cancelled-state',
+        'reason-uuid',
+      );
+
+      expect(post).toHaveBeenCalledWith(
+        '/openmrs/ws/rest/v1/bahmniprogramenrollment/enrollment-1',
+        {
+          uuid: 'enrollment-1',
+          states: [{ state: { uuid: 'cancelled-state' } }],
+          outcome: 'reason-uuid',
+        },
+      );
+    });
+
+    it('should not send an outcome when none is given', async () => {
+      (post as jest.Mock).mockResolvedValue(mockEnrollments[0]);
+
+      await updateProgramState('enrollment-1', 'finalized-state');
+
+      expect(post).toHaveBeenCalledWith(
+        '/openmrs/ws/rest/v1/bahmniprogramenrollment/enrollment-1',
+        {
+          uuid: 'enrollment-1',
+          states: [{ state: { uuid: 'finalized-state' } }],
+        },
+      );
+    });
+
     it('should handle API errors correctly', async () => {
       const programEnrollmentUUID = 'enrollment-1';
       const stateConceptUUID = 'invalid-state-uuid';
