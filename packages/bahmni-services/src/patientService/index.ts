@@ -11,6 +11,7 @@ export {
   createFhirPatient,
   updateFhirPatient,
   matchFhirPatient,
+  recordNonDuplicates,
   generateIdentifier,
   getIdentifierData,
   getGenders,

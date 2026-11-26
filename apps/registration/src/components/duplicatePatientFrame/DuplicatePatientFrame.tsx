@@ -3,6 +3,7 @@ import { useCallback, useEffect, useRef } from 'react';
 import {
   CLOSE_MESSAGE,
   DUPLICATE_PATIENTS_MESSAGE,
+  PROCEED_MESSAGE,
   READY_MESSAGE,
 } from '../../constants/app';
 import styles from './styles.module.scss';
@@ -13,6 +14,7 @@ interface DuplicatePatientFrameProps {
   currentPatient: Patient;
   isTrustedOrigin: (origin: string) => boolean;
   onClose: () => void;
+  onProceed: () => void;
 }
 
 export const DuplicatePatientFrame = ({
@@ -21,6 +23,7 @@ export const DuplicatePatientFrame = ({
   currentPatient,
   isTrustedOrigin,
   onClose,
+  onProceed,
 }: DuplicatePatientFrameProps) => {
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const frameOrigin = new URL(featureURL, window.location.origin).origin;
@@ -50,10 +53,11 @@ export const DuplicatePatientFrame = ({
 
       if (event.data?.type === READY_MESSAGE) postDuplicates();
       else if (event.data?.type === CLOSE_MESSAGE) onClose();
+      else if (event.data?.type === PROCEED_MESSAGE) onProceed();
     };
     window.addEventListener('message', handleMessage);
     return () => window.removeEventListener('message', handleMessage);
-  }, [onClose, frameOrigin, isTrustedOrigin, postDuplicates]);
+  }, [onClose, onProceed, frameOrigin, isTrustedOrigin, postDuplicates]);
 
   return (
     <iframe

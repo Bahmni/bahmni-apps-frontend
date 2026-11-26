@@ -122,6 +122,9 @@ export const FHIR_PATIENT_URL = OPENMRS_FHIR_R4 + '/Patient';
 
 export const FHIR_PATIENT_MATCH_URL = FHIR_PATIENT_URL + '/$match';
 
+export const FHIR_PATIENT_RECORD_NON_DUPLICATE_URL = (patientUuid: string) =>
+  PATIENT_RESOURCE_URL(patientUuid) + '/$record-non-duplicate';
+
 export const GENERATE_IDENTIFIER_URL = (sourceUuid: string) =>
   OPENMRS_REST_V1 + `/idgen/identifiersource/${sourceUuid}/identifier`;
 

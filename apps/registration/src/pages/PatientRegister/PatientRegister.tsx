@@ -148,7 +148,15 @@ const PatientRegister = () => {
     patients: Patient[];
     currentPatient: Patient;
   } | null>(null);
-  const closeDuplicateFrame = useCallback(() => setDuplicateMatch(null), []);
+  const resolveDuplicateDecision = useRef<((proceed: boolean) => void) | null>(
+    null,
+  );
+  const decideDuplicates = useCallback((proceed: boolean) => {
+    setDuplicateMatch(null);
+    resolveDuplicateDecision.current?.(proceed);
+    resolveDuplicateDecision.current = null;
+  }, []);
+  useEffect(() => () => resolveDuplicateDecision.current?.(false), []);
 
   const [expandedSections, setExpandedSections] = useState<Set<string>>(
     new Set(),
@@ -277,6 +285,10 @@ const PatientRegister = () => {
                 patientDetails?.identifier,
               ),
             });
+            const proceed = await new Promise<boolean>((resolve) => {
+              resolveDuplicateDecision.current = resolve;
+            });
+            return proceed ? [] : duplicates;
           }
           return duplicates;
         }
@@ -476,7 +488,8 @@ const PatientRegister = () => {
               patients={duplicateMatch.patients}
               currentPatient={duplicateMatch.currentPatient}
               isTrustedOrigin={isTrustedDuplicateOrigin}
-              onClose={closeDuplicateFrame}
+              onClose={() => decideDuplicates(false)}
+              onProceed={() => decideDuplicates(true)}
             />
           )}
         </div>
