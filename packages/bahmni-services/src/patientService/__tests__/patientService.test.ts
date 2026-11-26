@@ -1766,6 +1766,20 @@ describe('Patient Service', () => {
       );
       expect(result).toEqual(response);
     });
+
+    it('sends only the targetPatientId parameters when reason is not provided', async () => {
+      mockedPost.mockResolvedValueOnce({} as any);
+
+      await recordNonDuplicates('current-uuid', ['dup-1', 'dup-2']);
+
+      const body = mockedPost.mock.calls[0][1] as {
+        parameter: { name: string }[];
+      };
+      expect(body.parameter).toEqual([
+        { name: 'targetPatientId', valueId: 'dup-1' },
+        { name: 'targetPatientId', valueId: 'dup-2' },
+      ]);
+    });
   });
 
   describe('deleteRelatedPerson', () => {

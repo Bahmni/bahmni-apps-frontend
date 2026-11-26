@@ -408,7 +408,7 @@ export const matchFhirPatient = (patient: Patient): Promise<Bundle<Patient>> =>
 export const recordNonDuplicates = (
   patientUuid: string,
   targetPatientUuids: string[],
-  reason: string,
+  reason?: string,
 ): Promise<unknown> =>
   post(
     FHIR_PATIENT_RECORD_NON_DUPLICATE_URL(patientUuid),
@@ -419,7 +419,7 @@ export const recordNonDuplicates = (
           name: 'targetPatientId',
           valueId: id,
         })),
-        { name: 'reason', valueString: reason },
+        ...(reason ? [{ name: 'reason', valueString: reason }] : []),
       ],
     },
     {
