@@ -321,71 +321,51 @@ describe('ProgramDetails', () => {
     ).not.toBeInTheDocument();
   });
 
-  it('should render individual Button components when allowedStates has less than 3 items', () => {
-    (useQuery as jest.Mock).mockReturnValue({
-      data: {
-        id: 'program-1',
-        uuid: 'program-uuid-1',
-        programName: 'TB Program',
-        dateEnrolled: '2023-01-15T10:30:00.000+00:00',
-        dateCompleted: null,
-        outcomeName: null,
-        outcomeDetails: null,
-        currentStateName: 'Treatment Phase',
-        attributes: {},
-        allowedStates: [
-          { uuid: 'state-uuid-1', display: 'Follow-up Phase' },
-          { uuid: 'state-uuid-2', display: 'Completed' },
-        ],
-      },
-      error: null,
-      isError: false,
-      isLoading: false,
-    });
+  it.each([
+    [1, [{ uuid: 'state-uuid-1', display: 'Follow-up Phase' }]],
+    [
+      3,
+      [
+        { uuid: 'state-uuid-1', display: 'Treatment Phase' },
+        { uuid: 'state-uuid-2', display: 'Follow-up Phase' },
+        { uuid: 'state-uuid-3', display: 'Completed' },
+      ],
+    ],
+  ])(
+    'should render %i allowed state(s) as items of the Actions dropdown',
+    async (count, allowedStates) => {
+      (useQuery as jest.Mock).mockReturnValue({
+        data: {
+          id: 'program-1',
+          uuid: 'program-uuid-1',
+          programName: 'TB Program',
+          dateEnrolled: '2023-01-15T10:30:00.000+00:00',
+          dateCompleted: null,
+          outcomeName: null,
+          outcomeDetails: null,
+          currentStateName: 'Treatment Phase',
+          attributes: {},
+          allowedStates,
+        },
+        error: null,
+        isError: false,
+        isLoading: false,
+      });
 
-    render(wrapper);
+      render(wrapper);
 
-    expect(
-      screen.getByTestId('patient-programs-state-uuid-1-button-test-id'),
-    ).toBeInTheDocument();
-    expect(
-      screen.getByTestId('patient-programs-state-uuid-2-button-test-id'),
-    ).toBeInTheDocument();
-    expect(
-      screen.queryByText('UPDATE_PROGRAM_STATE_BUTTON'),
-    ).not.toBeInTheDocument();
-  });
+      expect(
+        screen.queryByTestId('patient-programs-state-uuid-1-button-test-id'),
+      ).not.toBeInTheDocument();
 
-  it('should render MenuButton with MenuItems when allowedStates has 3 or more items', () => {
-    (useQuery as jest.Mock).mockReturnValue({
-      data: {
-        id: 'program-1',
-        uuid: 'program-uuid-1',
-        programName: 'TB Program',
-        dateEnrolled: '2023-01-15T10:30:00.000+00:00',
-        dateCompleted: null,
-        outcomeName: null,
-        outcomeDetails: null,
-        currentStateName: 'Treatment Phase',
-        attributes: {},
-        allowedStates: [
-          { uuid: 'state-uuid-1', display: 'Treatment Phase' },
-          { uuid: 'state-uuid-2', display: 'Follow-up Phase' },
-          { uuid: 'state-uuid-3', display: 'Completed' },
-        ],
-      },
-      error: null,
-      isError: false,
-      isLoading: false,
-    });
+      await userEvent.click(screen.getByText('PROGRAM_ACTIONS_BUTTON'));
 
-    render(wrapper);
-
-    expect(screen.getByText('UPDATE_PROGRAM_STATE_BUTTON')).toBeInTheDocument();
-    expect(
-      screen.queryByTestId('patient-programs-state-uuid-1-button-test-id'),
-    ).not.toBeInTheDocument();
-  });
+      expect(screen.getAllByRole('menuitem')).toHaveLength(count);
+      expect(
+        screen.getByTestId('patient-programs-state-uuid-1-button-test-id'),
+      ).toBeInTheDocument();
+    },
+  );
 
   it('should not render buttons when user does not have Edit Patient Programs privilege', () => {
     (useUserPrivilege as jest.Mock).mockReturnValue({
@@ -426,6 +406,101 @@ describe('ProgramDetails', () => {
     expect(
       screen.queryByTestId('patient-programs-state-uuid-2-button-test-id'),
     ).not.toBeInTheDocument();
+  });
+
+  describe('Cancel action', () => {
+    const cancelAction = {
+      type: 'cancel',
+      label: 'PROGRAM_ACTION_CANCEL_EOC',
+      stateConceptUuid: 'cancelled-concept-uuid',
+      requiredPrivileges: ['app:eoc:cancel'],
+      metadata: { reasonConceptSetUuid: 'reason-set-uuid' },
+    };
+    const finaliseState = {
+      uuid: 'state-uuid-1',
+      display: 'Finalised',
+      conceptUuid: 'finalised-concept-uuid',
+    };
+    const cancelledState = {
+      uuid: 'cancelled-state-uuid',
+      display: 'Assessment Cancelled',
+      conceptUuid: 'cancelled-concept-uuid',
+    };
+
+    const renderWithAllowedStates = (
+      allowedStates: (typeof finaliseState)[],
+      privileges = ['Edit Patient Programs', 'app:eoc:cancel'],
+    ) => {
+      (useUserPrivilege as jest.Mock).mockReturnValue({
+        userPrivileges: privileges.map((name, i) => ({
+          uuid: `privilege-uuid-${i}`,
+          name,
+        })),
+      });
+      (useQuery as jest.Mock).mockReturnValue({
+        data: {
+          id: 'program-1',
+          uuid: 'program-uuid-1',
+          programName: 'HA Program',
+          dateEnrolled: '2023-01-15T10:30:00.000+00:00',
+          dateCompleted: null,
+          outcomeName: null,
+          outcomeDetails: null,
+          currentStateName: 'Completed',
+          attributes: {},
+          allowedStates,
+        },
+        error: null,
+        isError: false,
+        isLoading: false,
+      });
+
+      render(
+        <QueryClientProvider client={queryClient}>
+          <ProgramDetails
+            programUUID="test-program-uuid"
+            config={{
+              fields: [{ name: 'programName' }],
+              actions: [cancelAction],
+            }}
+          />
+        </QueryClientProvider>,
+      );
+    };
+
+    it('should show the other allowed states and the configured Cancel in an Actions dropdown', async () => {
+      renderWithAllowedStates([finaliseState, cancelledState]);
+
+      await userEvent.click(screen.getByText('PROGRAM_ACTIONS_BUTTON'));
+
+      const items = screen.getAllByRole('menuitem');
+      expect(items).toHaveLength(2);
+      expect(items[0]).toHaveTextContent('Finalised');
+      expect(items[1]).toHaveTextContent('PROGRAM_ACTION_CANCEL_EOC');
+    });
+
+    it('should not offer the cancelled state in any form when the user lacks the action privilege', async () => {
+      renderWithAllowedStates(
+        [finaliseState, cancelledState],
+        ['Edit Patient Programs'],
+      );
+
+      await userEvent.click(screen.getByText('PROGRAM_ACTIONS_BUTTON'));
+
+      const items = screen.getAllByRole('menuitem');
+      expect(items).toHaveLength(1);
+      expect(items[0]).toHaveTextContent('Finalised');
+    });
+
+    it('should only list the allowed states when the cancelled state is not allowed', async () => {
+      renderWithAllowedStates([finaliseState]);
+
+      await userEvent.click(screen.getByText('PROGRAM_ACTIONS_BUTTON'));
+
+      const items = screen.getAllByRole('menuitem');
+      expect(items).toHaveLength(1);
+      expect(items[0]).toHaveTextContent('Finalised');
+    });
   });
 
   it('should update state when update button is clicked', async () => {
@@ -484,11 +559,10 @@ describe('ProgramDetails', () => {
 
     render(wrapper);
 
-    const button = screen.getByTestId(
-      'patient-programs-allowed-state-2-button-test-id',
+    await userEvent.click(screen.getByText('PROGRAM_ACTIONS_BUTTON'));
+    await userEvent.click(
+      screen.getByTestId('patient-programs-allowed-state-2-button-test-id'),
     );
-
-    await userEvent.click(button);
 
     expect(
       await screen.findByTestId('program-details-loading-overlay-test-id'),
@@ -511,9 +585,6 @@ describe('ProgramDetails', () => {
       expect(
         screen.getByTestId('patient-programs-tile-test-id'),
       ).toBeInTheDocument();
-      expect(
-        screen.getByTestId('patient-programs-allowed-state-2-button-test-id'),
-      ).toHaveTextContent('Follow-up Phase');
     });
   });
 
@@ -545,11 +616,10 @@ describe('ProgramDetails', () => {
 
     render(wrapper);
 
-    const button = screen.getByTestId(
-      'patient-programs-allowed-state-2-button-test-id',
+    await userEvent.click(screen.getByText('PROGRAM_ACTIONS_BUTTON'));
+    await userEvent.click(
+      screen.getByTestId('patient-programs-allowed-state-2-button-test-id'),
     );
-
-    await userEvent.click(button);
 
     await waitFor(() => {
       expect(mockAddNotification).toHaveBeenCalledWith({

@@ -1,5 +1,5 @@
 import { type CDSSRule, Extension } from '@bahmni/services';
-import type { PrintOption } from '@bahmni/widgets';
+import type { PrintOption, ProgramAction } from '@bahmni/widgets';
 
 export interface AllergyConceptMap {
   medicationAllergenUuid: string;
@@ -50,6 +50,7 @@ export interface ProgramField {
 
 export interface ProgramConfig {
   fields: ProgramField[];
+  actions?: ProgramAction[];
 }
 
 export interface ContextInformation {
