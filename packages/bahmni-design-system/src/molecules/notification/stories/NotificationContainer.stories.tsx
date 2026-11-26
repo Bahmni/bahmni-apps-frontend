@@ -1,5 +1,6 @@
 import React from 'react';
 import { Meta, StoryObj } from '@storybook/react';
+import { action } from '@storybook/addon-actions';
 import { NotificationContainer } from '../NotificationContainer';
 
 export type NotificationType = 'error' | 'warning' | 'info' | 'success';
@@ -74,9 +75,7 @@ const infoNotification: Notification = {
 };
 
 // Mock handler for onClose
-const handleClose = (id: string) => {
-  console.log(`Notification with id ${id} closed`);
-};
+const handleClose = action('Notification closed');
 
 // Default story with all notification types
 export const Default: Story = {
