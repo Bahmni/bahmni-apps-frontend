@@ -214,6 +214,22 @@
         }
       }
     },
+    "practitionerIdentifierConfig": {
+      "type": "object",
+      "description": "Configuration for the practitioner identifier (e.g. license number) shown in print templates",
+      "required": ["system"],
+      "additionalProperties": false,
+      "properties": {
+        "system": {
+          "type": "string",
+          "description": "FHIR identifier system URL used to select the identifier from Practitioner.identifier"
+        },
+        "displayLabel": {
+          "type": "string",
+          "description": "i18n key for the label shown next to the identifier in print templates. Defaults to PROVIDER_LICENSE_NUMBER"
+        }
+      }
+    },
     "actions": {
       "type": "array",
       "description": "List of available actions"
