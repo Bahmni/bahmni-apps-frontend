@@ -272,6 +272,7 @@ describe('Widget Registry', () => {
         'tasksControl',
         'charts',
         'visits',
+        'disposition',
       ];
 
       expect(types).toHaveLength(expectedTypes.length);
@@ -401,7 +402,7 @@ describe('Widget Registry', () => {
       resetWidgetRegistry();
       const countAfterReset = getAllWidgetTypes().length;
 
-      expect(countAfterReset).toBe(17); // Only built-in widgets
+      expect(countAfterReset).toBe(18); // Only built-in widgets
       expect(countWithCustom).toBeGreaterThan(countAfterReset);
     });
   });
