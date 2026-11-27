@@ -3,6 +3,7 @@ import type { Patient } from 'fhir/r4';
 import {
   CLOSE_MESSAGE,
   DUPLICATE_PATIENTS_MESSAGE,
+  PROCEED_MESSAGE,
   READY_MESSAGE,
 } from '../../../constants/app';
 import { DuplicatePatientFrame } from '../DuplicatePatientFrame';
@@ -22,6 +23,7 @@ const renderFrame = (
   isTrustedOrigin: (origin: string) => boolean = () => true,
 ) => {
   const onClose = jest.fn();
+  const onProceed = jest.fn();
   render(
     <DuplicatePatientFrame
       featureURL={featureURL}
@@ -29,6 +31,7 @@ const renderFrame = (
       currentPatient={currentPatient}
       isTrustedOrigin={isTrustedOrigin}
       onClose={onClose}
+      onProceed={onProceed}
     />,
   );
   const iframe = screen.getByTestId(
@@ -40,7 +43,7 @@ const renderFrame = (
     value: contentWindow,
     configurable: true,
   });
-  return { iframe, onClose, postMessage, contentWindow };
+  return { iframe, onClose, onProceed, postMessage, contentWindow };
 };
 
 const dispatchMessage = (init: MessageEventInit) =>
@@ -121,6 +124,48 @@ describe('DuplicatePatientFrame', () => {
     });
 
     expect(onClose).toHaveBeenCalledTimes(1);
+  });
+
+  it('calls onProceed, and not onClose, when the iframe sends PROCEED', () => {
+    const { onClose, onProceed, contentWindow } = renderFrame();
+
+    dispatchMessage({
+      data: { type: PROCEED_MESSAGE },
+      origin: HOST_ORIGIN,
+      source: contentWindow,
+    });
+
+    expect(onProceed).toHaveBeenCalledTimes(1);
+    expect(onClose).not.toHaveBeenCalled();
+  });
+
+  it('ignores PROCEED from a different origin or another window', () => {
+    const { onProceed, contentWindow } = renderFrame();
+
+    dispatchMessage({
+      data: { type: PROCEED_MESSAGE },
+      origin: OTHER_ORIGIN,
+      source: contentWindow,
+    });
+    dispatchMessage({
+      data: { type: PROCEED_MESSAGE },
+      origin: HOST_ORIGIN,
+      source: window,
+    });
+
+    expect(onProceed).not.toHaveBeenCalled();
+  });
+
+  it('ignores PROCEED when the sender origin is not trusted', () => {
+    const { onProceed, contentWindow } = renderFrame(EXTERNAL_URL, () => false);
+
+    dispatchMessage({
+      data: { type: PROCEED_MESSAGE },
+      origin: FRAME_ORIGIN,
+      source: contentWindow,
+    });
+
+    expect(onProceed).not.toHaveBeenCalled();
   });
 
   it('ignores CLOSE from a different origin', () => {

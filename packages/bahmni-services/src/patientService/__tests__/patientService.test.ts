@@ -18,6 +18,7 @@ import {
   RELATED_PERSONS_BY_PATIENT_URL,
   RELATED_PERSON_BY_ID_URL,
   FHIR_PATIENT_MATCH_URL,
+  FHIR_PATIENT_RECORD_NON_DUPLICATE_URL,
 } from '../constants';
 import {
   getPatientById,
@@ -41,6 +42,7 @@ import {
   createRelatedPerson,
   deleteRelatedPerson,
   matchFhirPatient,
+  recordNonDuplicates,
 } from '../patientService';
 
 jest.mock('../../api');
@@ -1731,6 +1733,52 @@ describe('Patient Service', () => {
         parameter: [{ name: 'resource', resource: patient }],
       });
       expect(result).toEqual(bundle);
+    });
+  });
+
+  describe('recordNonDuplicates', () => {
+    it('posts one targetPatientId per target plus the reason to $record-non-duplicate with FHIR JSON headers', async () => {
+      const response = { resourceType: 'OperationOutcome' };
+      mockedPost.mockResolvedValueOnce(response as any);
+
+      const result = await recordNonDuplicates(
+        'current-uuid',
+        ['dup-1', 'dup-2'],
+        'Different applicants',
+      );
+
+      expect(mockedPost).toHaveBeenCalledWith(
+        FHIR_PATIENT_RECORD_NON_DUPLICATE_URL('current-uuid'),
+        {
+          resourceType: 'Parameters',
+          parameter: [
+            { name: 'targetPatientId', valueId: 'dup-1' },
+            { name: 'targetPatientId', valueId: 'dup-2' },
+            { name: 'reason', valueString: 'Different applicants' },
+          ],
+        },
+        {
+          headers: {
+            'Content-Type': 'application/fhir+json',
+            Accept: 'application/fhir+json',
+          },
+        },
+      );
+      expect(result).toEqual(response);
+    });
+
+    it('sends only the targetPatientId parameters when reason is not provided', async () => {
+      mockedPost.mockResolvedValueOnce({} as any);
+
+      await recordNonDuplicates('current-uuid', ['dup-1', 'dup-2']);
+
+      const body = mockedPost.mock.calls[0][1] as {
+        parameter: { name: string }[];
+      };
+      expect(body.parameter).toEqual([
+        { name: 'targetPatientId', valueId: 'dup-1' },
+        { name: 'targetPatientId', valueId: 'dup-2' },
+      ]);
     });
   });
 

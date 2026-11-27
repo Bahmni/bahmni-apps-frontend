@@ -1028,6 +1028,70 @@ describe('PatientRegister', () => {
       ).not.toBeInTheDocument();
     });
 
+    const postFromFrame = (frame: HTMLIFrameElement, type: string) =>
+      act(() => {
+        window.dispatchEvent(
+          new MessageEvent('message', {
+            data: { type },
+            origin: window.location.origin,
+            source: frame.contentWindow,
+          }),
+        );
+      });
+
+    it.each([
+      ['Save', () => screen.getByText('CREATE_PATIENT_SAVE')],
+      ['Next', () => screen.getByTestId('extension-action-button')],
+    ])(
+      'should wait for the iframe and finish the save when %s gets a PROCEED message',
+      async (_action, getButton) => {
+        enableDuplicateDetection();
+        mockMatches(duplicate);
+        renderComponent();
+        fireEvent.click(getButton());
+        const frame = (await screen.findByTestId(
+          'duplicate-patient-frame',
+        )) as HTMLIFrameElement;
+        const mutation = mockMutateAsync.mock.results[0].value;
+
+        postFromFrame(frame, 'PROCEED');
+
+        await expect(mutation).resolves.toEqual({ id: 'new-patient-id' });
+        expect(mockMutateAsync).toHaveBeenCalledTimes(1);
+        expect(
+          screen.queryByTestId('duplicate-patient-frame'),
+        ).not.toBeInTheDocument();
+      },
+    );
+
+    it('should abort the save when the iframe sends CLOSE instead of PROCEED', async () => {
+      enableDuplicateDetection();
+      mockMatches(duplicate);
+      renderComponent();
+      fireEvent.click(screen.getByText('CREATE_PATIENT_SAVE'));
+      const frame = (await screen.findByTestId(
+        'duplicate-patient-frame',
+      )) as HTMLIFrameElement;
+      const mutation = mockMutateAsync.mock.results[0].value;
+
+      postFromFrame(frame, 'CLOSE');
+
+      await expect(mutation).rejects.toThrow();
+    });
+
+    it('should not leave the save hanging when the page unmounts while the iframe is open', async () => {
+      enableDuplicateDetection();
+      mockMatches(duplicate);
+      const { unmount } = renderComponent();
+      fireEvent.click(screen.getByText('CREATE_PATIENT_SAVE'));
+      await screen.findByTestId('duplicate-patient-frame');
+      const mutation = mockMutateAsync.mock.results[0].value;
+
+      unmount();
+
+      await expect(mutation).rejects.toThrow();
+    });
+
     it('should send the saved primary identifier first for the current applicant when editing', async () => {
       enableDuplicateDetection();
       mockMatches(duplicate);

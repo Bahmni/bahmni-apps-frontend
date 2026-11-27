@@ -16,6 +16,7 @@ import {
   UPDATE_PATIENT_URL,
   FHIR_PATIENT_URL,
   FHIR_PATIENT_MATCH_URL,
+  FHIR_PATIENT_RECORD_NON_DUPLICATE_URL,
   GENERATE_IDENTIFIER_URL,
   ADDRESS_HIERARCHY_URL,
   ADDRESS_HIERARCHY_DEFAULT_LIMIT,
@@ -403,6 +404,31 @@ export const matchFhirPatient = (patient: Patient): Promise<Bundle<Patient>> =>
     resourceType: 'Parameters',
     parameter: [{ name: 'resource', resource: patient }],
   });
+
+export const recordNonDuplicates = (
+  patientUuid: string,
+  targetPatientUuids: string[],
+  reason?: string,
+): Promise<unknown> =>
+  post(
+    FHIR_PATIENT_RECORD_NON_DUPLICATE_URL(patientUuid),
+    {
+      resourceType: 'Parameters',
+      parameter: [
+        ...targetPatientUuids.map((id) => ({
+          name: 'targetPatientId',
+          valueId: id,
+        })),
+        ...(reason ? [{ name: 'reason', valueString: reason }] : []),
+      ],
+    },
+    {
+      headers: {
+        'Content-Type': 'application/fhir+json',
+        Accept: 'application/fhir+json',
+      },
+    },
+  );
 
 export const generateIdentifier = (
   sourceUuid: string,
