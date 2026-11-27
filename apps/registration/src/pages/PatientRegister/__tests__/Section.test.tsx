@@ -3,7 +3,7 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import React from 'react';
 import { RegistrationFormSection } from '../../../providers/registrationConfig/models';
 import { FormControlRefs, FormControlData, FormControlGuards } from '../models';
-import PatientRegisterSection from '../PatientRegisterSection';
+import Section from '../Section';
 
 // Mock useTranslation
 jest.mock('@bahmni/services', () => ({
@@ -101,7 +101,7 @@ const defaultProps = {
   onToggle: jest.fn(),
 };
 
-describe('PatientRegisterSection', () => {
+describe('Section', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     (useTranslation as jest.Mock).mockReturnValue({ t: mockTranslate });
@@ -116,7 +116,7 @@ describe('PatientRegisterSection', () => {
       };
 
       const { container } = render(
-        <PatientRegisterSection {...defaultProps} section={section} />,
+        <Section {...defaultProps} section={section} />,
       );
 
       expect(container.firstChild).toBeNull();
@@ -129,7 +129,7 @@ describe('PatientRegisterSection', () => {
         controls: [{ type: 'profile' }],
       };
 
-      render(<PatientRegisterSection {...defaultProps} section={section} />);
+      render(<Section {...defaultProps} section={section} />);
 
       const headerTile = screen.getByTestId('section-header-tile');
       expect(headerTile).toBeInTheDocument();
@@ -143,7 +143,7 @@ describe('PatientRegisterSection', () => {
       };
 
       const { queryByTestId } = render(
-        <PatientRegisterSection {...defaultProps} section={section} />,
+        <Section {...defaultProps} section={section} />,
       );
 
       expect(queryByTestId('section-header-tile')).not.toBeInTheDocument();
@@ -155,7 +155,7 @@ describe('PatientRegisterSection', () => {
         controls: [{ type: 'profile', titleTranslationKey: 'CONTROL_TITLE' }],
       };
 
-      render(<PatientRegisterSection {...defaultProps} section={section} />);
+      render(<Section {...defaultProps} section={section} />);
 
       const controlTitle = screen.getByTestId('control-title-profile');
       expect(controlTitle).toBeInTheDocument();
@@ -169,7 +169,7 @@ describe('PatientRegisterSection', () => {
       };
 
       const { queryByTestId } = render(
-        <PatientRegisterSection {...defaultProps} section={section} />,
+        <Section {...defaultProps} section={section} />,
       );
 
       expect(queryByTestId('control-title-profile')).not.toBeInTheDocument();
@@ -187,7 +187,7 @@ describe('PatientRegisterSection', () => {
         ],
       };
 
-      render(<PatientRegisterSection {...defaultProps} section={section} />);
+      render(<Section {...defaultProps} section={section} />);
 
       expect(screen.getByTestId('profile-component')).toBeInTheDocument();
       expect(screen.getByTestId('address-component')).toBeInTheDocument();
@@ -208,7 +208,7 @@ describe('PatientRegisterSection', () => {
         ],
       };
 
-      render(<PatientRegisterSection {...defaultProps} section={section} />);
+      render(<Section {...defaultProps} section={section} />);
 
       // Should render valid controls
       expect(screen.getByTestId('profile-component')).toBeInTheDocument();
@@ -227,7 +227,7 @@ describe('PatientRegisterSection', () => {
         controls: [{ type: 'profile' }],
       };
 
-      render(<PatientRegisterSection {...defaultProps} section={section} />);
+      render(<Section {...defaultProps} section={section} />);
 
       expect(mockTranslate).toHaveBeenCalledWith('SECTION_TITLE');
     });
@@ -238,7 +238,7 @@ describe('PatientRegisterSection', () => {
         controls: [{ type: 'profile', titleTranslationKey: 'CONTROL_TITLE' }],
       };
 
-      render(<PatientRegisterSection {...defaultProps} section={section} />);
+      render(<Section {...defaultProps} section={section} />);
 
       expect(mockTranslate).toHaveBeenCalledWith('CONTROL_TITLE');
     });
@@ -253,7 +253,7 @@ describe('PatientRegisterSection', () => {
       };
 
       render(
-        <PatientRegisterSection
+        <Section
           {...defaultProps}
           section={section}
           isCollapsible
@@ -275,7 +275,7 @@ describe('PatientRegisterSection', () => {
       };
 
       render(
-        <PatientRegisterSection
+        <Section
           {...defaultProps}
           section={section}
           isCollapsible={false}
@@ -295,7 +295,7 @@ describe('PatientRegisterSection', () => {
       };
 
       render(
-        <PatientRegisterSection
+        <Section
           {...defaultProps}
           section={section}
           isCollapsible={false}
@@ -315,7 +315,7 @@ describe('PatientRegisterSection', () => {
       };
 
       render(
-        <PatientRegisterSection
+        <Section
           {...defaultProps}
           section={section}
           isCollapsible
@@ -335,7 +335,7 @@ describe('PatientRegisterSection', () => {
       };
 
       render(
-        <PatientRegisterSection
+        <Section
           {...defaultProps}
           section={section}
           isCollapsible
@@ -355,7 +355,7 @@ describe('PatientRegisterSection', () => {
       };
 
       render(
-        <PatientRegisterSection
+        <Section
           {...defaultProps}
           section={section}
           isCollapsible
@@ -377,7 +377,7 @@ describe('PatientRegisterSection', () => {
       };
 
       render(
-        <PatientRegisterSection
+        <Section
           {...defaultProps}
           section={section}
           isCollapsible={false}
@@ -399,7 +399,7 @@ describe('PatientRegisterSection', () => {
       };
 
       render(
-        <PatientRegisterSection
+        <Section
           {...defaultProps}
           section={section}
           isCollapsible
@@ -421,7 +421,7 @@ describe('PatientRegisterSection', () => {
       };
 
       render(
-        <PatientRegisterSection
+        <Section
           {...defaultProps}
           section={section}
           isCollapsible
@@ -446,7 +446,7 @@ describe('PatientRegisterSection', () => {
       };
 
       render(
-        <PatientRegisterSection
+        <Section
           {...defaultProps}
           section={section}
           isCollapsible
@@ -470,7 +470,7 @@ describe('PatientRegisterSection', () => {
       };
 
       render(
-        <PatientRegisterSection
+        <Section
           {...defaultProps}
           section={section}
           isCollapsible
@@ -492,7 +492,7 @@ describe('PatientRegisterSection', () => {
       };
 
       render(
-        <PatientRegisterSection
+        <Section
           {...defaultProps}
           section={section}
           isCollapsible={false}
@@ -516,7 +516,7 @@ describe('PatientRegisterSection', () => {
 
     it('should match snapshot for collapsible section when expanded', () => {
       const { container } = render(
-        <PatientRegisterSection
+        <Section
           {...defaultProps}
           section={section}
           isCollapsible
@@ -528,7 +528,7 @@ describe('PatientRegisterSection', () => {
 
     it('should match snapshot for collapsible section when collapsed', () => {
       const { container } = render(
-        <PatientRegisterSection
+        <Section
           {...defaultProps}
           section={section}
           isCollapsible
@@ -540,7 +540,7 @@ describe('PatientRegisterSection', () => {
 
     it('should match snapshot for non-collapsible section', () => {
       const { container } = render(
-        <PatientRegisterSection
+        <Section
           {...defaultProps}
           section={section}
           isCollapsible={false}
