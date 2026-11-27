@@ -34,7 +34,6 @@ const CELL_IDS = {
   ACTIONS: 'actions',
 } as const;
 
-const INTERNAL_PATH_PATTERN = /^\//;
 const EXTERNAL_OR_HASH_PATTERN = /^(https?:\/\/|#)/i;
 
 interface PatientSearchResultsProps {
@@ -128,7 +127,7 @@ const PatientSearchResults = ({
     }
     const url = formatUrl(patientDetailUrl, { patientUuid: uuid }, true).trim();
 
-    if (INTERNAL_PATH_PATTERN.test(url)) {
+    if (url.startsWith('/')) {
       return (
         <Link
           href={url}
