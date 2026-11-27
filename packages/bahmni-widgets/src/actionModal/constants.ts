@@ -1,0 +1,1 @@
+export const DEFAULT_NOTE_MAX_LENGTH = 100;

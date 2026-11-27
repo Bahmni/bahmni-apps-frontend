@@ -136,6 +136,52 @@
                   }
                 }
               }
+            },
+            "actions": {
+              "type": "array",
+              "description": "Actions available on the program details (e.g. cancel the episode of care)",
+              "items": {
+                "type": "object",
+                "required": [
+                  "type",
+                  "label",
+                  "stateConceptUuid",
+                  "requiredPrivileges",
+                  "metadata"
+                ],
+                "additionalProperties": false,
+                "properties": {
+                  "type": {
+                    "type": "string",
+                    "description": "Type of the action, e.g. cancel"
+                  },
+                  "label": {
+                    "type": "string",
+                    "description": "Translation key of the label shown in the actions menu"
+                  },
+                  "stateConceptUuid": {
+                    "type": "string",
+                    "description": "Concept uuid of the program state this action stands for. The matching allowed state is rendered as this action"
+                  },
+                  "requiredPrivileges": {
+                    "type": "array",
+                    "description": "Privileges the user must have to see the action",
+                    "items": { "type": "string" }
+                  },
+                  "metadata": {
+                    "type": "object",
+                    "description": "Action specific settings",
+                    "required": ["reasonConceptSetUuid"],
+                    "additionalProperties": false,
+                    "properties": {
+                      "reasonConceptSetUuid": {
+                        "type": "string",
+                        "description": "UUID of the concept set whose members are the selectable reasons"
+                      }
+                    }
+                  }
+                }
+              }
             }
           }
         }
@@ -213,7 +259,7 @@
               "properties": {
                 "translationKey": { "type": "string" },
                 "templateId": { "type": "string" },
-                "category": { "type": "string"},
+                "category": { "type": "string" },
                 "privileges": {
                   "type": "array",
                   "items": { "type": "string" }

@@ -70,7 +70,6 @@ const SelectedAllergyItem: React.FC<SelectedAllergyItemProps> = React.memo(
     } = allergy;
     const hasSeverityError = !!(hasBeenValidated && errors.severity);
     const hasReactionsError = !!(hasBeenValidated && errors.reactions);
-    const hasNonCodedError = !!(hasBeenValidated && errors.nonCodedAllergen);
     const [hasNote, setHasNote] = useState(!!note);
 
     return (
@@ -157,10 +156,9 @@ const SelectedAllergyItem: React.FC<SelectedAllergyItemProps> = React.memo(
             data-testid={`allergy-non-coded-name-${entryId}`}
             labelText={t('ALLERGY_OTHER_ALLERGEN_LABEL')}
             placeholder={t('ALLERGY_OTHER_ALLERGEN_PLACEHOLDER')}
+            helperText={t('ALLERGY_OTHER_ALLERGEN_HELPER')}
             value={nonCodedAllergen ?? ''}
             onChange={(e) => updateNonCodedAllergen(entryId, e.target.value)}
-            invalid={hasNonCodedError}
-            invalidText={hasNonCodedError ? t(errors.nonCodedAllergen!) : ''}
             maxLength={255}
           />
         )}

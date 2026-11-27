@@ -3,6 +3,7 @@ import {
   fetchOtherNonCodedAllergenUUID,
   isNonCodedAllergen,
   OPENMRS_ALLERGEN_TYPE,
+  resolveNonCodedAllergenName,
   saveAllergy,
   type AllergenType,
   type AllergyInputEntry,
@@ -43,7 +44,8 @@ const toSaveAllergyRequest = async (
     // member of the drug, food and environment allergen sets.
     allergenType: OPENMRS_ALLERGEN_TYPE[allergy.type as AllergenType],
     codedAllergen: { uuid: allergy.id },
-    nonCodedAllergen: allergy.nonCodedAllergen!.trim(),
+    // The name input is optional; a typed name wins, else the default.
+    nonCodedAllergen: resolveNonCodedAllergenName(allergy),
   },
   reactions: allergy.selectedReactions
     .filter((reaction) => !!reaction.code)
