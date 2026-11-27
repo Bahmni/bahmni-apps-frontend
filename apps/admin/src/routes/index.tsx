@@ -26,6 +26,12 @@ const AuditLog = lazy(() =>
   })),
 );
 
+const FhirExport = lazy(() =>
+  import('../pages/FhirExport').then((module) => ({
+    default: module.FhirExport,
+  })),
+);
+
 export const routes: Routes = [
   {
     path: '/',
@@ -46,6 +52,11 @@ export const routes: Routes = [
     path: '/auditlog',
     component: AuditLog,
     name: 'AuditLog',
+  },
+  {
+    path: '/fhirExport',
+    component: FhirExport,
+    name: 'FhirExport',
   },
 ];
 

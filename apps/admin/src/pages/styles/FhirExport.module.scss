@@ -1,0 +1,54 @@
+@use "@carbon/react/scss/spacing" as *;
+@use "@carbon/react/scss/theme" as *;
+@use "@carbon/react/scss/type" as *;
+
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-05;
+}
+
+.tile {
+  background-color: $layer-02;
+  box-shadow: 0 $spacing-01 $spacing-03 rgba(0, 0, 0, 0.2);
+  padding: $spacing-06;
+}
+
+.title {
+  @include type-style("body-01");
+
+  margin-block-end: $spacing-03;
+}
+
+.warning {
+  margin-block-end: $spacing-05;
+}
+
+.form {
+  display: flex;
+  align-items: flex-start;
+  gap: $spacing-05;
+  flex-wrap: wrap;
+}
+
+.checkbox {
+  padding-block-start: $spacing-06;
+}
+
+.submit {
+  padding-block-start: $spacing-06;
+}
+
+.tableHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-block-end: $spacing-03;
+}
+
+.errorMessage {
+  @include type-style("helper-text-01");
+
+  color: $text-error;
+  margin-block-start: $spacing-02;
+}
