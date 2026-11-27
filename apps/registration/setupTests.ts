@@ -1,5 +1,5 @@
 import '@testing-library/jest-dom';
-import { TextEncoder, TextDecoder } from 'util';
+import { TextEncoder, TextDecoder } from 'node:util';
 // Import and initialize i18n for tests
 import './setupTests.i18n';
 import { initFontAwesome } from '@bahmni/design-system';
