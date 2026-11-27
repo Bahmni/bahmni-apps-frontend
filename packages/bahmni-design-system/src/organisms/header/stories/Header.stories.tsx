@@ -1,5 +1,6 @@
 import React from 'react';
 import { Meta, StoryObj } from '@storybook/react';
+import { action } from '@storybook/addon-actions';
 import Header from '../Header';
 import BahmniIcon from '@components/common/bahmniIcon/BahmniIcon';
 
@@ -141,7 +142,7 @@ export const Default: Story = {
       { id: 'reports', icon: 'fa-chart-bar', label: 'Reports' },
     ],
     activeSideNavItemId: 'dashboard',
-    onSideNavItemClick: (id) => console.log(`Nav item clicked: ${id}`),
+    onSideNavItemClick: action('Nav item clicked'),
     ariaLabel: 'Bahmni Clinical',
   },
   parameters: {
@@ -188,7 +189,7 @@ export const WithGlobalActions: Story = {
         id: 'search',
         label: 'Search',
         renderIcon: <BahmniIcon id="fa-search" name="fa-search" />,
-        onClick: () => console.log('Search clicked'),
+        onClick: action('Search clicked'),
       },
       {
         id: 'notifications',
@@ -196,13 +197,13 @@ export const WithGlobalActions: Story = {
         renderIcon: (
           <BahmniIcon id="fa-notifications" name="fa-notifications" />
         ),
-        onClick: () => console.log('Notifications clicked'),
+        onClick: action('Notifications clicked'),
       },
       {
         id: 'settings',
         label: 'Settings',
         renderIcon: <BahmniIcon id="fa-settings" name="fa-settings" />,
-        onClick: () => console.log('Settings clicked'),
+        onClick: action('Settings clicked'),
       },
     ],
   },
@@ -268,7 +269,7 @@ export const Complete: Story = {
         id: 'search',
         label: 'Search',
         renderIcon: <BahmniIcon id="fa-search" name="fa-search" />,
-        onClick: () => console.log('Search clicked'),
+        onClick: action('Search clicked'),
       },
       {
         id: 'notifications',
@@ -276,13 +277,13 @@ export const Complete: Story = {
         renderIcon: (
           <BahmniIcon id="fa-notifications" name="fa-notifications" />
         ),
-        onClick: () => console.log('Notifications clicked'),
+        onClick: action('Notifications clicked'),
       },
       {
         id: 'help',
         label: 'Help',
         renderIcon: <BahmniIcon id="fa-help" name="fa-help" />,
-        onClick: () => console.log('Help clicked'),
+        onClick: action('Help clicked'),
       },
     ],
     sideNavItems: [
@@ -292,7 +293,7 @@ export const Complete: Story = {
       { id: 'settings', icon: 'fa-cog', label: 'Settings' },
     ],
     activeSideNavItemId: 'dashboard',
-    onSideNavItemClick: (id) => console.log(`Nav item clicked: ${id}`),
+    onSideNavItemClick: action('Nav item clicked'),
     ariaLabel: 'Bahmni Clinical',
   },
   parameters: {
@@ -321,7 +322,7 @@ export const PatientDashboard: Story = {
         id: 'search',
         label: 'Search',
         renderIcon: <BahmniIcon id="fa-search" name="fa-search" />,
-        onClick: () => console.log('Search clicked'),
+        onClick: action('Search clicked'),
       },
       {
         id: 'notifications',
@@ -329,7 +330,7 @@ export const PatientDashboard: Story = {
         renderIcon: (
           <BahmniIcon id="fa-notifications" name="fa-notifications" />
         ),
-        onClick: () => console.log('Notifications clicked'),
+        onClick: action('Notifications clicked'),
       },
     ],
     sideNavItems: [
@@ -341,7 +342,7 @@ export const PatientDashboard: Story = {
       { id: 'vitals', icon: 'fa-chart-line', label: 'Vitals' },
     ],
     activeSideNavItemId: 'summary',
-    onSideNavItemClick: (id) => console.log(`Patient nav item clicked: ${id}`),
+    onSideNavItemClick: action('Patient nav item clicked'),
     ariaLabel: 'Patient Dashboard',
   },
   parameters: {
@@ -371,13 +372,13 @@ export const ClinicalConsultation: Story = {
         id: 'save',
         label: 'Save',
         renderIcon: <BahmniIcon id="fa-save" name="fa-save" />,
-        onClick: () => console.log('Save consultation clicked'),
+        onClick: action('Save consultation clicked'),
       },
       {
         id: 'complete',
         label: 'Complete',
         renderIcon: <BahmniIcon id="fa-check" name="fa-check" />,
-        onClick: () => console.log('Complete consultation clicked'),
+        onClick: action('Complete consultation clicked'),
       },
     ],
     sideNavItems: [
@@ -388,8 +389,7 @@ export const ClinicalConsultation: Story = {
       { id: 'notes', icon: 'fa-notes-medical', label: 'Notes' },
     ],
     activeSideNavItemId: 'observations',
-    onSideNavItemClick: (id) =>
-      console.log(`Consultation nav item clicked: ${id}`),
+    onSideNavItemClick: action('Consultation nav item clicked'),
     ariaLabel: 'Clinical Consultation',
   },
   parameters: {
@@ -418,7 +418,7 @@ export const DepartmentView: Story = {
         id: 'search',
         label: 'Search',
         renderIcon: <BahmniIcon id="fa-search" name="fa-search" />,
-        onClick: () => console.log('Search clicked'),
+        onClick: action('Search clicked'),
       },
       {
         id: 'notifications',
@@ -426,7 +426,7 @@ export const DepartmentView: Story = {
         renderIcon: (
           <BahmniIcon id="fa-notifications" name="fa-notifications" />
         ),
-        onClick: () => console.log('Notifications clicked'),
+        onClick: action('Notifications clicked'),
       },
     ],
     sideNavItems: [
@@ -437,8 +437,7 @@ export const DepartmentView: Story = {
       { id: 'protocols', icon: 'fa-clipboard-list', label: 'Protocols' },
     ],
     activeSideNavItemId: 'dashboard',
-    onSideNavItemClick: (id) =>
-      console.log(`Department nav item clicked: ${id}`),
+    onSideNavItemClick: action('Department nav item clicked'),
     ariaLabel: 'Pediatrics Department',
   },
   parameters: {
@@ -606,19 +605,19 @@ export const ClinicalWorkflowExample: Story = {
         id: 'search',
         label: 'Search',
         renderIcon: <BahmniIcon id="fa-search" name="fa-search" />,
-        onClick: () => console.log('Search clicked'),
+        onClick: action('Search clicked'),
       },
       {
         id: 'user',
         label: 'User Profile',
         renderIcon: <BahmniIcon id="fa-user" name="fa-user" />,
-        onClick: () => console.log('User profile clicked'),
+        onClick: action('User profile clicked'),
       },
       {
         id: 'help',
         label: 'Help',
         renderIcon: <BahmniIcon id="fa-help" name="fa-help" />,
-        onClick: () => console.log('Help clicked'),
+        onClick: action('Help clicked'),
       },
     ],
     sideNavItems: [
@@ -632,8 +631,7 @@ export const ClinicalWorkflowExample: Story = {
       { id: 'disposition', icon: 'fa-clipboard-check', label: 'Disposition' },
     ],
     activeSideNavItemId: 'observations',
-    onSideNavItemClick: (id) =>
-      console.log(`Clinical workflow nav item clicked: ${id}`),
+    onSideNavItemClick: action('Clinical workflow nav item clicked'),
     ariaLabel: 'Clinical Workflow',
   },
   parameters: {

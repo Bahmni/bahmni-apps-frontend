@@ -1,4 +1,5 @@
 import { StoryObj, Meta } from '@storybook/react';
+import { action } from '@storybook/addon-actions';
 import { Dropdown, TextInput, Stack, Grid, Column } from '@carbon/react';
 import { SelectedItem } from '../SelectedItem';
 import styles from './styles/SelectedItemStories.module.scss';
@@ -32,7 +33,7 @@ type Story = StoryObj<typeof SelectedItem>;
 export const Default: Story = {
   args: {
     children: <div className={styles.storyText}>Lorem Ipsum</div>,
-    onClose: () => console.log('Close clicked'),
+    onClose: action('Close clicked'),
   },
 };
 
@@ -50,7 +51,7 @@ export const WithCarbonTypography: Story = {
         <div className={styles.storySmallText}>Additional metadata</div>
       </Stack>
     ),
-    onClose: () => console.log('Close clicked'),
+    onClose: action('Close clicked'),
   },
 };
 
@@ -62,7 +63,7 @@ export const WithCustomClass: Story = {
     children: (
       <div className={styles.storyText}>Selected item with custom class</div>
     ),
-    onClose: () => console.log('Close clicked'),
+    onClose: action('Close clicked'),
     className: 'custom-selected-item-class',
   },
 };
@@ -79,7 +80,7 @@ export const PatientSelectionExample: Story = {
         <div className={styles.storyText}>Age: 45</div>
       </Stack>
     ),
-    onClose: () => console.log('Patient selection removed'),
+    onClose: action('Patient selection removed'),
     dataTestId: 'patient-selected-item',
   },
 };
@@ -132,6 +133,6 @@ export const ComplexFormExample: Story = {
         </Column>
       </Grid>
     ),
-    onClose: () => console.log('Medication form closed'),
+    onClose: action('Medication form closed'),
   },
 };
