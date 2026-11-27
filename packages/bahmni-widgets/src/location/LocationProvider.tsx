@@ -31,8 +31,18 @@ export const LocationProvider: React.FC<LocationProviderProps> = ({
     const initializeLocation = async () => {
       try {
         setError(null);
-        const currentLocation = getUserLoginLocation();
-        setLocationState(currentLocation);
+        try {
+          setLocationState(getUserLoginLocation());
+        } catch (locationErr) {
+          // A missing or invalid location cookie (e.g. user logged in via
+          // OpenMRS first) is not an error: let the user pick a location.
+          // eslint-disable-next-line no-console
+          console.warn(
+            'No valid login location found, user must select one:',
+            locationErr,
+          );
+          setLocationState(null);
+        }
         const locations = await getAvailableLocations();
         setAvailableLocations(locations);
         const user = await getCurrentUser();
@@ -105,7 +115,7 @@ export const LocationProvider: React.FC<LocationProviderProps> = ({
       loading,
       error,
     }),
-    [location, availableLocations, loading, error, userUuid],
+    [handleSetLocation, availableLocations, loading, error],
   );
 
   return (

@@ -31,7 +31,9 @@ export const LocationSelector: React.FC = () => {
     );
   }
 
-  if (!location) {
+  const locations = availableLocations ?? [];
+
+  if (!location && locations.length === 0) {
     return (
       <div className={styles.noLocation} role="status">
         {t('HOME_NO_LOCATION_SELECTED')}
@@ -39,8 +41,9 @@ export const LocationSelector: React.FC = () => {
     );
   }
 
-  const selectedItem =
-    availableLocations.find((loc) => loc.uuid === location.uuid) ?? null;
+  const selectedItem = location
+    ? (locations.find((loc) => loc.uuid === location.uuid) ?? null)
+    : null;
 
   return (
     <div className={styles.dropdownWrapper}>
@@ -48,8 +51,8 @@ export const LocationSelector: React.FC = () => {
         id="location-selector"
         titleText=""
         hideLabel
-        label={location.name}
-        items={availableLocations}
+        label={location?.name ?? t('HOME_SELECT_LOCATION')}
+        items={locations}
         itemToString={(item: UserLocation) => item?.display ?? item?.name ?? ''}
         selectedItem={selectedItem}
         onChange={({ selectedItem }: { selectedItem: UserLocation }) =>
