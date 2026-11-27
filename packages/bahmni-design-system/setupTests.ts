@@ -8,7 +8,9 @@ global.ResizeObserver = class ResizeObserver {
   }
   observe() {}
   unobserve() {}
-  disconnect() {}
+  disconnect() {
+    // intentionally empty: no-op test stub
+  }
 };
 
 global.DOMRect = class DOMRect {
